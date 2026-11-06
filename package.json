@@ -1,0 +1,21 @@
+{
+  "name": "cozy-mystery-exploration",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "dev:iphone": "vite --config vite.iphone.config.ts",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.2",
+    "vite": "^6.0.0",
+    "vitest": "^4.1.11"
+  },
+  "dependencies": {
+    "@mlc-ai/web-llm": "0.2.87"
+  }
+}

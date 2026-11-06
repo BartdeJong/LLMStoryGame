@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+    <meta name="theme-color" content="#17251d" />
+    <meta name="description" content="A cozy mystery exploration game." />
+    <title>Cozy Mystery</title>
+  </head>
+  <body>
+    <main id="game-shell" aria-label="Cozy Mystery game">
+      <canvas id="game" width="320" height="180" aria-label="Game world" role="img"></canvas>
+      <div class="game-hud">
+        <p class="location-label">MEADOW CROSSING</p>
+        <p id="game-message" aria-live="polite">Explore with WASD or the joystick.</p>
+      </div>
+      <div class="touch-controls" aria-label="Touch controls">
+        <button id="joystick" class="joystick" type="button" aria-label="Movement joystick">
+          <span class="joystick-thumb"></span>
+        </button>
+        <button id="action-button" class="action-button" type="button" aria-label="Interact">A</button>
+      </div>
+    </main>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

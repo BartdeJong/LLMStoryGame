@@ -1,0 +1,321 @@
+# Game Plan: Procedural Cozy-Mystery Exploration Game with an On-Device AI Storyteller
+
+Working title: TBD (use a placeholder constant, easy to rename).
+
+This document is the spec and build plan for the coding agent. Section 2 lists decisions that are fixed by the product owner. Do not change them without asking. Everything else is guidance; where it says "verify", check current library versions and browser support before relying on it.
+
+---
+
+## 1. Summary
+
+A top-down 2D pixel-art exploration game that runs as a web app on PC, iPad and iPhone. The player walks around procedurally generated areas and moves between them through "doors". Each area is created the first time the player enters it. The story backbone (plot, cast, mystery, clues, endings) is authored in advance as a "story pack" (section 6.1), created with a repeatable Story Forge step using GitHub Copilot (section 6.2). A small language model running entirely on the player's device then brings that story to life while the game is played: it writes dialogue, area and object descriptions and flavor within the backbone. The tone is cozy exploration and mystery. Every story has a real ending and comes in three lengths; the player chooses the story and the length at the start.
+
+## 2. Fixed decisions
+
+1. Platform: web app, works on desktop browsers, iPad and iPhone (Safari). Installable as a PWA. No backend.
+2. Perspective: top-down 2D, tile-based.
+3. AI: a true on-device LLM only. No cloud API, no server, no rule-based or templated story fallback. Devices that cannot run the model get a clear "not supported" screen.
+4. The story backbone comes from a pre-authored story pack (decision 16). The on-device LLM writes the surface: dialogue, area and object descriptions, flavor details and minor extra characters, within what the pack fixes. Deterministic code builds the maps. The LLM never writes map layouts or drawing code, and never changes the plot facts in the pack.
+5. Art: pixel-art tiles and sprites drawn in code. No external asset files.
+6. Tone: cozy exploration and mystery.
+7. Language: English only.
+8. Interaction: the player talks to characters (people, animals, mythical creatures and so on) and interacts with objects (for example takes items from chests). The LLM imagines the objects too.
+9. Dialogue input: reply choices and free-text typing, whichever fits the conversation best at that moment.
+10. Characters never say the same thing twice, but keep their goal for existing in the game. Do not store old replies and do not check new replies against earlier ones. The LLM simply writes fresh text each conversation.
+11. Every story has a real ending. The player chooses the story and one of its three lengths (Short, Medium, Long) at the start of a playthrough.
+12. Game state is stored on the device, including imagined objects, areas and characters.
+13. Device support: WebGPU only. No WASM/CPU fallback in the first version (too slow on phones for dialogue and area generation, and GitHub Pages cannot send the headers multithreaded WASM needs). Revisit later only if there is demand.
+14. Sound: simple sound effects only, generated in code with Web Audio (no audio files), with a mute toggle. No music.
+15. Hosting: GitHub Pages (free), static files only.
+16. Story packs: stories are authored in advance with GitHub Copilot (Story Forge, section 6.2), stored as JSON files in the repo, and loaded by the game. The step can be repeated to create any number of stories. Each story has three lengths. Packs must meet minimum complexity rules enforced by a validator (section 6.1).
+
+## 3. Tech stack
+
+- TypeScript and Vite. Single static build, deployable to any static host.
+- Rendering: HTML canvas 2D. Draw to a low-resolution pixel buffer (for example 320x180 logical pixels, integer scaling, `image-rendering: pixelated`) and scale to fit the screen.
+- LLM runtime: WebLLM (WebGPU) in a dedicated Web Worker. Verify the current package and API.
+- Storage: IndexedDB (use a small wrapper library or hand-written). Request persistent storage with `navigator.storage.persist()`.
+- PWA: service worker caching the app shell, a web manifest, and an offline-capable setup after the first model download.
+- No game framework required. A small custom engine (game loop, tilemap, entities, input) is enough. A lightweight library is fine if it clearly saves time.
+- Hosting: GitHub Pages with a GitHub Actions deploy of the Vite build. Notes for the agent: the site is served from a sub-path (`/repo-name/`), so set Vite's `base` and the service worker scope and manifest `start_url` accordingly. GitHub Pages cannot set custom response headers (no COOP/COEP), so do not depend on `SharedArrayBuffer` or threaded WASM. Do not host the model files there (file and site size limits); load the model from the WebLLM default model host (verify) and cache it in the browser. HTTPS is provided automatically.
+- Tests: Vitest for pure logic (generators, validation, save/load). Playwright for a smoke test of the UI where possible.
+
+## 4. Architecture
+
+Modules, each with a clear interface:
+
+- `engine/`: game loop, canvas renderer, camera, input, collision, scene management.
+- `world/`: area generators (see section 7), door placement, tile data structures, seeded RNG.
+- `art/`: palette definitions, tile painter, sprite painter, icon painter (see section 8).
+- `llm/`: worker, model loading and progress, prompt builders, JSON schemas, output validation, request queue.
+- `story/`: story state, mystery arc, pacing, area briefs, cast list, quest/goal state.
+- `dialogue/`: conversation controller, UI, choice and free-text modes.
+- `items/`: items, inventory, object interaction rules.
+- `save/`: IndexedDB persistence, save slots, export and import.
+- `ui/`: title screen, new game (length choice), model download screen, HUD, dialogue box, inventory, menus, virtual joystick.
+
+Keep game rules (what is allowed to change state) in plain code. The LLM proposes, the code validates and applies.
+
+## 5. LLM integration
+
+### 5.1 Model
+
+- Use a small quantized model of roughly 1B to 2B parameters. Candidates to benchmark from WebLLM's prebuilt model list (verify what exists): Llama 3.2 1B, Qwen 2.5 1.5B or 0.5B, Gemma 2B class.
+- Pick the model by testing on a real recent iPhone and iPad as well as desktop. Criteria: fits memory, JSON reliability, speed, quality of cozy-mystery prose.
+- Put the model id in one config constant so it is easy to swap.
+- First launch: explain the download (1 to 2 GB), show progress, allow resume, cache for offline use, and never download again unless the model changes.
+
+### 5.2 Running it
+
+- All inference in a Web Worker. The game loop must never block.
+- One generation at a time. Use a priority queue: dialogue first, then the area the player is about to enter, then prefetching other areas, then low-priority extras.
+- Support cancellation (for example if the player leaves a conversation).
+- Use constrained or schema-guided JSON output if the runtime supports it. Otherwise ask for JSON and validate.
+- Every LLM result goes through validation: parse, check against the schema, check value ranges and menu choices, and retry with a short repair prompt (limited retries, for example 2). If still invalid, fall back to a safe default for that single field (for example a generic name from a built-in list) so the game never crashes. This fallback is for malformed output only, not a replacement for the LLM.
+- Keep prompts short. Small models lose track of long context. Pass a compact story summary, not the entire history.
+
+### 5.3 Output shapes (starting point, refine as needed)
+
+Story premise, cast, truths, clues, key items and endings are NOT generated at runtime. They are loaded from the selected story pack (section 6.1). The LLM only produces the shapes below.
+
+Area brief (the flavor layer for one location of the story pack):
+```
+{ "name", "biome", "mood", "palette", "description",
+  "characters": [ { "name", "species", "sprite_recipe", "personality", "goal", "secret" } ],
+  "objects": [ { "kind", "name", "description", "icon_recipe", "contents": [ ... ] } ],
+  "clue": { "truth_id", "where", "text" } | null,
+  "doors": [ { "label", "hint" } ] }
+```
+
+Fields the story pack already fixes (required characters, key objects, the clue for this location, door destinations) are copied from the pack by code; the LLM only describes them. The LLM may add minor extra characters and objects, which have no effect on the story.
+
+Dialogue turn:
+```
+{ "line", "mode": "choices" | "free", "choices": ["...", "..."], "effects": { ... } }
+```
+`effects` are only proposals (give item, reveal clue, goal progress). Code validates them against the story state before applying.
+
+Item:
+```
+{ "name", "description", "icon_recipe", "story_use" }
+```
+
+Menus the LLM picks from (so code can draw and generate): biomes, palettes, sprite body shapes, features (horns, hat, wings, tail and so on), object kinds, icon shapes.
+
+## 6. Story engine
+
+- At game start the player picks a story (from `public/stories/index.json`) and a length. The game loads that story pack and uses the chosen length's definition (locations, cast, truths, beats, endings). Nothing about the plot is invented at runtime.
+- Game length, chosen together with the story (each pack defines the real numbers; these are the targets the packs aim for):
+  - Short: about 15 minutes, 5 to 6 areas.
+  - Medium: about 45 minutes, 12 to 15 areas.
+  - Long: about 2 hours, 25 or more areas.
+  Treat these as tunable constants.
+- Code controls pacing by following the pack's beats for the chosen length: which locations are open, which clues and characters appear where, and what must be found before the next stage opens. The LLM is told which truth a location should hint at (or none) and writes the wording only.
+- The ending area is only offered once enough truths are found (or a minimum area count is reached plus required truths). Which ending plays follows the pack's ending conditions (truths found, goals resolved, key choices). The LLM writes the scene text from the pack's ending outline, then the game shows an ending screen and offers a new game.
+- Story state (persisted): story pack id and version, chosen length, truths found/unfound, goal states, item list, visited areas, short rolling summary used in prompts. The pack itself is not copied into the save; saves record the pack id and version, and loading a save with a missing or changed pack version shows a clear message.
+- The summary is regenerated by the LLM every few areas from structured state, kept very short.
+
+### 6.1 Story packs (authored backbone)
+
+A story is a **story pack**: one JSON file at `public/stories/<story-id>.json`, plus `public/stories/index.json` listing the available stories (id, title, logline, available lengths, estimated minutes). Packs are created with the Story Forge step (6.2), reviewed by the user and committed to the repo. Adding a story needs no code change.
+
+Division of labour: the pack decides who, what, where and why (plot, cast, mystery, clues, key items, location graph, endings). The on-device LLM decides how it sounds (dialogue lines, descriptions, flavor, minor extras).
+
+Schema (versioned with `schema_version`; ship a JSON Schema and matching TypeScript types):
+- **identity**: id, title, logline, setting, tone, themes, content notes.
+- **style_guide**: narrator voice, words and styles to use or avoid, naming conventions, and a few short example lines per major character. These are style samples written by the author, not stored replies from play.
+- **cast**: per character: id, name, species, personality, goal, secret, motivations, relationships (to other cast ids), sprite_recipe, home location, which truths they know, goal states with transitions (what resolves the goal and what they give or reveal when it is resolved), voice notes.
+- **truths**: id, text, depends_on (other truth ids), importance (core or side), revealed_by (clue ids).
+- **clues**: id, truth_id, kind (spoken, object, place, item combination), where (location or character id), alternatives, requirements (items or goal states needed to get it).
+- **items**: id, name, description, icon_recipe, where found, what it unlocks or solves. Key items can never be missable.
+- **locations**: id, biome, mood, palette, role in the story, required characters, objects and clues, doors (to location ids, with lock conditions), whether it is a hub.
+- **twists and red herrings**: id, description, setup clue ids, payoff trigger.
+- **endings**: id, conditions (truth ids found, goals resolved, key choices), scene outline, tone, epilogue notes.
+- **lengths**: `short`, `medium`, `long`. Each defines target minutes, the ordered locations (grouped into beats or acts), the cast included, core and side truths needed, subplots included, pacing beats (what must be found before the next stage opens) and which endings are available.
+
+The three lengths are three versions of one story. Short is the spine: a complete, satisfying story on the simplest path. Medium adds subplots, side characters and red herrings. Long adds more subplots, twists and endings. Anything shared between lengths stays identical (same character, same goal, same truths); length-specific content is marked as such.
+
+Minimum complexity (enforced by the validator; the numbers live in one config file and can be tuned):
+
+| | Short | Medium | Long |
+|---|---|---|---|
+| Locations | 5 to 6 | 12 to 15 | 25 or more |
+| Named cast | 4 to 5 | 8 to 10 | 12 to 15 |
+| Core truths | 4 | 7 | 10 to 12 |
+| Red herrings | 1 | 2 to 3 | 4 or more |
+| Twists | 1 | 1 to 2 | 2 to 3 |
+| Subplots | 0 | 1 to 2 | 3 or more |
+| Endings | 1 | 2 | 3 or more |
+| Independent routes to each core truth | 2 | 2 | 2 or 3 |
+
+Validator: a Node/TypeScript script (`npm run validate-stories`, also run in CI and before a pack is loaded). It checks: the JSON Schema; that every referenced id exists; that the location graph is connected and every location is reachable; that every core truth has at least two independent clue routes; that requirements (items, goal states) can be met before they are needed and nothing is circular; that every ending is reachable in each length (a solver simulates a playthrough); that each length meets the minimums above; that text fields stay within length limits so prompts stay small; and warns about unused cast members and items.
+
+At runtime the game loads the pack and chosen length, derives the area order and beats from it, and builds each LLM prompt from only the slice it needs (the location, its required characters with their current goal states, the clue to place, and a short excerpt of the style guide), never the whole pack. Output is validated against the pack: the LLM cannot rename core characters, change their goals or contradict truths; the code discards or regenerates such output.
+
+### 6.2 Story Forge (repeatable authoring step using GitHub Copilot)
+
+A repeatable workflow, run in the repository with the Copilot coding agent, that produces one story pack per run. Run it as often as you like to get more stories.
+
+Files in `tools/story-forge/`: `README.md` (the workflow), `prompts/` (templates for each step), `schema/story-pack.schema.json` and `examples/` (a small sample pack).
+
+Steps per story. Use a separate chat session for each step to keep credits low:
+1. **Brief.** The user writes a few lines: theme, setting, tone, twist wishes, things to avoid. Saved as `stories/briefs/<id>.md`.
+2. **Story bible.** The agent writes `stories/bibles/<id>.md` for the Long version first, since it is the richest: premise, the central mystery and its solution, truths and their dependencies, cast with goals and secrets, locations, twists and red herrings, endings.
+3. **User review.** The user reads the bible and approves it or asks for changes. Nothing continues until it is approved.
+4. **Length cut.** The agent derives the Medium and Short versions from the approved Long bible and writes down what was cut and why, so each shorter version stays coherent.
+5. **Pack generation.** The agent converts the approved bible to `public/stories/<id>.json` following the schema, including the style guide and the three length definitions. Do it in parts (identity and cast; truths, clues and items; locations and doors; lengths and endings) so each response stays within output limits.
+6. **Validation loop.** Run `npm run validate-stories`. The agent fixes errors until it passes.
+7. **Read-through.** A debug command prints the solved path for each length (ordered locations, clues found, characters met, ending reached). The user skims it to check the story makes sense.
+8. **Register and commit.** Add the story to `index.json` and commit.
+
+Rules for the writing agent: follow the schema; every core truth must be discoverable by two routes; no character may be required to solve the mystery if their goal can be blocked; keep the cozy tone (no graphic violence); English only; keep text fields within the length limits.
+
+## 7. World generation
+
+- Seeded RNG so a brief and seed always give the same map.
+- Each area is built by code from the brief's biome. Generators:
+  - Outdoors (meadow, forest, shore): noise plus rules for paths, water, trees, clearings.
+  - Caves: cellular automata with connectivity check.
+  - Buildings and ruins: rooms and corridors or a simple BSP.
+  - Village: lots, paths and small building footprints.
+- Guarantee: all key points (player entry, doors, characters, chests, clue spots) are reachable. Validate with a flood fill and regenerate or fix on failure.
+- Doors: placed by code on edges or as objects (cave mouth, gate, hatch, trapdoor). The LLM supplies the labels and hints. A door leads to an area that is generated only when first entered. Afterward it is stored and never changes. Doors always connect back to where the player came from.
+- Prefetch: while the player explores an area, queue generation of the briefs for areas behind its doors. If the area is not ready when the player arrives, show a short, atmospheric transition (for example drifting fog) until it is.
+- Entities placed by code at valid tiles using the brief: characters, objects and clue spots.
+
+## 8. Pixel art in code
+
+- `art/` draws everything procedurally from palettes and recipes. No image files.
+- Tiles: grass, path, water, tree, rock, wall, floor, door and so on, drawn once per palette on offscreen canvases with small per-tile variation from the seed.
+- Sprites: 16x16 characters. Recipe fields choose body shape, colors from the area palette, and a feature. Animation: simple 2 to 4 frame walk cycle via offsets.
+- Items and objects: small icon painter from `icon_recipe`.
+- Palette: a limited set per biome with the LLM choosing among named palettes, optionally small hue shifts. Keep the look cohesive and cozy.
+- Cache all generated art. Regenerate from recipe on load (recipes are stored, pixels are not).
+
+## 9. Characters and dialogue
+
+- Core characters come from the story pack with a fixed core: name, species, personality, goal, secret, sprite recipe. Minor extra characters invented by the LLM get a core written when they first appear. Every core is saved and never rewritten.
+- Each character has a goal state: unmet, in progress, resolved. Resolving a goal changes what they say and can give the player a clue or item. The LLM may suggest progress, code decides.
+- Do not store past replies per character and do not run any repeat-detection. Each conversation prompt includes: the character core, current goal state, the area and story summary, the player's inventory, and the current conversation so far (only this conversation's turns). The prompt tells the character to speak fresh and in character.
+- Dialogue UI: the LLM returns a line and a mode. In `choices` mode show 2 to 3 replies. In `free` mode show a text field. The player can always switch with a small button. Keep the dialogue box big enough to read on an iPhone.
+- Interpreting free text and choices happens through the LLM. Effects on the game (items, clues, doors, goal progress) are validated by code.
+
+## 10. Objects and items
+
+- Objects (chests, signs, plants, machines, strange things) are placed by code and described by the LLM from the brief.
+- Interaction: tap or walk up and press the action button. Show the description. Chests give the contents from the brief.
+- Inventory is a simple list with name, description and icon. Items can unlock doors, satisfy a character's goal or reveal clues. Their use is proposed by the LLM through `story_use` and effects, and code checks it against the story state so the game cannot contradict itself.
+- Imagined objects are persisted in the area data so they stay the same when the player returns.
+
+## 11. Controls and UI
+
+- PC: arrow keys or WASD to move, Space or E to interact, Esc for menu.
+- Touch: on-screen virtual joystick (bottom left) and an action button (bottom right). Large tap targets. Tap a character or object to interact when near.
+- Responsive: handle portrait and landscape, iOS safe areas, no page scroll or bounce while playing, prevent double-tap zoom.
+- Screens: title, new game with story and length choice, model download and first-run explanation, game, dialogue, inventory, pause menu with save and export or import, ending screen, "device not supported".
+- Show a small "thinking" indicator when the LLM is working in the foreground (for example during dialogue).
+
+## 12. Saving
+
+- IndexedDB schema (suggestion): `saves` (slot metadata), `worlds` (seed, length, story state), `areas` (brief, tile data or seed plus generator params, entities, objects), `characters`, `items`, `player` (position, inventory, current area).
+- Autosave on every door crossing, on leaving a conversation and every minute.
+- Multiple save slots. Export and import of a save as a file (JSON) as backup, because iOS may evict web storage.
+- Version the save format and write simple migrations.
+
+## 13. Compatibility and performance
+
+- WebGPU is required. Safari supports it on recent iOS and iPadOS versions only (believed 26 and up; verify). Detect WebGPU and available memory at startup and show a clear "not supported" screen otherwise.
+- Phones have strict memory limits. Keep the model small, free resources when possible, and avoid loading large things in the main thread.
+- Expect area generation on phones to take 5 to 20 seconds. Prefetching and transitions are the answer, not a smaller story.
+- Keep the render loop at 60 fps where possible. LLM work must never cause dropped frames. Test with the model busy.
+- Battery and heat: pause generation when the tab is hidden. Do not prefetch endlessly; cap the number of queued areas.
+
+## 14. Milestones and test steps
+
+Build in this order. Each milestone must work on desktop and on a real iPhone or iPad before moving on.
+
+### 14.1 Model and credit plan (GitHub Copilot Pro)
+
+Budget goal: stay under 1,500 GitHub AI Credits (1 credit = $0.01). Credits are spent per token, so cheap models for simple work and a strong model only for the hard milestones.
+
+| Milestone | Model | Why |
+|---|---|---|
+| M1 Engine skeleton | GPT-6 Luna | Standard, well-defined work |
+| M2 Art painter | GPT-6 Luna | Well-defined, easy to check visually |
+| M3 Procedural areas and doors | GPT-6 Luna | Clear algorithms and unit tests |
+| M4 LLM in a worker | Claude Sonnet 5.5 | WebGPU, worker messaging, JSON repair: cheap models loop here |
+| M4.5 Story pack schema, validator, loader | Claude Sonnet 5.5 | Schema design and the playthrough solver |
+| M5 Story packs in play, area briefs | Claude Sonnet 5.5 (Luna for prompt tweaks) | Pipeline and prompt design |
+| S1 Story Forge (per story) | Claude Sonnet 5.5; GPT-6 Luna for validator fixes | Long-form writing and consistent structure |
+| M6 Characters, dialogue, items | Claude Sonnet 5.5 | Most logic-heavy part |
+| M7 Pacing, length, ending | GPT-6 Luna; Sonnet 5.5 if stuck twice | Mostly tuning constants |
+| M8 Saving | GPT-6 Luna; Sonnet 5.5 if stuck twice | Straightforward persistence |
+| M9 Polish, PWA, sound | GPT-6 Luna | Small, scoped tasks |
+
+Rules for working within the budget:
+- One milestone per chat session. Start a fresh session for each milestone, because long sessions resend their whole history on every step and cost more.
+- Give the agent only this document's relevant sections (section 2, plus the sections the milestone needs) rather than asking it to re-read everything.
+- The agent must stop and tell the user, instead of retrying in a loop, if a task fails twice or looks beyond the current model. The user then decides whether to switch to a stronger model for that task.
+- Keep changes small and well-scoped. Run tests and real-device checks yourself rather than asking the agent to.
+- Check the Copilot usage page after M1 and M2 and again after M4 to compare real credit use with the plan.
+- If a listed model is not available in the picker, use the nearest cheaper alternative first and escalate only when needed.
+- Writing a full story (three lengths) is output-heavy. A rough guess is 100 to 300 credits per story with Sonnet 5.5, but measure the first one and plan the number of stories around your remaining credits.
+
+**M1. Engine skeleton**
+- Vite and TypeScript project, canvas pixel renderer, game loop, keyboard and touch input, camera, collision, a hand-made test map.
+- Test: walk around on desktop and on iPhone with the joystick; pixel scaling is crisp; no page scrolling.
+
+**M2. Art painter**
+- Palettes, tile painter, character sprite painter, icon painter, walk animation.
+- Test: a debug screen shows all tiles and a grid of random sprite recipes; art is cohesive and legible at phone size.
+
+**M3. Procedural areas and doors**
+- Seeded generators for the biomes, reachability validation, door placement, area transitions with stored areas (using placeholder briefs, no LLM yet).
+- Test: unit tests for determinism and connectivity (run many seeds); walking through a door generates a new area, going back returns the same area.
+
+**M4. LLM in a worker**
+- WebLLM in a worker, model download screen with progress and caching, a request queue, JSON validation and repair.
+- Test: benchmark candidate models on desktop and on a real iPhone and iPad (time to first token, tokens per second, memory, JSON validity rate over 50 runs). Choose and record the model. Confirm the "not supported" screen on a non-WebGPU browser.
+
+**M4.5. Story pack schema, validator and loader**
+- JSON Schema and TypeScript types for story packs, the validator with the playthrough solver (section 6.1), a loader, a small hand-written example pack, and a minimal story and length selection screen.
+- Test: unit tests show the validator accepts the example pack and rejects deliberately broken variants (missing id, unreachable location, a core truth with one route, circular requirements, too few locations for a length).
+
+**M5. Story packs in play and area briefs**
+- Load the selected pack and length, area brief generation from each location's slice of the pack, brief-to-map pipeline, prefetch and transition, story state and summary.
+- Test: start a game and visit several areas; briefs are valid and varied; the next area is usually ready on arrival; a failing generation never crashes the game.
+
+**M6. Characters, dialogue, objects, items**
+- Placement, dialogue UI with choices and free text, goal states, chests and objects, inventory, effect validation.
+- Test: talk to the same character several times and get fresh text each time; resolve a goal; open a chest and use an item; invalid LLM effects are rejected.
+
+**M7. Pacing, length and ending**
+- Pacing driven by the pack's beats for the chosen length, finale area and ending variants from the pack, ending screen.
+- Test: play a Short game start to finish; the ending is reachable and consistent with the found truths; Medium and Long pacing is plausible (simulate with a fast mock LLM for speed).
+
+**M8. Saving**
+- IndexedDB persistence, slots, autosave, export and import, persistent storage request, migrations.
+- Test: quit and reload mid-game and everything (areas, imagined objects, characters, inventory, goal states, position) is restored; import an exported save on another device.
+
+**M9. Polish and PWA**
+- Service worker and manifest, offline play after the first download, simple generated sound effects (Web Audio, mute toggle; iOS requires audio to be unlocked by a user gesture), menus, accessibility basics (text size, contrast), performance pass.
+- Test: install to the home screen on iPhone and iPad; airplane-mode play; 30-minute soak test with no memory growth problems.
+
+**S1. Story Forge (repeatable; start after M4.5, before M5 is tested with real content)**
+- Create `tools/story-forge/` with the workflow, prompt templates, schema and example (section 6.2) and the read-through debug command. Run the workflow to produce the first full story with three lengths.
+- Test: the validator passes for all three lengths; the read-through shows a sensible solved path for each; the user approves the story. Repeat the workflow for every further story. Each new story needs no code change.
+
+## 15. Risks and things to verify early
+
+- On-device LLM quality at 1B to 2B parameters is limited. Keep prompts short and tasks narrow, and rely on schemas and validation.
+- iOS WebGPU support and memory limits may rule out some devices. Verify in M4 before investing heavily in later milestones.
+- iOS may evict storage; export and import mitigates this.
+- Long dialogues can drift. Keep only the current conversation's turns in the prompt.
+- Re-check library APIs (WebLLM, storage wrappers) at build time; they change often.
+
+## 16. Out of scope for the first version
+
+- Multiplayer, accounts, cloud sync.
+- Combat.
+- Languages other than English.
+- Voice input or output.
