@@ -25,7 +25,7 @@ function copyArea(area: Area, changes: Partial<Area>): Area {
   return { ...area, ...changes };
 }
 
-function doorSpawn(area: Area, door: AreaDoor): GridPoint {
+export function doorSpawn(area: Area, door: AreaDoor): GridPoint {
   for (const [dx, dy] of [[0, 1], [1, 0], [0, -1], [-1, 0]] as const) {
     const point = { x: door.x + dx, y: door.y + dy };
     if (isWalkable(area, point.x, point.y)) return point;

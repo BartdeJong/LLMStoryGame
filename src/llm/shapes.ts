@@ -46,7 +46,14 @@ export interface AreaBriefOutput {
   doors: { label: string; hint: string }[];
 }
 
-export const areaBriefSchema = defineSchema<AreaBriefOutput>(
+interface BriefLimits {
+  characters: number;
+  objects: number;
+  doors: number;
+}
+
+function makeAreaBriefSchema(limits: BriefLimits) {
+  return defineSchema<AreaBriefOutput>(
   s.object({
     name: s.string("Quiet Corner", { maxLength: 40 }),
     biome: s.string("meadow", { oneOf: BIOMES }),
@@ -62,7 +69,7 @@ export const areaBriefSchema = defineSchema<AreaBriefOutput>(
         goal: s.string("to enjoy a quiet day", { maxLength: 100 }),
         secret: s.string("none worth telling", { maxLength: 100 }),
       }),
-      { maxItems: 3 },
+      { maxItems: limits.characters },
     ),
     objects: s.array(
       s.object({
@@ -72,7 +79,7 @@ export const areaBriefSchema = defineSchema<AreaBriefOutput>(
         icon_recipe: iconRecipe,
         contents: s.array(s.string("a small trinket", { maxLength: 40 }), { maxItems: 3 }),
       }),
-      { maxItems: 4 },
+      { maxItems: limits.objects },
     ),
     clue: s.nullable(
       s.object({
@@ -83,10 +90,15 @@ export const areaBriefSchema = defineSchema<AreaBriefOutput>(
     ),
     doors: s.array(
       s.object({ label: s.string("Path onward", { maxLength: 30 }), hint: s.string("It leads somewhere new.", { maxLength: 80 }) }),
-      { minItems: 1, maxItems: 4, fallback: [{ label: "Path onward", hint: "It leads somewhere new." }] },
+      { minItems: 1, maxItems: limits.doors, fallback: [{ label: "Path onward", hint: "It leads somewhere new." }] },
     ),
   }),
-);
+  );
+}
+
+export const areaBriefSchema = makeAreaBriefSchema({ characters: 3, objects: 4, doors: 4 });
+// Story locations can have several required entities and up to 6 doors.
+export const storyAreaBriefSchema = makeAreaBriefSchema({ characters: 6, objects: 8, doors: 6 });
 
 export interface CharacterOutput {
   name: string;
@@ -142,5 +154,17 @@ export const itemSchema = defineSchema<ItemOutput>(
     description: s.string("A small thing with a story of its own.", { maxLength: 160 }),
     icon_recipe: iconRecipe,
     story_use: s.string("decoration", { maxLength: 80 }),
+  }),
+);
+
+export interface EndingSceneOutput {
+  scene: string;
+  epilogue: string;
+}
+
+export const endingSceneSchema = defineSchema<EndingSceneOutput>(
+  s.object({
+    scene: s.string("The village gathers beneath the lanterns and welcomes the morning together.", { maxLength: 600 }),
+    epilogue: s.string("The lanterns glow warmly as the village settles into a gentler season.", { maxLength: 240 }),
   }),
 );

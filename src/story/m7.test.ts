@@ -1,0 +1,208 @@
+import { describe, expect, it } from "vitest";
+import example from "../../public/stories/example.json";
+import lanterntide from "../../public/stories/lanterntide.json";
+import { ConversationController } from "../dialogue/controller";
+import { LLMClient } from "../llm/client";
+import { MockBackend } from "../llm/mock";
+import { getLengthView } from "./loader";
+import { storyMockRespond } from "./mockResponder";
+import { findDoorLock, isRequirementMet } from "./requirements";
+import { solveLength } from "./solver";
+import { writeEnding } from "./ending";
+import { StorySession } from "./storySession";
+import type { LengthId, StoryPack } from "./types";
+import { validateStoryPack } from "./validate";
+
+function loadPack(data: unknown): StoryPack {
+  const report = validateStoryPack(data);
+  if (!report.pack) throw new Error(`Invalid test pack: ${report.errors.map((issue) => issue.message).join("; ")}`);
+  return report.pack;
+}
+
+async function makeClient(): Promise<LLMClient> {
+  const client = new LLMClient(
+    new MockBackend({ respond: storyMockRespond }),
+    { pauseWhenHidden: false },
+  );
+  await client.load();
+  return client;
+}
+
+async function simulate(pack: StoryPack, lengthId: LengthId): Promise<void> {
+  const view = getLengthView(pack, lengthId);
+  const expected = solveLength(pack, view.definition);
+  expect(expected.endings.length, `${pack.identity.id} ${lengthId} has a solver path`).toBeGreaterThan(0);
+
+  const client = await makeClient();
+  const story = new StorySession(pack, view, client);
+  let currentAreaId = (await story.start()).id;
+  const firstFinaleLocation = view.beats[view.beats.length - 1]?.locations[0];
+  if (firstFinaleLocation) expect(story.getEndingChoices(firstFinaleLocation)).toEqual([]);
+
+  const moveTo = async (targetId: string): Promise<void> => {
+    if (targetId === currentAreaId) return;
+    const queue = [currentAreaId];
+    const previous = new Map<string, string | null>([[currentAreaId, null]]);
+    for (let cursor = 0; cursor < queue.length && !previous.has(targetId); cursor += 1) {
+      const from = queue[cursor]!;
+      const location = pack.locations.find((candidate) => candidate.id === from);
+      if (!location) continue;
+      const neighbours = [
+        ...location.doors.map((door) => door.to),
+        ...pack.locations.filter((candidate) => candidate.doors.some((door) => door.to === from)).map((candidate) => candidate.id),
+      ];
+      for (const to of neighbours) {
+        if (previous.has(to) || !story.isLocationOpen(to)) continue;
+        if (!isRequirementMet(findDoorLock(pack, from, to), story.state)) continue;
+        previous.set(to, from);
+        queue.push(to);
+      }
+    }
+    if (!previous.has(targetId)) throw new Error(`No open route from ${currentAreaId} to ${targetId}.`);
+    const path: string[] = [];
+    for (let step: string | null = targetId; step && step !== currentAreaId; step = previous.get(step) ?? null) path.unshift(step);
+    for (const nextId of path) {
+      const area = story.getArea(currentAreaId);
+      const door = area.doors.find((candidate) => candidate.targetAreaId === nextId);
+      if (!door) throw new Error(`Missing generated door from ${currentAreaId} to ${nextId}.`);
+      currentAreaId = (await story.enterDoor(currentAreaId, door.id)).area.id;
+    }
+  };
+
+  const speakTo = async (characterId: string, goalStateId?: string, clueId?: string): Promise<void> => {
+    const character = pack.cast.find((candidate) => candidate.id === characterId);
+    if (!character) throw new Error(`Missing character ${characterId}.`);
+    await moveTo(character.home_location);
+    const area = story.getArea(currentAreaId);
+    const controller = new ConversationController(client, pack, story.state, character, {
+      locationName: area.name,
+      locationMood: area.mood,
+      storySummary: story.state.summary,
+      inventory: pack.items.filter((item) => story.state.itemsHeld.includes(item.id)).map((item) => ({ id: item.id, name: item.name })),
+      getAvailableClues: () => story.getAvailableCharacterClues(characterId),
+    });
+    let turns = 0;
+    await controller.start();
+    while (
+      turns++ < pack.clues.length + character.goal_states.length + 2
+      && ((goalStateId && !story.state.resolvedGoalStates.includes(goalStateId))
+        || (clueId && !story.state.cluesFound.includes(clueId)))
+    ) {
+      await controller.reply("I'd be glad to help.");
+    }
+    if (goalStateId) expect(story.state.resolvedGoalStates, `resolved ${goalStateId}`).toContain(goalStateId);
+    if (clueId) expect(story.state.cluesFound, `found ${clueId}`).toContain(clueId);
+  };
+
+  for (const step of expected.steps) {
+    const enter = /^Enter (\S+) from /.exec(step);
+    if (enter) {
+      await moveTo(enter[1]!);
+      continue;
+    }
+
+    const goal = /^Resolve goal (\S+) with (\S+)$/.exec(step);
+    if (goal) {
+      await speakTo(goal[2]!, goal[1]);
+      continue;
+    }
+
+    const item = /^Find item (\S+) at /.exec(step);
+    if (item) {
+      const definition = pack.items.find((candidate) => candidate.id === item[1]);
+      if (definition?.found_at?.type === "location") {
+        await moveTo(definition.found_at.id);
+        const entity = story.getArea(currentAreaId).entities?.find(
+          (candidate) => candidate.kind === "key" && candidate.packId === definition.id,
+        );
+        expect(entity, `item entity ${definition.id}`).toBeDefined();
+        story.collectItem(entity!);
+        expect(story.state.itemsHeld).toContain(definition.id);
+      } else if (definition?.found_at?.type === "character") {
+        await speakTo(definition.found_at.id);
+        expect(story.state.itemsHeld).toContain(definition.id);
+      }
+      continue;
+    }
+
+    const clueMatch = /^Find clue (\S+) \(/.exec(step);
+    if (clueMatch) {
+      const clue = pack.clues.find((candidate) => candidate.id === clueMatch[1])!;
+      const sources = [clue.where, ...clue.alternatives];
+      const accessibleSource = sources.find((source) => {
+        const locationId = source.type === "location"
+          ? source.id
+          : pack.cast.find((candidate) => candidate.id === source.id)?.home_location;
+        return locationId !== undefined && story.state.visitedAreas.includes(locationId);
+      });
+      expect(accessibleSource, `accessible source for ${clue.id}`).toBeDefined();
+      if (accessibleSource?.type === "location") {
+        await moveTo(accessibleSource.id);
+        const entity = story.getArea(currentAreaId).entities?.find(
+          (candidate) => candidate.kind === "clue" && candidate.packId === clue.id,
+        );
+        expect(entity, `clue entity ${clue.id}`).toBeDefined();
+        story.examineClue(entity!);
+        expect(story.state.cluesFound).toContain(clue.id);
+      } else if (accessibleSource?.type === "character") {
+        await speakTo(accessibleSource.id, undefined, clue.id);
+      }
+    }
+  }
+
+  expect([...expected.truths].every((id) => story.state.truthsFound.includes(id))).toBe(true);
+  expect([...expected.goalStates].every((id) => story.state.resolvedGoalStates.includes(id))).toBe(true);
+  expect([...expected.items].every((id) => story.state.itemsHeld.includes(id))).toBe(true);
+
+  const finaleLocation = view.beats[view.beats.length - 1]?.locations.find((id) => expected.locations.has(id));
+  expect(finaleLocation).toBeDefined();
+  await moveTo(finaleLocation!);
+  const choices = story.getEndingChoices(currentAreaId);
+  expect(choices.length, "the finale offers a choice").toBeGreaterThan(0);
+  for (const chosen of choices) {
+    story.state.choicesMade.length = 0;
+    const selected = new Set(chosen.choices);
+    const expectedEnding = view.endings
+      .filter((ending) =>
+        ending.conditions.truths.every((id) => expected.truths.has(id))
+        && ending.conditions.goal_states.every((id) => expected.goalStates.has(id))
+        && ending.conditions.choices.every((id) => selected.has(id)),
+      )
+      .sort((a, b) =>
+        b.conditions.truths.length + b.conditions.goal_states.length + b.conditions.choices.length
+        - a.conditions.truths.length - a.conditions.goal_states.length - a.conditions.choices.length,
+      )[0];
+    expect(expectedEnding, `choice "${chosen.label}" matches a solver-reachable ending`).toBeDefined();
+    const played = await story.finishEnding(chosen.choices, currentAreaId);
+    expect(played.endingId).toBe(expectedEnding!.id);
+    expect(played.scene).toBe(expectedEnding!.scene_outline);
+    expect(played.epilogue).toBe(expectedEnding!.epilogue_notes);
+  }
+}
+
+describe("M7 pacing and ending simulations", () => {
+  const packs = [loadPack(example), loadPack(lanterntide)];
+  for (const pack of packs) {
+    for (const lengthId of Object.keys(pack.lengths) as LengthId[]) {
+      it(`plays ${pack.identity.id} (${lengthId}) from the solver path to its ending`, async () => {
+        await simulate(pack, lengthId);
+      });
+    }
+  }
+
+  it("uses the authored outline and epilogue when ending generation fails", async () => {
+    const pack = loadPack(example);
+    const ending = pack.endings[0]!;
+    const client = new LLMClient(
+      new MockBackend({ respond: () => "{broken" }),
+      { pauseWhenHidden: false },
+    );
+    await client.load();
+
+    await expect(writeEnding(client, pack, ending)).resolves.toMatchObject({
+      endingId: ending.id,
+      scene: ending.scene_outline,
+      epilogue: ending.epilogue_notes,
+    });
+  });
+});

@@ -1,0 +1,18 @@
+{
+  "stories": [
+    {
+      "id": "example",
+      "title": "The Missing Moon Lantern",
+      "logline": "The village's Moon Lantern vanished the night before the festival. Find out who took it, and why.",
+      "lengths": ["short"],
+      "estimated_minutes": { "short": 15 }
+    },
+    {
+      "id": "lanterntide",
+      "title": "Lantern Tide",
+      "logline": "In a village of drifting lighthouses, an apprentice keeper with a lost year follows the missing oil to a thirteenth light that nobody remembers.",
+      "lengths": ["short", "medium", "long"],
+      "estimated_minutes": { "short": 15, "medium": 45, "long": 90 }
+    }
+  ]
+}

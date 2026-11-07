@@ -57,8 +57,8 @@ export interface MockOptions {
   // Chance (0..1) that a reply is malformed JSON.
   failureRate?: number;
   seed?: number | string;
-  // Override canned output per call, e.g. to script specific failures.
-  respond?: (params: GenerationParams, call: number) => string;
+  // Override canned output per call, e.g. to script specific failures. Return undefined for the canned reply.
+  respond?: (params: GenerationParams, call: number) => string | undefined;
 }
 
 function sleep(ms: number, signal: AbortSignal): Promise<void> {
@@ -96,10 +96,8 @@ export class MockBackend implements LLMBackend {
     if (delay > 0) await sleep(delay, params.signal);
     else if (params.signal.aborted) throw Object.assign(new Error("Aborted"), { name: "AbortError" });
 
-    let text: string;
-    if (this.options.respond) {
-      text = this.options.respond(params, call);
-    } else {
+    let text: string | undefined = this.options.respond?.(params, call);
+    if (text === undefined) {
       text = JSON.stringify(CANNED[params.tag ?? ""] ?? {});
       if (this.random() < (this.options.failureRate ?? 0)) text = text.slice(0, Math.floor(text.length / 2));
     }

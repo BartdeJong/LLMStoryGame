@@ -1,0 +1,303 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "story-pack.schema.json",
+  "title": "Story pack",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "identity", "style_guide", "cast", "truths", "clues", "items", "locations", "twists", "red_herrings", "endings", "lengths"],
+  "properties": {
+    "schema_version": { "type": "integer", "const": 1 },
+    "identity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "version", "title", "logline", "setting", "tone", "themes", "content_notes"],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "version": { "type": "integer", "minimum": 1 },
+        "title": { "$ref": "#/$defs/text" },
+        "logline": { "$ref": "#/$defs/text" },
+        "setting": { "$ref": "#/$defs/text" },
+        "tone": { "$ref": "#/$defs/text" },
+        "themes": { "$ref": "#/$defs/textList" },
+        "content_notes": { "type": "array", "items": { "$ref": "#/$defs/text" } }
+      }
+    },
+    "style_guide": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["narrator_voice", "use", "avoid", "naming_conventions", "examples"],
+      "properties": {
+        "narrator_voice": { "$ref": "#/$defs/text" },
+        "use": { "type": "array", "items": { "$ref": "#/$defs/text" } },
+        "avoid": { "type": "array", "items": { "$ref": "#/$defs/text" } },
+        "naming_conventions": { "$ref": "#/$defs/text" },
+        "examples": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["cast_id", "lines"],
+            "properties": {
+              "cast_id": { "$ref": "#/$defs/id" },
+              "lines": { "$ref": "#/$defs/textList" }
+            }
+          }
+        }
+      }
+    },
+    "cast": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/castMember" } },
+    "truths": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/truth" } },
+    "clues": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/clue" } },
+    "items": { "type": "array", "items": { "$ref": "#/$defs/item" } },
+    "locations": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/location" } },
+    "twists": { "type": "array", "items": { "$ref": "#/$defs/twist" } },
+    "red_herrings": { "type": "array", "items": { "$ref": "#/$defs/redHerring" } },
+    "endings": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/ending" } },
+    "lengths": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "short": { "$ref": "#/$defs/length" },
+        "medium": { "$ref": "#/$defs/length" },
+        "long": { "$ref": "#/$defs/length" }
+      }
+    }
+  },
+  "$defs": {
+    "id": { "type": "string", "pattern": "^[a-z][a-z0-9_]*$", "minLength": 1 },
+    "text": { "type": "string", "minLength": 1 },
+    "textList": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/text" } },
+    "idList": { "type": "array", "items": { "$ref": "#/$defs/id" } },
+    "requirement": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "items": { "$ref": "#/$defs/idList" },
+        "goal_states": { "$ref": "#/$defs/idList" },
+        "truths": { "$ref": "#/$defs/idList" }
+      }
+    },
+    "sourceRef": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "id"],
+      "properties": {
+        "type": { "type": "string", "enum": ["location", "character"] },
+        "id": { "$ref": "#/$defs/id" }
+      }
+    },
+    "goalState": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "description", "requires"],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "description": { "$ref": "#/$defs/text" },
+        "requires": { "$ref": "#/$defs/requirement" },
+        "gives_items": { "$ref": "#/$defs/idList" },
+        "reveals": { "$ref": "#/$defs/text" }
+      }
+    },
+    "castMember": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "name", "species", "personality", "goal", "secret", "motivations", "relationships", "sprite_recipe", "home_location", "knows_truths", "goal_states", "voice_notes"],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "name": { "$ref": "#/$defs/text" },
+        "species": { "$ref": "#/$defs/text" },
+        "personality": { "$ref": "#/$defs/text" },
+        "goal": { "$ref": "#/$defs/text" },
+        "secret": { "$ref": "#/$defs/text" },
+        "motivations": { "$ref": "#/$defs/textList" },
+        "relationships": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["cast_id", "relation"],
+            "properties": {
+              "cast_id": { "$ref": "#/$defs/id" },
+              "relation": { "$ref": "#/$defs/text" }
+            }
+          }
+        },
+        "sprite_recipe": { "$ref": "#/$defs/text" },
+        "home_location": { "$ref": "#/$defs/id" },
+        "knows_truths": { "$ref": "#/$defs/idList" },
+        "goal_states": { "type": "array", "items": { "$ref": "#/$defs/goalState" } },
+        "voice_notes": { "$ref": "#/$defs/text" }
+      }
+    },
+    "truth": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "text", "depends_on", "importance", "revealed_by"],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "text": { "$ref": "#/$defs/text" },
+        "depends_on": { "$ref": "#/$defs/idList" },
+        "importance": { "type": "string", "enum": ["core", "side"] },
+        "revealed_by": { "$ref": "#/$defs/idList" }
+      }
+    },
+    "clue": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "kind", "where", "alternatives", "requirements", "text"],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "truth_id": { "$ref": "#/$defs/id" },
+        "kind": { "type": "string", "enum": ["spoken", "object", "place", "item_combination"] },
+        "where": { "$ref": "#/$defs/sourceRef" },
+        "alternatives": { "type": "array", "items": { "$ref": "#/$defs/sourceRef" } },
+        "requirements": { "$ref": "#/$defs/requirement" },
+        "text": { "$ref": "#/$defs/text" }
+      }
+    },
+    "item": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "name", "description", "icon_recipe", "key", "purpose"],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "name": { "$ref": "#/$defs/text" },
+        "description": { "$ref": "#/$defs/text" },
+        "icon_recipe": { "$ref": "#/$defs/text" },
+        "key": { "type": "boolean" },
+        "found_at": { "$ref": "#/$defs/sourceRef" },
+        "found_requires": { "$ref": "#/$defs/requirement" },
+        "purpose": { "$ref": "#/$defs/text" }
+      }
+    },
+    "location": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "name", "biome", "mood", "palette", "role", "hub", "required_characters", "objects", "doors"],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "name": { "$ref": "#/$defs/text" },
+        "biome": { "$ref": "#/$defs/text" },
+        "mood": { "$ref": "#/$defs/text" },
+        "palette": { "$ref": "#/$defs/text" },
+        "role": { "$ref": "#/$defs/text" },
+        "hub": { "type": "boolean" },
+        "required_characters": { "$ref": "#/$defs/idList" },
+        "objects": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["id", "name", "description"],
+            "properties": {
+              "id": { "$ref": "#/$defs/id" },
+              "name": { "$ref": "#/$defs/text" },
+              "description": { "$ref": "#/$defs/text" }
+            }
+          }
+        },
+        "doors": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["id", "to"],
+            "properties": {
+              "id": { "$ref": "#/$defs/id" },
+              "to": { "$ref": "#/$defs/id" },
+              "lock": { "$ref": "#/$defs/requirement" }
+            }
+          }
+        }
+      }
+    },
+    "twist": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "description", "setup_clues", "payoff_trigger"],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "description": { "$ref": "#/$defs/text" },
+        "setup_clues": { "$ref": "#/$defs/idList" },
+        "payoff_trigger": { "$ref": "#/$defs/requirement" }
+      }
+    },
+    "redHerring": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "description", "setup_clues", "resolution"],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "description": { "$ref": "#/$defs/text" },
+        "setup_clues": { "$ref": "#/$defs/idList" },
+        "resolution": { "$ref": "#/$defs/text" }
+      }
+    },
+    "ending": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "conditions", "scene_outline", "tone", "epilogue_notes"],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "conditions": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["truths", "goal_states", "choices"],
+          "properties": {
+            "truths": { "$ref": "#/$defs/idList" },
+            "goal_states": { "$ref": "#/$defs/idList" },
+            "choices": { "$ref": "#/$defs/idList" }
+          }
+        },
+        "scene_outline": { "$ref": "#/$defs/text" },
+        "tone": { "$ref": "#/$defs/text" },
+        "epilogue_notes": { "$ref": "#/$defs/text" }
+      }
+    },
+    "length": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["target_minutes", "start_location", "cast", "core_truths", "side_truths", "subplots", "twists", "red_herrings", "endings", "beats"],
+      "properties": {
+        "target_minutes": { "type": "integer", "minimum": 1 },
+        "start_location": { "$ref": "#/$defs/id" },
+        "cast": { "$ref": "#/$defs/idList" },
+        "core_truths": { "$ref": "#/$defs/idList" },
+        "side_truths": { "$ref": "#/$defs/idList" },
+        "subplots": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["id", "title", "description", "cast", "truths"],
+            "properties": {
+              "id": { "$ref": "#/$defs/id" },
+              "title": { "$ref": "#/$defs/text" },
+              "description": { "$ref": "#/$defs/text" },
+              "cast": { "$ref": "#/$defs/idList" },
+              "truths": { "$ref": "#/$defs/idList" }
+            }
+          }
+        },
+        "twists": { "$ref": "#/$defs/idList" },
+        "red_herrings": { "$ref": "#/$defs/idList" },
+        "endings": { "$ref": "#/$defs/idList" },
+        "beats": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["id", "title", "locations", "must_find"],
+            "properties": {
+              "id": { "$ref": "#/$defs/id" },
+              "title": { "$ref": "#/$defs/text" },
+              "locations": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/id" } },
+              "must_find": { "$ref": "#/$defs/requirement" }
+            }
+          }
+        }
+      }
+    }
+  }
+}

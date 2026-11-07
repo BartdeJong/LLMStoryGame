@@ -42,6 +42,24 @@ export class InputController {
     return { x, y };
   }
 
+  clear(): void {
+    this.keys.clear();
+    this.handlePointerEnd();
+  }
+
+  destroy(): void {
+    window.removeEventListener("keydown", this.handleKeyDown);
+    window.removeEventListener("keyup", this.handleKeyUp);
+    window.removeEventListener("blur", this.clearInput);
+    this.joystick.removeEventListener("pointerdown", this.handlePointerDown);
+    this.joystick.removeEventListener("pointermove", this.handlePointerMove);
+    this.joystick.removeEventListener("pointerup", this.handlePointerEnd);
+    this.joystick.removeEventListener("pointercancel", this.handlePointerEnd);
+    this.joystick.removeEventListener("lostpointercapture", this.handlePointerEnd);
+    this.actionButton.removeEventListener("click", this.onInteract);
+    this.clear();
+  }
+
   private readonly handleKeyDown = (event: KeyboardEvent): void => {
     const key = event.key.length === 1 ? event.key.toLowerCase() : event.key;
     if (["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown", " "].includes(key)) {
@@ -77,8 +95,7 @@ export class InputController {
   };
 
   private readonly clearInput = (): void => {
-    this.keys.clear();
-    this.handlePointerEnd();
+    this.clear();
   };
 
   private updateJoystick(event: PointerEvent): void {

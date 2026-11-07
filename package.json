@@ -8,9 +8,12 @@
     "dev:iphone": "vite --config vite.iphone.config.ts",
     "build": "tsc -b && vite build",
     "preview": "vite preview",
-    "test": "vitest run"
+    "test": "vitest run",
+    "validate-stories": "node tools/story-forge/validate-stories.mjs",
+    "story-readthrough": "node tools/story-forge/read-through.mjs"
   },
   "devDependencies": {
+    "fake-indexeddb": "^6.2.7",
     "typescript": "^5.7.2",
     "vite": "^6.0.0",
     "vitest": "^4.1.11"

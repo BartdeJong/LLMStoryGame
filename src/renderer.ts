@@ -1,6 +1,6 @@
-import { TILE_SIZE, Tile, type Area } from "./world";
+import { TILE_SIZE, Tile, type Area, type AreaEntity } from "./world";
 import type { Position } from "./camera";
-import { DEFAULT_CHARACTER_RECIPE, getCharacterSprite, getTileCanvas, type TileType } from "./art";
+import { DEFAULT_CHARACTER_RECIPE, getCharacterSprite, getIconCanvas, getTileCanvas, type PaletteName, type TileType } from "./art";
 
 export const VIEW_WIDTH = 320;
 export const VIEW_HEIGHT = 180;
@@ -51,25 +51,51 @@ export class Renderer {
 
         const screenX = offsetX + column * TILE_SIZE;
         const screenY = offsetY + row * TILE_SIZE;
-        this.drawTile(ground, tileX, tileY, screenX, screenY);
+        this.drawTile(world.palette, ground, tileX, tileY, screenX, screenY);
         const feature = world.layers.feature[tileY]?.[tileX];
         if (feature !== undefined && feature !== Tile.Grass) {
-          this.drawTile(feature, tileX, tileY, screenX, screenY);
+          this.drawTile(world.palette, feature, tileX, tileY, screenX, screenY);
         }
       }
     }
 
+    for (const entity of world.entities ?? []) this.drawEntity(world.palette, entity, camera);
     this.drawPlayer(Math.round(player.x - camera.x), Math.round(player.y - camera.y));
-    if (transitionOpacity > 0) {
-      context.fillStyle = `rgba(18, 30, 25, ${Math.min(1, transitionOpacity)})`;
-      context.fillRect(0, 0, VIEW_WIDTH, VIEW_HEIGHT);
+    if (transitionOpacity > 0) this.drawFog(transitionOpacity);
+  }
+
+  private drawTile(palette: PaletteName, tile: Tile, tileX: number, tileY: number, x: number, y: number): void {
+    const shimmer = Math.floor(performance.now() / 450) % 2;
+    const seed = `${tileX},${tileY}`;
+    this.context.drawImage(getTileCanvas(palette, artTiles[tile], seed, shimmer), x, y);
+  }
+
+  private drawEntity(palette: PaletteName, entity: AreaEntity, camera: Position): void {
+    const x = Math.round(entity.x * TILE_SIZE - camera.x);
+    const y = Math.round(entity.y * TILE_SIZE - camera.y);
+    if (x < -TILE_SIZE || y < -TILE_SIZE || x > VIEW_WIDTH || y > VIEW_HEIGHT) return;
+    if (entity.character) {
+      this.context.drawImage(getCharacterSprite(entity.character, palette, "down"), x, y);
+    } else if (entity.icon) {
+      this.context.drawImage(getIconCanvas(entity.icon, palette), x, y);
     }
   }
 
-  private drawTile(tile: Tile, tileX: number, tileY: number, x: number, y: number): void {
-    const shimmer = Math.floor(performance.now() / 450) % 2;
-    const seed = `${tileX},${tileY}`;
-    this.context.drawImage(getTileCanvas("meadow", artTiles[tile], seed, shimmer), x, y);
+  // Dark veil with slow drifting fog banks; used while an area is loading.
+  private drawFog(opacity: number): void {
+    const context = this.context;
+    const alpha = Math.min(1, opacity);
+    context.fillStyle = `rgba(18, 30, 25, ${alpha})`;
+    context.fillRect(0, 0, VIEW_WIDTH, VIEW_HEIGHT);
+    const time = performance.now() / 1000;
+    context.fillStyle = `rgba(205, 220, 212, ${0.12 * alpha})`;
+    for (let index = 0; index < 7; index += 1) {
+      const x = ((index * 83 + time * (8 + (index % 3) * 5)) % (VIEW_WIDTH + 160)) - 80;
+      const y = 14 + index * 24 + Math.sin(time * 0.7 + index) * 6;
+      context.beginPath();
+      context.ellipse(x, y, 70, 14, 0, 0, Math.PI * 2);
+      context.fill();
+    }
   }
 
   private drawPlayer(x: number, y: number): void {

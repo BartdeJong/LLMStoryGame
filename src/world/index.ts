@@ -21,6 +21,7 @@ export type {
   Area,
   AreaBrief,
   AreaDoor,
+  AreaEntity,
   Biome,
   DoorKind,
   EntitySpawnPoint,

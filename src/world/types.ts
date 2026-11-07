@@ -1,4 +1,4 @@
-import type { PaletteName } from "../art/palettes";
+import type { CharacterRecipe, IconRecipe, PaletteName } from "../art";
 
 export type Biome = "meadow" | "forest" | "shore" | "cave" | "building" | "ruins" | "village";
 
@@ -40,6 +40,17 @@ export interface EntitySpawnPoint extends GridPoint {
   readonly kind: SpawnKind;
 }
 
+// A story-driven thing placed in an area. Pack facts are copied by code; `required` marks them as non-optional.
+export interface AreaEntity extends EntitySpawnPoint {
+  readonly name: string;
+  readonly description: string;
+  readonly required: boolean;
+  readonly packId?: string; // cast, item, object or clue id from the story pack
+  readonly truthId?: string;
+  readonly character?: CharacterRecipe;
+  readonly icon?: IconRecipe;
+}
+
 export type DoorKind = "edge" | "cave-mouth" | "gate" | "hatch";
 
 export interface AreaDoor extends GridPoint {
@@ -62,6 +73,7 @@ export interface Area {
   readonly entry: GridPoint;
   readonly spawnPoints: readonly EntitySpawnPoint[];
   readonly doors: readonly AreaDoor[];
+  readonly entities?: readonly AreaEntity[];
 }
 
 export type World = Area;

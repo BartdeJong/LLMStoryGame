@@ -4,11 +4,11 @@ import { Priority } from "./types";
 import { areaBriefSchema, BIOMES, characterSchema, dialogueTurnSchema, OBJECT_KINDS } from "./shapes";
 import type { AreaBriefOutput, CharacterOutput, DialogueTurnOutput } from "./shapes";
 
-const SYSTEM =
+export const SYSTEM =
   "You are the narrator of a cozy mystery exploration game. Write warm, gentle, short text. English only. " +
   "Never invent plot facts beyond what you are told.";
 
-const recipeHelp =
+export const recipeHelp =
   `sprite_recipe: {body: ${BODY_SHAPES.join("|")}, bodyColor/accentColor/skinColor: ${PALETTE_COLOR_SLOTS.join("|")}, feature: ${CHARACTER_FEATURES.join("|")}}. ` +
   `icon_recipe: {shape: ${ICON_SHAPES.join("|")}, primaryColor/secondaryColor: ${PALETTE_COLOR_SLOTS.join("|")}}.`;
 

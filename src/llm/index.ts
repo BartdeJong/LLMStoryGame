@@ -6,5 +6,5 @@ export { checkSupport } from "./support";
 export type { SupportReport } from "./support";
 export { Priority } from "./types";
 export type { JSONRequest, JSONResult, LLMBackend, LLMEvents, LoadProgress } from "./types";
-export { areaBriefSchema, characterSchema, dialogueTurnSchema, itemSchema } from "./shapes";
+export { areaBriefSchema, storyAreaBriefSchema, characterSchema, dialogueTurnSchema, itemSchema } from "./shapes";
 export type { AreaBriefOutput, CharacterOutput, DialogueTurnOutput, ItemOutput } from "./shapes";

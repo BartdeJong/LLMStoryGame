@@ -1,0 +1,67 @@
+import type { LengthId } from "./types";
+
+export interface Range {
+  min: number;
+  max?: number; // going over max is only a warning
+}
+
+export interface Complexity {
+  locations: Range;
+  cast: Range;
+  coreTruths: Range;
+  redHerrings: Range;
+  twists: Range;
+  subplots: Range;
+  endings: Range;
+  routesPerCoreTruth: number;
+}
+
+// Minimum complexity per length (plan section 6.1). Tune the numbers here only.
+export const COMPLEXITY: Record<LengthId, Complexity> = {
+  short: {
+    locations: { min: 5, max: 6 },
+    cast: { min: 4, max: 5 },
+    coreTruths: { min: 4 },
+    redHerrings: { min: 1 },
+    twists: { min: 1 },
+    subplots: { min: 0 },
+    endings: { min: 1 },
+    routesPerCoreTruth: 2,
+  },
+  medium: {
+    locations: { min: 12, max: 15 },
+    cast: { min: 8, max: 10 },
+    coreTruths: { min: 7 },
+    redHerrings: { min: 2, max: 3 },
+    twists: { min: 1, max: 2 },
+    subplots: { min: 1, max: 2 },
+    endings: { min: 2 },
+    routesPerCoreTruth: 2,
+  },
+  long: {
+    locations: { min: 25 },
+    cast: { min: 12, max: 15 },
+    coreTruths: { min: 10, max: 12 },
+    redHerrings: { min: 4 },
+    twists: { min: 2, max: 3 },
+    subplots: { min: 3 },
+    endings: { min: 3 },
+    routesPerCoreTruth: 2, // the plan allows 2 or 3; 2 is the enforced minimum
+  },
+};
+
+// Maximum characters per text field, by field name. Keeps LLM prompts small.
+export const TEXT_LIMITS: Record<string, number> = {
+  title: 80,
+  name: 60,
+  logline: 240,
+  species: 40,
+  biome: 40,
+  mood: 80,
+  palette: 80,
+  tone: 120,
+  sprite_recipe: 200,
+  icon_recipe: 200,
+  relation: 120,
+};
+export const DEFAULT_TEXT_LIMIT = 400;

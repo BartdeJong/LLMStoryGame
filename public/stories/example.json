@@ -1,0 +1,169 @@
+{
+  "schema_version": 1,
+  "identity": {
+    "id": "example",
+    "version": 1,
+    "title": "The Missing Moon Lantern",
+    "logline": "The village's Moon Lantern vanished the night before the festival. Find out who took it, and why.",
+    "setting": "Pebblebrook, a tiny hillside village that lights one big paper lantern every full moon.",
+    "tone": "Warm, gentle and a little funny.",
+    "themes": ["kindness", "pride", "forgiveness"],
+    "content_notes": ["No violence. Mild worry only."]
+  },
+  "style_guide": {
+    "narrator_voice": "A friendly storyteller using short, cosy sentences.",
+    "use": ["simple words", "small sensory details like smells and sounds"],
+    "avoid": ["modern slang", "scary imagery"],
+    "naming_conventions": "Short, soft village names with a country feel.",
+    "examples": [
+      { "cast_id": "c_mira", "lines": ["Oh dear, the festival without the lantern? Have a bun and let us think."] },
+      { "cast_id": "c_hollis", "lines": ["Hm. Gears. Always the gears. Do not touch that one, please."] }
+    ]
+  },
+  "cast": [
+    {
+      "id": "c_mira",
+      "name": "Mira",
+      "species": "human",
+      "personality": "Warm, chatty baker who worries about everyone.",
+      "goal": "Make sure the festival goes ahead.",
+      "secret": "She saw a light in the clock tower but thought nothing of it.",
+      "motivations": ["keep the village happy"],
+      "relationships": [{ "cast_id": "c_hollis", "relation": "old friend" }],
+      "sprite_recipe": "round woman, flour-white apron, brown bun hair",
+      "home_location": "l_bakery",
+      "knows_truths": ["t_missing"],
+      "goal_states": [],
+      "voice_notes": "Cheerful, offers food, rambles a little."
+    },
+    {
+      "id": "c_oswin",
+      "name": "Oswin",
+      "species": "owl",
+      "personality": "Fussy librarian owl who loves rules and tidy shelves.",
+      "goal": "Get his overdue book back.",
+      "secret": "He keeps a spare tower key and a log of who borrows it.",
+      "motivations": ["order", "being thanked"],
+      "relationships": [{ "cast_id": "c_hollis", "relation": "lends him the tower key" }],
+      "sprite_recipe": "small brown owl with round glasses",
+      "home_location": "l_library",
+      "knows_truths": ["t_night", "t_taker"],
+      "goal_states": [
+        {
+          "id": "gs_oswin_book",
+          "description": "Oswin gets his overdue book back.",
+          "requires": { "items": ["i_overdue_book"] },
+          "gives_items": ["i_tower_key"],
+          "reveals": "Oswin shares the key log."
+        }
+      ],
+      "voice_notes": "Precise, a bit stuffy, warms up when thanked."
+    },
+    {
+      "id": "c_pip",
+      "name": "Pip",
+      "species": "cat",
+      "personality": "Curious garden cat who sees everything at night.",
+      "goal": "Be told she is a good detective.",
+      "secret": "She sat on the garden wall all night and watched the tower.",
+      "motivations": ["attention", "naps"],
+      "relationships": [],
+      "sprite_recipe": "small orange tabby with a white tail tip",
+      "home_location": "l_garden",
+      "knows_truths": ["t_night"],
+      "goal_states": [],
+      "voice_notes": "Short purring sentences, speaks in hints."
+    },
+    {
+      "id": "c_hollis",
+      "name": "Hollis",
+      "species": "human",
+      "personality": "Shy clock keeper who hates to admit mistakes.",
+      "goal": "Fix the lantern before anyone notices it was cracked.",
+      "secret": "He borrowed the Moon Lantern to mend a crack and could not finish in time.",
+      "motivations": ["pride", "fear of letting people down"],
+      "relationships": [{ "cast_id": "c_oswin", "relation": "borrows his books" }],
+      "sprite_recipe": "tall thin man, grey cardigan, thick spectacles",
+      "home_location": "l_clocktower",
+      "knows_truths": ["t_taker", "t_motive"],
+      "goal_states": [
+        {
+          "id": "gs_hollis_forgiven",
+          "description": "Hollis is told that nobody is angry and agrees to bring the lantern back.",
+          "requires": { "truths": ["t_motive"] },
+          "reveals": "Hollis returns the lantern."
+        }
+      ],
+      "voice_notes": "Quiet, hesitant, relieved when understood."
+    }
+  ],
+  "truths": [
+    { "id": "t_missing", "text": "The Moon Lantern vanished the night before the festival.", "depends_on": [], "importance": "core", "revealed_by": ["cl_mira_talk", "cl_notice_board"] },
+    { "id": "t_night", "text": "Someone climbed the clock tower stairs that night.", "depends_on": ["t_missing"], "importance": "core", "revealed_by": ["cl_pip_saw", "cl_library_log"] },
+    { "id": "t_taker", "text": "Hollis the clock keeper took the lantern.", "depends_on": ["t_night"], "importance": "core", "revealed_by": ["cl_oswin_ledger", "cl_shard_match"] },
+    { "id": "t_motive", "text": "Hollis only wanted to mend a crack in it and was too ashamed to say so.", "depends_on": ["t_taker"], "importance": "core", "revealed_by": ["cl_hollis_confess", "cl_workbench"] }
+  ],
+  "clues": [
+    { "id": "cl_mira_talk", "truth_id": "t_missing", "kind": "spoken", "where": { "type": "character", "id": "c_mira" }, "alternatives": [], "requirements": {}, "text": "Mira says the lantern's hook on the square is empty this morning." },
+    { "id": "cl_notice_board", "truth_id": "t_missing", "kind": "place", "where": { "type": "location", "id": "l_square" }, "alternatives": [], "requirements": {}, "text": "A festival notice with a gap where the lantern should hang." },
+    { "id": "cl_pip_saw", "truth_id": "t_night", "kind": "spoken", "where": { "type": "character", "id": "c_pip" }, "alternatives": [], "requirements": {}, "text": "Pip saw a tall figure carry a glow up the tower stairs." },
+    { "id": "cl_library_log", "truth_id": "t_night", "kind": "object", "where": { "type": "location", "id": "l_library" }, "alternatives": [], "requirements": {}, "text": "The key log shows the tower key was out all night." },
+    { "id": "cl_oswin_ledger", "truth_id": "t_taker", "kind": "spoken", "where": { "type": "character", "id": "c_oswin" }, "alternatives": [], "requirements": { "goal_states": ["gs_oswin_book"] }, "text": "Oswin, now friendly, names Hollis in the key log." },
+    { "id": "cl_shard_match", "truth_id": "t_taker", "kind": "item_combination", "where": { "type": "location", "id": "l_clocktower" }, "alternatives": [], "requirements": { "items": ["i_glass_shard"] }, "text": "The glass shard fits the lantern frame on the tower bench." },
+    { "id": "cl_hollis_confess", "truth_id": "t_motive", "kind": "spoken", "where": { "type": "character", "id": "c_hollis" }, "alternatives": [], "requirements": { "truths": ["t_taker"] }, "text": "Hollis admits he wanted to repair the crack in secret." },
+    { "id": "cl_workbench", "truth_id": "t_motive", "kind": "object", "where": { "type": "location", "id": "l_clocktower" }, "alternatives": [], "requirements": { "items": ["i_tower_key"] }, "text": "Fish glue and tiny brushes lie beside the half-mended lantern." },
+    { "id": "cl_flour_prints", "kind": "place", "where": { "type": "location", "id": "l_bakery" }, "alternatives": [], "requirements": {}, "text": "Floury footprints lead out of the bakery towards the square." }
+  ],
+  "items": [
+    { "id": "i_overdue_book", "name": "Overdue book", "description": "A dusty book of tower clock repairs, three weeks late.", "icon_recipe": "small blue book with a ribbon", "key": false, "found_at": { "type": "location", "id": "l_bakery" }, "purpose": "Return it to Oswin." },
+    { "id": "i_tower_key", "name": "Tower key", "description": "A heavy iron key with a clock-face handle.", "icon_recipe": "iron key with a round handle", "key": true, "purpose": "Opens the clock tower door." },
+    { "id": "i_glass_shard", "name": "Glass shard", "description": "A curved piece of pale lantern glass.", "icon_recipe": "small pale curved triangle", "key": false, "found_at": { "type": "location", "id": "l_garden" }, "purpose": "Matches the broken lantern frame." }
+  ],
+  "locations": [
+    {
+      "id": "l_square", "name": "Pebblebrook Square", "biome": "village", "mood": "bustling and a bit worried", "palette": "warm cream and soft green", "role": "Hub where the story starts.", "hub": true,
+      "required_characters": [], "objects": [{ "id": "o_notice_board", "name": "Notice board", "description": "A wooden board with festival notes." }],
+      "doors": [
+        { "id": "d_square_bakery", "to": "l_bakery" },
+        { "id": "d_square_garden", "to": "l_garden" },
+        { "id": "d_square_library", "to": "l_library" }
+      ]
+    },
+    { "id": "l_bakery", "name": "Mira's Bakery", "biome": "village interior", "mood": "cosy and sweet-smelling", "palette": "golden browns", "role": "Where the first clue and the book are.", "hub": false, "required_characters": ["c_mira"], "objects": [{ "id": "o_dough_bin", "name": "Dough bin", "description": "A large bin of rising dough." }], "doors": [] },
+    { "id": "l_garden", "name": "Herb Garden", "biome": "garden", "mood": "quiet and dewy", "palette": "greens and lilac", "role": "Pip watches from here; a glass shard is hidden here.", "hub": false, "required_characters": ["c_pip"], "objects": [{ "id": "o_flowerbed", "name": "Flowerbed", "description": "Neat rows of herbs and daisies." }], "doors": [] },
+    { "id": "l_library", "name": "Owl Library", "biome": "village interior", "mood": "hushed and dusty", "palette": "deep blues and wood", "role": "Oswin and the key log; the way to the tower.", "hub": false, "required_characters": ["c_oswin"], "objects": [{ "id": "o_key_log", "name": "Key log", "description": "A ledger of who borrowed which key." }], "doors": [{ "id": "d_library_tower", "to": "l_clocktower", "lock": { "items": ["i_tower_key"] } }] },
+    { "id": "l_clocktower", "name": "Clock Tower", "biome": "tower interior", "mood": "ticking and secretive", "palette": "brass and slate", "role": "Where Hollis works and the truth is found.", "hub": false, "required_characters": ["c_hollis"], "objects": [{ "id": "o_workbench", "name": "Workbench", "description": "A cluttered bench of tiny tools." }], "doors": [] }
+  ],
+  "twists": [
+    { "id": "tw_gentle_taker", "description": "The lantern was not stolen. It was taken for repair by someone gentle.", "setup_clues": ["cl_pip_saw"], "payoff_trigger": { "truths": ["t_motive"] } }
+  ],
+  "red_herrings": [
+    { "id": "rh_flour_prints", "description": "Floury footprints make Mira look suspicious.", "setup_clues": ["cl_flour_prints"], "resolution": "The prints are Mira's own from delivering festival buns." }
+  ],
+  "endings": [
+    {
+      "id": "e_lantern_returns",
+      "conditions": { "truths": ["t_motive"], "goal_states": ["gs_hollis_forgiven"], "choices": [] },
+      "scene_outline": "Hollis carries the mended lantern to the square and the village lights it together.",
+      "tone": "Warm and relieved.",
+      "epilogue_notes": "Mira shares buns. Pip is named Chief Detective."
+    }
+  ],
+  "lengths": {
+    "short": {
+      "target_minutes": 15,
+      "start_location": "l_square",
+      "cast": ["c_mira", "c_oswin", "c_pip", "c_hollis"],
+      "core_truths": ["t_missing", "t_night", "t_taker", "t_motive"],
+      "side_truths": [],
+      "subplots": [],
+      "twists": ["tw_gentle_taker"],
+      "red_herrings": ["rh_flour_prints"],
+      "endings": ["e_lantern_returns"],
+      "beats": [
+        { "id": "b_square", "title": "The empty hook", "locations": ["l_square", "l_bakery", "l_garden"], "must_find": { "truths": ["t_missing"] } },
+        { "id": "b_tower", "title": "Up the clock tower", "locations": ["l_library", "l_clocktower"], "must_find": {} }
+      ]
+    }
+  }
+}

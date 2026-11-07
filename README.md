@@ -1,6 +1,6 @@
 # Cozy Mystery
 
-The M1 engine skeleton is a small Vite and TypeScript canvas game. Run it locally with:
+The game is a Vite and TypeScript canvas app. Run it locally with:
 
 ```sh
 npm install
@@ -10,14 +10,51 @@ npm run dev
 Move with **WASD** or the **arrow keys**. Walk onto a door or stand nearby and press **A**, **E**, or **Space** to travel. On a touch screen, drag the joystick; press **A** near a door.
 
 Run `npm run build` to type-check and create the static site in `dist/`.
+Run `npm run preview` after building to test the production bundle locally.
 
-Run `npm test` for unit tests. Open `http://localhost:5173/?debug=art` to review
-the procedural art, or `http://localhost:5173/?debug=world` to regenerate maps
-by biome and seed.
+Run `npm test` for unit tests and `npm run validate-stories` to validate every
+story pack. Open `http://localhost:5173/?debug=art` to review procedural art,
+or `http://localhost:5173/?debug=world` to regenerate maps by biome and seed.
+
+The title screen offers **New game** (choose a save slot) and **Load game**.
+Saved games autosave locally; use **Export JSON** in the load screen to keep a
+backup, or import that file on another device.
 
 The on-device story model requires WebGPU. On iPhone and iPad, use Safari on
 iOS/iPadOS 26 or newer. WebGPU requires HTTPS; if opening the dev server from
 another device, its local-network HTTP address is not treated as `localhost`.
+
+## Test offline and install
+
+1. Run `npm run build` and `npm run preview`.
+2. Open the preview in a supported browser while online, load the game and a
+   story once, and wait for the service worker to finish installing.
+3. Use the browser's install option (or Safari's Share menu → Add to Home
+   Screen). The app shell and all indexed story packs are cached for offline use.
+4. Close the app, switch the device/browser offline, and reopen it. The model
+   files are not copied into the app cache; WebLLM manages its own model cache.
+
+## Deploy to GitHub Pages
+
+The `.github/workflows/deploy.yml` workflow runs tests, validates the story
+packs, builds with `/<repository-name>/` as Vite's base path, and deploys
+`dist/` when changes reach `main`.
+
+One-time repository setup: open **Settings → Pages**, choose **GitHub Actions**
+as the build and deployment source, and allow Actions to run for the repository.
+If the repository's deployment branch is not `main`, update the workflow's
+push branch filter.
+
+## Add a story
+
+1. Add `public/stories/<id>.json` with a lowercase alphanumeric ID without
+   separators; make its `identity.id` match the filename.
+2. Add the story's title, logline, available lengths, and estimates to
+   `public/stories/index.json`.
+3. Run `npm run validate-stories`, then run
+   `npm run story-readthrough -- <id> <short|medium|long>` for each length.
+4. Run `npm test` and `npm run build`. No app code changes are needed for a
+   valid story pack.
 
 To test on an iPhone connected to the same Wi-Fi:
 
