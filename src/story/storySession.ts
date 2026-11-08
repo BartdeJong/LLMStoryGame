@@ -11,6 +11,7 @@ import type { EndingChoice, EndingScene } from "./ending";
 import { createStoryState, giveItem, grantTruthsFromFoundClues, markClueFound, markCollected, markVisited, summaryDue } from "./state";
 import type { StoryState } from "./state";
 import { refreshSummary } from "./summary";
+import { parseCharacterRecipe } from "./recipes";
 import type { Beat, CastMember, Ending, Item, StoryPack } from "./types";
 import type { GameSave, SavedArea } from "../save/types";
 
@@ -81,8 +82,19 @@ export class StorySession {
     Object.assign(this.state, save.storyState);
     this.areas.clear();
     this.briefsByArea.clear();
+    const characterRecipes = new Map(
+      this.pack.cast.flatMap((character) => {
+        const recipe = parseCharacterRecipe(character.sprite_recipe);
+        return recipe ? [[character.id, recipe] as const] : [];
+      }),
+    );
     for (const savedArea of save.areas) {
-      this.areas.set(savedArea.area.id, savedArea.area);
+      const area = savedArea.area;
+      const entities = area.entities?.map((entity) => {
+        const recipe = entity.packId ? characterRecipes.get(entity.packId) : undefined;
+        return recipe ? { ...entity, character: recipe } : entity;
+      });
+      this.areas.set(area.id, entities ? { ...area, entities } : area);
       if (savedArea.brief) this.briefsByArea.set(savedArea.area.id, savedArea.brief);
     }
   }

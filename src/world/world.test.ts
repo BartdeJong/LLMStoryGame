@@ -10,7 +10,7 @@ import {
   generateVillage,
 } from "./generators";
 import { WorldSession } from "./session";
-import type { AreaBrief, Biome } from "./types";
+import { Tile, type AreaBrief, type Biome } from "./types";
 
 const generatorCases: readonly [string, Biome, (seed: number, brief: AreaBrief) => ReturnType<typeof generateArea>][] = [
   ["meadow", "meadow", generateOutdoors],
@@ -26,6 +26,14 @@ describe("procedural areas", () => {
   it.each(generatorCases)("%s is deterministic", (_label, biome, generator) => {
     const brief = PLACEHOLDER_BRIEFS[biome];
     expect(generator(813, brief)).toEqual(generator(813, brief));
+  });
+
+  it("adds walkable flower beds around village buildings", () => {
+    const village = generateVillage(813, PLACEHOLDER_BRIEFS.village);
+    const flowers = village.layers.feature.flat().filter((tile) => tile === Tile.Flowers);
+
+    expect(flowers.length).toBeGreaterThan(0);
+    expect(allPointsReachable(village)).toBe(true);
   });
 
   it.each(generatorCases)("%s keeps points reachable for 200 seeds", (_label, biome, generator) => {

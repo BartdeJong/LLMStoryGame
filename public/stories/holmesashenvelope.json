@@ -95,7 +95,7 @@
           "relation": "police counterpart"
         }
       ],
-      "sprite_recipe": "body=tall; bodyColor=ink; accentColor=earth; skinColor=skin; feature=hat; walkFrames=2",
+      "sprite_recipe": "body=tall; bodyColor=ink; accentColor=earth; skinColor=skin; feature=deerstalker; walkFrames=2",
       "home_location": "l_baker_street",
       "knows_truths": [
         "t_scene_staged",
@@ -231,7 +231,7 @@
           "relation": "medical colleague"
         }
       ],
-      "sprite_recipe": "body=round; bodyColor=earth; accentColor=cream; skinColor=skin; feature=hat; walkFrames=2",
+      "sprite_recipe": "body=tall; bodyColor=earth; accentColor=cream; skinColor=skin; feature=moustache; walkFrames=2",
       "home_location": "l_baker_street",
       "knows_truths": [
         "t_wren_discovered",
@@ -366,7 +366,7 @@
           "relation": "former helpful acquaintance"
         }
       ],
-      "sprite_recipe": "body=small; bodyColor=cream; accentColor=earth; skinColor=skin; feature=none; walkFrames=2",
+      "sprite_recipe": "body=small; bodyColor=cream; accentColor=earth; skinColor=skin; feature=bonnet; walkFrames=2",
       "home_location": "l_baker_street",
       "knows_truths": [
         "t_diversion_for_ward",
@@ -500,7 +500,7 @@
           "relation": "fund treasurer under inquiry"
         }
       ],
-      "sprite_recipe": "body=tall; bodyColor=shadow; accentColor=ink; skinColor=skin; feature=hat; walkFrames=2",
+      "sprite_recipe": "body=tall; bodyColor=shadow; accentColor=ink; skinColor=skin; feature=bowler; walkFrames=2",
       "home_location": "l_scotland_yard",
       "knows_truths": [
         "t_scene_staged",
@@ -635,7 +635,7 @@
           "relation": "solicitor"
         }
       ],
-      "sprite_recipe": "body=tall; bodyColor=cream; accentColor=ink; skinColor=skin; feature=hat; walkFrames=2",
+      "sprite_recipe": "body=tall; bodyColor=cream; accentColor=ink; skinColor=skin; feature=monocle; walkFrames=2",
       "home_location": "l_relief_office",
       "knows_truths": [
         "t_wren_discovered",
@@ -777,7 +777,7 @@
           "relation": "solicitor who received a parcel"
         }
       ],
-      "sprite_recipe": "body=small; bodyColor=accent; accentColor=cream; skinColor=skin; feature=hat; walkFrames=2",
+      "sprite_recipe": "body=small; bodyColor=accent; accentColor=cream; skinColor=skin; feature=headscarf; walkFrames=2",
       "home_location": "l_relief_office",
       "knows_truths": [
         "t_wren_discovered",
@@ -910,7 +910,7 @@
           "relation": "distrusted employer"
         }
       ],
-      "sprite_recipe": "body=round; bodyColor=shadow; accentColor=earth; skinColor=skin; feature=hat; walkFrames=2",
+      "sprite_recipe": "body=round; bodyColor=shadow; accentColor=earth; skinColor=skin; feature=flat-cap; walkFrames=2",
       "home_location": "l_dock_watch_hut",
       "knows_truths": [
         "t_scene_staged",
@@ -1180,7 +1180,7 @@
           "relation": "official inquiry contact"
         }
       ],
-      "sprite_recipe": "body=small; bodyColor=water; accentColor=ink; skinColor=skin; feature=glasses; walkFrames=2",
+      "sprite_recipe": "body=small; bodyColor=water; accentColor=ink; skinColor=skin; feature=veil; walkFrames=2",
       "home_location": "l_telegraph_office",
       "knows_truths": [
         "t_fane_alibi_false",
@@ -1314,7 +1314,7 @@
           "relation": "occasional client"
         }
       ],
-      "sprite_recipe": "body=round; bodyColor=earth; accentColor=accent; skinColor=skin; feature=hat; walkFrames=3",
+      "sprite_recipe": "body=round; bodyColor=earth; accentColor=accent; skinColor=skin; feature=cravat; walkFrames=3",
       "home_location": "l_fleet_street_press",
       "knows_truths": [
         "t_envelope_decoy",
@@ -1447,7 +1447,7 @@
           "relation": "investigator seeking evidence"
         }
       ],
-      "sprite_recipe": "body=tall; bodyColor=shadow; accentColor=cream; skinColor=skin; feature=glasses; walkFrames=2",
+      "sprite_recipe": "body=tall; bodyColor=shadow; accentColor=cream; skinColor=skin; feature=top-hat; walkFrames=2",
       "home_location": "l_pembroke_chambers",
       "knows_truths": [
         "t_duplicate_ledger",

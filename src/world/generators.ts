@@ -230,6 +230,16 @@ export function generateVillage(seed: Seed, brief: AreaBrief): Area {
     const doorY = y + 4;
     area.layers.feature[doorY]![doorX] = Tile.Door;
     area.layers.ground[doorY]![doorX] = Tile.Path;
+
+    for (const [flowerX, flowerY] of [
+      [x + 1, y + 5], [x + 2, y + 5], [x + 4, y + 5], [x + 5, y + 5],
+      [x - 1, y + 1], [x - 1, y + 2], [x + 7, y + 1], [x + 7, y + 2],
+    ]) {
+      if (flowerX > 0 && flowerX < area.width - 1 && flowerY > 0 && flowerY < area.height - 1
+        && area.layers.ground[flowerY]![flowerX] !== Tile.Path) {
+        area.layers.feature[flowerY]![flowerX] = Tile.Flowers;
+      }
+    }
   }
   return finish(area);
 }

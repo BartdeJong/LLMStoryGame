@@ -9,6 +9,7 @@ import type { DialogueHandlers } from "./dialogue/ui";
 import { createDialogueBox, type DialogueBox } from "./dialogue/ui";
 import { InputController } from "./input";
 import { gamepadInput } from "./input/gamepad";
+import type { Direction } from "./art";
 import { getStoryVisualTheme } from "./art";
 import { listInventory } from "./items/inventory";
 import { createInventoryUI, type InventoryUI } from "./items/inventoryUi";
@@ -18,6 +19,7 @@ import { mountPauseMenu } from "./ui/pause";
 import { createObjectiveHud, type ObjectiveHud } from "./ui/objectiveHud";
 import { createStoryJournal, type JournalFact, type JournalRequest, type StoryJournal } from "./ui/storyJournal";
 import { createWorldMap, type WorldMap } from "./ui/worldMap";
+import { getMovementSpeed } from "./ui/preferences";
 import type { EndingChoice } from "./story/ending";
 import type { StorySession } from "./story/storySession";
 import type { CastMember } from "./story/types";
@@ -53,6 +55,8 @@ export class Game {
   private readonly stopGamepadListener: () => void;
   private readonly player: { x: number; y: number };
   private readonly locationLabel: HTMLElement | null;
+  private readonly saveStatus: HTMLElement;
+  private readonly interactionPrompt: HTMLElement;
   private readonly dialogueBox: DialogueBox;
   private readonly inventoryUI: InventoryUI;
   private readonly storyJournal: StoryJournal;
@@ -67,6 +71,8 @@ export class Game {
   private paused = false;
   private pauseOverlay: HTMLElement | null = null;
   private lastFootstepAt = 0;
+  private playerDirection: Direction = "down";
+  private playerMoving = false;
   private readonly startedAt = Date.now();
   private saveQueue: Promise<void> = Promise.resolve();
   private autosaveTimer: number | null = null;
@@ -100,14 +106,9 @@ export class Game {
     this.locationLabel = document.querySelector<HTMLElement>(".location-label");
     if (this.locationLabel) this.locationLabel.textContent = startArea.name.toLocaleUpperCase();
     this.message.textContent = this.story.getBrief(startArea.id)?.description ?? "";
-    const hud = canvas.parentElement?.querySelector<HTMLElement>(".game-hud");
-    if (!hud) throw new Error("The game page is missing its HUD.");
-    this.objectiveHud = createObjectiveHud(hud);
-    this.refreshObjective();
-    this.renderer = new Renderer(canvas, this.story.pack.identity.id);
-    this.input = new InputController(joystick, actionButton, () => {
-      this.interact();
-    });
+    const saveStatus = document.querySelector<HTMLElement>("#save-status");
+    if (!saveStatus) throw new Error("The game page is missing its save status.");
+    this.saveStatus = saveStatus;
     const shell = canvas.parentElement ?? document.body;
     const visualTheme = getStoryVisualTheme(this.story.pack.identity.id);
     shell.style.setProperty("--story-frame", visualTheme.frame);
@@ -117,6 +118,17 @@ export class Game {
     shell.style.setProperty("--story-muted", visualTheme.muted);
     shell.style.setProperty("--story-control", visualTheme.control);
     shell.style.setProperty("--story-active-control", visualTheme.activeControl);
+    const interactionPrompt = shell.querySelector<HTMLElement>("#interaction-prompt");
+    if (!interactionPrompt) throw new Error("The game page is missing its interaction prompt.");
+    this.interactionPrompt = interactionPrompt;
+    const hud = canvas.parentElement?.querySelector<HTMLElement>(".game-hud");
+    if (!hud) throw new Error("The game page is missing its HUD.");
+    this.objectiveHud = createObjectiveHud(hud);
+    this.refreshObjective();
+    this.renderer = new Renderer(canvas, this.story.pack.identity.id);
+    this.input = new InputController(joystick, actionButton, () => {
+      this.interact();
+    });
     this.dialogueBox = createDialogueBox(shell);
     this.inventoryUI = createInventoryUI(shell);
     this.storyJournal = createStoryJournal(shell);
@@ -135,7 +147,13 @@ export class Game {
       }
       if (this.worldMap.isOpen) return;
       if (frame.pressed.y) {
-        this.inventoryUI.toggleButton.click();
+        this.storyJournal.close();
+        this.inventoryUI.toggle();
+        return;
+      }
+      if (frame.pressed.x && this.isInteractive) {
+        this.inventoryUI.close();
+        this.storyJournal.toggle();
         return;
       }
       if (frame.pressed.a) this.interact();
@@ -143,6 +161,7 @@ export class Game {
     canvas.addEventListener("pointerup", this.handleCanvasTap);
     window.addEventListener("keydown", this.handlePauseKeyDown);
     window.addEventListener("keydown", this.handleMapKeyDown);
+    window.addEventListener("keydown", this.handleUtilityKeyDown);
     this.mapButton.addEventListener("click", this.handleMapButtonClick);
     this.pauseButton.addEventListener("click", this.openPauseMenu);
   }
@@ -163,8 +182,32 @@ export class Game {
       this.worldMap.close();
       return;
     }
+    if (this.storyJournal.isOpen) {
+      this.storyJournal.close();
+      return;
+    }
+    if (this.inventoryUI.isOpen) {
+      this.inventoryUI.close();
+      return;
+    }
     if (this.paused) this.resume();
     else this.openPauseMenu();
+  };
+
+  private readonly handleUtilityKeyDown = (event: KeyboardEvent): void => {
+    if (!this.isInteractive || event.repeat
+      || (event.target instanceof HTMLElement
+        && event.target.closest("input, textarea, select, button, a[href], [contenteditable='true']"))) return;
+    const key = event.key.toLocaleLowerCase();
+    if (key === "i") {
+      event.preventDefault();
+      this.storyJournal.close();
+      this.inventoryUI.toggle();
+    } else if (key === "j") {
+      event.preventDefault();
+      this.inventoryUI.close();
+      this.storyJournal.toggle();
+    }
   };
 
   private readonly handleMapKeyDown = (event: KeyboardEvent): void => {
@@ -173,17 +216,23 @@ export class Game {
     if (!this.worldMap.isOpen && event.target instanceof HTMLElement
       && event.target.closest("input, textarea, select, button, a[href], [contenteditable='true']")) return;
     event.preventDefault();
+    this.inventoryUI.close();
+    this.storyJournal.close();
     this.worldMap.toggle();
   };
 
   private readonly handleMapButtonClick = (): void => {
     if (!this.running || this.paused || this.transitioning || this.inDialogue) return;
+    this.inventoryUI.close();
+    this.storyJournal.close();
     this.worldMap.toggle();
   };
 
   private readonly openPauseMenu = (): void => {
     if (this.paused || !this.running) return;
     this.worldMap.close();
+    this.inventoryUI.close();
+    this.storyJournal.close();
     this.paused = true;
     this.input.clear();
     const changeAISettings = this.onChangeAISettings;
@@ -235,6 +284,7 @@ export class Game {
     this.stopAutosave();
     window.removeEventListener("keydown", this.handlePauseKeyDown);
     window.removeEventListener("keydown", this.handleMapKeyDown);
+    window.removeEventListener("keydown", this.handleUtilityKeyDown);
     this.stopGamepadListener();
     this.mapButton.removeEventListener("click", this.handleMapButtonClick);
     this.pauseButton.removeEventListener("click", this.openPauseMenu);
@@ -243,6 +293,7 @@ export class Game {
     this.worldMap.remove();
     this.dialogueBox.element.remove();
     for (const element of this.inventoryUI.elements) element.remove();
+    for (const element of this.storyJournal.elements) element.remove();
     this.objectiveHud.element.remove();
     this.pauseOverlay?.remove();
     this.pauseOverlay = null;
@@ -282,8 +333,13 @@ export class Game {
       player: { areaId: this.areaId, x: this.player.x, y: this.player.y },
     };
     let succeeded = false;
-    const write = (): Promise<void> => this.persistence.repository.save(save).then(() => { succeeded = true; });
+    this.saveStatus.textContent = "Saving…";
+    const write = (): Promise<void> => this.persistence.repository.save(save).then(() => {
+      succeeded = true;
+      this.saveStatus.textContent = "Saved just now";
+    });
     this.saveQueue = this.saveQueue.then(write, write).catch((error: unknown) => {
+      this.saveStatus.textContent = "Save failed";
       this.message.textContent = `Could not save your game: ${error instanceof Error ? error.message : String(error)}`;
     });
     return this.saveQueue.then(() => succeeded);
@@ -294,10 +350,22 @@ export class Game {
     const delta = this.previousFrame === 0 ? 0 : Math.min((timestamp - this.previousFrame) / 1000, 0.05);
     this.previousFrame = timestamp;
 
+    this.playerMoving = false;
     if (!this.paused) this.update(delta);
     const world = this.story.getArea(this.areaId);
     this.camera = followCamera(this.player, world, VIEW_WIDTH, VIEW_HEIGHT);
-    this.renderer.draw(world, this.player, this.camera, this.transitionOpacity);
+    const nearbyEntity = this.isInteractive ? this.findNearbyEntity(world) : undefined;
+    const nearbyDoor = this.isInteractive ? this.findNearbyDoor(world) : undefined;
+    const interactionTarget = this.updateInteractionPrompt(nearbyEntity, nearbyDoor);
+    this.renderer.draw(
+      world,
+      this.player,
+      this.camera,
+      this.transitionOpacity,
+      interactionTarget,
+      this.playerDirection,
+      this.playerMoving,
+    );
     this.animationFrame = requestAnimationFrame(this.frame);
   };
 
@@ -305,8 +373,9 @@ export class Game {
     if (this.transitioning || this.inDialogue || this.worldMap.isOpen) return;
     const world = this.story.getArea(this.areaId);
     const movement = this.input.getMovement();
-    const deltaX = movement.x * PLAYER_SPEED * delta;
-    const deltaY = movement.y * PLAYER_SPEED * delta;
+    const speed = PLAYER_SPEED * getMovementSpeed();
+    const deltaX = movement.x * speed * delta;
+    const deltaY = movement.y * speed * delta;
     const previousX = this.player.x;
     const previousY = this.player.y;
 
@@ -318,6 +387,12 @@ export class Game {
     }
 
     if (movement.x !== 0 || movement.y !== 0) {
+      this.playerMoving = this.player.x !== previousX || this.player.y !== previousY;
+      if (this.playerMoving) {
+        this.playerDirection = Math.abs(movement.x) > Math.abs(movement.y)
+          ? movement.x < 0 ? "left" : "right"
+          : movement.y < 0 ? "up" : "down";
+      }
       if ((this.player.x !== previousX || this.player.y !== previousY)
         && performance.now() - this.lastFootstepAt >= 300) {
         soundEffects.play("footstep");
@@ -337,15 +412,12 @@ export class Game {
   private interact(): void {
     if (!this.running || this.paused || this.transitioning || this.inDialogue || this.worldMap.isOpen) return;
     const world = this.story.getArea(this.areaId);
-    const distance = (point: { x: number; y: number }): number => {
-      const dx = this.player.x - (point.x * TILE_SIZE + TILE_SIZE / 2);
-      const dy = this.player.y - (point.y * TILE_SIZE + TILE_SIZE / 2);
-      return Math.hypot(dx, dy);
-    };
-    const entity = (world.entities ?? [])
-      .filter((candidate) => distance(candidate) <= INTERACT_RANGE)
-      .sort((a, b) => distance(a) - distance(b))[0];
-    const nearby = world.doors.find((door) => distance(door) <= INTERACT_RANGE);
+    const entity = this.findNearbyEntity(world);
+    const distance = (point: { x: number; y: number }): number => Math.hypot(
+      this.player.x - (point.x * TILE_SIZE + TILE_SIZE / 2),
+      this.player.y - (point.y * TILE_SIZE + TILE_SIZE / 2),
+    );
+    const nearby = this.findNearbyDoor(world);
     if (entity && (!nearby || distance(entity) < distance(nearby))) {
       this.examine(entity);
       this.refreshObjective();
@@ -354,6 +426,52 @@ export class Game {
     } else {
       this.message.textContent = "There is nothing to interact with nearby.";
     }
+  }
+
+  private get isInteractive(): boolean {
+    return this.running && !this.paused && !this.transitioning && !this.inDialogue && !this.worldMap.isOpen;
+  }
+
+  private findNearbyEntity(world: Area): AreaEntity | undefined {
+    const distance = (entity: AreaEntity): number => Math.hypot(
+      this.player.x - (entity.x * TILE_SIZE + TILE_SIZE / 2),
+      this.player.y - (entity.y * TILE_SIZE + TILE_SIZE / 2),
+    );
+    return (world.entities ?? [])
+      .filter((entity) => distance(entity) <= INTERACT_RANGE)
+      .sort((a, b) => distance(a) - distance(b))[0];
+  }
+
+  private findNearbyDoor(world: Area): AreaDoor | undefined {
+    const distance = (door: AreaDoor): number => Math.hypot(
+      this.player.x - (door.x * TILE_SIZE + TILE_SIZE / 2),
+      this.player.y - (door.y * TILE_SIZE + TILE_SIZE / 2),
+    );
+    return world.doors
+      .filter((door) => distance(door) <= INTERACT_RANGE)
+      .sort((a, b) => distance(a) - distance(b))[0];
+  }
+
+  private updateInteractionPrompt(entity?: AreaEntity, door?: AreaDoor): AreaEntity | undefined {
+    const distance = (point: { x: number; y: number }): number => Math.hypot(
+      this.player.x - (point.x * TILE_SIZE + TILE_SIZE / 2),
+      this.player.y - (point.y * TILE_SIZE + TILE_SIZE / 2),
+    );
+    const useEntity = entity !== undefined && (!door || distance(entity) < distance(door));
+    const action = entity?.kind === "character"
+      ? `Talk to ${entity.name}`
+      : entity?.kind === "key"
+        ? `Pick up ${entity.name}`
+        : entity ? `Examine ${entity.name}` : "";
+    const lockMessage = door ? this.story.describeDoorLock(this.areaId, door.id) : null;
+    const prompt = useEntity
+      ? `Tap / E / A · ${action}`
+      : door
+        ? `Tap / E / A · ${lockMessage ? `${door.label} (locked)` : `Enter ${door.label}`}`
+        : "";
+    if (this.interactionPrompt.textContent !== prompt) this.interactionPrompt.textContent = prompt;
+    this.interactionPrompt.hidden = !entity && !door;
+    return useEntity ? entity : undefined;
   }
 
   // Tap a nearby character, object or door directly on the screen to interact with it.

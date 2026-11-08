@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import example from "../../public/stories/example.json";
 import lanterntide from "../../public/stories/lanterntide.json";
+import holmes from "../../public/stories/holmesashenvelope.json";
 import { ConversationController } from "../dialogue/controller";
 import { giveOptions } from "../dialogue/effects";
 import { LLMClient } from "../llm/client";
@@ -11,6 +12,7 @@ import { findDoorLock, isRequirementMet } from "./requirements";
 import { solveLength } from "./solver";
 import { writeEnding } from "./ending";
 import { StorySession } from "./storySession";
+import { parseCharacterRecipe } from "./recipes";
 import type { LengthId, StoryPack } from "./types";
 import { validateStoryPack } from "./validate";
 
@@ -192,6 +194,26 @@ describe("M7 pacing and ending simulations", () => {
       });
     }
   }
+
+  it("uses distinctive Victorian sprites for the Sherlock cast in-game", async () => {
+    const pack = loadPack(holmes);
+    const view = getLengthView(pack, "short");
+    const story = new StorySession(pack, view, await makeClient());
+    const area = await story.start();
+    const characters = area.entities?.filter((entity) => entity.kind === "character") ?? [];
+
+    expect(characters.length).toBeGreaterThan(0);
+    for (const entity of characters) {
+      const member = pack.cast.find((candidate) => candidate.id === entity.packId);
+      expect(member).toBeDefined();
+      expect(entity.character).toEqual(parseCharacterRecipe(member!.sprite_recipe));
+    }
+    expect(characters.map((entity) => entity.character?.feature)).toEqual([
+      "deerstalker",
+      "moustache",
+      "bonnet",
+    ]);
+  });
 
   it("uses the authored outline and epilogue when ending generation fails", async () => {
     const pack = loadPack(example);

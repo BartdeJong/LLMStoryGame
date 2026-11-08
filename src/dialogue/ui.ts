@@ -77,6 +77,7 @@ export function createDialogueBox(container: HTMLElement): DialogueBox {
   let currentGives: { itemId: string; label: string }[] = [];
   let activeCharacterName = "";
   let turns: { speaker: "player" | "character"; text: string; kind?: "intent" }[] = [];
+  let showAllTurns = false;
   let open = false;
   let currentHandlers: DialogueHandlers | null = null;
   activateGamepadFocus(box, {
@@ -126,9 +127,19 @@ export function createDialogueBox(container: HTMLElement): DialogueBox {
     freeInput.focus();
   }
 
-  function renderLog(): void {
+  function renderLog(scrollToLatest = true): void {
     log.replaceChildren();
-    const visibleTurns = turns.slice(-4);
+    const visibleTurns = showAllTurns ? turns : turns.slice(-4);
+    if (!showAllTurns && turns.length > visibleTurns.length) {
+      const earlier = el("button", "dialogue-history-button");
+      earlier.type = "button";
+      earlier.textContent = `Show ${turns.length - visibleTurns.length} earlier messages`;
+      earlier.addEventListener("click", () => {
+        showAllTurns = true;
+        renderLog(false);
+      });
+      log.append(earlier);
+    }
     let newestCharacter = -1;
     visibleTurns.forEach((turn, index) => {
       if (turn.speaker === "character") newestCharacter = index;
@@ -145,7 +156,7 @@ export function createDialogueBox(container: HTMLElement): DialogueBox {
       bubble.append(label, text);
       log.append(bubble);
     });
-    log.scrollTop = log.scrollHeight;
+    log.scrollTop = scrollToLatest ? log.scrollHeight : 0;
   }
 
   return {
@@ -161,6 +172,7 @@ export function createDialogueBox(container: HTMLElement): DialogueBox {
       speaker.textContent = name;
       log.replaceChildren();
       turns = [];
+      showAllTurns = false;
       notice.hidden = true;
       this.showThinking();
       freeForm.hidden = true;
@@ -170,10 +182,11 @@ export function createDialogueBox(container: HTMLElement): DialogueBox {
       box.hidden = true;
       freeForm.onsubmit = null;
       freeInput.blur();
-        turns = [];
-        log.replaceChildren();
-        notice.hidden = true;
-        currentHandlers = null;
+      turns = [];
+      showAllTurns = false;
+      log.replaceChildren();
+      notice.hidden = true;
+      currentHandlers = null;
     },
     showPlayerReply(text: string, kind?: "intent") {
       turns.push({ speaker: "player", text, ...(kind === "intent" ? { kind } : {}) });

@@ -7,9 +7,9 @@ npm install
 npm run dev
 ```
 
-Move with **WASD** or the **arrow keys**. Walk onto a path, cave opening, gate, or door to travel; you can also stand nearby and press **A**, **E**, or **Space**. On a touch screen, drag the joystick; press **A** near an exit.
+Move with **WASD** or the **arrow keys**. Walk onto a path, cave opening, gate, or door to travel; you can also stand nearby and press **A**, **E**, or **Space**. Press **M** for the map, **J** for the journal, **I** for inventory, and **Escape** to close a panel or pause. On a touch screen, drag the joystick; press **A** near an exit.
 
-The **Map** button arranges explored areas by the direction of their connecting paths (north is up). Open **Journal** to review discovered story facts, evidence, and character requests. A request only shows a finding place after a character has told you where to look.
+The **Map** button arranges explored areas by the direction of their connecting paths (north is up), highlights your current area, and can center the view on it. Open **Journal** to search and filter discovered story facts, evidence, and character requests. A request only shows a finding place after a character has told you where to look. The inventory can also be searched.
 
 Run `npm run build` to type-check and create the static site in `dist/`.
 Run `npm run preview` after building to test the production bundle locally.
@@ -34,8 +34,10 @@ model for response-quality feedback. The local save endpoint is not included in
 production builds.
 
 The title screen offers **New game** (choose a save slot) and **Load game**.
-Saved games autosave locally; use **Export JSON** in the load screen to keep a
-backup, or import that file on another device.
+Saved games autosave locally and show save status in the HUD; use **Export JSON**
+in the load screen to keep a backup, or import that file on another device.
+Pause or use the title screen settings to adjust text size, sound volume, walking
+speed, reduced motion, high contrast, touch-control size, and control hints.
 
 Choose an on-device model on the storyteller setup screen. During a game, open
 the pause menu and choose **Change AI provider or model** to change providers or

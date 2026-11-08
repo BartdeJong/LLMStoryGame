@@ -19,9 +19,20 @@ export function createObjectiveHud(parent: HTMLElement): ObjectiveHud {
   title.className = "objective-hud-title";
   const objective = document.createElement("p");
   objective.className = "objective-hud-text";
+  const guidanceToggle = document.createElement("button");
+  guidanceToggle.className = "objective-hud-toggle";
+  guidanceToggle.type = "button";
+  guidanceToggle.textContent = "Show hint";
+  guidanceToggle.setAttribute("aria-expanded", "false");
   const guidance = document.createElement("p");
   guidance.className = "objective-hud-guidance";
-  element.append(heading, title, objective, guidance);
+  guidance.hidden = true;
+  guidanceToggle.addEventListener("click", () => {
+    guidance.hidden = !guidance.hidden;
+    guidanceToggle.textContent = guidance.hidden ? "Show hint" : "Hide hint";
+    guidanceToggle.setAttribute("aria-expanded", String(!guidance.hidden));
+  });
+  element.append(heading, title, objective, guidanceToggle, guidance);
   parent.append(element);
 
   return {
@@ -30,7 +41,12 @@ export function createObjectiveHud(parent: HTMLElement): ObjectiveHud {
       title.textContent = beat.title;
       objective.textContent = beat.objective ?? beat.title;
       guidance.textContent = beat.guidance ?? "";
-      guidance.hidden = !beat.guidance;
+      guidanceToggle.hidden = !beat.guidance;
+      if (!beat.guidance) {
+        guidance.hidden = true;
+        guidanceToggle.textContent = "Show hint";
+        guidanceToggle.setAttribute("aria-expanded", "false");
+      }
     },
   };
 }

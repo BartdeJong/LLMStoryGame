@@ -7,6 +7,8 @@ import {
   getIconCanvas,
   getTileCanvas,
   getStoryVisualTheme,
+  PALETTES,
+  type Direction,
   type PaletteName,
   type StoryVisualTheme,
   type TileType,
@@ -50,7 +52,15 @@ export class Renderer {
     canvas.style.filter = this.storyTheme.canvasFilter;
   }
 
-  draw(world: Area, player: Position, camera: Position, transitionOpacity = 0): void {
+  draw(
+    world: Area,
+    player: Position,
+    camera: Position,
+    transitionOpacity = 0,
+    interactionTarget?: AreaEntity,
+    playerDirection: Direction = "down",
+    playerMoving = false,
+  ): void {
     const context = this.context;
     context.fillStyle = "#17251d";
     context.fillRect(0, 0, VIEW_WIDTH, VIEW_HEIGHT);
@@ -90,8 +100,16 @@ export class Renderer {
     }
 
     for (const entity of world.entities ?? []) this.drawEntity(world.palette, entity, camera);
-    this.drawPlayer(world.palette, Math.round(player.x - camera.x), Math.round(player.y - camera.y));
+    this.drawPlayer(
+      world.palette,
+      Math.round(player.x - camera.x),
+      Math.round(player.y - camera.y),
+      playerDirection,
+      playerMoving,
+    );
+    this.drawAtmosphere(world);
     this.drawStoryAtmosphere(context);
+    if (interactionTarget) this.drawInteractionMarker(interactionTarget, camera, world.palette);
     if (transitionOpacity > 0) this.drawFog(transitionOpacity);
   }
 
@@ -118,6 +136,7 @@ export class Renderer {
     const alpha = Math.min(1, opacity);
     context.fillStyle = `rgba(18, 30, 25, ${alpha})`;
     context.fillRect(0, 0, VIEW_WIDTH, VIEW_HEIGHT);
+    if (document.documentElement.dataset.reducedMotion === "true") return;
     const time = performance.now() / 1000;
     context.fillStyle = `rgba(205, 220, 212, ${0.12 * alpha})`;
     for (let index = 0; index < 7; index += 1) {
@@ -129,8 +148,70 @@ export class Renderer {
     }
   }
 
-  private drawPlayer(palette: PaletteName, x: number, y: number): void {
-    this.context.drawImage(getCharacterSprite(DEFAULT_CHARACTER_RECIPE, palette, "down"), x - 8, y - 8);
+  private drawPlayer(palette: PaletteName, x: number, y: number, direction: Direction, moving: boolean): void {
+    const frame = moving && document.documentElement.dataset.reducedMotion !== "true"
+      ? Math.floor(performance.now() / 180)
+      : 0;
+    this.context.drawImage(
+      getCharacterSprite(DEFAULT_CHARACTER_RECIPE, palette, direction, frame),
+      x - 10,
+      y - 10,
+      20,
+      20,
+    );
+  }
+
+  private drawInteractionMarker(entity: AreaEntity, camera: Position, paletteName: PaletteName): void {
+    const x = Math.round(entity.x * TILE_SIZE - camera.x + TILE_SIZE / 2);
+    const y = Math.round(entity.y * TILE_SIZE - camera.y - 5 + Math.sin(performance.now() / 180) * 1.5);
+    const context = this.context;
+    context.save();
+    context.fillStyle = PALETTES[paletteName].highlight;
+    context.globalAlpha = 0.9;
+    context.beginPath();
+    context.moveTo(x, y - 4);
+    context.lineTo(x + 3, y);
+    context.lineTo(x, y + 4);
+    context.lineTo(x - 3, y);
+    context.closePath();
+    context.fill();
+    context.fillStyle = PALETTES[paletteName].ink;
+    context.fillRect(x, y - 1, 1, 2);
+    context.restore();
+  }
+
+  private drawAtmosphere(world: Area): void {
+    const context = this.context;
+    const light = world.biome === "cave" || world.biome === "ruins"
+      ? "rgba(133, 148, 196, 0.10)"
+      : world.biome === "shore"
+        ? "rgba(142, 214, 224, 0.09)"
+        : "rgba(255, 224, 157, 0.09)";
+    const vignette = context.createRadialGradient(
+      VIEW_WIDTH / 2,
+      VIEW_HEIGHT / 2,
+      VIEW_HEIGHT * 0.15,
+      VIEW_WIDTH / 2,
+      VIEW_HEIGHT / 2,
+      VIEW_WIDTH * 0.72,
+    );
+    vignette.addColorStop(0, light);
+    vignette.addColorStop(1, "rgba(18, 27, 24, 0.13)");
+    context.fillStyle = vignette;
+    context.fillRect(0, 0, VIEW_WIDTH, VIEW_HEIGHT);
+
+    if (document.documentElement.dataset.reducedMotion === "true") return;
+    if (world.biome === "meadow" || world.biome === "village" || world.biome === "forest") {
+      const time = performance.now() / 1000;
+      context.fillStyle = PALETTES[world.palette].highlight;
+      for (let index = 0; index < 5; index += 1) {
+        const x = ((index * 67 + time * (4 + index % 3 * 2)) % (VIEW_WIDTH + 12)) - 6;
+        const y = 24 + (index * 37) % (VIEW_HEIGHT - 32) + Math.sin(time + index) * 2;
+        context.globalAlpha = 0.35 + (Math.sin(time * 1.4 + index) + 1) * 0.12;
+        context.fillRect(Math.round(x), Math.round(y), 1, 1);
+      }
+      context.globalAlpha = 1;
+    }
   }
 
   private drawStoryAtmosphere(context: CanvasRenderingContext2D): void {

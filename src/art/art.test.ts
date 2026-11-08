@@ -120,6 +120,15 @@ describe("art painters", () => {
     }
   });
 
+  it("gives Victorian character accessories distinct pixel designs", () => {
+    const features = ["deerstalker", "moustache", "bonnet", "bowler", "top-hat", "flat-cap", "headscarf", "monocle", "cravat", "veil"] as const;
+    const sprites = features.map((feature) =>
+      commandsOf(paintCharacterSprite({ ...DEFAULT_CHARACTER_RECIPE, feature }, "village")),
+    );
+
+    expect(new Set(sprites.map((commands) => JSON.stringify(commands))).size).toBe(features.length);
+  });
+
   it("paints every icon recipe menu value", () => {
     for (const shape of ICON_SHAPES) {
       const recipe: IconRecipe = {

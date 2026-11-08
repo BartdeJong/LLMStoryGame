@@ -2,7 +2,25 @@ import { createPixelCanvas } from "./canvas";
 import { PALETTES, type PaletteColorSlot, type PaletteName } from "./palettes";
 
 export const BODY_SHAPES = ["round", "tall", "small", "quadruped", "floaty"] as const;
-export const CHARACTER_FEATURES = ["none", "horns", "hat", "wings", "tail", "glasses", "antenna"] as const;
+export const CHARACTER_FEATURES = [
+  "none",
+  "horns",
+  "hat",
+  "wings",
+  "tail",
+  "glasses",
+  "antenna",
+  "deerstalker",
+  "moustache",
+  "bonnet",
+  "bowler",
+  "top-hat",
+  "flat-cap",
+  "headscarf",
+  "monocle",
+  "cravat",
+  "veil",
+] as const;
 export const DIRECTIONS = ["down", "up", "left", "right"] as const;
 export const WALK_FRAME_COUNTS = [2, 3, 4] as const;
 
@@ -121,6 +139,68 @@ export function paintCharacterSprite(
     case "antenna":
       pixel(palette.ink, 8, 1, 1, 3);
       pixel(accent, 7, 0, 3, 1);
+      break;
+    case "deerstalker":
+      pixel(accent, 5, 0, 6, 1);
+      pixel(accent, 4, 1, 8, 2);
+      pixel(palette.highlight, 7, 1, 2, 1);
+      pixel(accent, 3, 3, 10, 1);
+      pixel(palette.shadow, 3, 4, 2, 2);
+      pixel(palette.shadow, 11, 4, 2, 2);
+      break;
+    case "moustache":
+      pixel(accent, 6, 6, 4, 1);
+      pixel(accent, 5, 5, 2, 1);
+      pixel(accent, 9, 5, 2, 1);
+      break;
+    case "bonnet":
+      pixel(accent, 4, 1, 8, 2);
+      pixel(accent, 3, 3, 10, 1);
+      pixel(accent, 2, 4, 2, 2);
+      pixel(accent, 12, 4, 2, 2);
+      pixel(palette.highlight, 5, 3, 6, 1);
+      break;
+    case "bowler":
+      pixel(accent, 5, 0, 6, 2);
+      pixel(accent, 4, 2, 8, 2);
+      pixel(palette.shadow, 5, 2, 6, 1);
+      pixel(palette.highlight, 7, 1, 2, 1);
+      break;
+    case "top-hat":
+      pixel(accent, 6, 0, 4, 3);
+      pixel(accent, 4, 3, 8, 1);
+      pixel(palette.shadow, 6, 2, 4, 1);
+      pixel(palette.highlight, 7, 1, 2, 1);
+      break;
+    case "flat-cap":
+      pixel(accent, 4, 1, 8, 2);
+      pixel(accent, 3, 3, 10, 1);
+      pixel(palette.shadow, 9, 2, 3, 1);
+      pixel(palette.highlight, 6, 1, 2, 1);
+      break;
+    case "headscarf":
+      pixel(accent, 4, 1, 8, 2);
+      pixel(accent, 3, 3, 2, 4);
+      pixel(accent, 11, 3, 2, 4);
+      pixel(palette.highlight, 5, 2, 6, 1);
+      break;
+    case "monocle":
+      pixel(palette.highlight, 8, 3, 4, 1);
+      pixel(palette.highlight, 8, 6, 4, 1);
+      pixel(palette.highlight, 8, 4, 1, 2);
+      pixel(palette.highlight, 11, 4, 1, 2);
+      pixel(accent, 11, 7, 1, 2);
+      break;
+    case "cravat":
+      pixel(accent, 7, 7, 2, 2);
+      pixel(palette.highlight, 7, 8, 1, 3);
+      pixel(accent, 6, 9, 4, 2);
+      break;
+    case "veil":
+      pixel(accent, 4, 1, 8, 2);
+      pixel(accent, 3, 3, 1, 6);
+      pixel(accent, 12, 3, 1, 6);
+      pixel(palette.highlight, 5, 2, 6, 1);
       break;
     case "none":
       break;

@@ -75,6 +75,36 @@ body {
   margin-top: 3px;
 }
 
+.save-status {
+  margin-top: 4px !important;
+  color: var(--story-muted, #b7c1a0);
+  font-size: 9px !important;
+}
+
+.save-status:empty {
+  display: none;
+}
+
+.controls-guide {
+  margin-top: 5px;
+  font-size: 10px;
+  pointer-events: auto;
+}
+
+.controls-guide summary {
+  width: fit-content;
+  color: var(--story-accent, #e7cd84);
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.controls-guide p {
+  max-width: 46ch;
+  margin-top: 5px;
+  color: var(--story-muted, #d3ddc2);
+  font-size: 10px !important;
+}
+
 .objective-hud {
   margin-top: 7px;
   padding-top: 6px;
@@ -102,6 +132,46 @@ body {
 .objective-hud-guidance {
   margin-top: 2px !important;
   color: var(--story-muted, #d3ddc2);
+}
+
+.objective-hud-toggle {
+  margin-top: 4px;
+  padding: 2px 0;
+  border: 0;
+  color: var(--story-accent, #e7cd84);
+  background: transparent;
+  font: inherit;
+  font-size: 10px;
+  text-decoration: underline;
+  pointer-events: auto;
+}
+
+.objective-hud-toggle:focus-visible,
+.journal-button:focus-visible,
+.pause-button:focus-visible,
+.inventory-button:focus-visible {
+  outline: 2px solid #f5f0d7;
+  outline-offset: 3px;
+}
+
+.interaction-prompt {
+  position: absolute;
+  bottom: max(24px, env(safe-area-inset-bottom));
+  left: 50%;
+  z-index: 5;
+  max-width: min(76vw, 320px);
+  margin: 0;
+  padding: 8px 12px;
+  transform: translateX(-50%);
+  border: 2px solid var(--story-accent, #e7cd84);
+  border-radius: 18px;
+  color: var(--story-text, #fff4d1);
+  background: var(--story-panel, rgb(23 37 29 / 94%));
+  box-shadow: 0 3px 0 rgb(0 0 0 / 25%);
+  font-size: 12px;
+  font-weight: 800;
+  text-align: center;
+  pointer-events: none;
 }
 
 .story-opening {
@@ -890,6 +960,19 @@ body.llm-debug-mode {
   padding: 4px 2px 8px;
 }
 
+.dialogue-history-button {
+  display: block;
+  min-height: 36px;
+  margin: 4px auto 8px;
+  padding: 5px 12px;
+  border: 1px solid #71815d;
+  border-radius: 18px;
+  color: #e7cd84;
+  background: #17251d;
+  font: inherit;
+  font-size: 11px;
+}
+
 .dialogue-bubble {
   width: fit-content;
   max-width: 88%;
@@ -1076,12 +1159,14 @@ body.llm-debug-mode {
   right: max(14px, env(safe-area-inset-right));
   z-index: 15;
   width: min(300px, 72vw);
-  max-height: 62vh;
+  max-height: 52vh;
   padding: 10px;
   overflow: auto;
   border: 2px solid #536a4c;
   border-radius: 6px;
   background: rgb(15 26 20 / 97%);
+  box-shadow: 0 8px 24px rgb(0 0 0 / 28%);
+  backdrop-filter: blur(6px);
   pointer-events: auto;
 }
 
@@ -1091,6 +1176,36 @@ body.llm-debug-mode {
   font-size: 11px;
   font-weight: 800;
   text-transform: uppercase;
+}
+
+.journal-search,
+.journal-filter,
+.inventory-search {
+  width: 100%;
+  min-height: 38px;
+  margin: 4px 0;
+  padding: 6px 8px;
+  border: 1px solid #71815d;
+  border-radius: 4px;
+  color: #f5f0d7;
+  background: #17251d;
+  font: inherit;
+}
+
+.journal-search::placeholder,
+.inventory-search::placeholder {
+  color: #b7c1a0;
+}
+
+.journal-status,
+.inventory-status {
+  margin: 4px 0;
+  color: #c1cba9;
+  font-size: 10px;
+}
+
+.journal-list[hidden] {
+  display: none;
 }
 
 .journal-list {
@@ -1103,6 +1218,22 @@ body.llm-debug-mode {
   border: 1px solid rgb(113 129 93 / 55%);
   border-radius: 4px;
   background: rgb(38 59 45 / 70%);
+}
+
+@media (max-width: 600px) {
+  .game-hud {
+    max-width: min(calc(100vw - 106px), 360px);
+    padding: 7px 9px;
+  }
+
+  .journal-panel {
+    width: min(280px, 80vw);
+    max-height: 48vh;
+  }
+
+  .interaction-prompt {
+    bottom: max(112px, calc(env(safe-area-inset-bottom) + 104px));
+  }
 }
 
 .journal-entry-label,
@@ -1137,6 +1268,10 @@ body.llm-debug-mode {
 .inventory-list {
   display: grid;
   gap: 8px;
+}
+
+.inventory-item[hidden] {
+  display: none;
 }
 
 .inventory-item {
@@ -1318,6 +1453,25 @@ a {
   font: inherit;
 }
 
+.range-setting,
+.check-setting {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+}
+
+.range-setting input {
+  width: min(160px, 30vw);
+  accent-color: #e7cd84;
+}
+
+.check-setting input {
+  width: 18px;
+  height: 18px;
+  accent-color: #e7cd84;
+}
+
 .pause-overlay {
   position: fixed;
   z-index: 100;
@@ -1396,4 +1550,85 @@ html[data-text-size="large"] .inventory-item-description {
 html[data-text-size="large"] .journal-entry-text,
 html[data-text-size="large"] .journal-entry-location {
   font-size: 13px;
+}
+
+html[data-text-size="extra-large"] {
+  font-size: 125%;
+}
+
+html[data-text-size="extra-large"] .game-hud p {
+  font-size: 16px;
+}
+
+html[data-text-size="extra-large"] .location-label {
+  font-size: 13px !important;
+}
+
+html[data-text-size="extra-large"] .dialogue-bubble-text {
+  font-size: 19px;
+}
+
+html[data-text-size="extra-large"] .journal-entry-text,
+html[data-text-size="extra-large"] .journal-entry-location,
+html[data-text-size="extra-large"] .inventory-item-description {
+  font-size: 15px;
+}
+
+html[data-high-contrast="true"] {
+  color: #fff;
+  background: #080d0a;
+}
+
+html[data-high-contrast="true"] .game-hud,
+html[data-high-contrast="true"] .journal-panel,
+html[data-high-contrast="true"] .inventory-panel,
+html[data-high-contrast="true"] .dialogue-box,
+html[data-high-contrast="true"] .world-map,
+html[data-high-contrast="true"] .pause-panel {
+  border-color: #fff2a8;
+  background-color: rgb(5 10 7 / 98%);
+}
+
+html[data-high-contrast="true"] .game-hud,
+html[data-high-contrast="true"] .journal-entry-text,
+html[data-high-contrast="true"] .inventory-item-description,
+html[data-high-contrast="true"] .world-map-hint {
+  color: #fff;
+}
+
+html[data-large-controls="true"] .joystick {
+  width: 140px;
+  height: 140px;
+}
+
+html[data-large-controls="true"] .action-button {
+  width: 88px;
+  height: 88px;
+}
+
+html[data-large-controls="true"] .map-button,
+html[data-large-controls="true"] .journal-button,
+html[data-large-controls="true"] .pause-button,
+html[data-large-controls="true"] .inventory-button {
+  min-height: 48px;
+  min-width: 48px;
+}
+
+html[data-large-controls="true"] .world-map-close {
+  min-height: 48px;
+  min-width: 86px;
+}
+
+html[data-control-hints="true"] .gamepad-hints,
+html[data-input-mode="gamepad"] .gamepad-hints {
+  display: flex;
+}
+
+html[data-reduced-motion="true"] *,
+html[data-reduced-motion="true"] *::before,
+html[data-reduced-motion="true"] *::after {
+  scroll-behavior: auto !important;
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
 }

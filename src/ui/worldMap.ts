@@ -1,5 +1,6 @@
 import "./worldMap.css";
 import type { Area } from "../world/types";
+import { activateGamepadFocus } from "../input/focus";
 
 const SVG_NS = "http://www.w3.org/2000/svg";
 const NODE_WIDTH = 180;
@@ -132,12 +133,16 @@ export function createWorldMap(
   const title = document.createElement("h2");
   title.id = "world-map-title";
   title.textContent = "Explored places · North ↑";
+  const centerButton = document.createElement("button");
+  centerButton.className = "world-map-close";
+  centerButton.type = "button";
+  centerButton.textContent = "Center on me";
   const closeButton = document.createElement("button");
   closeButton.className = "world-map-close";
   closeButton.type = "button";
   closeButton.textContent = "Close";
   closeButton.addEventListener("click", () => close());
-  header.append(title, closeButton);
+  header.append(title, centerButton, closeButton);
 
   const viewport = document.createElement("div");
   viewport.className = "world-map-viewport";
@@ -155,8 +160,21 @@ export function createWorldMap(
   container.append(overlay);
 
   let open = false;
+  let graph: WorldMapGraph | null = null;
+  let returnFocus: HTMLElement | null = null;
+  const centerCurrent = (): void => {
+    if (!graph) return;
+    const current = graph.nodes.find((node) => node.area.id === getCurrentAreaId());
+    if (!current) return;
+    const x = MAP_MARGIN + current.column * COLUMN_GAP + NODE_WIDTH / 2;
+    const y = MAP_MARGIN + current.row * ROW_GAP + NODE_HEIGHT / 2;
+    viewport.scrollLeft = Math.max(0, x - viewport.clientWidth / 2);
+    viewport.scrollTop = Math.max(0, y - viewport.clientHeight / 2);
+  };
+  centerButton.addEventListener("click", centerCurrent);
+
   const render = (): void => {
-    const graph = buildWorldMapGraph(getAreas(), getCurrentAreaId());
+    graph = buildWorldMapGraph(getAreas(), getCurrentAreaId());
     const maxColumn = Math.max(...graph.nodes.map((node) => node.column));
     const maxRows = Math.max(...graph.nodes.map((node) => node.row + 1));
     const width = MAP_MARGIN * 2 + maxColumn * COLUMN_GAP + NODE_WIDTH;
@@ -166,6 +184,8 @@ export function createWorldMap(
     svg.setAttribute("width", String(width));
     svg.setAttribute("height", String(height));
     svg.setAttribute("aria-label", `Map of ${graph.nodes.length} explored ${graph.nodes.length === 1 ? "area" : "areas"}`);
+    title.textContent = `Explored places · ${graph.nodes.length} · North ↑`;
+    hint.textContent = `${graph.nodes.length} ${graph.nodes.length === 1 ? "place" : "places"} explored · Paths follow the compass: ↑ north · → east · ↓ south · ← west. Press M or Escape to return.`;
 
     const nodesById = new Map(graph.nodes.map((node) => [node.area.id, node]));
     for (const edge of graph.edges) {
@@ -212,10 +232,11 @@ export function createWorldMap(
     for (const node of graph.nodes) {
       const x = MAP_MARGIN + node.column * COLUMN_GAP;
       const y = MAP_MARGIN + node.row * ROW_GAP;
+      const current = node.area.id === getCurrentAreaId();
       const group = svgElement("g");
       group.classList.add("world-map-node");
-      if (node.area.id === getCurrentAreaId()) group.classList.add("world-map-node-current");
-      group.setAttribute("aria-label", `${node.area.name}, ${node.area.biome}`);
+      if (current) group.classList.add("world-map-node-current");
+      group.setAttribute("aria-label", `${node.area.name}, ${node.area.biome}${current ? ", current location" : ""}`);
       const rect = svgElement("rect");
       rect.setAttribute("x", String(x));
       rect.setAttribute("y", String(y));
@@ -231,8 +252,10 @@ export function createWorldMap(
       biome.classList.add("world-map-node-biome");
       biome.setAttribute("x", String(x + 12));
       biome.setAttribute("y", String(y + 47));
-      biome.textContent = node.area.biome;
-      group.append(rect, name, biome);
+      biome.textContent = current ? `${node.area.biome} · YOU ARE HERE` : node.area.biome;
+      const nodeTitle = svgElement("title");
+      nodeTitle.textContent = `${node.area.name} · ${node.area.biome}${current ? " · You are here" : ""}`;
+      group.append(rect, name, biome, nodeTitle);
       svg.append(group);
     }
   };
@@ -240,7 +263,13 @@ export function createWorldMap(
   const close = (): void => {
     open = false;
     overlay.hidden = true;
+    if (returnFocus?.isConnected) returnFocus.focus();
+    returnFocus = null;
   };
+  const stopGamepadFocus = activateGamepadFocus(overlay, {
+    isActive: () => open,
+    onBack: close,
+  });
 
   return {
     get isOpen(): boolean {
@@ -251,14 +280,17 @@ export function createWorldMap(
         close();
         return;
       }
+      returnFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
       render();
       open = true;
       overlay.hidden = false;
+      centerCurrent();
       closeButton.focus();
     },
     close,
     remove(): void {
       close();
+      stopGamepadFocus();
       overlay.remove();
     },
   };
