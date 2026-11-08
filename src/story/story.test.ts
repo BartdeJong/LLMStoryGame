@@ -7,6 +7,7 @@ import { getLengthView, loadStoryIndex, loadStoryPack, parseStoryIndex, StoryLoa
 import { solveLength } from "./solver";
 import type { StoryPack } from "./types";
 import { formatIssue, validateStoryPack } from "./validate";
+import { seededIconRecipe } from "./recipes";
 
 const fresh = (): StoryPack => structuredClone(fixture) as unknown as StoryPack;
 const codes = (data: unknown): string[] => validateStoryPack(data).errors.map((e) => e.code);
@@ -14,6 +15,18 @@ const codes = (data: unknown): string[] => validateStoryPack(data).errors.map((e
 describe("example pack", () => {
   it("is identical to the public copy", () => {
     expect(publicExample).toEqual(fixture);
+  });
+
+  describe("semantic item icon fallbacks", () => {
+    it.each([
+      ["i_overdue_book", "An old repair book", "book"],
+      ["i_charred_envelope", "A blackened envelope", "envelope"],
+      ["i_glass_shard", "A curved piece of glass", "shard"],
+      ["i_tower_key", "An iron key", "key"],
+      ["i_spyglass", "A dented spyglass", "spyglass"],
+    ])("recognizes %s", (id, description, shape) => {
+      expect(seededIconRecipe(id, description).shape).toBe(shape);
+    });
   });
 
   it("passes the schema and the validator with no warnings", () => {

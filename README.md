@@ -7,7 +7,9 @@ npm install
 npm run dev
 ```
 
-Move with **WASD** or the **arrow keys**. Walk onto a door or stand nearby and press **A**, **E**, or **Space** to travel. On a touch screen, drag the joystick; press **A** near a door.
+Move with **WASD** or the **arrow keys**. Walk onto a path, cave opening, gate, or door to travel; you can also stand nearby and press **A**, **E**, or **Space**. On a touch screen, drag the joystick; press **A** near an exit.
+
+The **Map** button arranges explored areas by the direction of their connecting paths (north is up). Open **Journal** to review discovered story facts, evidence, and character requests. A request only shows a finding place after a character has told you where to look.
 
 Run `npm run build` to type-check and create the static site in `dist/`.
 Run `npm run preview` after building to test the production bundle locally.

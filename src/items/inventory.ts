@@ -1,5 +1,5 @@
 import type { IconRecipe } from "../art";
-import { parseIconRecipe, seededIconRecipe } from "../story/recipes";
+import { inferIconShape, parseIconRecipe, seededIconRecipe } from "../story/recipes";
 import type { StoryState } from "../story/state";
 import type { StoryPack } from "../story/types";
 
@@ -15,10 +15,14 @@ export function listInventory(pack: StoryPack, state: StoryState): InventoryItem
   return state.itemsHeld
     .map((id) => pack.items.find((item) => item.id === id))
     .filter((item): item is NonNullable<typeof item> => item !== undefined)
-    .map((item) => ({
-      id: item.id,
-      name: item.name,
-      description: item.description,
-      icon: parseIconRecipe(item.icon_recipe) ?? seededIconRecipe(item.id),
-    }));
+    .map((item) => {
+      const icon = parseIconRecipe(item.icon_recipe) ?? seededIconRecipe(item.id, `${item.name} ${item.description}`);
+      const shape = inferIconShape(item.name, item.description);
+      return {
+        id: item.id,
+        name: item.name,
+        description: item.description,
+        icon: shape ? { ...icon, shape } : icon,
+      };
+    });
 }

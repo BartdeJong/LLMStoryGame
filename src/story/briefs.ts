@@ -4,7 +4,7 @@ import type { AreaBriefOutput } from "../llm/shapes";
 import { Priority } from "../llm/types";
 import type { Biome } from "../world/types";
 import { buildBriefRequest } from "./briefPrompt";
-import { mapPackBiome, mapPackPalette, paletteForBiome, parseCharacterRecipe, parseIconRecipe, seededCharacterRecipe, seededIconRecipe, toCharacterRecipe, toIconRecipe } from "./recipes";
+import { inferIconShape, mapPackBiome, mapPackPalette, paletteForBiome, parseCharacterRecipe, parseIconRecipe, seededCharacterRecipe, seededIconRecipe, toCharacterRecipe, toIconRecipe } from "./recipes";
 import type { LocationSlice } from "./slice";
 import type { StoryPack } from "./types";
 
@@ -175,12 +175,14 @@ export function mergeBrief(slice: LocationSlice, output: AreaBriefOutput | null,
   const objects: BriefObject[] = slice.objects.map((required) => {
     const match = output?.objects.find((object) => same(object.name, required.name));
     const packIcon = parseIconRecipe(guard.iconRecipes[required.id]);
+    const icon = packIcon ?? (match ? toIconRecipe(match.icon_recipe) : seededIconRecipe(required.id, `${required.name} ${required.description}`));
+    const semanticShape = inferIconShape(required.name, required.description);
     return {
       packId: required.id,
       kind: match?.kind ?? "crate",
       name: required.name,
       description: required.kind === "key_item" ? required.description : match?.description ?? required.description,
-      icon: packIcon ?? (match ? toIconRecipe(match.icon_recipe) : seededIconRecipe(required.id)),
+      icon: semanticShape ? { ...icon, shape: semanticShape } : icon,
       contents: [],
       required: true,
       keyItem: required.kind === "key_item",

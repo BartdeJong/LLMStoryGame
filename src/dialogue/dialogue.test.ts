@@ -209,15 +209,16 @@ describe("quick replies", () => {
     const controller = new ConversationController(await makeClient(), pack, state, character, context, { random: () => 0 });
     const opening = await controller.start();
     const asks = character.knowledge.map((item) => item.ask);
-    expect(opening.choices).toHaveLength(5);
-    expect(opening.choices.slice(0, 3).every((choice) => asks.includes(choice))).toBe(true);
-    expect(opening.choices.slice(3)).toEqual([QUICK_NEED, QUICK_GOODBYE]);
+    expect(opening.choices.slice(-2)).toEqual([QUICK_NEED, QUICK_GOODBYE]);
+    expect(opening.choices.slice(0, -2).every((choice) => asks.includes(choice))).toBe(true);
     expect(opening.choices.some((choice) => /^Ask about/i.test(choice))).toBe(false);
 
-    const asked = opening.choices[0]!;
-    const next = await controller.reply(asked);
-    expect(next.choices).not.toContain(asked);
-    expect(next.choices.slice(-2)).toEqual([QUICK_NEED, QUICK_GOODBYE]);
+    const topic = opening.choices.find((choice) => choice !== QUICK_NEED && choice !== QUICK_GOODBYE);
+    if (topic) {
+      const next = await controller.reply(topic);
+      expect(next.choices).not.toContain(topic);
+      expect(next.choices.slice(-2)).toEqual([QUICK_NEED, QUICK_GOODBYE]);
+    }
   });
 
   it("shows fewer topic buttons once everything has been discussed", () => {
@@ -225,9 +226,30 @@ describe("quick replies", () => {
     const all = new Set(character.knowledge.map((item) => item.id));
     expect(buildQuickReplies(availableKnowledge(pack, state, character), all, state)).toEqual([QUICK_NEED, QUICK_GOODBYE]);
   });
+
+  it("only suggests questions whose topic words are already known", () => {
+    const { character, state } = setup("c_mira");
+    const items = [
+      { ...character.knowledge[0]!, ask: "What happened at the moon lantern?" },
+      { ...character.knowledge[1]!, ask: "What is inside the sealed envelope?" },
+    ];
+
+    expect(buildQuickReplies(items, new Set(), state, "The moon lantern hangs above the village."))
+      .toEqual(["What happened at the moon lantern?", QUICK_NEED, QUICK_GOODBYE]);
+  });
 });
 
 describe("handovers", () => {
+  it("records items the character asks for when the player asks what they need", async () => {
+    const { pack, character, state } = setup("c_oswin");
+    const controller = new ConversationController(await makeClient(), pack, state, character, context, { random: () => 0 });
+    await controller.start();
+
+    await controller.reply(QUICK_NEED);
+
+    expect(state.needsRecorded).toEqual([{ characterId: "c_oswin", itemId: "i_overdue_book" }]);
+  });
+
   it("shows the Give button only when the required item is held", async () => {
     const { pack, character, state } = setup("c_oswin");
     const controller = new ConversationController(await makeClient(), pack, state, character, context, { random: () => 0 });

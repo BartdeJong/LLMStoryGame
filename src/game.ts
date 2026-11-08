@@ -15,6 +15,7 @@ import { Renderer, VIEW_HEIGHT, VIEW_WIDTH } from "./renderer";
 import { mountEndingChoiceScreen, mountEndingScreen } from "./ui/ending";
 import { mountPauseMenu } from "./ui/pause";
 import { createObjectiveHud, type ObjectiveHud } from "./ui/objectiveHud";
+import { createStoryJournal, type JournalFact, type JournalRequest, type StoryJournal } from "./ui/storyJournal";
 import { createWorldMap, type WorldMap } from "./ui/worldMap";
 import type { EndingChoice } from "./story/ending";
 import type { StorySession } from "./story/storySession";
@@ -53,6 +54,7 @@ export class Game {
   private readonly locationLabel: HTMLElement | null;
   private readonly dialogueBox: DialogueBox;
   private readonly inventoryUI: InventoryUI;
+  private readonly storyJournal: StoryJournal;
   private readonly objectiveHud: ObjectiveHud;
   private readonly worldMap: WorldMap;
   private transitioning = false;
@@ -108,12 +110,14 @@ export class Game {
     const shell = canvas.parentElement ?? document.body;
     this.dialogueBox = createDialogueBox(shell);
     this.inventoryUI = createInventoryUI(shell);
+    this.storyJournal = createStoryJournal(shell);
     this.worldMap = createWorldMap(
       shell,
       () => this.story.getSavedAreas().map(({ area }) => area),
       () => this.areaId,
     );
     this.refreshInventory();
+    this.refreshJournal();
     this.stopGamepadListener = gamepadInput.onFrame((frame) => {
       if (!this.running || frame.uiConsumed) return;
       if (frame.pressed.menu) {
@@ -383,6 +387,7 @@ export class Game {
     const clue = this.story.examineClue(entity);
     if (clue !== null) {
       this.message.textContent = `Clue: ${clue}`;
+      this.refreshJournal();
       void this.saveProgress();
       void this.maybeFinish();
       return;
@@ -421,6 +426,56 @@ export class Game {
     this.inventoryUI.render(listInventory(this.story.pack, this.story.state), this.story.getArea(this.areaId).palette);
   }
 
+  private refreshJournal(): void {
+    const truths = this.story.pack.truths.filter((truth) => this.story.state.truthsFound.includes(truth.id));
+    const facts: JournalFact[] = truths.map((truth) => ({
+      importance: truth.importance === "core" ? "Core" : "Side",
+      text: truth.text,
+    }));
+    const evidence = this.story.pack.clues
+      .filter((clue) => this.story.state.cluesFound.includes(clue.id))
+      .map((clue) => clue.text);
+    const knownStatements = [
+      ...this.story.pack.cast.flatMap((character) =>
+        character.knowledge
+          .filter((item) => this.story.state.knowledgeTold.includes(`${character.id}:${item.id}`))
+          .map((item) => item.text),
+      ),
+      ...evidence,
+      ...truths.map((truth) => truth.text),
+    ];
+    const containsPhrase = (text: string, phrase: string): boolean => {
+      const normalizedText = ` ${text.toLocaleLowerCase().replace(/[^\p{L}\p{N}]+/gu, " ")} `;
+      const normalizedPhrase = ` ${phrase.toLocaleLowerCase().replace(/[^\p{L}\p{N}]+/gu, " ").trim()} `;
+      return normalizedPhrase.length > 2 && normalizedText.includes(normalizedPhrase);
+    };
+    const requests: JournalRequest[] = this.story.state.needsRecorded.flatMap((need) => {
+      const character = this.story.pack.cast.find((candidate) => candidate.id === need.characterId);
+      const item = this.story.pack.items.find((candidate) => candidate.id === need.itemId);
+      if (!character || !item) return [];
+      const source = item.found_at;
+      if (!source) return [{ character: character.name, item: item.name }];
+      const sourceName = source.type === "location"
+        ? this.story.pack.locations.find((location) => location.id === source.id)?.name
+        : this.story.pack.cast.find((candidate) => candidate.id === source.id)?.name;
+      if (!sourceName || !knownStatements.some((statement) =>
+        containsPhrase(statement, item.name) && containsPhrase(statement, sourceName))) {
+        return [{ character: character.name, item: item.name }];
+      }
+      const sourceLocation = source.type === "character"
+        ? this.story.pack.locations.find((location) => location.id === character.home_location)?.name
+        : undefined;
+      return [{
+        character: character.name,
+        item: item.name,
+        location: source.type === "character" && sourceLocation
+          ? `${sourceName} (${sourceLocation})`
+          : sourceName,
+      }];
+    });
+    this.storyJournal.render(facts, evidence, requests);
+  }
+
   private refreshObjective(): void {
     this.objectiveHud.update(this.story.currentBeat);
   }
@@ -438,6 +493,18 @@ export class Game {
           const truth = this.story.pack.truths.find((entry) => entry.id === truthId);
           return truth ? [{ id: truth.id, text: truth.text }] : [];
         }),
+      knownTerms: [
+        this.story.pack.identity.title,
+        this.story.pack.identity.logline,
+        this.story.currentBeat.title,
+        this.story.currentBeat.objective ?? "",
+        this.story.currentBeat.guidance ?? "",
+        ...(brief?.objects.map((object) => `${object.name} ${object.description}`) ?? []),
+        ...(brief?.characters.map((member) => member.name) ?? []),
+        ...this.story.state.visitedAreas
+          .map((locationId) => this.story.pack.locations.find((location) => location.id === locationId)?.name)
+          .filter((name): name is string => name !== undefined),
+      ],
       inventory: listInventory(this.story.pack, this.story.state).map((item) => ({ id: item.id, name: item.name })),
       getInventory: () => listInventory(this.story.pack, this.story.state).map((item) => ({ id: item.id, name: item.name })),
     };
@@ -469,6 +536,7 @@ export class Game {
     soundEffects.play("dialogue");
     this.announceEffects(turn.effects);
     this.refreshObjective();
+    this.refreshJournal();
     if (errorNotice || turn.notice) this.dialogueBox.showNotice(errorNotice ?? turn.notice ?? "");
     void this.saveProgress();
     this.dialogueBox.showTurn(turn, this.dialogueHandlers());

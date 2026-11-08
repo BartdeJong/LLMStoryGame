@@ -24,12 +24,14 @@ function makeSave(): GameSave {
     resolvedGoalStates: ["goal"],
     choicesMade: ["choice"],
     itemsHeld: ["key"],
+    needsRecorded: [{ characterId: "c_oswin", itemId: "i_overdue_book" }],
+    knowledgeTold: ["c_oswin:k_oswin_log"],
     collectedEntities: ["item:key"],
     summary: "A saved story.",
     areasSinceSummary: 1,
   };
   return {
-    formatVersion: 2,
+    formatVersion: 3,
     slotId: "slot-test",
     metadata: {
       storyTitle: "Test story",
@@ -160,8 +162,24 @@ describe("save persistence", () => {
 
     const migrated = normalizeSave(legacy);
 
-    expect(migrated.formatVersion).toBe(2);
+    expect(migrated.formatVersion).toBe(3);
     expect(migrated.metadata.timePlayedMs).toBe(0);
+  });
+
+  it("migrates version 2 saves with empty journal history", () => {
+    const legacy = JSON.parse(JSON.stringify(makeSave())) as {
+      formatVersion: number;
+      storyState: Record<string, unknown>;
+    };
+    legacy.formatVersion = 2;
+    delete legacy.storyState.needsRecorded;
+    delete legacy.storyState.knowledgeTold;
+
+    const migrated = normalizeSave(legacy);
+
+    expect(migrated.formatVersion).toBe(3);
+    expect(migrated.storyState.needsRecorded).toEqual([]);
+    expect(migrated.storyState.knowledgeTold).toEqual([]);
   });
 
   it("rejects invalid imported files before storing them", async () => {

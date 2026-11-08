@@ -15,6 +15,8 @@ export interface StoryState {
   resolvedGoalStates: string[];
   choicesMade: string[];
   itemsHeld: string[];
+  needsRecorded: { characterId: string; itemId: string }[];
+  knowledgeTold: string[];
   collectedEntities: string[]; // world entity ids already taken, so repeat pickups cannot duplicate
   summary: string;
   areasSinceSummary: number;
@@ -31,6 +33,8 @@ export function createStoryState(view: LengthView): StoryState {
     resolvedGoalStates: [],
     choicesMade: [],
     itemsHeld: [],
+    needsRecorded: [],
+    knowledgeTold: [],
     collectedEntities: [],
     summary: "",
     areasSinceSummary: 0,
@@ -85,6 +89,19 @@ export function addTruth(state: StoryState, truthId: string): boolean {
 export function markClueFound(state: StoryState, clueId: string): boolean {
   if (state.cluesFound.includes(clueId)) return false;
   state.cluesFound.push(clueId);
+  return true;
+}
+
+export function rememberNeed(state: StoryState, characterId: string, itemId: string): boolean {
+  if (state.needsRecorded.some((need) => need.characterId === characterId && need.itemId === itemId)) return false;
+  state.needsRecorded.push({ characterId, itemId });
+  return true;
+}
+
+export function rememberKnowledge(state: StoryState, characterId: string, knowledgeId: string): boolean {
+  const key = `${characterId}:${knowledgeId}`;
+  if (state.knowledgeTold.includes(key)) return false;
+  state.knowledgeTold.push(key);
   return true;
 }
 

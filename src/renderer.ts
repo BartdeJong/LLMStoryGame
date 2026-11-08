@@ -1,4 +1,5 @@
 import { TILE_SIZE, Tile, type Area, type AreaEntity } from "./world";
+import type { DoorKind } from "./world";
 import type { Position } from "./camera";
 import { DEFAULT_CHARACTER_RECIPE, getCharacterSprite, getIconCanvas, getTileCanvas, type PaletteName, type TileType } from "./art";
 
@@ -16,6 +17,13 @@ const artTiles: Record<Tile, TileType> = {
   [Tile.Door]: "door",
   [Tile.Flowers]: "flowers",
   [Tile.Bridge]: "bridge",
+};
+
+const doorTiles: Record<DoorKind, TileType> = {
+  edge: "trail-exit",
+  "cave-mouth": "cave-mouth",
+  gate: "gate",
+  hatch: "hatch",
 };
 
 export class Renderer {
@@ -41,6 +49,7 @@ export class Renderer {
     const offsetY = -(camera.y % TILE_SIZE);
     const columns = Math.ceil(VIEW_WIDTH / TILE_SIZE) + 1;
     const rows = Math.ceil(VIEW_HEIGHT / TILE_SIZE) + 1;
+    const doors = new Map(world.doors.map((door) => [`${door.x},${door.y}`, door]));
 
     for (let row = 0; row < rows; row += 1) {
       for (let column = 0; column < columns; column += 1) {
@@ -54,7 +63,16 @@ export class Renderer {
         this.drawTile(world.palette, ground, tileX, tileY, screenX, screenY);
         const feature = world.layers.feature[tileY]?.[tileX];
         if (feature !== undefined && feature !== Tile.Grass) {
-          this.drawTile(world.palette, feature, tileX, tileY, screenX, screenY);
+          const door = feature === Tile.Door ? doors.get(`${tileX},${tileY}`) : undefined;
+          if (door) {
+            this.context.drawImage(
+              getTileCanvas(world.palette, doorTiles[door.kind], `${tileX},${tileY}`),
+              screenX,
+              screenY,
+            );
+          } else {
+            this.drawTile(world.palette, feature, tileX, tileY, screenX, screenY);
+          }
         }
       }
     }

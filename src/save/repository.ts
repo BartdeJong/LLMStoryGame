@@ -84,11 +84,15 @@ function isStoryState(value: unknown): value is JsonRecord & {
   if (!isRecord(value)) return false;
   const arrays = [
     value.visitedAreas, value.truthsFound, value.cluesFound, value.resolvedGoalStates,
-    value.choicesMade, value.itemsHeld, value.collectedEntities,
+    value.choicesMade, value.itemsHeld, value.knowledgeTold, value.collectedEntities,
   ];
   return typeof value.packId === "string" && Number.isInteger(value.packVersion)
     && LENGTH_IDS.includes(value.length as (typeof LENGTH_IDS)[number])
-    && arrays.every(isStringArray) && typeof value.summary === "string"
+    && arrays.every(isStringArray)
+    && Array.isArray(value.needsRecorded)
+    && value.needsRecorded.every((need) => isRecord(need)
+      && typeof need.characterId === "string" && typeof need.itemId === "string")
+    && typeof value.summary === "string"
     && Number.isInteger(value.areasSinceSummary);
 }
 
@@ -143,13 +147,27 @@ function migrateV1(value: JsonRecord): JsonRecord {
   };
 }
 
+function migrateV2(value: JsonRecord): JsonRecord {
+  const storyState = isRecord(value.storyState) ? value.storyState : {};
+  return {
+    ...value,
+    formatVersion: 3,
+    storyState: {
+      ...storyState,
+      needsRecorded: Array.isArray(storyState.needsRecorded) ? storyState.needsRecorded : [],
+      knowledgeTold: isStringArray(storyState.knowledgeTold) ? storyState.knowledgeTold : [],
+    },
+  };
+}
+
 export function normalizeSave(value: unknown): GameSave {
   if (!isRecord(value) || !Number.isInteger(value.formatVersion)) {
     throw new Error("This file is not a valid game save.");
   }
   let migrated: JsonRecord = value;
   if (value.formatVersion === 1) migrated = migrateV1(value);
-  else if (value.formatVersion !== SAVE_FORMAT_VERSION) {
+  if (migrated.formatVersion === 2) migrated = migrateV2(migrated);
+  else if (migrated.formatVersion !== SAVE_FORMAT_VERSION) {
     throw new Error(`Save format version ${String(value.formatVersion)} is not supported.`);
   }
   if (!isValidSave(migrated)) throw new Error("This file is not a valid game save or is missing required game data.");

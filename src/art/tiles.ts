@@ -11,6 +11,10 @@ export const TILE_TYPES = [
   "wall",
   "floor",
   "door",
+  "trail-exit",
+  "cave-mouth",
+  "gate",
+  "hatch",
   "flowers",
   "bridge",
 ] as const;
@@ -99,6 +103,7 @@ export function paintTile(
       for (const x of [7, 14]) pixel(palette.cream, x, 9, 1, 3);
       break;
     case "door":
+    case "hatch":
       ground(palette.earth);
       pixel(palette.shadow, 2, 0, 12, 16);
       pixel(palette.cream, 4, 2, 8, 14);
@@ -106,6 +111,31 @@ export function paintTile(
       pixel(palette.shadow, 6, 5, 4, 1);
       pixel(palette.highlight, 9, 9);
       pixel(palette.ink, 10, 9);
+      break;
+    case "trail-exit":
+      ground(palette.leaf);
+      pixel(palette.earth, 2, 0, 12, 16);
+      pixel(palette.cream, 4, 1, 8, 14);
+      pixel(palette.shadow, 6, 3, 4, 11);
+      pixel(palette.leafLight, 3, 6, 2, 2);
+      pixel(palette.leafLight, 11, 10, 2, 2);
+      break;
+    case "cave-mouth":
+      ground(palette.earth);
+      pixel(palette.shadow, 2, 4, 12, 12);
+      pixel(palette.ink, 4, 3, 8, 12);
+      pixel(palette.ink, 6, 1, 4, 3);
+      pixel(palette.highlight, 5, 6, 2, 1);
+      pixel(palette.shadow, 4, 14, 8, 2);
+      break;
+    case "gate":
+      ground(palette.leaf);
+      pixel(palette.earth, 2, 2, 3, 14);
+      pixel(palette.earth, 11, 2, 3, 14);
+      pixel(palette.cream, 3, 1, 10, 3);
+      pixel(palette.shadow, 5, 5, 2, 11);
+      pixel(palette.shadow, 9, 5, 2, 11);
+      pixel(palette.accent, 3, 8, 10, 2);
       break;
     case "flowers":
       ground(palette.leaf);

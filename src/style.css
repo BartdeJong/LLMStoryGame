@@ -1020,6 +1020,23 @@ body.llm-debug-mode {
   pointer-events: auto;
 }
 
+.journal-button {
+  position: absolute;
+  top: max(62px, calc(env(safe-area-inset-top) + 48px));
+  right: max(14px, env(safe-area-inset-right));
+  z-index: 15;
+  min-height: 36px;
+  padding: 0 11px;
+  border: 2px solid #536a4c;
+  border-radius: 18px;
+  color: #f5f0d7;
+  background: rgb(23 37 29 / 92%);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  pointer-events: auto;
+}
+
 .pause-button {
   position: absolute;
   top: max(14px, env(safe-area-inset-top));
@@ -1050,6 +1067,62 @@ body.llm-debug-mode {
   border-radius: 6px;
   background: rgb(15 26 20 / 96%);
   pointer-events: auto;
+}
+
+.journal-panel {
+  position: absolute;
+  top: max(106px, calc(env(safe-area-inset-top) + 90px));
+  right: max(14px, env(safe-area-inset-right));
+  z-index: 15;
+  width: min(300px, 72vw);
+  max-height: 62vh;
+  padding: 10px;
+  overflow: auto;
+  border: 2px solid #536a4c;
+  border-radius: 6px;
+  background: rgb(15 26 20 / 97%);
+  pointer-events: auto;
+}
+
+.journal-heading {
+  margin: 12px 0 6px;
+  color: #e7cd84;
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.journal-list {
+  display: grid;
+  gap: 7px;
+}
+
+.journal-entry {
+  padding: 7px;
+  border: 1px solid rgb(113 129 93 / 55%);
+  border-radius: 4px;
+  background: rgb(38 59 45 / 70%);
+}
+
+.journal-entry-label,
+.journal-entry-text,
+.journal-entry-location {
+  margin: 0;
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+.journal-entry-label {
+  margin-bottom: 3px;
+  color: #e7cd84;
+  font-size: 9px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.journal-entry-location {
+  margin-top: 4px;
+  color: #c1cba9;
 }
 
 .inventory-title {
@@ -1310,10 +1383,16 @@ html[data-text-size="large"] .dialogue-bubble-text {
 html[data-text-size="large"] .dialogue-notice,
 html[data-text-size="large"] .inventory-title,
 html[data-text-size="large"] .inventory-item-name,
-html[data-text-size="large"] .inventory-empty {
+html[data-text-size="large"] .inventory-empty,
+html[data-text-size="large"] .journal-heading {
   font-size: 14px;
 }
 
 html[data-text-size="large"] .inventory-item-description {
+  font-size: 13px;
+}
+
+html[data-text-size="large"] .journal-entry-text,
+html[data-text-size="large"] .journal-entry-location {
   font-size: 13px;
 }

@@ -73,10 +73,29 @@ export function seededCharacterRecipe(seed: string): CharacterRecipe {
   };
 }
 
-export function seededIconRecipe(seed: string): IconRecipe {
+export function inferIconShape(name: string, description = ""): IconRecipe["shape"] | null {
+  const text = `${name} ${description}`.toLowerCase().replace(/[_-]/g, " ");
+  if (/\b(book|ledger|receipt|register|account|journal|notebook)\b/.test(text)) return "book";
+  if (/\b(envelope|letter|mail|note)\b/.test(text)) return "envelope";
+  if (/\b(spyglass|telescope|lens)\b/.test(text)) return "spyglass";
+  if (/\b(shard|glass|crystal)\b/.test(text)) return "shard";
+  if (/\b(bun|bread|loaf|pastry|cake)\b/.test(text)) return "bread";
+  if (/\b(wick|thread|string|rope)\b/.test(text)) return "wick";
+  if (/\b(lantern|lamp|light|torch)\b/.test(text)) return "lantern";
+  if (/\b(key|keys)\b/.test(text)) return "key";
+  if (/\b(scroll|map|chart|paper|document|proof)\b/.test(text)) return "scroll";
+  if (/\b(shell|seashell)\b/.test(text)) return "shell";
+  if (/\b(flower|blossom|petal)\b/.test(text)) return "flower";
+  if (/\b(bottle|potion|flask|ink|medicine)\b/.test(text)) return "potion";
+  if (/\b(token|coin|money|medallion)\b/.test(text)) return "coin";
+  return null;
+}
+
+export function seededIconRecipe(seed: string, description = ""): IconRecipe {
   const random = createSeededRandom(`icon-recipe:${seed}`);
+  const shape = inferIconShape(seed, description) ?? ICON_SHAPES[Math.floor(random() * ICON_SHAPES.length)]!;
   return {
-    shape: ICON_SHAPES[Math.floor(random() * ICON_SHAPES.length)]!,
+    shape,
     primaryColor: "accent",
     secondaryColor: "cream",
   };

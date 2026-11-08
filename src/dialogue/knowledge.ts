@@ -16,6 +16,11 @@ const STOP_WORDS = new Set([
   "me", "my", "of", "on", "or", "so", "that", "the", "this", "to", "was", "what", "when", "where", "who", "why", "with", "you", "your",
 ]);
 
+const QUESTION_FILLER = new Set([
+  "tell", "say", "know", "happen", "do", "did", "have", "has", "would", "could", "can", "will",
+  "think", "see", "remember", "explain", "mean", "feel", "like", "get",
+]);
+
 // Light stemmer: enough for "lanterns", "pressing", "tides" to meet "lantern", "press", "tide".
 export function stem(word: string): string {
   let w = word.toLowerCase().replace(/[^\p{L}\p{N}]/gu, "");
@@ -86,11 +91,17 @@ export function buildQuickReplies(
   available: readonly KnowledgeItem[],
   discussed: ReadonlySet<string>,
   state: StoryState,
+  knownText = "",
 ): string[] {
   const open = available.filter((item) => !discussed.has(item.id));
   const unfound = open.filter((item) => item.clue_id && !state.cluesFound.includes(item.clue_id));
   const rest = open.filter((item) => !unfound.includes(item));
-  const topics = [...unfound, ...rest].slice(0, MAX_TOPIC_BUTTONS).map((item) => item.ask);
+  const knownWords = new Set(stemmedWords(knownText));
+  const safeToSuggest = (item: KnowledgeItem): boolean => {
+    const topicWords = stemmedWords(item.ask).filter((word) => !QUESTION_FILLER.has(word));
+    return topicWords.length > 0 && topicWords.every((word) => knownWords.has(word));
+  };
+  const topics = [...unfound, ...rest].filter(safeToSuggest).slice(0, MAX_TOPIC_BUTTONS).map((item) => item.ask);
   return [...topics, QUICK_NEED, QUICK_GOODBYE];
 }
 

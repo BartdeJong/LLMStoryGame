@@ -1,7 +1,10 @@
 import { createPixelCanvas } from "./canvas";
 import { PALETTES, type PaletteColorSlot, type PaletteName } from "./palettes";
 
-export const ICON_SHAPES = ["key", "potion", "book", "gem", "leaf", "feather", "lantern", "coin"] as const;
+export const ICON_SHAPES = [
+  "key", "potion", "book", "gem", "leaf", "feather", "lantern", "coin",
+  "envelope", "shard", "spyglass", "bread", "wick", "scroll", "shell", "flower",
+] as const;
 export type IconShape = (typeof ICON_SHAPES)[number];
 
 export interface IconRecipe {
@@ -86,6 +89,66 @@ export function paintIcon(recipe: IconRecipe, paletteName: PaletteName): HTMLCan
       pixel(secondary, 8, 5, 3, 1);
       pixel(secondary, 7, 7, 3, 1);
       pixel(secondary, 8, 9, 3, 1);
+      break;
+    case "envelope":
+      pixel(palette.shadow, 2, 4, 12, 9);
+      pixel(primary, 3, 5, 10, 7);
+      pixel(secondary, 3, 5, 5, 4);
+      pixel(secondary, 8, 5, 5, 4);
+      pixel(palette.highlight, 4, 6, 8, 1);
+      break;
+    case "shard":
+      pixel(secondary, 6, 2, 5, 2);
+      pixel(primary, 4, 4, 8, 3);
+      pixel(primary, 3, 7, 9, 3);
+      pixel(primary, 5, 10, 6, 2);
+      pixel(secondary, 8, 5, 2, 5);
+      pixel(palette.highlight, 5, 5, 2, 2);
+      break;
+    case "spyglass":
+      pixel(palette.shadow, 2, 10, 3, 3);
+      pixel(primary, 4, 8, 8, 4);
+      pixel(secondary, 10, 7, 3, 6);
+      pixel(palette.highlight, 5, 9, 5, 1);
+      pixel(palette.shadow, 12, 8, 2, 4);
+      break;
+    case "bread":
+      pixel(palette.shadow, 3, 7, 10, 7);
+      pixel(primary, 3, 5, 10, 8);
+      pixel(secondary, 5, 4, 6, 2);
+      pixel(palette.highlight, 5, 7, 1, 3);
+      pixel(palette.highlight, 9, 6, 1, 4);
+      break;
+    case "wick":
+      pixel(secondary, 7, 2, 2, 12);
+      pixel(primary, 6, 5, 4, 7);
+      pixel(palette.highlight, 7, 2, 2, 3);
+      pixel(palette.shadow, 5, 12, 6, 2);
+      break;
+    case "scroll":
+      pixel(secondary, 3, 3, 10, 10);
+      pixel(primary, 4, 2, 8, 12);
+      pixel(palette.highlight, 5, 5, 6, 1);
+      pixel(palette.highlight, 5, 8, 6, 1);
+      pixel(palette.highlight, 5, 11, 4, 1);
+      pixel(palette.shadow, 3, 2, 2, 12);
+      pixel(palette.shadow, 11, 2, 2, 12);
+      break;
+    case "shell":
+      pixel(palette.shadow, 4, 11, 8, 3);
+      pixel(primary, 4, 7, 8, 5);
+      pixel(primary, 6, 4, 4, 4);
+      pixel(secondary, 7, 3, 2, 9);
+      pixel(secondary, 4, 7, 1, 5);
+      pixel(secondary, 11, 7, 1, 5);
+      break;
+    case "flower":
+      pixel(primary, 6, 3, 4, 3);
+      pixel(primary, 3, 6, 4, 3);
+      pixel(primary, 9, 6, 4, 3);
+      pixel(primary, 6, 9, 4, 3);
+      pixel(secondary, 6, 6, 4, 3);
+      pixel(palette.leafLight, 7, 10, 2, 4);
       break;
   }
 

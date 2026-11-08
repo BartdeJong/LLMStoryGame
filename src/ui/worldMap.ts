@@ -32,37 +32,62 @@ export function buildWorldMapGraph(areas: readonly Area[], currentAreaId: string
     throw new Error(`The current area "${currentAreaId}" is missing from the explored map.`);
   }
 
-  const columns = new Map<string, number>();
-  const queue: string[] = [];
-  const visitComponent = (startId: string): void => {
-    columns.set(startId, 0);
-    queue.push(startId);
+  const positions = new Map<string, { column: number; row: number }>();
+  const occupied = new Set<string>();
+  const positionKey = (column: number, row: number): string => `${column},${row}`;
+  const placeComponent = (startId: string, start: { column: number; row: number }): void => {
+    positions.set(startId, start);
+    occupied.add(positionKey(start.column, start.row));
+    const queue = [startId];
     for (let index = 0; index < queue.length; index += 1) {
       const areaId = queue[index]!;
       const area = areasById.get(areaId)!;
-      const column = columns.get(areaId)!;
+      const position = positions.get(areaId)!;
       for (const door of area.doors) {
         const targetId = door.targetAreaId;
-        if (targetId && areasById.has(targetId) && !columns.has(targetId)) {
-          columns.set(targetId, column + 1);
-          queue.push(targetId);
+        if (!targetId || !areasById.has(targetId) || positions.has(targetId)) continue;
+        const dx = door.x - (area.width - 1) / 2;
+        const dy = door.y - (area.height - 1) / 2;
+        const horizontal = Math.abs(dx) >= Math.abs(dy);
+        const direction = horizontal
+          ? { column: dx < 0 ? -1 : 1, row: 0 }
+          : { column: 0, row: dy < 0 ? -1 : 1 };
+        let candidate: { column: number; row: number } | undefined;
+        for (let distance = 1; !candidate; distance += 1) {
+          for (const offset of [0, 1, -1, 2, -2, 3, -3]) {
+            const column = position.column + direction.column * distance + (horizontal ? 0 : offset);
+            const row = position.row + direction.row * distance + (horizontal ? offset : 0);
+            if (!occupied.has(positionKey(column, row))) {
+              candidate = { column, row };
+              break;
+            }
+          }
         }
+        positions.set(targetId, candidate);
+        occupied.add(positionKey(candidate.column, candidate.row));
+        queue.push(targetId);
       }
     }
-    queue.length = 0;
   };
 
-  visitComponent(currentAreaId);
+  placeComponent(currentAreaId, { column: 0, row: 0 });
   for (const area of areas) {
-    if (!columns.has(area.id)) visitComponent(area.id);
+    if (positions.has(area.id)) continue;
+    const maxColumn = Math.max(...[...positions.values()].map(({ column }) => column));
+    let startColumn = maxColumn + 2;
+    while (occupied.has(positionKey(startColumn, 0))) startColumn += 1;
+    placeComponent(area.id, { column: startColumn, row: 0 });
   }
 
-  const rows = new Map<number, number>();
+  const minColumn = Math.min(...[...positions.values()].map(({ column }) => column));
+  const minRow = Math.min(...[...positions.values()].map(({ row }) => row));
   const nodes = areas.map((area) => {
-    const column = columns.get(area.id)!;
-    const row = rows.get(column) ?? 0;
-    rows.set(column, row + 1);
-    return { area, column, row };
+    const position = positions.get(area.id)!;
+    return {
+      area,
+      column: position.column - minColumn,
+      row: position.row - minRow,
+    };
   });
 
   const edges: { from: string; to: string }[] = [];
@@ -106,7 +131,7 @@ export function createWorldMap(
   header.className = "world-map-header";
   const title = document.createElement("h2");
   title.id = "world-map-title";
-  title.textContent = "Explored places";
+  title.textContent = "Explored places · North ↑";
   const closeButton = document.createElement("button");
   closeButton.className = "world-map-close";
   closeButton.type = "button";
@@ -125,7 +150,7 @@ export function createWorldMap(
   viewport.append(svg);
   const hint = document.createElement("p");
   hint.className = "world-map-hint";
-  hint.textContent = "Press M or Escape to return to exploring.";
+  hint.textContent = "Paths follow the compass: ↑ north · → east · ↓ south · ← west. Press M or Escape to return.";
   overlay.append(header, viewport, hint);
   container.append(overlay);
 
@@ -148,9 +173,20 @@ export function createWorldMap(
       const to = nodesById.get(edge.to)!;
       const fromX = MAP_MARGIN + from.column * COLUMN_GAP;
       const fromY = MAP_MARGIN + from.row * ROW_GAP + NODE_HEIGHT / 2;
+      const toX = MAP_MARGIN + to.column * COLUMN_GAP;
       const toY = MAP_MARGIN + to.row * ROW_GAP + NODE_HEIGHT / 2;
       const path = svgElement("path");
-      if (from.column === to.column) {
+      if (from.column === to.column && from.row !== to.row) {
+        const leftY = from.row < to.row ? fromY : toY;
+        const rightY = from.row < to.row ? toY : fromY;
+        const x = fromX + NODE_WIDTH / 2;
+        path.setAttribute("d", `M ${x} ${leftY + NODE_HEIGHT / 2} C ${x} ${(leftY + rightY) / 2}, ${x} ${(leftY + rightY) / 2}, ${x} ${rightY - NODE_HEIGHT / 2}`);
+      } else if (from.row === to.row && from.column !== to.column) {
+        const leftX = Math.min(fromX, toX);
+        const rightX = Math.max(fromX, toX);
+        const y = fromY;
+        path.setAttribute("d", `M ${leftX + NODE_WIDTH} ${y} C ${(leftX + rightX + NODE_WIDTH) / 2} ${y}, ${(leftX + rightX + NODE_WIDTH) / 2} ${y}, ${rightX} ${y}`);
+      } else if (from.column === to.column) {
         const bendX = fromX + NODE_WIDTH + 30;
         path.setAttribute("d", `M ${fromX + NODE_WIDTH} ${fromY} C ${bendX} ${fromY}, ${bendX} ${toY}, ${fromX + NODE_WIDTH} ${toY}`);
       } else {
@@ -158,14 +194,17 @@ export function createWorldMap(
         const right = from.column < to.column ? to : from;
         const leftY = MAP_MARGIN + left.row * ROW_GAP + NODE_HEIGHT / 2;
         const rightY = MAP_MARGIN + right.row * ROW_GAP + NODE_HEIGHT / 2;
-        const startX = MAP_MARGIN + left.column * COLUMN_GAP + NODE_WIDTH;
-        const endX = MAP_MARGIN + right.column * COLUMN_GAP;
-        const middleX = (startX + endX) / 2;
-        path.setAttribute("d", `M ${startX} ${leftY} C ${middleX} ${leftY}, ${middleX} ${rightY}, ${endX} ${rightY}`);
+        const leftX = MAP_MARGIN + left.column * COLUMN_GAP;
+        const rightX = MAP_MARGIN + right.column * COLUMN_GAP;
+        const middleX = (leftX + rightX + NODE_WIDTH) / 2;
+        path.setAttribute("d", `M ${leftX + NODE_WIDTH} ${leftY} C ${middleX} ${leftY}, ${middleX} ${rightY}, ${rightX} ${rightY}`);
       }
       path.classList.add("world-map-path");
       const pathTitle = svgElement("title");
-      pathTitle.textContent = `${from.area.name} connects to ${to.area.name}`;
+      const direction = to.row < from.row ? "north"
+        : to.row > from.row ? "south"
+          : to.column < from.column ? "west" : "east";
+      pathTitle.textContent = `${from.area.name} connects ${direction} to ${to.area.name}`;
       path.append(pathTitle);
       svg.append(path);
     }

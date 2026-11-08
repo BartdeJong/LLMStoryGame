@@ -1,6 +1,7 @@
 import type { LLMClient } from "../llm/client";
 import type { CharacterLineOutput } from "../llm/shapes";
 import type { JSONResult } from "../llm/types";
+import { rememberKnowledge, rememberNeed } from "../story/state";
 import type { StoryState } from "../story/state";
 import type { CastMember, KnowledgeItem, StoryPack } from "../story/types";
 import {
@@ -43,6 +44,13 @@ export interface ControllerOptions {
 export const MAX_RESAMPLES = 2;
 const TEMPERATURE_STEP = 0.1;
 const BASE_TEMPERATURE = 0.8;
+
+function asksWhatIsNeeded(text: string): boolean {
+  const normalized = text.toLowerCase().replace(/[^\p{L}\p{N}\s]/gu, "").replace(/\s+/g, " ").trim();
+  return normalized === "what do you need"
+    || normalized === "what do you need from me"
+    || normalized === "what would you need";
+}
 
 function reminderFor(character: CastMember, attempt: number): string | undefined {
   if (attempt === 0) return undefined;
@@ -105,7 +113,11 @@ export class ConversationController {
     const text = typeof reply === "string" ? reply : reply.text;
     this.turns.push({ speaker: "player", text });
     const facts = retrieveKnowledge(availableKnowledge(this.pack, this.state, this.character), text);
-    return this.advance(facts, NO_EFFECTS);
+    const requestedItems = asksWhatIsNeeded(text)
+      ? (this.character.goal_states.find((goal) => !this.state.resolvedGoalStates.includes(goal.id))?.requires.items ?? [])
+        .filter((itemId) => !this.state.itemsHeld.includes(itemId))
+      : [];
+    return this.advance(facts, NO_EFFECTS, requestedItems);
   }
 
   // The player hands over an item. Code applies the pack's goal transition before the model speaks.
@@ -135,9 +147,17 @@ export class ConversationController {
     };
   }
 
-  private async advance(facts: readonly RetrievedFact[], earlyEffects: AppliedEffects): Promise<DialogueTurn> {
+  private async advance(
+    facts: readonly RetrievedFact[],
+    earlyEffects: AppliedEffects,
+    requestedItems: readonly string[] = [],
+  ): Promise<DialogueTurn> {
     const promptFacts: KnowledgeItem[] = facts.map((fact) => fact.item);
-    const goalHint = goalHintLine(this.character, this.state, this.hintTurn);
+    const goalHint = requestedItems.length > 0
+      ? `The player asked what you need. Tell them you need ${requestedItems
+        .map((itemId) => this.pack.items.find((item) => item.id === itemId)?.name ?? itemId)
+        .join(" and ")}. Do not invent where to find it.`
+      : goalHintLine(this.character, this.state, this.hintTurn);
     this.hintTurn += 1;
     const handoverLines = handoverPromptLines(this.pack, this.state, this.character, this.pendingHandovers);
     const previousLines = this.turns.filter((turn) => turn.speaker === "character").map((turn) => turn.text);
@@ -176,14 +196,39 @@ export class ConversationController {
       this.pendingHandovers = [];
       for (const fact of facts) this.discussed.add(fact.item.id);
       for (const fact of facts) {
+        if (fact.explicit) rememberKnowledge(this.state, this.character.id, fact.item.id);
         if (!fact.explicit || !fact.item.clue_id) continue;
         const revealed = revealClueFromTalk(this.pack, this.state, this.character, fact.item.clue_id);
         if (revealed) effects = { ...effects, revealedClue: revealed };
       }
+      for (const itemId of requestedItems) rememberNeed(this.state, this.character.id, itemId);
     }
     effects = this.applyReadyGoal(effects);
     this.turns.push({ speaker: "character", text: line });
     return this.makeTurn(line, quality, effects, notice);
+  }
+
+  private knownText(): string {
+    const toldFacts = this.pack.cast.flatMap((member) =>
+      member.knowledge
+        .filter((item) => this.state.knowledgeTold.includes(`${member.id}:${item.id}`))
+        .map((item) => item.text),
+    );
+    const discoveredFacts = [
+      ...this.pack.truths.filter((truth) => this.state.truthsFound.includes(truth.id)).map((truth) => truth.text),
+      ...this.pack.clues.filter((clue) => this.state.cluesFound.includes(clue.id)).map((clue) => clue.text),
+    ];
+    return [
+      this.context.locationName,
+      this.context.storySummary,
+      ...(this.context.knownFacts ?? []).map((fact) => fact.text),
+      ...(this.context.inventory ?? []).map((item) => item.name),
+      this.character.name,
+      ...this.turns.map((turn) => turn.text),
+      ...toldFacts,
+      ...discoveredFacts,
+      ...(this.context.knownTerms ?? []),
+    ].join(" ");
   }
 
   private makeTurn(line: string, quality: DialogueTurn["quality"], effects: AppliedEffects, notice?: string): DialogueTurn {
@@ -191,7 +236,7 @@ export class ConversationController {
     return {
       line,
       mode: "choices",
-      choices: buildQuickReplies(available, this.discussed, this.state),
+      choices: buildQuickReplies(available, this.discussed, this.state, this.knownText()),
       gives: giveOptions(this.pack, this.state, this.character),
       effects,
       quality,

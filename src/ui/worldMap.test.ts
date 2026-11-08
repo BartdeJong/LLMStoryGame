@@ -2,7 +2,9 @@ import { describe, expect, it } from "vitest";
 import { buildWorldMapGraph } from "./worldMap";
 import type { Area } from "../world/types";
 
-function area(id: string, targets: readonly string[] = []): Area {
+type Route = { targetAreaId: string; direction: "north" | "east" | "south" | "west" };
+
+function area(id: string, routes: readonly Route[] = []): Area {
   return {
     id,
     seed: id,
@@ -10,35 +12,36 @@ function area(id: string, targets: readonly string[] = []): Area {
     biome: "meadow",
     mood: "",
     palette: "meadow",
-    width: 1,
-    height: 1,
+    width: 5,
+    height: 5,
     layers: { ground: [[0]], feature: [[0]] },
     entry: { x: 0, y: 0 },
     spawnPoints: [],
-    doors: targets.map((targetAreaId, index) => ({
+    doors: routes.map(({ targetAreaId, direction }, index) => ({
       id: `${id}-${index}`,
       label: targetAreaId,
       kind: "edge",
-      x: 0,
-      y: 0,
+      x: direction === "west" ? 0 : direction === "east" ? 4 : 2,
+      y: direction === "north" ? 0 : direction === "south" ? 4 : 2,
       targetAreaId,
     })),
   };
 }
 
 describe("explored world map", () => {
-  it("lays out all explored areas by their door connections", () => {
+  it("places discovered areas in the direction of their connecting exits", () => {
     const graph = buildWorldMapGraph([
-      area("start", ["east"]),
-      area("east", ["start", "north"]),
-      area("north", ["east"]),
+      area("start", [{ targetAreaId: "east", direction: "east" }]),
+      area("east", [
+        { targetAreaId: "start", direction: "west" },
+        { targetAreaId: "north", direction: "north" },
+      ]),
+      area("north", [{ targetAreaId: "east", direction: "south" }]),
     ], "start");
 
-    expect(graph.nodes.map(({ area: entry, column }) => [entry.id, column])).toEqual([
-      ["start", 0],
-      ["east", 1],
-      ["north", 2],
-    ]);
+    const nodes = new Map(graph.nodes.map((node) => [node.area.id, node]));
+    expect(nodes.get("east")!.column).toBeGreaterThan(nodes.get("start")!.column);
+    expect(nodes.get("north")!.row).toBeLessThan(nodes.get("east")!.row);
     expect(graph.edges).toEqual([
       { from: "start", to: "east" },
       { from: "east", to: "north" },

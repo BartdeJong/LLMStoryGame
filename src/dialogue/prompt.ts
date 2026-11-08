@@ -28,6 +28,7 @@ export interface DialogueContext {
   locationMood: string;
   storySummary: string;
   knownFacts?: { id: string; text: string }[];
+  knownTerms?: string[];
   inventory: InventoryEntry[];
   getInventory?: () => InventoryEntry[];
 }
