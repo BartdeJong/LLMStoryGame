@@ -78,9 +78,10 @@ export async function startGame(shell: HTMLElement, root: HTMLElement, useMock: 
   const canvas = shell.querySelector<HTMLCanvasElement>("#game");
   const joystick = shell.querySelector<HTMLButtonElement>("#joystick");
   const actionButton = shell.querySelector<HTMLButtonElement>("#action-button");
+  const mapButton = shell.querySelector<HTMLButtonElement>("#map-button");
   const pauseButton = shell.querySelector<HTMLButtonElement>("#pause-button");
   const message = shell.querySelector<HTMLElement>("#game-message");
-  if (!canvas || !joystick || !actionButton || !pauseButton || !message) throw new Error("The game page is missing required controls.");
+  if (!canvas || !joystick || !actionButton || !mapButton || !pauseButton || !message) throw new Error("The game page is missing required controls.");
 
   const startSession = (
     story: StorySession,
@@ -94,6 +95,7 @@ export async function startGame(shell: HTMLElement, root: HTMLElement, useMock: 
       canvas,
       joystick,
       actionButton,
+      mapButton,
       pauseButton,
       message,
       story,

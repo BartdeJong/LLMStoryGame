@@ -77,6 +77,7 @@ export class Game {
     private readonly canvas: HTMLCanvasElement,
     joystick: HTMLButtonElement,
     actionButton: HTMLButtonElement,
+    private readonly mapButton: HTMLButtonElement,
     private readonly pauseButton: HTMLButtonElement,
     private readonly message: HTMLElement,
     private readonly story: StorySession,
@@ -128,6 +129,7 @@ export class Game {
     canvas.addEventListener("pointerup", this.handleCanvasTap);
     window.addEventListener("keydown", this.handlePauseKeyDown);
     window.addEventListener("keydown", this.handleMapKeyDown);
+    this.mapButton.addEventListener("click", this.handleMapButtonClick);
     this.pauseButton.addEventListener("click", this.openPauseMenu);
   }
 
@@ -157,6 +159,11 @@ export class Game {
     if (!this.worldMap.isOpen && event.target instanceof HTMLElement
       && event.target.closest("input, textarea, select, button, a[href], [contenteditable='true']")) return;
     event.preventDefault();
+    this.worldMap.toggle();
+  };
+
+  private readonly handleMapButtonClick = (): void => {
+    if (!this.running || this.paused || this.transitioning || this.inDialogue) return;
     this.worldMap.toggle();
   };
 
@@ -209,6 +216,7 @@ export class Game {
     window.removeEventListener("keydown", this.handlePauseKeyDown);
     window.removeEventListener("keydown", this.handleMapKeyDown);
     this.stopGamepadListener();
+    this.mapButton.removeEventListener("click", this.handleMapButtonClick);
     this.pauseButton.removeEventListener("click", this.openPauseMenu);
     this.canvas.removeEventListener("pointerup", this.handleCanvasTap);
     this.input.destroy();
