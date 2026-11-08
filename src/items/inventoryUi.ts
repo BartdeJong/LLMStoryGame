@@ -1,6 +1,7 @@
 import { getIconCanvas } from "../art";
 import type { PaletteName } from "../art";
 import type { InventoryItem } from "./inventory";
+import { activateGamepadFocus } from "../input/focus";
 
 export interface InventoryUI {
   readonly toggleButton: HTMLButtonElement;
@@ -20,6 +21,7 @@ export function createInventoryUI(container: HTMLElement): InventoryUI {
   toggleButton.type = "button";
   toggleButton.textContent = "🎒";
   toggleButton.setAttribute("aria-label", "Inventory");
+  toggleButton.dataset.padHint = "Y";
 
   const panel = el("section", "inventory-panel");
   panel.hidden = true;
@@ -30,8 +32,14 @@ export function createInventoryUI(container: HTMLElement): InventoryUI {
   empty.textContent = "Nothing yet.";
   panel.append(title, list, empty);
 
-  toggleButton.addEventListener("click", () => {
+  const togglePanel = (): void => {
     panel.hidden = !panel.hidden;
+  };
+  toggleButton.addEventListener("click", togglePanel);
+  activateGamepadFocus(panel, {
+    isActive: () => !panel.hidden,
+    onBack: togglePanel,
+    onY: togglePanel,
   });
 
   container.append(toggleButton, panel);
@@ -44,6 +52,7 @@ export function createInventoryUI(container: HTMLElement): InventoryUI {
       empty.hidden = items.length > 0;
       for (const item of items) {
         const row = el("div", "inventory-item");
+        row.tabIndex = 0;
         const canvas = getIconCanvas(item.icon, palette);
         const icon = canvas.cloneNode(true) as HTMLCanvasElement;
         icon.className = "inventory-item-icon";

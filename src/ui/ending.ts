@@ -1,4 +1,5 @@
 import type { EndingChoice, EndingScene } from "../story/ending";
+import { activateGamepadFocus } from "../input/focus";
 
 function el<K extends keyof HTMLElementTagNameMap>(tag: K, className: string, text = ""): HTMLElementTagNameMap[K] {
   const node = document.createElement(tag);
@@ -12,6 +13,7 @@ export function mountEndingChoiceScreen(
   storyTitle: string,
   choices: EndingChoice[],
   onChoose: (choiceIds: string[]) => Promise<void>,
+  onBack?: () => void,
 ): void {
   enableScreenScrolling();
   root.replaceChildren();
@@ -35,6 +37,7 @@ export function mountEndingChoiceScreen(
   }
   screen.append(actions, status);
   root.append(screen);
+  activateGamepadFocus(screen, { onBack });
 }
 
 export function mountEndingScreen(
@@ -64,6 +67,8 @@ export function mountEndingScreen(
   actions.append(newStory, title);
   screen.append(actions);
   root.append(screen);
+  title.dataset.padHint = "B";
+  activateGamepadFocus(screen, { onBack: onBackToTitle });
 }
 
 function enableScreenScrolling(): void {

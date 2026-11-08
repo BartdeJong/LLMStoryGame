@@ -15,6 +15,11 @@
       <div class="game-hud">
         <p class="location-label">MEADOW CROSSING</p>
         <p id="game-message" aria-live="polite">Explore with WASD or the joystick.</p>
+        <div class="gamepad-hints" aria-hidden="true">
+          <span data-gamepad-action="A">Interact</span>
+          <span data-gamepad-action="Y">Backpack</span>
+          <span data-gamepad-action="Menu">Pause</span>
+        </div>
       </div>
       <div class="touch-controls" aria-label="Touch controls">
         <button id="joystick" class="joystick" type="button" aria-label="Movement joystick">
@@ -22,7 +27,7 @@
         </button>
         <button id="action-button" class="action-button" type="button" aria-label="Interact">A</button>
       </div>
-      <button id="pause-button" class="pause-button" type="button" aria-label="Pause menu">Ⅱ</button>
+      <button id="pause-button" class="pause-button" type="button" aria-label="Pause menu" data-pad-hint="Menu">Ⅱ</button>
     </main>
     <script type="module" src="/src/main.ts"></script>
   </body>

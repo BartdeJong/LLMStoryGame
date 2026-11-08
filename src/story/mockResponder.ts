@@ -1,7 +1,6 @@
-import type { DialogueTurnOutput } from "../llm/shapes";
 import type { AreaBriefOutput } from "../llm/shapes";
 import type { GenerationParams } from "../llm/types";
-import { AVAILABLE_CLUES_END, AVAILABLE_CLUES_START, CHARACTER_END, CHARACTER_START, CONVERSATION_END, CONVERSATION_START } from "../dialogue/prompt";
+import { CHARACTER_START, GREETING_END, GREETING_START, THINGS_END, THINGS_START } from "../dialogue/prompt";
 import { ENDING_END, ENDING_START } from "./ending";
 import { SLICE_END, SLICE_START } from "./briefPrompt";
 import type { LocationSlice } from "./slice";
@@ -53,37 +52,16 @@ export function mockAreaBrief(slice: Omit<LocationSlice, "style">): AreaBriefOut
   };
 }
 
-interface MockGoalState {
-  id: string;
-  description: string;
-  gives_items?: string[];
-}
-
-interface MockCharacterFacts {
-  name: string;
-  goal_state: MockGoalState | "resolved";
-}
-
-// Deterministic dialogue so the mock exercises the same effect-validation path as a real model:
-// it proposes the goal's reward once a conversation is under way, and the code decides whether it sticks.
-export function mockDialogueTurn(facts: MockCharacterFacts, conversationText: string): DialogueTurnOutput {
-  const playerTurns = (conversationText.match(/^Player:/gm) ?? []).length;
-  const goal = facts.goal_state;
-  const pendingReward = goal !== "resolved" ? goal.gives_items?.[0] ?? null : null;
-  const mode: DialogueTurnOutput["mode"] = playerTurns % 2 === 0 ? "choices" : "free";
-  const line = goal === "resolved" || !goal
-    ? `${facts.name} chats warmly about the day.`
-    : `${facts.name} thinks about it: ${goal.description}`;
-  return {
-    line,
-    mode,
-    choices: mode === "choices" ? ["Tell me more.", "I should get going.", "Anything else?"] : [],
-    effects: {
-      give_item: playerTurns > 0 ? pendingReward : null,
-      reveal_clue: null,
-      goal_progress: playerTurns > 0 && goal !== "resolved" ? 1 : pendingReward ? 0.5 : null,
-    },
-  };
+// Deterministic dialogue: rephrases nothing, repeats the facts the prompt selected.
+export function mockDialogueLine(prompt: string): string {
+  const greeting = textBetween(prompt, GREETING_START, GREETING_END);
+  if (greeting) return greeting;
+  const things = textBetween(prompt, THINGS_START, THINGS_END);
+  const facts = things.split("\n").filter((entry) => entry.startsWith("- ")).map((entry) => entry.slice(2));
+  const gave = prompt.match(/Just happened: the player gave you the ([^.]+)\./);
+  if (gave) return `Thank you for the ${gave[1]}. That is exactly what I needed.`;
+  if (facts.length > 0) return facts.join(" ");
+  return "I'm not sure about that. What would you like to know?";
 }
 
 // Plug into MockBackend({ respond }). Returns undefined for tags it does not handle.
@@ -101,13 +79,8 @@ export function storyMockRespond(params: GenerationParams): string | undefined {
     });
   }
   if (params.tag === "dialogue") {
-    const facts = between(prompt, CHARACTER_START, CHARACTER_END) as MockCharacterFacts | null;
-    if (!facts) return undefined;
-    const conversationText = textBetween(prompt, CONVERSATION_START, CONVERSATION_END);
-    const turn = mockDialogueTurn(facts, conversationText);
-    const clues = between(prompt, AVAILABLE_CLUES_START, AVAILABLE_CLUES_END) as { id: string; text: string }[] | null;
-    turn.effects.reveal_clue = clues?.[0]?.id ?? null;
-    return JSON.stringify(turn);
+    if (!prompt.includes(CHARACTER_START)) return undefined;
+    return JSON.stringify({ line: mockDialogueLine(prompt) });
   }
   if (params.tag === "ending") {
     const ending = between(prompt, ENDING_START, ENDING_END) as { outline: string; epilogue_notes: string } | null;

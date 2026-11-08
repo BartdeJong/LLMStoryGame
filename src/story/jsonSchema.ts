@@ -1,6 +1,6 @@
 // Checks data against the JSON Schema subset used by tools/story-forge/schema/story-pack.schema.json.
 // Supported: type, enum, const, required, properties, additionalProperties (boolean), items,
-// minItems, minLength, pattern, minimum, and local "#/$defs/..." references.
+// minItems, maxItems, minLength, maxLength, pattern, minimum, and local "#/$defs/..." references.
 
 export interface SchemaIssue {
   path: string;
@@ -55,6 +55,9 @@ export function checkSchema(data: unknown, root: Node): SchemaIssue[] {
       if (typeof schema.minLength === "number" && value.length < schema.minLength) {
         issues.push({ path: where, message: "must not be empty" });
       }
+      if (typeof schema.maxLength === "number" && value.length > schema.maxLength) {
+        issues.push({ path: where, message: `has ${value.length} characters but at most ${schema.maxLength} are allowed. Shorten it.` });
+      }
       if (typeof schema.pattern === "string" && !new RegExp(schema.pattern).test(value)) {
         issues.push({ path: where, message: `"${value}" does not match pattern ${schema.pattern} (lowercase letters, digits and underscores, starting with a letter)` });
       }
@@ -65,6 +68,9 @@ export function checkSchema(data: unknown, root: Node): SchemaIssue[] {
     if (Array.isArray(value)) {
       if (typeof schema.minItems === "number" && value.length < schema.minItems) {
         issues.push({ path: where, message: `needs at least ${schema.minItems} item(s) but has ${value.length}` });
+      }
+      if (typeof schema.maxItems === "number" && value.length > schema.maxItems) {
+        issues.push({ path: where, message: `has ${value.length} item(s) but at most ${schema.maxItems} are allowed` });
       }
       if (schema.items) value.forEach((entry, i) => visit(entry, schema.items as Node, joinPath(path, i)));
     }

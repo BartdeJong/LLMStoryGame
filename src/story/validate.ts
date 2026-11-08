@@ -1,8 +1,9 @@
 import schemaJson from "../../tools/story-forge/schema/story-pack.schema.json";
-import { COMPLEXITY, DEFAULT_TEXT_LIMIT, TEXT_LIMITS, type Range } from "./config";
+import { COMPLEXITY, DEFAULT_TEXT_LIMIT, DIALOGUE_LIMITS, TEXT_LIMITS, type Range } from "./config";
+import { narrationIssue } from "../dialogue/lineCleanup";
 import { checkSchema, joinPath } from "./jsonSchema";
 import { missingOf, orderedLocations, requirementEntries, solveLength, type SolveResult } from "./solver";
-import { LENGTH_IDS, type LengthDefinition, type LengthId, type Requirement, type SourceRef, type StoryPack } from "./types";
+import { LENGTH_IDS, type CastMember, type LengthDefinition, type LengthId, type Requirement, type SourceRef, type StoryPack } from "./types";
 
 export interface Issue {
   severity: "error" | "warning";
@@ -105,6 +106,7 @@ export function validateStoryPack(data: unknown): ValidationReport {
       refs("item", g.gives_items, `${p}.goal_states[${j}].gives_items`, `goal state "${g.id}"`);
     });
   });
+  pack.cast.forEach((c, i) => checkDialogueContent(pack, c, `cast[${i}]`, error));
   pack.truths.forEach((t, i) => {
     const owner = `truth "${t.id}"`;
     refs("truth", t.depends_on, `truths[${i}].depends_on`, owner);
@@ -216,7 +218,15 @@ export function validateStoryPack(data: unknown): ValidationReport {
   for (const lengthId of definedLengths) (pack.lengths[lengthId] as LengthDefinition).beats.forEach((b) => markUsed(b.must_find));
 
   for (const lengthId of definedLengths) {
-    checkLength(pack, lengthId, pack.lengths[lengthId] as LengthDefinition, error, warn);
+    const definition = pack.lengths[lengthId] as LengthDefinition;
+    if (!definition.opening) {
+      warn("OPENING_MISSING", `lengths.${lengthId}.opening`, "Add authored context so a new player understands the story before exploring.");
+    }
+    definition.beats.forEach((beat, index) => {
+      if (!beat.objective) warn("BEAT_OBJECTIVE_MISSING", `lengths.${lengthId}.beats[${index}].objective`, `Add a player-facing objective for beat "${beat.title}".`);
+      if (!beat.guidance) warn("BEAT_GUIDANCE_MISSING", `lengths.${lengthId}.beats[${index}].guidance`, `Add a concrete next step for beat "${beat.title}".`);
+    });
+    checkLength(pack, lengthId, definition, error, warn);
   }
 
   // ---- warnings ----
@@ -229,6 +239,62 @@ export function validateStoryPack(data: unknown): ValidationReport {
   });
 
   return finish(pack);
+}
+
+function checkDialogueContent(pack: StoryPack, c: CastMember, p: string, error: Report): void {
+  const owner = `cast member "${c.id}"`;
+  const lines: [string, string[]][] = [
+    ["greetings", c.greetings],
+    ["goal_hints.unmet", c.goal_hints.unmet],
+    ["goal_hints.in_progress", c.goal_hints.in_progress],
+    ["goal_hints.resolved", c.goal_hints.resolved],
+    ["deflections", c.deflections],
+  ];
+  for (const [field, list] of lines) {
+    list.forEach((line, j) => {
+      const at = `${p}.${field}[${j}]`;
+      if (line.length > DIALOGUE_LIMITS.lineChars) error("DIALOGUE_TOO_LONG", at, `${owner} line has ${line.length} characters but at most ${DIALOGUE_LIMITS.lineChars} are allowed.`);
+      const issue = narrationIssue(line, c.name);
+      if (issue) error("DIALOGUE_NARRATION", at, `${owner}: "${line}" ${issue}. Write spoken words in the character's own voice.`);
+    });
+  }
+
+  const seen = new Set<string>();
+  c.knowledge.forEach((k, j) => {
+    const at = `${p}.knowledge[${j}]`;
+    if (seen.has(k.id)) error("ID_DUPLICATE", `${at}.id`, `${owner} has duplicate knowledge id "${k.id}".`);
+    seen.add(k.id);
+    if (k.topic.trim().split(/\s+/).length > DIALOGUE_LIMITS.topicWords) {
+      error("KNOWLEDGE_TOPIC", `${at}.topic`, `topic "${k.topic}" has more than ${DIALOGUE_LIMITS.topicWords} words.`);
+    }
+    const askIssue = narrationIssue(k.ask, c.name);
+    if (askIssue) error("DIALOGUE_NARRATION", `${at}.ask`, `${owner}: ask "${k.ask}" ${askIssue}. It must be something the player says.`);
+    const textIssue = narrationIssue(k.text, c.name);
+    if (textIssue) error("DIALOGUE_NARRATION", `${at}.text`, `${owner}: fact "${k.text}" ${textIssue}.`);
+    if (k.keywords.some((word) => !word.trim())) error("KNOWLEDGE_KEYWORDS", `${at}.keywords`, "keywords must not be blank.");
+    if (k.clue_id !== undefined) {
+      const clue = pack.clues.find((candidate) => candidate.id === k.clue_id);
+      if (!clue) {
+        error("REF_UNKNOWN", `${at}.clue_id`, `knowledge "${k.id}" references unknown clue id "${k.clue_id}".`);
+      } else if (![clue.where, ...clue.alternatives].some((source) => source.type === "character" && source.id === c.id)) {
+        error("KNOWLEDGE_CLUE_ELSEWHERE", `${at}.clue_id`, `knowledge "${k.id}" gives clue "${clue.id}", but that clue is not found with ${owner}.`);
+      } else if (k.truth_id !== undefined && clue.truth_id !== k.truth_id) {
+        error("KNOWLEDGE_TRUTH_MISMATCH", `${at}.truth_id`, `knowledge "${k.id}" has truth_id "${k.truth_id}" but clue "${clue.id}" belongs to ${clue.truth_id ? `"${clue.truth_id}"` : "no truth"}.`);
+      }
+    }
+    if (k.truth_id !== undefined && !pack.truths.some((t) => t.id === k.truth_id)) {
+      error("REF_UNKNOWN", `${at}.truth_id`, `knowledge "${k.id}" references unknown truth id "${k.truth_id}".`);
+    }
+  });
+
+  // Code, not the model, reveals clues, so a clue told by a character needs a knowledge item.
+  const covered = new Set(c.knowledge.map((k) => k.clue_id));
+  pack.clues.forEach((clue, j) => {
+    const talksHere = [clue.where, ...clue.alternatives].some((source) => source.type === "character" && source.id === c.id);
+    if (talksHere && !covered.has(clue.id)) {
+      error("CLUE_NOT_TALKABLE", `clues[${j}]`, `clue "${clue.id}" is told by ${owner}, but none of their knowledge items has clue_id "${clue.id}".`);
+    }
+  });
 }
 
 function checkTextLimits(value: unknown, path: string, key: string, error: Report): void {

@@ -130,7 +130,7 @@ export interface DialogueTurnOutput {
 // effects are proposals only; game code validates them against story state.
 export const dialogueTurnSchema = defineSchema<DialogueTurnOutput>(
   s.object({
-    line: s.string("Hmm. Let me think about that for a moment.", { maxLength: 300 }),
+    line: s.string("", { maxLength: 300 }),
     mode: s.string("free", { oneOf: ["choices", "free"] }),
     choices: s.array(s.string("Tell me more.", { maxLength: 60 }), { maxItems: 4 }),
     effects: s.object({
@@ -139,6 +139,15 @@ export const dialogueTurnSchema = defineSchema<DialogueTurnOutput>(
       goal_progress: s.nullable(s.number(0, { min: 0, max: 1 })),
     }),
   }),
+);
+
+// The dialogue controller only needs the spoken line; code decides everything else.
+export interface CharacterLineOutput {
+  line: string;
+}
+
+export const characterLineSchema = defineSchema<CharacterLineOutput>(
+  s.object({ line: s.string("", { maxLength: 300 }) }),
 );
 
 export interface ItemOutput {

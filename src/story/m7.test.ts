@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import example from "../../public/stories/example.json";
 import lanterntide from "../../public/stories/lanterntide.json";
 import { ConversationController } from "../dialogue/controller";
+import { giveOptions } from "../dialogue/effects";
 import { LLMClient } from "../llm/client";
 import { MockBackend } from "../llm/mock";
 import { getLengthView } from "./loader";
@@ -79,16 +80,18 @@ async function simulate(pack: StoryPack, lengthId: LengthId): Promise<void> {
       locationMood: area.mood,
       storySummary: story.state.summary,
       inventory: pack.items.filter((item) => story.state.itemsHeld.includes(item.id)).map((item) => ({ id: item.id, name: item.name })),
-      getAvailableClues: () => story.getAvailableCharacterClues(characterId),
     });
-    let turns = 0;
     await controller.start();
-    while (
-      turns++ < pack.clues.length + character.goal_states.length + 2
-      && ((goalStateId && !story.state.resolvedGoalStates.includes(goalStateId))
-        || (clueId && !story.state.cluesFound.includes(clueId)))
-    ) {
-      await controller.reply("I'd be glad to help.");
+    for (let turns = 0; turns < 4; turns += 1) {
+      const goalOpen = goalStateId && !story.state.resolvedGoalStates.includes(goalStateId);
+      const clueOpen = clueId && !story.state.cluesFound.includes(clueId);
+      const option = giveOptions(pack, story.state, character)[0];
+      if (goalOpen && option) await controller.give(option.itemId);
+      else if (clueOpen) {
+        const knowledge = character.knowledge.find((item) => item.clue_id === clueId);
+        if (!knowledge) break;
+        await controller.reply(knowledge.ask);
+      } else break;
     }
     if (goalStateId) expect(story.state.resolvedGoalStates, `resolved ${goalStateId}`).toContain(goalStateId);
     if (clueId) expect(story.state.cluesFound, `found ${clueId}`).toContain(clueId);

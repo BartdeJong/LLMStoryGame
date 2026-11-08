@@ -74,6 +74,60 @@ body {
   margin-top: 3px;
 }
 
+.objective-hud {
+  margin-top: 7px;
+  padding-top: 6px;
+  border-top: 1px solid rgb(231 205 132 / 45%);
+}
+
+.objective-hud p {
+  margin: 0;
+  font-size: 11px;
+  line-height: 1.35;
+}
+
+.objective-hud-heading {
+  color: #e7cd84;
+  font-size: 9px !important;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+}
+
+.objective-hud-title {
+  margin-top: 2px !important;
+  font-weight: 700;
+}
+
+.objective-hud-guidance {
+  margin-top: 2px !important;
+  color: #d3ddc2;
+}
+
+.story-opening {
+  max-width: 580px;
+}
+
+.story-opening-context {
+  max-width: 48ch;
+  line-height: 1.6;
+}
+
+.story-opening-lead-label {
+  margin: 24px 0 6px;
+  color: #e7cd84;
+  font-size: 0.95rem;
+}
+
+.story-opening-lead {
+  margin: 0;
+  font-weight: 700;
+}
+
+.story-opening-guidance {
+  margin: 6px 0 20px;
+  color: #d3ddc2;
+}
+
 .touch-controls {
   position: absolute;
   right: max(18px, env(safe-area-inset-right));
@@ -368,6 +422,197 @@ body.llm-debug-mode {
   padding: max(18px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) 32px max(16px, env(safe-area-inset-left));
 }
 
+.dialogue-debug-shell {
+  width: min(100%, 920px);
+}
+
+.dialogue-debug-shell h1,
+.dialogue-debug-shell h2,
+.dialogue-debug-shell h3 {
+  color: #e7cd84;
+}
+
+.dialogue-debug-shell h1 {
+  margin: 14px 0 4px;
+}
+
+.dialogue-debug-shell h2 {
+  margin: 20px 0 10px;
+  font-size: 1.15rem;
+}
+
+.dialogue-debug-setup,
+.dialogue-debug-chat {
+  margin-top: 20px;
+  padding: 14px;
+  border: 2px solid #536a4c;
+  background: #1c2c22;
+}
+
+.dialogue-debug-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 10px;
+  margin: 12px 0;
+}
+
+.dialogue-debug-controls label {
+  display: grid;
+  gap: 4px;
+  color: #d7dca8;
+}
+
+.dialogue-debug-select {
+  max-width: 100%;
+  min-height: 40px;
+  padding: 6px;
+  color: inherit;
+  background: #0f1a14;
+}
+
+.dialogue-debug-model-setup:empty {
+  display: none;
+}
+
+.dialogue-debug-status {
+  min-height: 1.5em;
+  color: #b7c1a0;
+}
+
+.dialogue-debug-error {
+  color: #ffb3a7;
+}
+
+.dialogue-debug-state-options {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  margin-top: 10px;
+}
+
+.dialogue-debug-state-group {
+  max-height: 240px;
+  overflow: auto;
+  padding: 8px;
+  border: 1px solid #536a4c;
+}
+
+.dialogue-debug-state-option {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  margin: 6px 0;
+  color: #d8ddc4;
+  font-size: 0.9rem;
+}
+
+.dialogue-debug-transcript {
+  display: grid;
+  gap: 10px;
+  max-height: 48vh;
+  overflow: auto;
+  padding: 10px;
+  background: #0f1a14;
+}
+
+.dialogue-debug-bubble {
+  max-width: 86%;
+  padding: 10px 12px;
+  border: 1px solid #536a4c;
+  background: #1c2c22;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.dialogue-debug-bubble-player {
+  justify-self: end;
+  background: #263b2b;
+}
+
+.dialogue-debug-bubble-character {
+  justify-self: start;
+}
+
+.dialogue-debug-speaker {
+  color: #e7cd84;
+  font-size: 0.85rem;
+}
+
+.dialogue-debug-bubble p {
+  margin: 4px 0 0;
+}
+
+.dialogue-debug-saved-feedback {
+  margin-top: 8px;
+  color: #b7c1a0;
+  font-size: 0.85rem;
+}
+
+.dialogue-debug-feedback {
+  margin: 14px 0;
+  padding: 12px;
+  border: 1px solid #a48f55;
+  background: #263327;
+}
+
+.dialogue-debug-feedback h3 {
+  margin: 0 0 8px;
+}
+
+.dialogue-debug-feedback-input,
+.dialogue-debug-player-input {
+  width: 100%;
+  min-height: 44px;
+  padding: 10px;
+  border: 1px solid #536a4c;
+  border-radius: 0;
+  color: inherit;
+  background: #0f1a14;
+  font: inherit;
+}
+
+.dialogue-debug-feedback-input {
+  min-height: 90px;
+  resize: vertical;
+}
+
+.dialogue-debug-tags,
+.dialogue-debug-quick-replies {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 10px 0;
+}
+
+.dialogue-debug-tag {
+  display: inline-flex;
+  gap: 5px;
+  align-items: center;
+  padding: 5px 8px;
+  border: 1px solid #536a4c;
+  color: #d8ddc4;
+  font-size: 0.85rem;
+}
+
+.dialogue-debug-player-form {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+}
+
+.dialogue-debug-quick-replies .dialogue-choice {
+  min-height: 44px;
+  padding: 8px 12px;
+}
+
+.dialogue-debug-shell button,
+.dialogue-debug-shell input,
+.dialogue-debug-shell textarea,
+.dialogue-debug-shell select {
+  touch-action: manipulation;
+}
+
 .llm-debug-controls {
   display: flex;
   flex-wrap: wrap;
@@ -427,6 +672,48 @@ body.llm-debug-mode {
 
 .llm-button:disabled {
   opacity: 0.5;
+}
+
+.provider-form {
+  display: grid;
+  gap: 14px;
+}
+
+.provider-label {
+  display: grid;
+  gap: 6px;
+}
+
+.provider-label input,
+.provider-label select {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 44px;
+  padding: 8px;
+  border: 1px solid #536a4c;
+  border-radius: 4px;
+  color: #f5f0d7;
+  background: #22342b;
+  font: inherit;
+}
+
+.provider-connection {
+  display: grid;
+  gap: 14px;
+}
+
+.provider-connection[hidden],
+.provider-privacy[hidden] {
+  display: none;
+}
+
+.provider-privacy {
+  overflow-wrap: anywhere;
+}
+
+.provider-status {
+  min-height: 1.5em;
+  color: #f0ad9d;
 }
 
 .story-list {
@@ -494,6 +781,11 @@ body.llm-debug-mode {
   bottom: max(10px, env(safe-area-inset-bottom));
   left: max(10px, env(safe-area-inset-left));
   z-index: 20;
+  display: flex;
+  max-height: min(78dvh, 680px);
+  flex-direction: column;
+  box-sizing: border-box;
+  overflow: hidden;
   padding: 12px 14px;
   border: 2px solid #536a4c;
   border-radius: 8px;
@@ -502,12 +794,16 @@ body.llm-debug-mode {
   pointer-events: auto;
 }
 
+.dialogue-box[hidden] {
+  display: none;
+}
+
 .dialogue-busy {
   opacity: 0.75;
 }
 
 .dialogue-speaker {
-  margin: 0 0 4px;
+  margin: 0 0 2px;
   color: #e7cd84;
   font-size: 13px;
   font-weight: 800;
@@ -515,16 +811,98 @@ body.llm-debug-mode {
   text-transform: uppercase;
 }
 
-.dialogue-line {
+.dialogue-thinking {
   margin: 0 0 8px;
-  font-size: 14px;
+  color: #e7cd84;
+  font-size: 13px;
+  font-style: italic;
+}
+
+.dialogue-thinking[hidden],
+.dialogue-reply[hidden] {
+  display: none;
+}
+
+.dialogue-thinking-dots {
+  display: inline-block;
+  width: 1.5em;
+  overflow: hidden;
+  vertical-align: bottom;
+  animation: dialogue-dots 1.2s steps(4, end) infinite;
+}
+
+@keyframes dialogue-dots {
+  0% { width: 0; }
+  100% { width: 1.5em; }
+}
+
+.dialogue-log {
+  flex: 1 1 auto;
+  min-height: 80px;
+  max-height: min(32dvh, 300px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 4px 2px 8px;
+}
+
+.dialogue-bubble {
+  width: fit-content;
+  max-width: 88%;
+  margin: 6px 0;
+  padding: 8px 10px;
+  border: 1px solid #536a4c;
+  border-radius: 10px;
+  background: #24372d;
+}
+
+.dialogue-bubble-character {
+  margin-right: auto;
+}
+
+.dialogue-bubble-player {
+  margin-left: auto;
+  border-color: #687eaa;
+  background: #28334a;
+}
+
+.dialogue-bubble-newest {
+  border-width: 2px;
+  padding: 9px 11px;
+  font-size: 1.05em;
+}
+
+.dialogue-bubble-label {
+  display: block;
+  margin-bottom: 3px;
+  color: #e7cd84;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.dialogue-bubble-player .dialogue-bubble-label {
+  color: #b7c9f0;
+  text-align: right;
+}
+
+.dialogue-bubble-text {
+  margin: 0;
   line-height: 1.4;
 }
 
 .dialogue-notice {
-  margin: 0 0 8px;
-  color: #cde8b9;
-  font-size: 12px;
+  margin: 2px 0 8px;
+  color: #a4b09f;
+  font-size: 11px;
+  text-align: center;
+}
+
+.dialogue-reply-heading {
+  margin: 0 0 6px;
+  color: #d3ddc9;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
 }
 
 .dialogue-choices {
@@ -540,6 +918,12 @@ body.llm-debug-mode {
 
 .dialogue-choice {
   min-height: 44px;
+  padding: 7px 10px;
+  border: 1px solid #aebd9f;
+  border-radius: 5px;
+  color: #f5f0d7;
+  background: transparent;
+  font: inherit;
   text-align: left;
 }
 
@@ -667,6 +1051,98 @@ body.llm-debug-mode {
   font-size: 12px;
 }
 
+html[data-input-mode="gamepad"] .touch-controls {
+  display: none;
+}
+
+.gamepad-hints {
+  display: none;
+}
+
+html[data-input-mode="gamepad"] .gamepad-hints {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px 10px;
+  margin-top: 5px;
+  color: #f5f0d7;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.gamepad-hints span::before,
+html[data-input-mode="gamepad"] [data-pad-hint]::after {
+  display: inline-grid;
+  min-width: 1.65em;
+  height: 1.65em;
+  place-items: center;
+  margin-inline-start: 0.45em;
+  border: 2px solid #f5f0d7;
+  border-radius: 50%;
+  color: #fff;
+  font-size: 0.72em;
+  font-weight: 900;
+  line-height: 1;
+  vertical-align: middle;
+}
+
+.gamepad-hints span::before {
+  content: attr(data-gamepad-action);
+  margin: 0 0.35em 0 0;
+}
+
+html[data-input-mode="gamepad"] [data-pad-hint]::after {
+  content: attr(data-pad-hint);
+  padding: 0 0.2em;
+}
+
+html[data-input-mode="gamepad"] [data-pad-hint="A"]::after,
+.gamepad-hints [data-gamepad-action="A"]::before {
+  background: #147a35;
+}
+
+html[data-input-mode="gamepad"] [data-pad-hint="B"]::after,
+.gamepad-hints [data-gamepad-action="B"]::before {
+  background: #ae302f;
+}
+
+html[data-input-mode="gamepad"] [data-pad-hint="X"]::after,
+.gamepad-hints [data-gamepad-action="X"]::before {
+  background: #2266bd;
+}
+
+html[data-input-mode="gamepad"] [data-pad-hint="Y"]::after,
+.gamepad-hints [data-gamepad-action="Y"]::before {
+  background: #a87800;
+}
+
+html[data-input-mode="gamepad"] [data-pad-hint="Menu"]::after,
+.gamepad-hints [data-gamepad-action="Menu"]::before {
+  min-width: auto;
+  padding: 0 0.45em;
+  border-radius: 4px;
+  background: #536a4c;
+}
+
+html[data-input-mode="gamepad"] :focus {
+  outline: 3px solid #fff;
+  outline-offset: 3px;
+  box-shadow: 0 0 0 2px #17251d;
+}
+
+.controller-toast {
+  position: fixed;
+  z-index: 200;
+  top: max(14px, env(safe-area-inset-top));
+  left: 50%;
+  padding: 8px 12px;
+  transform: translateX(-50%);
+  border: 2px solid #789764;
+  background: #17251d;
+  color: #f5f0d7;
+  font-size: 13px;
+  font-weight: 700;
+}
+
 button,
 select,
 a {
@@ -783,7 +1259,7 @@ html[data-text-size="large"] .dialogue-speaker {
   font-size: 15px;
 }
 
-html[data-text-size="large"] .dialogue-line {
+html[data-text-size="large"] .dialogue-bubble-text {
   font-size: 17px;
 }
 

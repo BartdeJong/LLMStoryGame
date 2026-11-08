@@ -3,4 +3,5 @@
 export interface ConversationTurn {
   speaker: "player" | "character";
   text: string;
+  kind?: "intent";
 }

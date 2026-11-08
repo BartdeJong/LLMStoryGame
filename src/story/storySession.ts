@@ -11,7 +11,7 @@ import type { EndingChoice, EndingScene } from "./ending";
 import { createStoryState, giveItem, grantTruthsFromFoundClues, markClueFound, markCollected, markVisited, summaryDue } from "./state";
 import type { StoryState } from "./state";
 import { refreshSummary } from "./summary";
-import type { CastMember, Ending, Item, StoryPack } from "./types";
+import type { Beat, CastMember, Ending, Item, StoryPack } from "./types";
 import type { GameSave, SavedArea } from "../save/types";
 
 export interface CollectResult {
@@ -47,6 +47,12 @@ export class StorySession {
 
   get startLocationId(): string {
     return this.view.startLocation;
+  }
+
+  get currentBeat(): Beat {
+    const beat = this.view.beats[this.openBeatCount() - 1];
+    if (!beat) throw new Error(`Story "${this.pack.identity.id}" has no current beat.`);
+    return beat;
   }
 
   getArea(areaId: string): Area {

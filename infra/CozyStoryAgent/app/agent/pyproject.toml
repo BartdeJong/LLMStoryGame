@@ -1,0 +1,19 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "agent-python-minimal"
+version = "0.1.0"
+description = "Minimal AgentCore Runtime HTTP agent"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "aws-opentelemetry-distro ~= 0.21.0",
+    "bedrock-agentcore >= 1.18.1, < 2.0.0",
+    "boto3 >= 1.43.0, < 2.0.0",
+    "botocore[crt] ~= 1.43.0",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["."]

@@ -65,3 +65,10 @@ export const TEXT_LIMITS: Record<string, number> = {
   relation: 120,
 };
 export const DEFAULT_TEXT_LIMIT = 400;
+
+// Authored dialogue content per core cast member. The count limits also live in the JSON Schema
+// (so Story Forge sees them); the character limits and word counts are enforced by the validator.
+export const DIALOGUE_LIMITS = {
+  topicWords: 3,
+  lineChars: 200, // greetings, hints and deflections
+};

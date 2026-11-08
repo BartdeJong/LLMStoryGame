@@ -1,5 +1,6 @@
 import { getLengthView, loadStoryIndex, loadStoryPack, StoryLoadError, type LengthView } from "../story/loader";
 import type { LengthId, StoryIndexEntry, StoryPack } from "../story/types";
+import { activateGamepadFocus } from "../input/focus";
 
 const LENGTH_LABELS: Record<LengthId, string> = { short: "Short", medium: "Medium", long: "Long" };
 
@@ -12,7 +13,11 @@ function el<K extends keyof HTMLElementTagNameMap>(tag: K, className: string, te
 
 // Lists the stories from index.json. Choosing a length loads and validates the pack,
 // then hands the pack and length view to onChosen, which starts the game.
-export async function mountStorySelectScreen(root: HTMLElement, onChosen: (view: LengthView, pack: StoryPack) => void): Promise<void> {
+export async function mountStorySelectScreen(
+  root: HTMLElement,
+  onChosen: (view: LengthView, pack: StoryPack) => void,
+  onBack?: () => void,
+): Promise<void> {
   root.replaceChildren();
   const box = el("section", "llm-screen");
   box.append(el("h1", "llm-screen-title", "Choose a story"));
@@ -21,6 +26,7 @@ export async function mountStorySelectScreen(root: HTMLElement, onChosen: (view:
   const list = el("div", "story-list");
   box.append(list, status);
   root.append(box);
+  activateGamepadFocus(box, { onBack });
 
   const showError = (error: unknown): void => {
     const lines = error instanceof StoryLoadError ? error.message.split("\n") : [String(error)];

@@ -1,5 +1,6 @@
 import type { GameSave } from "./types";
 import { normalizeSave, SaveRepository } from "./repository";
+import { activateGamepadFocus } from "../input/focus";
 
 function el<K extends keyof HTMLElementTagNameMap>(tag: K, className: string, text = ""): HTMLElementTagNameMap[K] {
   const node = document.createElement(tag);
@@ -20,6 +21,7 @@ function createSlotId(): string {
 function backButton(onBack: () => void): HTMLButtonElement {
   const button = el("button", "llm-button", "Back");
   button.type = "button";
+  button.dataset.padHint = "B";
   button.addEventListener("click", onBack);
   return button;
 }
@@ -37,6 +39,7 @@ export async function mountSaveSlotPicker(
   const slots = el("div", "story-list");
   screen.append(slots, status, backButton(onBack));
   root.append(screen);
+  activateGamepadFocus(screen, { onBack });
 
   try {
     const saves = await repository.list();
@@ -100,6 +103,7 @@ export async function mountLoadGameScreen(
   });
   screen.append(slots, importButton, file, status, backButton(onBack));
   root.append(screen);
+  activateGamepadFocus(screen, { onBack });
 
   const refreshSlots = async (): Promise<void> => {
     slots.replaceChildren();

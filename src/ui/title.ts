@@ -1,4 +1,5 @@
 import { createPreferenceControls } from "./preferences";
+import { activateGamepadFocus } from "../input/focus";
 
 function el<K extends keyof HTMLElementTagNameMap>(tag: K, className: string, text = ""): HTMLElementTagNameMap[K] {
   const node = document.createElement(tag);
@@ -31,4 +32,5 @@ export function mountTitleScreen(
   load.addEventListener("click", onLoadGame);
   screen.append(start, load, createPreferenceControls());
   root.append(screen);
+  activateGamepadFocus(screen);
 }

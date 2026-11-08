@@ -1,5 +1,5 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "identity": {
     "id": "lanterntide",
     "version": 1,
@@ -7,20 +7,77 @@
     "logline": "In a village of drifting lighthouses, an apprentice keeper with a lost year follows the missing oil to a thirteenth light that nobody remembers.",
     "setting": "Hearthdrift, twelve lighthouses on linked islets that drift along the warm Lantern Tide, where lamps burn oil pressed from freely given memories.",
     "tone": "Cozy, warm and wistful, with soft humour and a little mystery.",
-    "themes": ["memory", "belonging", "being remembered", "community"],
-    "content_notes": ["No graphic violence.", "Fading and loss are gentle and reversible.", "Fog and dark water are mildly spooky only."]
+    "themes": [
+      "memory",
+      "belonging",
+      "being remembered",
+      "community"
+    ],
+    "content_notes": [
+      "No graphic violence.",
+      "Fading and loss are gentle and reversible.",
+      "Fog and dark water are mildly spooky only."
+    ]
   },
   "style_guide": {
     "narrator_voice": "Warm, second person, present tense. Short sentences, soft humour, lamp and tide imagery.",
-    "use": ["lantern", "wick", "oil", "drift", "tide", "hush", "mooring", "glow", "hum", "cosy", "keeper"],
-    "avoid": ["blood", "kill", "dead", "corpse", "curse", "gore", "weapon", "modern technology", "clinical words like amnesia", "forgotten used as a threat"],
+    "use": [
+      "lantern",
+      "wick",
+      "oil",
+      "drift",
+      "tide",
+      "hush",
+      "mooring",
+      "glow",
+      "hum",
+      "cosy",
+      "keeper"
+    ],
+    "avoid": [
+      "blood",
+      "kill",
+      "dead",
+      "corpse",
+      "curse",
+      "gore",
+      "weapon",
+      "modern technology",
+      "clinical words like amnesia",
+      "forgotten used as a threat"
+    ],
     "naming_conventions": "Plain first names (Hester, Pell, Nim) with surnames from lamp and sea trades (Wick, Tallow, Quay, Reed). Places read like homes or chores (Kettle Quay, Thirteen Buns). Say lost or faded, never amnesia.",
     "examples": [
-      { "cast_id": "c_hester", "lines": ["Oh, dear. The light flickered again last night, didn't it? Come and sit by the lamp."] },
-      { "cast_id": "c_pell", "lines": ["Finders keepers, friend! Though I might trade, for something shiny."] },
-      { "cast_id": "c_dorrin", "lines": ["Twelve lights. Thirteen berths. Count again. Count properly."] },
-      { "cast_id": "c_granny", "lines": ["Slow and steady, dear. A good bun is like a good memory, it rises in its own time."] },
-      { "cast_id": "c_wren", "lines": ["There you are, Spark. You took your time. I kept the lamp warm."] }
+      {
+        "cast_id": "c_hester",
+        "lines": [
+          "Oh, dear. The light flickered again last night, didn't it? Come and sit by the lamp."
+        ]
+      },
+      {
+        "cast_id": "c_pell",
+        "lines": [
+          "Finders keepers, friend! Though I might trade, for something shiny."
+        ]
+      },
+      {
+        "cast_id": "c_dorrin",
+        "lines": [
+          "Twelve lights. Thirteen berths. Count again. Count properly."
+        ]
+      },
+      {
+        "cast_id": "c_granny",
+        "lines": [
+          "Slow and steady, dear. A good bun is like a good memory, it rises in its own time."
+        ]
+      },
+      {
+        "cast_id": "c_wren",
+        "lines": [
+          "There you are, Spark. You took your time. I kept the lamp warm."
+        ]
+      }
     ]
   },
   "cast": [
@@ -31,24 +88,170 @@
       "personality": "Warm and anxious Keeper of the Mothlight who mentors the player.",
       "goal": "Stop the Mothlight flickering.",
       "secret": "She dreams of a girl lighting a lamp.",
-      "motivations": ["keep the great light steady", "look after the apprentice"],
+      "motivations": [
+        "keep the great light steady",
+        "look after the apprentice"
+      ],
       "relationships": [
-        { "cast_id": "c_hobb", "relation": "old friend" },
-        { "cast_id": "c_ismay", "relation": "good friend" }
+        {
+          "cast_id": "c_hobb",
+          "relation": "old friend"
+        },
+        {
+          "cast_id": "c_ismay",
+          "relation": "good friend"
+        }
       ],
       "sprite_recipe": "body=round; bodyColor=earth; accentColor=cream; skinColor=skin; feature=none; walkFrames=2",
       "home_location": "l_mothlight_base",
-      "knows_truths": ["t_thirteen_berths", "t_hush_seven_years", "t_village_forgot", "t_side_mothlight_echo"],
+      "knows_truths": [
+        "t_thirteen_berths",
+        "t_hush_seven_years",
+        "t_village_forgot",
+        "t_side_mothlight_echo"
+      ],
       "goal_states": [
         {
           "id": "gs_hester_flame",
           "description": "Hester understands why the Mothlight flickers and relights a steady flame.",
-          "requires": { "truths": ["t_village_forgot"] },
-          "gives_items": ["i_mothlight_ember"],
+          "requires": {
+            "truths": [
+              "t_village_forgot"
+            ]
+          },
+          "gives_items": [
+            "i_mothlight_ember"
+          ],
           "reveals": "Hester says the flicker is an echo of another light."
         }
       ],
-      "voice_notes": "Gentle, with trailing oh-dear worries."
+      "voice_notes": "Gentle, with trailing oh-dear worries.",
+      "greetings": [
+        "Oh dear, there you are, love. Have you noticed the harbour has thirteen berths and only twelve lights?",
+        "Ah, my apprentice! Oh dear, do you remember anything of your lost year? I do keep wondering about it.",
+        "Good to see you. The Mothlight has been so fretful, oh dear, and I think it's tied to something we've all forgotten.",
+        "Hello, love. Oh dear, I dream of a girl lighting a lamp, and I can't think who she is."
+      ],
+      "knowledge": [
+        {
+          "id": "k_hester_berths",
+          "topic": "Berth count",
+          "ask": "Why are there too many berths?",
+          "text": "Oh dear, the harbour has one berth more than it has lights. I keep counting and it never comes out right.",
+          "keywords": [
+            "berth",
+            "berths",
+            "harbour",
+            "lights",
+            "count"
+          ],
+          "clue_id": "cl_hester_berths",
+          "truth_id": "t_thirteen_berths"
+        },
+        {
+          "id": "k_hester_dark",
+          "topic": "The Hush",
+          "ask": "When did the Mothlight go dark?",
+          "text": "Seven years ago, in the Hush. It went dark and I've never forgiven myself, oh dear.",
+          "keywords": [
+            "dark",
+            "hush",
+            "seven",
+            "years",
+            "mothlight"
+          ],
+          "clue_id": "cl_hester_dark",
+          "truth_id": "t_hush_seven_years"
+        },
+        {
+          "id": "k_hester_echo",
+          "topic": "The flicker",
+          "ask": "Why does the Mothlight flicker?",
+          "text": "Oh, I think it flickers like an echo of another lamp. Somewhere, a second light answers it.",
+          "keywords": [
+            "flicker",
+            "echo",
+            "lamp",
+            "mothlight",
+            "another"
+          ],
+          "clue_id": "cl_hester_echo",
+          "truth_id": "t_side_mothlight_echo"
+        },
+        {
+          "id": "k_hester_job",
+          "topic": "Keeper's duties",
+          "ask": "What does a Keeper do?",
+          "text": "I trim the wick, polish the lens and worry, mostly. The worrying takes the longest, oh dear.",
+          "keywords": [
+            "keeper",
+            "job",
+            "wick",
+            "lens",
+            "duties"
+          ]
+        },
+        {
+          "id": "k_hester_hobb",
+          "topic": "Elder Hobb",
+          "ask": "Do you know Elder Hobb?",
+          "text": "Hobb and I go back years. He's gone terribly quiet of late, oh dear.",
+          "keywords": [
+            "hobb",
+            "elder",
+            "council",
+            "friend",
+            "quiet"
+          ]
+        },
+        {
+          "id": "k_hester_ismay",
+          "topic": "Sister Ismay",
+          "ask": "Who rings the bell?",
+          "text": "Ismay, my good friend. She dozes through half the service, bless her.",
+          "keywords": [
+            "ismay",
+            "bell",
+            "sister",
+            "owl",
+            "ring"
+          ]
+        },
+        {
+          "id": "k_hester_forget",
+          "topic": "Who knows more",
+          "ask": "Who could tell me why the village forgets things?",
+          "text": "Oh dear, Tamsin at the Archive has noticed how names fade, and Granny Fennick bakes thirteen buns and can't say why.",
+          "keywords": [
+            "forget",
+            "names",
+            "fade",
+            "tamsin",
+            "granny"
+          ]
+        }
+      ],
+      "goal_hints": {
+        "unmet": [
+          "I must stop the Mothlight flickering, oh dear. I think it's about something the village forgot. Do ask Tamsin or Granny Fennick.",
+          "If I could only learn why the village forgets, I'd know why my light flickers, oh dear."
+        ],
+        "in_progress": [
+          "You're getting close, oh dear. Once you know why names are forgotten, come and tell me.",
+          "Tamsin and Granny both know a piece of it. Tell me what you learn and I'll relight the flame."
+        ],
+        "resolved": [
+          "It's steady! Oh, thank you, love. Take this Mothlight Ember, it will light your way into the fog.",
+          "I can finally breathe. Pell would trade his lost things for that ember, I'm sure, oh dear."
+        ]
+      },
+      "deflections": [
+        "Oh dear, I really couldn't say.",
+        "That's beyond me, love, I'm afraid.",
+        "Oh, my memory fades just when I need it.",
+        "You'd best ask someone sharper than I, oh dear.",
+        "I wish I knew, truly I do."
+      ]
     },
     {
       "id": "c_hobb",
@@ -57,23 +260,175 @@
       "personality": "Dignified and tired Council Elder.",
       "goal": "Keep the village calm until the Hush passes.",
       "secret": "He remembers Wren, his granddaughter, and wears her locket.",
-      "motivations": ["protect the lamp", "protect the village"],
+      "motivations": [
+        "protect the lamp",
+        "protect the village"
+      ],
       "relationships": [
-        { "cast_id": "c_wren", "relation": "grandfather" },
-        { "cast_id": "c_pell", "relation": "wary of" }
+        {
+          "cast_id": "c_wren",
+          "relation": "grandfather"
+        },
+        {
+          "cast_id": "c_pell",
+          "relation": "wary of"
+        }
       ],
       "sprite_recipe": "body=tall; bodyColor=shadow; accentColor=cream; skinColor=skin; feature=hat; walkFrames=2",
       "home_location": "l_council_hall",
-      "knows_truths": ["t_wren_lit_lamp", "t_village_forgot", "t_hobb_remembers"],
+      "knows_truths": [
+        "t_wren_lit_lamp",
+        "t_village_forgot",
+        "t_hobb_remembers"
+      ],
       "goal_states": [
         {
           "id": "gs_hobb_confession",
           "description": "Shown the locket and letters, Hobb confesses that he remembers Wren.",
-          "requires": { "truths": ["t_hobb_remembers"] },
+          "requires": {
+            "truths": [
+              "t_hobb_remembers"
+            ]
+          },
           "reveals": "Hobb hints at the chorus rite and admits he feared speaking her name."
         }
       ],
-      "voice_notes": "Formal, short sentences, long silences. Not essential: his truth has two object routes."
+      "voice_notes": "Formal, short sentences, long silences. Not essential: his truth has two object routes.",
+      "greetings": [
+        "Good day. You have noticed the empty berth, I think. Most do not.",
+        "You come at a heavy hour. The Hush will return soon, and I wish the village calm.",
+        "Hm. Another visitor. Something is forgotten here. I will say no more.",
+        "Be brief. The oil goes missing, and the Council does not rest."
+      ],
+      "knowledge": [
+        {
+          "id": "k_hobb_speaks",
+          "topic": "His granddaughter",
+          "ask": "Do you remember someone you've forgotten?",
+          "text": "I remember her. My granddaughter. I have not said it aloud in seven years.",
+          "keywords": [
+            "granddaughter",
+            "remember",
+            "wren",
+            "locket"
+          ],
+          "clue_id": "cl_hobb_speaks",
+          "truth_id": "t_hobb_remembers"
+        },
+        {
+          "id": "k_hobb_warning",
+          "topic": "A warning",
+          "ask": "Is it safe to ask about the harbour?",
+          "text": "Do not go asking about the harbour. Leave it. Nothing good comes of it.",
+          "keywords": [
+            "harbour",
+            "warning",
+            "ask",
+            "safe",
+            "danger"
+          ],
+          "clue_id": "cl_hobb_warning"
+        },
+        {
+          "id": "k_hobb_council",
+          "topic": "The Council",
+          "ask": "What does the Council do?",
+          "text": "We keep order. We keep the peace. Mostly, we keep quiet.",
+          "keywords": [
+            "council",
+            "order",
+            "peace",
+            "elder",
+            "rules"
+          ]
+        },
+        {
+          "id": "k_hobb_hush",
+          "topic": "The Hush",
+          "ask": "What is the Hush?",
+          "text": "A fog that smothers lamps. It took us once, long ago. I will keep the village calm when it returns.",
+          "keywords": [
+            "hush",
+            "silence",
+            "calm",
+            "village",
+            "pass"
+          ]
+        },
+        {
+          "id": "k_hobb_pell",
+          "topic": "The magpie",
+          "ask": "What do you think of Pell?",
+          "text": "Pell collects things. I do not trust a collector near the harbour.",
+          "keywords": [
+            "pell",
+            "magpie",
+            "collector",
+            "trust",
+            "thief"
+          ]
+        },
+        {
+          "id": "k_hobb_hall",
+          "topic": "The hall",
+          "ask": "Why is the hall so empty?",
+          "text": "Fewer come each year. I do not ask why. I fear I know.",
+          "keywords": [
+            "hall",
+            "empty",
+            "council",
+            "fewer",
+            "people"
+          ]
+        },
+        {
+          "id": "k_hobb_forgetting",
+          "topic": "Why they forgot",
+          "ask": "Why has the village forgotten someone?",
+          "text": "Memories burnt for a lamp erase the giver from every other mind. That is why they forgot her.",
+          "keywords": [
+            "forgot",
+            "forgotten",
+            "burnt",
+            "memories",
+            "erase"
+          ]
+        },
+        {
+          "id": "k_hobb_lamp",
+          "topic": "The saving lamp",
+          "ask": "Did someone light a lamp to save us from the Hush?",
+          "text": "A young keeper lit a lamp with her own memories and led us out. I will say no more than that.",
+          "keywords": [
+            "lamp",
+            "keeper",
+            "hush",
+            "memories",
+            "saved"
+          ]
+        }
+      ],
+      "goal_hints": {
+        "unmet": [
+          "I want calm until the Hush passes. Bring me no panic. Bring me proof, if you must bring me anything.",
+          "Proof would be my locket, or the letters I never sent. Do not ask me to speak without it."
+        ],
+        "in_progress": [
+          "You press me. The locket in my study and my letters in the Founders' Cellar are what you want. Tell me what you found.",
+          "Tell me you have seen my locket or my letters, and I shall consider it."
+        ],
+        "resolved": [
+          "The weight is lighter now. Speak her name, and tell your memories of her together. The rite is in the Founders' Cellar.",
+          "Thank you. I feared her name would put out the lamp. It does the opposite."
+        ]
+      },
+      "deflections": [
+        "That is not for me to say.",
+        "I will not discuss it.",
+        "Hm. No.",
+        "Ask the archivist. I have no answer.",
+        "Some questions are better left unspoken."
+      ]
     },
     {
       "id": "c_pell",
@@ -82,23 +437,148 @@
       "personality": "Chatty, sly and soft-hearted collector.",
       "goal": "Find the brass key that belongs to something.",
       "secret": "He collects lost things because he feels something is missing. He holds Wren's spyglass and the Tallow Key.",
-      "motivations": ["collecting shiny things", "belonging"],
+      "motivations": [
+        "collecting shiny things",
+        "belonging"
+      ],
       "relationships": [
-        { "cast_id": "c_rook", "relation": "rival" }
+        {
+          "cast_id": "c_rook",
+          "relation": "rival"
+        }
       ],
       "sprite_recipe": "body=small; bodyColor=ink; accentColor=highlight; skinColor=skin; feature=wings; walkFrames=3",
       "home_location": "l_lost_found_shed",
-      "knows_truths": ["t_side_spyglass"],
+      "knows_truths": [
+        "t_side_spyglass"
+      ],
       "goal_states": [
         {
           "id": "gs_pell_trade",
           "description": "Pell trades his lost things for a glowing Mothlight Ember.",
-          "requires": { "items": ["i_mothlight_ember"] },
-          "gives_items": ["i_tallow_key", "i_brass_spyglass"],
+          "requires": {
+            "items": [
+              "i_mothlight_ember"
+            ]
+          },
+          "gives_items": [
+            "i_tallow_key",
+            "i_brass_spyglass"
+          ],
           "reveals": "Pell admits the spyglass and key were Wren's."
         }
       ],
-      "voice_notes": "Fast, with finders keepers, friend."
+      "voice_notes": "Fast, with finders keepers, friend.",
+      "greetings": [
+        "Hey there, friend! Finders keepers, but tell me, ever noticed a berth with no lamp?",
+        "Psst, friend! Folk say I take the oil. Everything on my shelves was lost, nothing's stolen!",
+        "Well, well, a visitor! Finders keepers, though something on my shelves feels like it belongs to someone I can't remember.",
+        "Ooh, shiny new face! Seen anything strange lately, friend? Oil's going missing, they say."
+      ],
+      "knowledge": [
+        {
+          "id": "k_pell_spyglass",
+          "topic": "Brass spyglass",
+          "ask": "Whose spyglass is that?",
+          "text": "That brass spyglass? Belonged to the thirteenth keeper, friend. Finders keepers, but I knew it.",
+          "keywords": [
+            "spyglass",
+            "brass",
+            "thirteenth",
+            "keeper",
+            "telescope"
+          ],
+          "clue_id": "cl_pell_spyglass",
+          "truth_id": "t_side_spyglass"
+        },
+        {
+          "id": "k_pell_suspect",
+          "topic": "Oil rumours",
+          "ask": "Do you take oil from the press?",
+          "text": "Folk whisper that I take the oil. Never! I only take what's already lost, friend.",
+          "keywords": [
+            "oil",
+            "press",
+            "steal",
+            "rumour",
+            "whisper"
+          ],
+          "clue_id": "cl_pell_suspect"
+        },
+        {
+          "id": "k_pell_key",
+          "topic": "The brass key",
+          "ask": "What key are you looking for?",
+          "text": "A brass key that belongs to something. I can't find the something, friend.",
+          "keywords": [
+            "key",
+            "brass",
+            "lock",
+            "belongs",
+            "search"
+          ]
+        },
+        {
+          "id": "k_pell_shed",
+          "topic": "Lost and found",
+          "ask": "What's in the shed?",
+          "text": "Buttons, spoons, odd gloves, Nim's kite. Everything lost ends up on my shelves.",
+          "keywords": [
+            "shed",
+            "shelves",
+            "lost",
+            "found",
+            "things"
+          ]
+        },
+        {
+          "id": "k_pell_rook",
+          "topic": "That crow",
+          "ask": "Do you know Rook?",
+          "text": "Rook? My rival! That crow collects secrets, and I collect everything else.",
+          "keywords": [
+            "rook",
+            "crow",
+            "rival",
+            "dock",
+            "secrets"
+          ]
+        },
+        {
+          "id": "k_pell_ember",
+          "topic": "Mothlight ember",
+          "ask": "What would you trade for?",
+          "text": "A glowing Mothlight Ember, friend! Try the Lamp Room or Glow-Moth Meadow. Bring me one and my shelves are yours.",
+          "keywords": [
+            "ember",
+            "trade",
+            "mothlight",
+            "glowing",
+            "swap"
+          ]
+        }
+      ],
+      "goal_hints": {
+        "unmet": [
+          "I'd trade the whole shed for a glowing Mothlight Ember, friend. Try the Lamp Room, or Hester might spare one.",
+          "Still looking for that brass key. It belongs to something, I just know it."
+        ],
+        "in_progress": [
+          "Ooh, close now! Bring me that ember and I'll hand over a key and a spyglass, friend.",
+          "Keep hunting. Every lost thing finds its way, eventually."
+        ],
+        "resolved": [
+          "Ha! A fair trade, friend. Here, the Tallow Key and the spyglass. They were never really mine.",
+          "Come back any time. There's always something lost to find."
+        ]
+      },
+      "deflections": [
+        "Ha! Not for sale, friend.",
+        "Can't say, friend, never saw it.",
+        "Hmm, that's not on my shelves.",
+        "Finders keepers, but that I never found.",
+        "Ask me something I can trade on, friend."
+      ]
     },
     {
       "id": "c_dorrin",
@@ -107,22 +587,162 @@
       "personality": "Grumpy and precise fog-watcher.",
       "goal": "Repair his barometer.",
       "secret": "He counted thirteen lights as a chick and was told he was wrong.",
-      "motivations": ["accuracy", "being believed"],
+      "motivations": [
+        "accuracy",
+        "being believed"
+      ],
       "relationships": [
-        { "cast_id": "c_nim", "relation": "grumbles at" }
+        {
+          "cast_id": "c_nim",
+          "relation": "grumbles at"
+        }
       ],
       "sprite_recipe": "body=tall; bodyColor=water; accentColor=cream; skinColor=skin; feature=glasses; walkFrames=2",
       "home_location": "l_foghorn_rock",
-      "knows_truths": ["t_thirteen_berths", "t_hush_seven_years", "t_side_hush_returns"],
+      "knows_truths": [
+        "t_thirteen_berths",
+        "t_hush_seven_years",
+        "t_side_hush_returns"
+      ],
       "goal_states": [
         {
           "id": "gs_dorrin_barometer",
           "description": "Dorrin accepts a drop of Dusk Ink for his barometer scale.",
-          "requires": { "items": ["i_dusk_ink"] },
+          "requires": {
+            "items": [
+              "i_dusk_ink"
+            ]
+          },
           "reveals": "Dorrin gives the date the Hush returns."
         }
       ],
-      "voice_notes": "Clipped, fond of numbers."
+      "voice_notes": "Clipped, fond of numbers.",
+      "greetings": [
+        "State your business. Pressure's dropping, and a fog is due.",
+        "Ah. Visitor. Count the lights from this rock. Then count the berths.",
+        "Quiet, please. I'm reading the glass. The pressure has not been right since the Hush.",
+        "Twelve lights, thirteen berths. Now. What do you want?"
+      ],
+      "knowledge": [
+        {
+          "id": "k_dorrin_count",
+          "topic": "Light count",
+          "ask": "How many lights can you see?",
+          "text": "Twelve lights from this rock. Thirteen berths. The arithmetic is wrong.",
+          "keywords": [
+            "lights",
+            "twelve",
+            "thirteen",
+            "berths",
+            "count"
+          ],
+          "clue_id": "cl_dorrin_count",
+          "truth_id": "t_thirteen_berths"
+        },
+        {
+          "id": "k_dorrin_barometer",
+          "topic": "Barometer lore",
+          "ask": "What does your barometer say about the Hush?",
+          "text": "Barometer lore: the village drifted into the Hush seven years ago. Pressure has not recovered.",
+          "keywords": [
+            "barometer",
+            "hush",
+            "seven",
+            "years",
+            "pressure"
+          ],
+          "clue_id": "cl_dorrin_barometer",
+          "truth_id": "t_hush_seven_years"
+        },
+        {
+          "id": "k_dorrin_return",
+          "topic": "The Hush returns",
+          "ask": "When will the Hush come back?",
+          "text": "Mended glass reads: the Hush returns in seven years. That is now. Precisely now.",
+          "keywords": [
+            "hush",
+            "returns",
+            "seven",
+            "now",
+            "mended"
+          ],
+          "clue_id": "cl_dorrin_hush_date",
+          "truth_id": "t_side_hush_returns"
+        },
+        {
+          "id": "k_dorrin_fog",
+          "topic": "Fog watching",
+          "ask": "What do you do out here?",
+          "text": "I watch fog. Record density, drift, duration. Nobody reads the logs.",
+          "keywords": [
+            "fog",
+            "watch",
+            "logs",
+            "density",
+            "rock"
+          ]
+        },
+        {
+          "id": "k_dorrin_nim",
+          "topic": "The otter pup",
+          "ask": "Do you know Nim?",
+          "text": "Nim. Loud. Forever on my rock asking questions. Fourteen this week.",
+          "keywords": [
+            "nim",
+            "otter",
+            "pup",
+            "loud",
+            "questions"
+          ]
+        },
+        {
+          "id": "k_dorrin_rock",
+          "topic": "Foghorn Rock",
+          "ask": "Why live on the rock?",
+          "text": "Best vantage point. Fewest visitors. Until recently.",
+          "keywords": [
+            "rock",
+            "foghorn",
+            "vantage",
+            "lonely",
+            "live"
+          ]
+        },
+        {
+          "id": "k_dorrin_ink",
+          "topic": "Dusk Ink",
+          "ask": "How can I help mend your barometer?",
+          "text": "A drop of Dusk Ink marks the scale. Tamsin keeps one at the Archive. Another sits on a shelf at the Oil Press.",
+          "keywords": [
+            "ink",
+            "dusk",
+            "barometer",
+            "tamsin",
+            "scale"
+          ]
+        }
+      ],
+      "goal_hints": {
+        "unmet": [
+          "My barometer is broken. Scale is blank. I need a drop of Dusk Ink to mark it.",
+          "Without the scale, my readings are guesses. I dislike guessing."
+        ],
+        "in_progress": [
+          "Closer. Bring Dusk Ink from the Archive or the Oil Press. Then the glass speaks again.",
+          "Ink is the missing piece. Hand me a drop and I will mend it."
+        ],
+        "resolved": [
+          "Barometer mended. Readings sound. Satisfactory. The Hush returns now. Warn the harbour.",
+          "Thank you. The glass says the Hush returns in seven years, and that is today."
+        ]
+      },
+      "deflections": [
+        "Insufficient data.",
+        "Not my department.",
+        "Irrelevant to pressure.",
+        "No reading on that.",
+        "Ask someone who counts less and guesses more."
+      ]
     },
     {
       "id": "c_nim",
@@ -131,23 +751,153 @@
       "personality": "Curious and brave.",
       "goal": "Find the kite lost over Tidepool Steps.",
       "secret": "She saw an amber glow under the tide and a girl who waved back.",
-      "motivations": ["adventure", "following Rook around"],
+      "motivations": [
+        "adventure",
+        "following Rook around"
+      ],
       "relationships": [
-        { "cast_id": "c_granny", "relation": "fan of her buns" },
-        { "cast_id": "c_rook", "relation": "follows him" }
+        {
+          "cast_id": "c_granny",
+          "relation": "fan of her buns"
+        },
+        {
+          "cast_id": "c_rook",
+          "relation": "follows him"
+        }
       ],
       "sprite_recipe": "body=small; bodyColor=earth; accentColor=water; skinColor=skin; feature=tail; walkFrames=4",
       "home_location": "l_tidepool_steps",
-      "knows_truths": ["t_oil_flows_to_deep", "t_wren_alive", "t_side_amber_glow"],
+      "knows_truths": [
+        "t_oil_flows_to_deep",
+        "t_wren_alive",
+        "t_side_amber_glow"
+      ],
       "goal_states": [
         {
           "id": "gs_nim_kite",
           "description": "Nim gets her kite back from Pell's hoard.",
-          "requires": { "goal_states": ["gs_pell_trade"] },
+          "requires": {
+            "goal_states": [
+              "gs_pell_trade"
+            ]
+          },
           "reveals": "Nim shows the player the glow in the tidepool."
         }
       ],
-      "voice_notes": "Excited run-on sentences."
+      "voice_notes": "Excited run-on sentences.",
+      "greetings": [
+        "Hi hi hi! Did you see the tide? It's warm and amber and nobody else notices!",
+        "Oh wow, a visitor! Do you know there's a girl in the water who waves back?",
+        "Hey! Hey you! I lost my kite and I think the tide knows where it went!",
+        "Ooh, you're here, you're here, I have so many questions about the amber glow!"
+      ],
+      "knowledge": [
+        {
+          "id": "k_nim_tide",
+          "topic": "Warm tide",
+          "ask": "What's strange about the tide?",
+          "text": "The tide runs warm and amber down the steps, like honey, and it smells like lamps!",
+          "keywords": [
+            "tide",
+            "warm",
+            "amber",
+            "steps",
+            "water"
+          ],
+          "clue_id": "cl_nim_tide",
+          "truth_id": "t_oil_flows_to_deep"
+        },
+        {
+          "id": "k_nim_wave",
+          "topic": "Girl waving",
+          "ask": "Have you seen someone in the water?",
+          "text": "There's a girl in the water and she waves back! Every time I wave, she waves back!",
+          "keywords": [
+            "girl",
+            "water",
+            "wave",
+            "waving",
+            "someone"
+          ],
+          "clue_id": "cl_nim_wave",
+          "truth_id": "t_wren_alive"
+        },
+        {
+          "id": "k_nim_glow",
+          "topic": "Amber glow",
+          "ask": "What's glowing in the tidepool?",
+          "text": "There's an amber glow shimmering under the tidepool water! I'll show you once I've got my kite back!",
+          "keywords": [
+            "glow",
+            "tidepool",
+            "amber",
+            "shimmer",
+            "pool"
+          ],
+          "clue_id": "cl_nim_glow",
+          "truth_id": "t_side_amber_glow"
+        },
+        {
+          "id": "k_nim_kite",
+          "topic": "Her kite",
+          "ask": "What happened to your kite?",
+          "text": "It blew over the steps! I bet Pell has it in his Lost-and-Found Shed, but he only trades for a glowing Mothlight Ember!",
+          "keywords": [
+            "kite",
+            "lost",
+            "pell",
+            "blew",
+            "steps"
+          ]
+        },
+        {
+          "id": "k_nim_granny",
+          "topic": "Granny's buns",
+          "ask": "Do you like Granny Fennick's buns?",
+          "text": "Granny's buns are the best buns, the thirteen-spice ones especially, yum!",
+          "keywords": [
+            "granny",
+            "buns",
+            "spice",
+            "bakery",
+            "yum"
+          ]
+        },
+        {
+          "id": "k_nim_rook",
+          "topic": "Following Rook",
+          "ask": "Why do you follow Rook?",
+          "text": "Rook rows out at night and I want to go too, but he always says no!",
+          "keywords": [
+            "rook",
+            "crow",
+            "follow",
+            "rowing",
+            "night"
+          ]
+        }
+      ],
+      "goal_hints": {
+        "unmet": [
+          "I lost my kite over the steps and I want it back so much! Pell collects everything, so maybe it's in his shed!",
+          "Pell wants a glowing Mothlight Ember for his things. Hester's lamp might have one!"
+        ],
+        "in_progress": [
+          "Ooh, we're getting close, I just know it! Pell will swap my kite for an ember!",
+          "Maybe if we bring Pell an ember he'll give it back?"
+        ],
+        "resolved": [
+          "My kite! You got it back! Thank you thank you thank you! Now I'll show you the glow in the tidepool!",
+          "Now I can fly it right over the harbour, watch me!"
+        ]
+      },
+      "deflections": [
+        "Um, I don't know that one!",
+        "Ooh, good question, but nope, no idea!",
+        "Nobody tells me anything!",
+        "Hmm, ask someone grown up?",
+        "I wish I knew, I really do!"
+      ]
     },
     {
       "id": "c_granny",
@@ -156,23 +906,149 @@
       "personality": "Patient and teasing baker.",
       "goal": "Finish the lantern-bun recipe whose last spice she cannot recall.",
       "secret": "She always bakes thirteen buns and does not know why.",
-      "motivations": ["feeding everyone", "finishing the recipe"],
+      "motivations": [
+        "feeding everyone",
+        "finishing the recipe"
+      ],
       "relationships": [
-        { "cast_id": "c_yarrow", "relation": "neighbour" }
+        {
+          "cast_id": "c_yarrow",
+          "relation": "neighbour"
+        }
       ],
       "sprite_recipe": "body=round; bodyColor=leaf; accentColor=earth; skinColor=skin; feature=hat; walkFrames=2",
       "home_location": "l_bakery",
-      "knows_truths": ["t_village_forgot", "t_side_bun"],
+      "knows_truths": [
+        "t_village_forgot",
+        "t_side_bun"
+      ],
       "goal_states": [
         {
           "id": "gs_granny_recipe",
           "description": "Granny completes the lantern-bun recipe with the missing spice.",
-          "requires": { "truths": ["t_oil_from_memories"] },
-          "gives_items": ["i_warm_bun"],
+          "requires": {
+            "truths": [
+              "t_oil_from_memories"
+            ]
+          },
+          "gives_items": [
+            "i_warm_bun"
+          ],
           "reveals": "Granny gives a Warm Bun and says thirteen was Wren's favourite number of buns."
         }
       ],
-      "voice_notes": "Slow and kind, with food similes."
+      "voice_notes": "Slow and kind, with food similes.",
+      "greetings": [
+        "Hello, dear. Sit, sit. I bake thirteen buns every batch, and I never know why.",
+        "Ah, there you are. Funny, the harbour has a berth too many for its lights, and no one minds.",
+        "Welcome, love. My notes keep fading like old flour, and I can't think why.",
+        "Come in, come in. Smells like cinnamon and half a memory."
+      ],
+      "knowledge": [
+        {
+          "id": "k_granny_buns",
+          "topic": "Thirteen buns",
+          "ask": "Why do you bake thirteen buns?",
+          "text": "I bake thirteen every batch, slow as dough rising, and I can't say why my notes fade.",
+          "keywords": [
+            "buns",
+            "thirteen",
+            "bake",
+            "notes",
+            "fade"
+          ],
+          "clue_id": "cl_granny_buns",
+          "truth_id": "t_village_forgot"
+        },
+        {
+          "id": "k_granny_favourite",
+          "topic": "Favourite bun",
+          "ask": "Who liked the thirteen-spice bun?",
+          "text": "That bun was a young keeper's favourite, sweet as warm honey. I'd nearly forgotten.",
+          "keywords": [
+            "bun",
+            "favourite",
+            "keeper",
+            "spice",
+            "thirteen"
+          ],
+          "clue_id": "cl_granny_favourite",
+          "truth_id": "t_side_bun"
+        },
+        {
+          "id": "k_granny_recipe",
+          "topic": "Lantern buns",
+          "ask": "What are lantern buns?",
+          "text": "A festival bun, soft as dusk. One spice has slipped my memory. Bramwell at the Oil Press knows how memories are pressed.",
+          "keywords": [
+            "lantern",
+            "recipe",
+            "spice",
+            "festival",
+            "bun"
+          ]
+        },
+        {
+          "id": "k_granny_notes",
+          "topic": "Fading notes",
+          "ask": "Why are your notes fading?",
+          "text": "The ink goes pale like old flour, and so do the names. Odd, that.",
+          "keywords": [
+            "notes",
+            "ink",
+            "pale",
+            "names",
+            "fade"
+          ]
+        },
+        {
+          "id": "k_granny_yarrow",
+          "topic": "Neighbour Yarrow",
+          "ask": "Do you know Yarrow?",
+          "text": "Yarrow next door, humming over her sails. Lovely girl, a bit dreamy.",
+          "keywords": [
+            "yarrow",
+            "neighbour",
+            "sailmaker",
+            "sheep",
+            "humming"
+          ]
+        },
+        {
+          "id": "k_granny_nim",
+          "topic": "Little Nim",
+          "ask": "Does Nim visit you?",
+          "text": "Nim loves my buns. Sticky paws every morning, bless her.",
+          "keywords": [
+            "nim",
+            "otter",
+            "pup",
+            "buns",
+            "visit"
+          ]
+        }
+      ],
+      "goal_hints": {
+        "unmet": [
+          "I can't recall the last spice for my lantern buns. It's a memory, slipping like steam. Bramwell at the Oil Press might know how memories work.",
+          "Without it the recipe stays as flat as day-old bread."
+        ],
+        "in_progress": [
+          "Ah, it's coming back to me, slowly, like dough rising. Tell me what Bramwell says about the oil.",
+          "Once you know what the oil is made of, dear, come tell an old tortoise."
+        ],
+        "resolved": [
+          "There, the last spice! Take a Warm Bun, love. Thirteen was a young keeper's favourite number of buns.",
+          "Take one for the road, love. You've earned a dozen."
+        ]
+      },
+      "deflections": [
+        "Oh, I couldn't say, dear.",
+        "That's gone right out of my head, love.",
+        "Slow minds, slow ovens. Ask someone quicker.",
+        "Hm, I don't think I ever knew.",
+        "Eat a bun and ask me later, dear."
+      ]
     },
     {
       "id": "c_quay",
@@ -181,22 +1057,148 @@
       "personality": "Charming braggart.",
       "goal": "Win the Founders' Regatta.",
       "secret": "His ship was saved by a light he cannot name.",
-      "motivations": ["glory", "respect from his deckhand"],
+      "motivations": [
+        "glory",
+        "respect from his deckhand"
+      ],
       "relationships": [
-        { "cast_id": "c_rook", "relation": "deckhand" }
+        {
+          "cast_id": "c_rook",
+          "relation": "deckhand"
+        }
       ],
       "sprite_recipe": "body=tall; bodyColor=accent; accentColor=cream; skinColor=skin; feature=hat; walkFrames=3",
       "home_location": "l_kettle_quay",
-      "knows_truths": ["t_hush_seven_years", "t_wren_lit_lamp", "t_side_singing_light"],
+      "knows_truths": [
+        "t_hush_seven_years",
+        "t_wren_lit_lamp",
+        "t_side_singing_light"
+      ],
       "goal_states": [
         {
           "id": "gs_quay_true_tale",
           "description": "Quay gives up the grand story and tells it true.",
-          "requires": { "truths": ["t_wren_lit_lamp"] },
+          "requires": {
+            "truths": [
+              "t_wren_lit_lamp"
+            ]
+          },
           "reveals": "Quay admits a small singing light guided his ship out of the Hush."
         }
       ],
-      "voice_notes": "Boasting, then soft."
+      "voice_notes": "Boasting, then soft.",
+      "greetings": [
+        "Ha! A new face! Best captain on the quay, and I've a tale about the Hush that will curl your whiskers.",
+        "Welcome aboard, friend! Ask me about the night of the Hush, when I saved my ship.",
+        "Ah, an admirer! Come, let me tell you about my finest voyage.",
+        "Well now, a visitor. Seven years since the Hush, and I still tell that tale best."
+      ],
+      "knowledge": [
+        {
+          "id": "k_quay_hush",
+          "topic": "Swallowed lamp",
+          "ask": "What do you remember about the Hush?",
+          "text": "The Hush swallowed my ship's lamp seven years ago. Never told anyone that, friend.",
+          "keywords": [
+            "hush",
+            "lamp",
+            "ship",
+            "seven",
+            "years"
+          ],
+          "clue_id": "cl_quay_hush",
+          "truth_id": "t_hush_seven_years"
+        },
+        {
+          "id": "k_quay_singing",
+          "topic": "Singing light",
+          "ask": "How did you escape the fog?",
+          "text": "A small light that sang led my ship out of the fog. I swear it on my sails.",
+          "keywords": [
+            "light",
+            "sang",
+            "singing",
+            "fog",
+            "escape"
+          ],
+          "clue_id": "cl_quay_singing_light",
+          "truth_id": "t_wren_lit_lamp"
+        },
+        {
+          "id": "k_quay_tale",
+          "topic": "True tale",
+          "ask": "What really happened that night?",
+          "text": "Truth, then: a small light that sang led my ship out of the Hush. No heroics.",
+          "keywords": [
+            "truth",
+            "tale",
+            "night",
+            "hush",
+            "light"
+          ],
+          "clue_id": "cl_quay_tale",
+          "truth_id": "t_side_singing_light"
+        },
+        {
+          "id": "k_quay_regatta",
+          "topic": "The regatta",
+          "ask": "Are you racing in the regatta?",
+          "text": "Racing? Winning! The Founders' Regatta is mine, as sure as the tide.",
+          "keywords": [
+            "regatta",
+            "race",
+            "founders",
+            "win",
+            "boat"
+          ]
+        },
+        {
+          "id": "k_quay_rook",
+          "topic": "My deckhand",
+          "ask": "Is Rook your deckhand?",
+          "text": "Rook? Best hand on the quay, though I'd never say so to his beak.",
+          "keywords": [
+            "rook",
+            "deckhand",
+            "crow",
+            "crew"
+          ]
+        },
+        {
+          "id": "k_quay_ship",
+          "topic": "His ship",
+          "ask": "What's your ship like?",
+          "text": "Fastest hull in Kettle Quay, with a mast like a lighthouse. Well, nearly.",
+          "keywords": [
+            "ship",
+            "hull",
+            "mast",
+            "quay",
+            "boat"
+          ]
+        }
+      ],
+      "goal_hints": {
+        "unmet": [
+          "I'll win the Founders' Regatta, mark me, and my grand tale will go down in history.",
+          "Between us, the grand story is a little polished. Don't tell anyone."
+        ],
+        "in_progress": [
+          "You're getting under my skin, friend. Show me you know who lit that light, and I'll tell it true. Rook heard it too.",
+          "Sister Ismay's bell ledger remembers that night as well. Ask me straight, and I might answer straight."
+        ],
+        "resolved": [
+          "There. The true tale, no glitter. Strange, I feel lighter for it.",
+          "Thank you, friend. A captain should be honest at least once."
+        ]
+      },
+      "deflections": [
+        "Ha, now that's a secret, friend.",
+        "Even a captain can't answer everything.",
+        "A fine question, with no fine answer.",
+        "Ask me after the regatta.",
+        "I'd tell you, but the tale would spoil."
+      ]
     },
     {
       "id": "c_tamsin",
@@ -205,30 +1207,158 @@
       "personality": "Precise archivist with dry wit.",
       "goal": "Restore the fading ledger pages.",
       "secret": "She has noticed that names fade in the order lamps were lit.",
-      "motivations": ["a complete archive", "getting to the bottom of things"],
+      "motivations": [
+        "a complete archive",
+        "getting to the bottom of things"
+      ],
       "relationships": [
-        { "cast_id": "c_hobb", "relation": "assistant to" },
-        { "cast_id": "c_bramwell", "relation": "suspects" }
+        {
+          "cast_id": "c_hobb",
+          "relation": "assistant to"
+        },
+        {
+          "cast_id": "c_bramwell",
+          "relation": "suspects"
+        }
       ],
       "sprite_recipe": "body=small; bodyColor=shadow; accentColor=leafLight; skinColor=skin; feature=glasses; walkFrames=2",
       "home_location": "l_archive",
-      "knows_truths": ["t_wren_keeper", "t_village_forgot"],
+      "knows_truths": [
+        "t_wren_keeper",
+        "t_village_forgot"
+      ],
       "goal_states": [
         {
           "id": "gs_tamsin_ink",
           "description": "Tamsin lends a drop of Dusk Ink from her desk.",
           "requires": {},
-          "gives_items": ["i_dusk_ink"],
+          "gives_items": [
+            "i_dusk_ink"
+          ],
           "reveals": "Tamsin explains the ink shows faded entries."
         },
         {
           "id": "gs_tamsin_ledger",
           "description": "Tamsin restores the fading ledger pages with Dusk Ink.",
-          "requires": { "items": ["i_dusk_ink"] },
+          "requires": {
+            "items": [
+              "i_dusk_ink"
+            ]
+          },
           "reveals": "Tamsin keeps a complete ledger for the epilogue."
         }
       ],
-      "voice_notes": "Footnotes and the word technically."
+      "voice_notes": "Footnotes and the word technically.",
+      "greetings": [
+        "Good day. Technically, the harbour has thirteen berths and only twelve lights, and nobody finds that odd. I do.",
+        "Ah, a reader! Or at least a visitor, which is technically adjacent. Names are fading from my ledgers, you see.",
+        "Please keep your voice down; the ledgers are sensitive. Technically, one keeper's name has paled so far I can't read it.",
+        "Hello. I'm restoring pages that fade faster each week. Do you know why names fade?"
+      ],
+      "knowledge": [
+        {
+          "id": "k_tamsin_fade",
+          "topic": "Fading names",
+          "ask": "Why are names fading from the ledgers?",
+          "text": "Names fade in the order the lamps were burnt. Technically, whoever gave memories to the oil fades from the rest of us.",
+          "keywords": [
+            "names",
+            "fade",
+            "ledger",
+            "lamps",
+            "order"
+          ],
+          "clue_id": "cl_tamsin_fade",
+          "truth_id": "t_village_forgot"
+        },
+        {
+          "id": "k_tamsin_suspects",
+          "topic": "Oil theft",
+          "ask": "Who took the oil from the press?",
+          "text": "I suspect Bramwell of taking oil from the press. Technically, only suspect.",
+          "keywords": [
+            "oil",
+            "press",
+            "bramwell",
+            "suspect",
+            "steal"
+          ],
+          "clue_id": "cl_tamsin_suspects"
+        },
+        {
+          "id": "k_tamsin_ledger",
+          "topic": "The ledger",
+          "ask": "What's in the ledger?",
+          "text": "Every lamp, every keeper, every name. One entry, for the keeper of Berth Thirteen, has paled so far I cannot read it.",
+          "keywords": [
+            "ledger",
+            "pages",
+            "keeper",
+            "names",
+            "lamps"
+          ]
+        },
+        {
+          "id": "k_tamsin_ink",
+          "topic": "Dusk Ink",
+          "ask": "What is Dusk Ink and where can I get some?",
+          "text": "Dusk Ink brings faded entries back. Technically there's a drop on my desk, and another on a shelf at the Oil Press.",
+          "keywords": [
+            "ink",
+            "dusk",
+            "restore",
+            "fade",
+            "desk"
+          ]
+        },
+        {
+          "id": "k_tamsin_hobb",
+          "topic": "Elder Hobb",
+          "ask": "Do you work for Elder Hobb?",
+          "text": "I assist him, yes. He rarely reads what I file, technically.",
+          "keywords": [
+            "hobb",
+            "elder",
+            "assistant",
+            "council",
+            "file"
+          ]
+        },
+        {
+          "id": "k_tamsin_archive",
+          "topic": "The archive",
+          "ask": "How old is the archive?",
+          "text": "Older than the Council, technically older than the harbour wall. Footnote: citation needed.",
+          "keywords": [
+            "archive",
+            "old",
+            "harbour",
+            "history",
+            "shelves"
+          ]
+        }
+      ],
+      "goal_hints": {
+        "unmet": [
+          "I must restore the fading ledger pages before they vanish entirely. Dusk Ink is technically the only remedy.",
+          "Ask me for a drop of Dusk Ink from my desk, or fetch some from the Oil Press shelf."
+        ],
+        "in_progress": [
+          "Technically, if you hand me a drop of Dusk Ink, I can restore the pages. There is more on the Oil Press shelf.",
+          "The pages hold only while the ink lasts. Do bring me a drop and I will finish the work."
+        ],
+        "resolved": [
+          "The ledger is restored, technically complete. Thank you; the names are readable again.",
+          "Every name is back where it belongs. Footnote: you helped."
+        ]
+      },
+      "deflections": [
+        "Technically, that is outside the record.",
+        "I have no citation for that.",
+        "The archive is silent on the matter.",
+        "I would rather not speculate.",
+        "See footnote: unknown."
+      ]
     },
     {
       "id": "c_bramwell",
@@ -237,24 +1367,151 @@
       "personality": "Gruff and shy oil-presser.",
       "goal": "Stock the winter oil.",
       "secret": "The oil tastes of a song he half-knows.",
-      "motivations": ["a well-stocked store", "being trusted"],
+      "motivations": [
+        "a well-stocked store",
+        "being trusted"
+      ],
       "relationships": [
-        { "cast_id": "c_pell", "relation": "suspected by" },
-        { "cast_id": "c_tamsin", "relation": "suspected by" }
+        {
+          "cast_id": "c_pell",
+          "relation": "suspected by"
+        },
+        {
+          "cast_id": "c_tamsin",
+          "relation": "suspected by"
+        }
       ],
       "sprite_recipe": "body=round; bodyColor=shadow; accentColor=earth; skinColor=skin; feature=none; walkFrames=2",
       "home_location": "l_oil_press",
-      "knows_truths": ["t_oil_from_memories", "t_oil_flows_to_deep"],
+      "knows_truths": [
+        "t_oil_from_memories",
+        "t_oil_flows_to_deep"
+      ],
       "goal_states": [
         {
           "id": "gs_bramwell_flask",
           "description": "Shown the tally, Bramwell understands where the oil goes and hands over the Empty Flask.",
-          "requires": { "truths": ["t_oil_flows_to_deep"] },
-          "gives_items": ["i_empty_flask"],
+          "requires": {
+            "truths": [
+              "t_oil_flows_to_deep"
+            ]
+          },
+          "gives_items": [
+            "i_empty_flask"
+          ],
           "reveals": "Bramwell hums the song the oil tastes of."
         }
       ],
-      "voice_notes": "Mumbling."
+      "voice_notes": "Mumbling.",
+      "greetings": [
+        "Mm. Visitor. Oil keeps vanishing from my press, and folk think it's me.",
+        "Oh. Didn't hear you. Mm, hello. The oil tastes of a song I half-know. Odd, that.",
+        "Er, hello. Mm. Have you noticed the harbour has a berth with no light?",
+        "Mm? Oh. Yes. Come in, I suppose. Know where all my oil goes?"
+      ],
+      "knowledge": [
+        {
+          "id": "k_bramwell_oil",
+          "topic": "Pressed oil",
+          "ask": "What is the oil made from?",
+          "text": "Mm, it's pressed from memories, freely given. Givers fade, mm. Never meant harm.",
+          "keywords": [
+            "oil",
+            "memories",
+            "pressed",
+            "givers",
+            "fade"
+          ],
+          "clue_id": "cl_bramwell_oil",
+          "truth_id": "t_oil_from_memories"
+        },
+        {
+          "id": "k_bramwell_loss",
+          "topic": "Where oil goes",
+          "ask": "Where is the missing oil going?",
+          "text": "Mm, my tally ledger shows the loss follows the tide. Amber threads flow down in the Kelp Garden. Nim's seen them.",
+          "keywords": [
+            "missing",
+            "oil",
+            "tally",
+            "tide",
+            "kelp"
+          ]
+        },
+        {
+          "id": "k_bramwell_press",
+          "topic": "The press",
+          "ask": "How does the press work?",
+          "text": "Heavy wheel, slow turns. Whatever goes in comes out as golden oil, mm.",
+          "keywords": [
+            "press",
+            "wheel",
+            "golden",
+            "oil",
+            "work"
+          ]
+        },
+        {
+          "id": "k_bramwell_pell",
+          "topic": "Pell's rumours",
+          "ask": "Does Pell take your oil?",
+          "text": "Pell? Mm, maybe. Hard to say, they all look at me sideways.",
+          "keywords": [
+            "pell",
+            "magpie",
+            "oil",
+            "take",
+            "blame"
+          ]
+        },
+        {
+          "id": "k_bramwell_tamsin",
+          "topic": "The archivist",
+          "ask": "What does Tamsin say about you?",
+          "text": "Tamsin thinks I steal. Mm. I only press. Never steal.",
+          "keywords": [
+            "tamsin",
+            "archivist",
+            "suspects",
+            "steal",
+            "press"
+          ]
+        },
+        {
+          "id": "k_bramwell_flask",
+          "topic": "Empty flask",
+          "ask": "What's the empty flask for?",
+          "text": "Mm, for oil I can't press now. Show me where it's all going and I'll give you one.",
+          "keywords": [
+            "flask",
+            "empty",
+            "oil",
+            "gone",
+            "fill"
+          ]
+        }
+      ],
+      "goal_hints": {
+        "unmet": [
+          "Mm, I need winter oil, but the barrels keep emptying. Folk blame me, and I can't work out where it goes.",
+          "Mm, find where the oil really goes and tell me. Check the Kelp Garden, or ask Nim at Tidepool Steps."
+        ],
+        "in_progress": [
+          "Mm, my tally doesn't add up. Tell me what you learn about where the oil flows.",
+          "Keep at it, mm. Show me the oil goes down the tide and I'll give you the flask."
+        ],
+        "resolved": [
+          "Mm. So it flows down the tide to the Deep, and the lamp there still burns. Here, take the flask.",
+          "Thank you. I'll press with care now, mm, and hum along."
+        ]
+      },
+      "deflections": [
+        "Mm, don't know.",
+        "Not my business, mm.",
+        "Mm... no idea.",
+        "Can't say. Mm.",
+        "Ask someone else, mm."
+      ]
     },
     {
       "id": "c_lumi",
@@ -263,22 +1520,130 @@
       "personality": "Shy, with few words.",
       "goal": "Reach the thirteenth light it remembers.",
       "secret": "It was Wren's lamp-companion.",
-      "motivations": ["finding Wren"],
+      "motivations": [
+        "finding Wren"
+      ],
       "relationships": [
-        { "cast_id": "c_wren", "relation": "former lamp-companion" }
+        {
+          "cast_id": "c_wren",
+          "relation": "former lamp-companion"
+        }
       ],
       "sprite_recipe": "body=floaty; bodyColor=highlight; accentColor=accent; skinColor=skin; feature=antenna; walkFrames=4",
       "home_location": "l_glow_moth_meadow",
-      "knows_truths": ["t_player_was_spark", "t_wren_alive"],
+      "knows_truths": [
+        "t_player_was_spark",
+        "t_wren_alive"
+      ],
       "goal_states": [
         {
           "id": "gs_lumi_lead",
           "description": "Lumi leads the player towards Berth Thirteen.",
-          "requires": { "truths": ["t_player_was_spark"] },
+          "requires": {
+            "truths": [
+              "t_player_was_spark"
+            ]
+          },
           "reveals": "Lumi flutters towards the thirteenth berth."
         }
       ],
-      "voice_notes": "Single words and tinkly sounds. Unreliable and not essential."
+      "voice_notes": "Single words and tinkly sounds. Unreliable and not essential.",
+      "greetings": [
+        "Tink! Light, thirteen. Where, where?",
+        "Chime, chime! You, you! Remember? Remember?",
+        "Glow? Glow! Friend! Lamp, lamp, gone.",
+        "Tinkle, tinkle. Come, come. Berth, berth."
+      ],
+      "knowledge": [
+        {
+          "id": "k_lumi_spark",
+          "topic": "Spark",
+          "ask": "Do you know me?",
+          "text": "Spark! Spark, tink! You, Spark!",
+          "keywords": [
+            "spark",
+            "know",
+            "remember",
+            "name",
+            "chime"
+          ],
+          "clue_id": "cl_lumi_spark",
+          "truth_id": "t_player_was_spark"
+        },
+        {
+          "id": "k_lumi_thirteen",
+          "topic": "Thirteen light",
+          "ask": "Where is the thirteenth light?",
+          "text": "Light, thirteen. Berth, berth. Stair, down, down. Key, tink!",
+          "keywords": [
+            "thirteen",
+            "light",
+            "far",
+            "berth",
+            "lamp"
+          ]
+        },
+        {
+          "id": "k_lumi_wren",
+          "topic": "Old friend",
+          "ask": "Who was your companion?",
+          "text": "Wren! Tink, Wren, lamp. Miss, miss.",
+          "keywords": [
+            "wren",
+            "companion",
+            "lamp",
+            "friend",
+            "miss"
+          ]
+        },
+        {
+          "id": "k_lumi_meadow",
+          "topic": "The meadow",
+          "ask": "Why do you live in the meadow?",
+          "text": "Soft. Warm. Glow, glow. Safe.",
+          "keywords": [
+            "meadow",
+            "soft",
+            "warm",
+            "safe",
+            "glow"
+          ]
+        },
+        {
+          "id": "k_lumi_song",
+          "topic": "A song",
+          "ask": "Can you sing?",
+          "text": "Hum, tinkle. Wren sang. Lumi chimes.",
+          "keywords": [
+            "sing",
+            "song",
+            "hum",
+            "chime",
+            "wren"
+          ]
+        }
+      ],
+      "goal_hints": {
+        "unmet": [
+          "Light, light. Thirteen. Spark, Spark, remember? Cot, Attic. Tink!",
+          "Far, far. Need, need. Spark. Help."
+        ],
+        "in_progress": [
+          "Close! Close! Rook, Rook knows. Spark, Spark!",
+          "Cot, scarf, Attic. Look, look. Tinkle!"
+        ],
+        "resolved": [
+          "Spark! Follow, follow. Berth, thirteen. Tink, tink!",
+          "Home! Home, tink! Thank, thank."
+        ]
+      },
+      "deflections": [
+        "Tink?",
+        "Chime... no.",
+        "Glow, glow. Don't know.",
+        "Hm? Tinkle.",
+        "No, no. Tink."
+      ]
     },
     {
       "id": "c_yarrow",
@@ -287,23 +1652,146 @@
       "personality": "Dreamy sailmaker.",
       "goal": "Mend the Founders' banner.",
       "secret": "She stitches a thirteenth star every year without knowing why.",
-      "motivations": ["finishing the banner"],
+      "motivations": [
+        "finishing the banner"
+      ],
       "relationships": [
-        { "cast_id": "c_granny", "relation": "neighbour" }
+        {
+          "cast_id": "c_granny",
+          "relation": "neighbour"
+        }
       ],
       "sprite_recipe": "body=round; bodyColor=cream; accentColor=leafLight; skinColor=skin; feature=none; walkFrames=2",
       "home_location": "l_sailmakers_loft",
-      "knows_truths": ["t_thirteen_berths", "t_side_banner_star"],
+      "knows_truths": [
+        "t_thirteen_berths",
+        "t_side_banner_star"
+      ],
       "goal_states": [
         {
           "id": "gs_yarrow_banner",
           "description": "Yarrow mends the banner and finds the Tallow Key sewn in its hem.",
-          "requires": { "truths": ["t_thirteen_berths"] },
-          "gives_items": ["i_tallow_key"],
+          "requires": {
+            "truths": [
+              "t_thirteen_berths"
+            ]
+          },
+          "gives_items": [
+            "i_tallow_key"
+          ],
           "reveals": "Yarrow finishes the thirteenth star."
         }
       ],
-      "voice_notes": "Hums mid-sentence."
+      "voice_notes": "Hums mid-sentence.",
+      "greetings": [
+        "Oh, hello there, mm-mm-hmm. I stitch a thirteenth star every year and can't think why.",
+        "Ah, a visitor, la-la. Do you know why the banner has thirteen stars?",
+        "Hello, hum-hum, welcome. I'm mending the Founders' banner, and one star is in a hand I don't know.",
+        "Oh! Hmm-hmm, you startled the needle. Hello!"
+      ],
+      "knowledge": [
+        {
+          "id": "k_yarrow_star",
+          "topic": "Thirteenth star",
+          "ask": "What's odd about the banner?",
+          "text": "Hum-hum, the thirteenth star is stitched in a hand I don't know, strange, isn't it?",
+          "keywords": [
+            "banner",
+            "star",
+            "thirteenth",
+            "stitch",
+            "hand"
+          ],
+          "clue_id": "cl_yarrow_star",
+          "truth_id": "t_side_banner_star"
+        },
+        {
+          "id": "k_yarrow_banner",
+          "topic": "Founders' banner",
+          "ask": "What happened to the banner?",
+          "text": "It's frayed to ribbons, hmm. I'm mending it, one thread at a time.",
+          "keywords": [
+            "banner",
+            "founders",
+            "mend",
+            "frayed",
+            "thread"
+          ]
+        },
+        {
+          "id": "k_yarrow_key",
+          "topic": "Hidden key",
+          "ask": "Is anything hidden in the banner?",
+          "text": "Mm, there's a lump in the hem, la-la. I'll find it once the mending is done.",
+          "keywords": [
+            "hem",
+            "key",
+            "hidden",
+            "lump",
+            "tallow"
+          ]
+        },
+        {
+          "id": "k_yarrow_sails",
+          "topic": "Sailmaking",
+          "ask": "What do you sew?",
+          "text": "Sails, mostly, hum-hum. Canvas that sings when the wind is kind.",
+          "keywords": [
+            "sails",
+            "sew",
+            "canvas",
+            "wind",
+            "sailmaker"
+          ]
+        },
+        {
+          "id": "k_yarrow_granny",
+          "topic": "Granny Fennick",
+          "ask": "Do you know Granny Fennick?",
+          "text": "My neighbour, la-la. Her buns drift up through the floorboards, divine.",
+          "keywords": [
+            "granny",
+            "neighbour",
+            "buns",
+            "bakery",
+            "floor"
+          ]
+        },
+        {
+          "id": "k_yarrow_stars",
+          "topic": "Thirteen stars",
+          "ask": "Why does the banner have thirteen stars?",
+          "text": "Hum-hum, one star for every berth, and the harbour has thirteen berths. Ask Dorrin or Hester how many lights.",
+          "keywords": [
+            "stars",
+            "thirteen",
+            "berths",
+            "lights",
+            "banner"
+          ]
+        }
+      ],
+      "goal_hints": {
+        "unmet": [
+          "I need to mend the Founders' banner, hum-hum, but it has thirteen stars and the harbour has twelve lights, la-la.",
+          "Count the berths against the lights for me. Dorrin counts from Foghorn Rock, and Hester knows too."
+        ],
+        "in_progress": [
+          "Mm, nearly there. Tell me what Dorrin or Hester says about the lights and berths.",
+          "Something is tucked in the hem, hum-hum, I can feel it."
+        ],
+        "resolved": [
+          "There! The banner is mended, la-la, and look what fell out of the hem: the Tallow Key.",
+          "Hmm-hmm, thank you. It looks lovely hanging again."
+        ]
+      },
+      "deflections": [
+        "Hm-hm, I really couldn't say.",
+        "Oh, my mind's off in the clouds, la-la.",
+        "Mm, no idea, dear.",
+        "Hmm, ask someone steadier.",
+        "La-la, I wasn't listening, sorry."
+      ]
     },
     {
       "id": "c_ismay",
@@ -312,22 +1800,140 @@
       "personality": "Serene and sleepy bell-keeper.",
       "goal": "Stay awake on the anniversary night.",
       "secret": "She rings a thirteenth bell and cannot say why.",
-      "motivations": ["keeping the bells right"],
+      "motivations": [
+        "keeping the bells right"
+      ],
       "relationships": [
-        { "cast_id": "c_hester", "relation": "friend" }
+        {
+          "cast_id": "c_hester",
+          "relation": "friend"
+        }
       ],
       "sprite_recipe": "body=tall; bodyColor=earth; accentColor=cream; skinColor=skin; feature=wings; walkFrames=2",
       "home_location": "l_bell_tower",
-      "knows_truths": ["t_wren_lit_lamp"],
+      "knows_truths": [
+        "t_wren_lit_lamp"
+      ],
       "goal_states": [
         {
           "id": "gs_ismay_awake",
           "description": "Warned that the Hush returns soon, Ismay stays awake for the anniversary night.",
-          "requires": { "truths": ["t_side_hush_returns"] },
+          "requires": {
+            "truths": [
+              "t_side_hush_returns"
+            ]
+          },
           "reveals": "Ismay explains the bell ledger."
         }
       ],
-      "voice_notes": "Sleepy yawns, stately."
+      "voice_notes": "Sleepy yawns, stately.",
+      "greetings": [
+        "Mmm, hello, traveller. Forgive the yawn. I ring a thirteenth bell each year and cannot say why.",
+        "Ah, a visitor. Peace be with you. Do you ever wonder why there is a thirteenth bell, mmm?",
+        "Hello, dear one. The Hush is due again soon, mmm, and I fear I will doze.",
+        "Mmm, good evening. Or morning? Have you noticed Hester's light flickering?"
+      ],
+      "knowledge": [
+        {
+          "id": "k_ismay_anniversary",
+          "topic": "Anniversary night",
+          "ask": "What happens on the anniversary?",
+          "text": "Mmm, the anniversary night is when the Hush last came. I must stay awake, truly.",
+          "keywords": [
+            "anniversary",
+            "night",
+            "hush",
+            "awake",
+            "stay"
+          ]
+        },
+        {
+          "id": "k_ismay_bell",
+          "topic": "The bell",
+          "ask": "What does the bell do?",
+          "text": "It tolls the hours, and tonight it must toll true. A heavy duty, mmm.",
+          "keywords": [
+            "bell",
+            "toll",
+            "hours",
+            "ring",
+            "tower"
+          ]
+        },
+        {
+          "id": "k_ismay_hester",
+          "topic": "Hester Wick",
+          "ask": "Do you know Hester?",
+          "text": "Hester is my dearest friend. She worries enough for the both of us.",
+          "keywords": [
+            "hester",
+            "keeper",
+            "friend",
+            "worry",
+            "mothlight"
+          ]
+        },
+        {
+          "id": "k_ismay_sleep",
+          "topic": "Sleepiness",
+          "ask": "Why are you always sleepy?",
+          "text": "Mmm, the bell lulls me. Seven years of its hum would do that to anyone.",
+          "keywords": [
+            "sleep",
+            "tired",
+            "yawn",
+            "drowsy",
+            "bell"
+          ]
+        },
+        {
+          "id": "k_ismay_ledger",
+          "topic": "Bell ledger",
+          "ask": "What does your bell ledger say about the night of the Hush?",
+          "text": "Mmm, it says a thirteenth bell was rung once that night. I cannot say why I keep ringing it.",
+          "keywords": [
+            "ledger",
+            "bell",
+            "thirteenth",
+            "hush",
+            "rung"
+          ]
+        },
+        {
+          "id": "k_ismay_hush",
+          "topic": "The Hush",
+          "ask": "Do you fear the Hush?",
+          "text": "I fear sleeping through it. Dorrin on Foghorn Rock reads the glass. Tell me when it says the Hush returns, and I'll wake.",
+          "keywords": [
+            "hush",
+            "fear",
+            "sleep",
+            "awake",
+            "village"
+          ]
+        }
+      ],
+      "goal_hints": {
+        "unmet": [
+          "I must stay awake on the anniversary night, mmm, but my eyes keep closing. Dorrin on Foghorn Rock can say when the Hush returns.",
+          "Someone should warn me when the Hush draws near, yawn."
+        ],
+        "in_progress": [
+          "I'm waking up, slowly. Tell me what Dorrin's glass says, mmm.",
+          "Keep me company, will you? I mustn't doze now."
+        ],
+        "resolved": [
+          "I am wide awake and ready for the night, mmm. Now let me explain my bell ledger.",
+          "Thank you, dear one. The bell will ring true."
+        ]
+      },
+      "deflections": [
+        "Mmm, I couldn't say.",
+        "Forgive me, I drifted off.",
+        "That is beyond my bell, dear.",
+        "Yawn... ask another.",
+        "Mmm, I wish I knew."
+      ]
     },
     {
       "id": "c_rook",
@@ -336,24 +1942,169 @@
       "personality": "Gruff, loyal and secretly sentimental dockhand.",
       "goal": "Win Sorrel's respect.",
       "secret": "He rows to Berth Thirteen at midnight each year to leave a wick, without knowing why.",
-      "motivations": ["respect", "loyalty"],
+      "motivations": [
+        "respect",
+        "loyalty"
+      ],
       "relationships": [
-        { "cast_id": "c_pell", "relation": "rival" },
-        { "cast_id": "c_quay", "relation": "deckhand to" }
+        {
+          "cast_id": "c_pell",
+          "relation": "rival"
+        },
+        {
+          "cast_id": "c_quay",
+          "relation": "deckhand to"
+        }
       ],
       "sprite_recipe": "body=tall; bodyColor=ink; accentColor=shadow; skinColor=skin; feature=tail; walkFrames=3",
       "home_location": "l_tallow_row",
-      "knows_truths": ["t_wren_keeper", "t_wren_lit_lamp", "t_player_was_spark", "t_side_wick"],
+      "knows_truths": [
+        "t_wren_keeper",
+        "t_wren_lit_lamp",
+        "t_player_was_spark",
+        "t_side_wick"
+      ],
       "goal_states": [
         {
           "id": "gs_rook_confession",
           "description": "Rook confesses his midnight rowing and hands over the Wick and the spare Berth Thirteen key.",
           "requires": {},
-          "gives_items": ["i_wick", "i_tallow_key"],
+          "gives_items": [
+            "i_wick",
+            "i_tallow_key"
+          ],
           "reveals": "Rook admits he rows to Berth Thirteen each year."
         }
       ],
-      "voice_notes": "Few words, with aye."
+      "voice_notes": "Few words, with aye.",
+      "greetings": [
+        "Aye. You. Look familiar. Aye.",
+        "Aye, hello. Twelve lights. Thirteen berths. Never asked why.",
+        "Aye. Something nags me. A coat. A name. Aye.",
+        "Hm. Aye. Ask me about the night of the Hush."
+      ],
+      "knowledge": [
+        {
+          "id": "k_rook_coat",
+          "topic": "Stitched coat",
+          "ask": "Do you recognise the initials W.T.?",
+          "text": "Aye. Mended a coat once, stitched W.T. Can't say whose. Aye, it nags me.",
+          "keywords": [
+            "coat",
+            "stitched",
+            "initials",
+            "wt",
+            "mended"
+          ],
+          "clue_id": "cl_rook_coat",
+          "truth_id": "t_wren_keeper"
+        },
+        {
+          "id": "k_rook_small_light",
+          "topic": "Singing light",
+          "ask": "What did you hear that night?",
+          "text": "Aye, a small light that sang. The night of the Hush. Never forgot.",
+          "keywords": [
+            "light",
+            "sang",
+            "hush",
+            "night",
+            "hear"
+          ],
+          "clue_id": "cl_rook_small_light",
+          "truth_id": "t_wren_lit_lamp"
+        },
+        {
+          "id": "k_rook_spark",
+          "topic": "You were Spark",
+          "ask": "Do you know who I am?",
+          "text": "Aye. You were Spark. Don't ask how. Aye, I know.",
+          "keywords": [
+            "spark",
+            "you",
+            "remember",
+            "know",
+            "player"
+          ],
+          "clue_id": "cl_rook_spark",
+          "truth_id": "t_player_was_spark"
+        },
+        {
+          "id": "k_rook_wick",
+          "topic": "Lamp-wick",
+          "ask": "Where do you row at night?",
+          "text": "Aye. Row to Berth Thirteen each year with a lamp-wick. Don't tell Sorrel.",
+          "keywords": [
+            "row",
+            "wick",
+            "berth",
+            "thirteen",
+            "midnight"
+          ],
+          "clue_id": "cl_rook_wick",
+          "truth_id": "t_side_wick"
+        },
+        {
+          "id": "k_rook_quay",
+          "topic": "Captain Quay",
+          "ask": "What's it like working for Sorrel?",
+          "text": "Aye. Loud. Proud. A good captain, though. Never say I said.",
+          "keywords": [
+            "quay",
+            "sorrel",
+            "captain",
+            "deckhand",
+            "boss"
+          ]
+        },
+        {
+          "id": "k_rook_pell",
+          "topic": "That magpie",
+          "ask": "Do you like Pell?",
+          "text": "Aye, no. Pell takes. I keep. Different crafts.",
+          "keywords": [
+            "pell",
+            "magpie",
+            "rival",
+            "takes",
+            "steal"
+          ]
+        },
+        {
+          "id": "k_rook_key",
+          "topic": "Berth Thirteen stair",
+          "ask": "How do I get through to Berth Thirteen's stair?",
+          "text": "Aye. Stair's locked. Tallow Key opens it. I've a spare. Ask me about my rowing.",
+          "keywords": [
+            "key",
+            "tallow",
+            "stair",
+            "locked",
+            "berth"
+          ]
+        }
+      ],
+      "goal_hints": {
+        "unmet": [
+          "Aye. Want Sorrel's respect. Never get it. Row at night. Don't say.",
+          "Aye. Somewhere out there I leave a wick. Ask me. Maybe I'll say."
+        ],
+        "in_progress": [
+          "Aye. Getting hard to hide it. Ask where I row.",
+          "You've seen too much. Aye. Ask about the wick."
+        ],
+        "resolved": [
+          "Aye. Said it all. Lighter now. Take the wick and the spare key.",
+          "Thanks. Aye. Mean it. Berth Thirteen is yours now."
+        ]
+      },
+      "deflections": [
+        "Aye. No.",
+        "Can't say.",
+        "Don't know. Aye.",
+        "Not mine to tell.",
+        "Ask Sorrel. Aye."
+      ]
     },
     {
       "id": "c_wren",
@@ -362,176 +2113,2130 @@
       "personality": "Bright, stubborn and lonely.",
       "goal": "To be remembered and finally rest.",
       "secret": "She is afraid of being a burden.",
-      "motivations": ["being remembered", "keeping the village safe"],
+      "motivations": [
+        "being remembered",
+        "keeping the village safe"
+      ],
       "relationships": [
-        { "cast_id": "c_hobb", "relation": "granddaughter" },
-        { "cast_id": "c_lumi", "relation": "lamp-companion" }
+        {
+          "cast_id": "c_hobb",
+          "relation": "granddaughter"
+        },
+        {
+          "cast_id": "c_lumi",
+          "relation": "lamp-companion"
+        }
       ],
       "sprite_recipe": "body=small; bodyColor=earth; accentColor=accent; skinColor=skin; feature=wings; walkFrames=3",
       "home_location": "l_wrens_lamp_room",
-      "knows_truths": ["t_thirteen_berths", "t_wren_keeper", "t_oil_from_memories", "t_hush_seven_years", "t_wren_lit_lamp", "t_village_forgot", "t_oil_flows_to_deep", "t_wren_alive", "t_player_was_spark", "t_hobb_remembers", "t_told_aloud"],
+      "knows_truths": [
+        "t_thirteen_berths",
+        "t_wren_keeper",
+        "t_oil_from_memories",
+        "t_hush_seven_years",
+        "t_wren_lit_lamp",
+        "t_village_forgot",
+        "t_oil_flows_to_deep",
+        "t_wren_alive",
+        "t_player_was_spark",
+        "t_hobb_remembers",
+        "t_told_aloud"
+      ],
       "goal_states": [],
-      "voice_notes": "Sing-song, kind and teasing. Met only in the Deep. Her goal is resolved by the ending choice."
+      "voice_notes": "Sing-song, kind and teasing. Met only in the Deep. Her goal is resolved by the ending choice.",
+      "greetings": [
+        "Hello, hello! There you are at last, I've kept the lamp warm.",
+        "Oh, you came! Sing-song, I knew you would. Does anyone in the village remember me?",
+        "Well, well, a face from long ago. Come closer, Spark. I've missed you, and your lost year.",
+        "Hush now, listen. My lamp is nearly out of oil, and the Hush is coming back."
+      ],
+      "knowledge": [
+        {
+          "id": "k_wren_alive",
+          "topic": "Warm lamp",
+          "ask": "Are you really alive?",
+          "text": "I've kept the lamp warm all this while, so yes, in my way. Wren, still here.",
+          "keywords": [
+            "alive",
+            "warm",
+            "lamp",
+            "here",
+            "wren"
+          ],
+          "clue_id": "cl_wren_alive",
+          "truth_id": "t_wren_alive"
+        },
+        {
+          "id": "k_wren_spark",
+          "topic": "Spark's year",
+          "ask": "Do you know who I am?",
+          "text": "Spark! It's you, isn't it? Tell me about the lost year, I've missed it so.",
+          "keywords": [
+            "spark",
+            "year",
+            "lost",
+            "you",
+            "remember"
+          ],
+          "clue_id": "cl_wren_spark",
+          "truth_id": "t_player_was_spark"
+        },
+        {
+          "id": "k_wren_chorus",
+          "topic": "Telling together",
+          "ask": "How can I free you?",
+          "text": "The village must tell its memories of me together, here at my lamp, and say my name aloud, sing-song.",
+          "keywords": [
+            "free",
+            "village",
+            "tell",
+            "memories",
+            "together"
+          ],
+          "clue_id": "cl_wren_chorus",
+          "truth_id": "t_told_aloud"
+        },
+        {
+          "id": "k_wren_lamp",
+          "topic": "Her lamp",
+          "ask": "What is this lamp room?",
+          "text": "My lamp room, deep below. Quiet, cosy, a bit lonely if I'm honest.",
+          "keywords": [
+            "lamp",
+            "room",
+            "deep",
+            "below",
+            "cosy"
+          ]
+        },
+        {
+          "id": "k_wren_lumi",
+          "topic": "Little Lumi",
+          "ask": "Do you know Lumi?",
+          "text": "Lumi! My lamp-companion. Is the little moth still chiming?",
+          "keywords": [
+            "lumi",
+            "moth",
+            "companion",
+            "chime",
+            "friend"
+          ]
+        },
+        {
+          "id": "k_wren_hobb",
+          "topic": "Her grandfather",
+          "ask": "Is Hobb your grandfather?",
+          "text": "Grandfather Hobb. Tell him that speaking my name never puts the lamp out. Remembered together, I'm relit.",
+          "keywords": [
+            "hobb",
+            "grandfather",
+            "elder",
+            "family",
+            "badger"
+          ]
+        },
+        {
+          "id": "k_wren_oil",
+          "topic": "The missing oil",
+          "ask": "Is the missing oil flowing down to your lamp?",
+          "text": "Yes. My lamp pulls the oil down the tide, and it is nearly out. The Hush is coming back.",
+          "keywords": [
+            "oil",
+            "missing",
+            "tide",
+            "lamp",
+            "hush"
+          ]
+        },
+        {
+          "id": "k_wren_flask",
+          "topic": "Carrying memories",
+          "ask": "Is there a way to carry memories down to you?",
+          "text": "An Empty Flask and a told memory make the Memory Cistern hum. A Warm Bun helps a memory come.",
+          "keywords": [
+            "flask",
+            "cistern",
+            "memory",
+            "bun",
+            "hum"
+          ]
+        }
+      ],
+      "goal_hints": {
+        "unmet": [
+          "I want to be remembered, truly remembered, and then I want to rest. Tell my memories aloud at the lamp.",
+          "It's been so long, sing-song, and so quiet down here."
+        ],
+        "in_progress": [
+          "You're helping, I can feel it. The more voices telling their memories of me, the better.",
+          "The lamp glows brighter each time someone says my name."
+        ],
+        "resolved": [
+          "I'm remembered. Thank you, dear. I can rest now.",
+          "Go gently, my Spark. The lamp will stay lit."
+        ]
+      },
+      "deflections": [
+        "Oh, that's lost in the dark, dear.",
+        "Hush, I don't remember that.",
+        "Ask me something kinder, sing-song.",
+        "That one's fading, I'm afraid.",
+        "I'd tell you if I knew, truly."
+      ]
     }
   ],
   "truths": [
-    { "id": "t_thirteen_berths", "text": "There are thirteen berths in the harbour but only twelve lights.", "depends_on": [], "importance": "core", "revealed_by": ["cl_berth_empty", "cl_dorrin_count", "cl_banner_stars", "cl_hester_berths"] },
-    { "id": "t_wren_keeper", "text": "The Keeper of Berth Thirteen was Wren Tallow, and her name is fading from the records.", "depends_on": ["t_thirteen_berths"], "importance": "core", "revealed_by": ["cl_ledger_entry", "cl_attic_initials", "cl_rook_coat"] },
-    { "id": "t_oil_from_memories", "text": "Remembrance oil is made from freely given memories. Burning it makes the giver fade from others' memories.", "depends_on": [], "importance": "core", "revealed_by": ["cl_bramwell_oil", "cl_founders_recipe", "cl_archive_recipe_copy", "cl_cistern_plaque"] },
-    { "id": "t_hush_seven_years", "text": "Seven years ago the village drifted into the Hush, a fog that smothers lights.", "depends_on": [], "importance": "core", "revealed_by": ["cl_dorrin_barometer", "cl_pilchard_log", "cl_quay_hush", "cl_oil_tally_cold", "cl_hester_dark"] },
-    { "id": "t_wren_lit_lamp", "text": "Wren lit the Thirteenth Light with her own memories to guide the village out of the Hush.", "depends_on": ["t_wren_keeper", "t_oil_from_memories", "t_hush_seven_years"], "importance": "core", "revealed_by": ["cl_quay_singing_light", "cl_bell_ledger", "cl_rook_small_light", "cl_archive_bell_copy"] },
-    { "id": "t_village_forgot", "text": "The village forgot Wren because her burnt memories erased her from everyone else's.", "depends_on": ["t_oil_from_memories", "t_wren_lit_lamp"], "importance": "core", "revealed_by": ["cl_tamsin_fade", "cl_granny_buns", "cl_lamp_room_flicker"] },
-    { "id": "t_oil_flows_to_deep", "text": "The missing oil flows down the tide to the Lantern Deep. The Thirteenth Light still burns and is running low.", "depends_on": ["t_oil_from_memories", "t_wren_lit_lamp"], "importance": "core", "revealed_by": ["cl_oil_tally_flow", "cl_kelp_threads", "cl_nim_tide", "cl_gallery_threads"] },
-    { "id": "t_wren_alive", "text": "Wren is alive below the tide, keeping the Drowned Lamp.", "depends_on": ["t_oil_flows_to_deep"], "importance": "core", "revealed_by": ["cl_nim_wave", "cl_spyglass_glow", "cl_drowned_lamp_glow", "cl_wren_alive"] },
-    { "id": "t_player_was_spark", "text": "The player was Wren's apprentice, Spark, and gave a year of memories to the lamp.", "depends_on": ["t_wren_lit_lamp"], "importance": "core", "revealed_by": ["cl_attic_cot", "cl_lumi_spark", "cl_base_hook", "cl_wren_spark", "cl_rook_spark"] },
-    { "id": "t_hobb_remembers", "text": "Elder Hobb remembers Wren and kept silent, fearing that speaking her name would put out the lamp.", "depends_on": ["t_village_forgot"], "importance": "core", "revealed_by": ["cl_hobb_locket", "cl_hobb_letters", "cl_hobb_speaks"] },
-    { "id": "t_told_aloud", "text": "Burnt memories return when they are remembered together and told aloud at the lamp.", "depends_on": ["t_village_forgot", "t_wren_alive"], "importance": "core", "revealed_by": ["cl_chorus_rite", "cl_flask_cistern", "cl_wren_chorus"] },
-    { "id": "t_side_bun", "text": "Granny's thirteen-spice bun was Wren's favourite.", "depends_on": [], "importance": "side", "revealed_by": ["cl_granny_favourite"] },
-    { "id": "t_side_spyglass", "text": "Pell's brass spyglass was Wren's.", "depends_on": [], "importance": "side", "revealed_by": ["cl_pell_spyglass"] },
-    { "id": "t_side_hush_returns", "text": "The Hush returns in the seventh year, about now.", "depends_on": [], "importance": "side", "revealed_by": ["cl_dorrin_hush_date"] },
-    { "id": "t_side_banner_star", "text": "The banner's thirteenth star is stitched in a hand nobody remembers.", "depends_on": [], "importance": "side", "revealed_by": ["cl_yarrow_star"] },
-    { "id": "t_side_amber_glow", "text": "Nim saw an amber glow under the tide.", "depends_on": [], "importance": "side", "revealed_by": ["cl_nim_glow"] },
-    { "id": "t_side_mothlight_echo", "text": "The Mothlight's flicker is an echo of the Thirteenth Light.", "depends_on": [], "importance": "side", "revealed_by": ["cl_hester_echo"] },
-    { "id": "t_side_singing_light", "text": "Captain Quay's ship was guided out of the Hush by a small light that sang.", "depends_on": [], "importance": "side", "revealed_by": ["cl_quay_tale"] },
-    { "id": "t_side_wick", "text": "Rook rows to Berth Thirteen at midnight each year to leave a lamp-wick, without knowing why.", "depends_on": [], "importance": "side", "revealed_by": ["cl_rook_wick"] }
+    {
+      "id": "t_thirteen_berths",
+      "text": "There are thirteen berths in the harbour but only twelve lights.",
+      "depends_on": [],
+      "importance": "core",
+      "revealed_by": [
+        "cl_berth_empty",
+        "cl_dorrin_count",
+        "cl_banner_stars",
+        "cl_hester_berths"
+      ]
+    },
+    {
+      "id": "t_wren_keeper",
+      "text": "The Keeper of Berth Thirteen was Wren Tallow, and her name is fading from the records.",
+      "depends_on": [
+        "t_thirteen_berths"
+      ],
+      "importance": "core",
+      "revealed_by": [
+        "cl_ledger_entry",
+        "cl_attic_initials",
+        "cl_rook_coat"
+      ]
+    },
+    {
+      "id": "t_oil_from_memories",
+      "text": "Remembrance oil is made from freely given memories. Burning it makes the giver fade from others' memories.",
+      "depends_on": [],
+      "importance": "core",
+      "revealed_by": [
+        "cl_bramwell_oil",
+        "cl_founders_recipe",
+        "cl_archive_recipe_copy",
+        "cl_cistern_plaque"
+      ]
+    },
+    {
+      "id": "t_hush_seven_years",
+      "text": "Seven years ago the village drifted into the Hush, a fog that smothers lights.",
+      "depends_on": [],
+      "importance": "core",
+      "revealed_by": [
+        "cl_dorrin_barometer",
+        "cl_pilchard_log",
+        "cl_quay_hush",
+        "cl_oil_tally_cold",
+        "cl_hester_dark"
+      ]
+    },
+    {
+      "id": "t_wren_lit_lamp",
+      "text": "Wren lit the Thirteenth Light with her own memories to guide the village out of the Hush.",
+      "depends_on": [
+        "t_wren_keeper",
+        "t_oil_from_memories",
+        "t_hush_seven_years"
+      ],
+      "importance": "core",
+      "revealed_by": [
+        "cl_quay_singing_light",
+        "cl_bell_ledger",
+        "cl_rook_small_light",
+        "cl_archive_bell_copy"
+      ]
+    },
+    {
+      "id": "t_village_forgot",
+      "text": "The village forgot Wren because her burnt memories erased her from everyone else's.",
+      "depends_on": [
+        "t_oil_from_memories",
+        "t_wren_lit_lamp"
+      ],
+      "importance": "core",
+      "revealed_by": [
+        "cl_tamsin_fade",
+        "cl_granny_buns",
+        "cl_lamp_room_flicker"
+      ]
+    },
+    {
+      "id": "t_oil_flows_to_deep",
+      "text": "The missing oil flows down the tide to the Lantern Deep. The Thirteenth Light still burns and is running low.",
+      "depends_on": [
+        "t_oil_from_memories",
+        "t_wren_lit_lamp"
+      ],
+      "importance": "core",
+      "revealed_by": [
+        "cl_oil_tally_flow",
+        "cl_kelp_threads",
+        "cl_nim_tide",
+        "cl_gallery_threads"
+      ]
+    },
+    {
+      "id": "t_wren_alive",
+      "text": "Wren is alive below the tide, keeping the Drowned Lamp.",
+      "depends_on": [
+        "t_oil_flows_to_deep"
+      ],
+      "importance": "core",
+      "revealed_by": [
+        "cl_nim_wave",
+        "cl_spyglass_glow",
+        "cl_drowned_lamp_glow",
+        "cl_wren_alive"
+      ]
+    },
+    {
+      "id": "t_player_was_spark",
+      "text": "The player was Wren's apprentice, Spark, and gave a year of memories to the lamp.",
+      "depends_on": [
+        "t_wren_lit_lamp"
+      ],
+      "importance": "core",
+      "revealed_by": [
+        "cl_attic_cot",
+        "cl_lumi_spark",
+        "cl_base_hook",
+        "cl_wren_spark",
+        "cl_rook_spark"
+      ]
+    },
+    {
+      "id": "t_hobb_remembers",
+      "text": "Elder Hobb remembers Wren and kept silent, fearing that speaking her name would put out the lamp.",
+      "depends_on": [
+        "t_village_forgot"
+      ],
+      "importance": "core",
+      "revealed_by": [
+        "cl_hobb_locket",
+        "cl_hobb_letters",
+        "cl_hobb_speaks"
+      ]
+    },
+    {
+      "id": "t_told_aloud",
+      "text": "Burnt memories return when they are remembered together and told aloud at the lamp.",
+      "depends_on": [
+        "t_village_forgot",
+        "t_wren_alive"
+      ],
+      "importance": "core",
+      "revealed_by": [
+        "cl_chorus_rite",
+        "cl_flask_cistern",
+        "cl_wren_chorus"
+      ]
+    },
+    {
+      "id": "t_side_bun",
+      "text": "Granny's thirteen-spice bun was Wren's favourite.",
+      "depends_on": [],
+      "importance": "side",
+      "revealed_by": [
+        "cl_granny_favourite"
+      ]
+    },
+    {
+      "id": "t_side_spyglass",
+      "text": "Pell's brass spyglass was Wren's.",
+      "depends_on": [],
+      "importance": "side",
+      "revealed_by": [
+        "cl_pell_spyglass"
+      ]
+    },
+    {
+      "id": "t_side_hush_returns",
+      "text": "The Hush returns in the seventh year, about now.",
+      "depends_on": [],
+      "importance": "side",
+      "revealed_by": [
+        "cl_dorrin_hush_date"
+      ]
+    },
+    {
+      "id": "t_side_banner_star",
+      "text": "The banner's thirteenth star is stitched in a hand nobody remembers.",
+      "depends_on": [],
+      "importance": "side",
+      "revealed_by": [
+        "cl_yarrow_star"
+      ]
+    },
+    {
+      "id": "t_side_amber_glow",
+      "text": "Nim saw an amber glow under the tide.",
+      "depends_on": [],
+      "importance": "side",
+      "revealed_by": [
+        "cl_nim_glow"
+      ]
+    },
+    {
+      "id": "t_side_mothlight_echo",
+      "text": "The Mothlight's flicker is an echo of the Thirteenth Light.",
+      "depends_on": [],
+      "importance": "side",
+      "revealed_by": [
+        "cl_hester_echo"
+      ]
+    },
+    {
+      "id": "t_side_singing_light",
+      "text": "Captain Quay's ship was guided out of the Hush by a small light that sang.",
+      "depends_on": [],
+      "importance": "side",
+      "revealed_by": [
+        "cl_quay_tale"
+      ]
+    },
+    {
+      "id": "t_side_wick",
+      "text": "Rook rows to Berth Thirteen at midnight each year to leave a lamp-wick, without knowing why.",
+      "depends_on": [],
+      "importance": "side",
+      "revealed_by": [
+        "cl_rook_wick"
+      ]
+    }
   ],
   "clues": [
-    { "id": "cl_berth_empty", "truth_id": "t_thirteen_berths", "kind": "place", "where": { "type": "location", "id": "l_berth_thirteen" }, "alternatives": [], "requirements": {}, "text": "Thirteen mooring rings, and one empty lamp-stand with nothing to light." },
-    { "id": "cl_dorrin_count", "truth_id": "t_thirteen_berths", "kind": "spoken", "where": { "type": "character", "id": "c_dorrin" }, "alternatives": [], "requirements": {}, "text": "Dorrin counts the lights from Foghorn Rock: twelve, and thirteen berths." },
-    { "id": "cl_banner_stars", "truth_id": "t_thirteen_berths", "kind": "object", "where": { "type": "location", "id": "l_sailmakers_loft" }, "alternatives": [], "requirements": {}, "text": "The Founders' banner has thirteen stars, one more than there are lights." },
-    { "id": "cl_hester_berths", "truth_id": "t_thirteen_berths", "kind": "spoken", "where": { "type": "character", "id": "c_hester" }, "alternatives": [], "requirements": {}, "text": "Hester worries that the harbour has a berth too many for its lights." },
-    { "id": "cl_ledger_entry", "truth_id": "t_wren_keeper", "kind": "object", "where": { "type": "location", "id": "l_archive" }, "alternatives": [], "requirements": { "items": ["i_dusk_ink"] }, "text": "Dusk Ink brings up a faded ledger line: Berth Thirteen, Keeper W. Tallow." },
-    { "id": "cl_attic_initials", "truth_id": "t_wren_keeper", "kind": "place", "where": { "type": "location", "id": "l_keepers_attic" }, "alternatives": [], "requirements": {}, "text": "W.T. is sewn inside an old coat and carved under the cot." },
-    { "id": "cl_rook_coat", "truth_id": "t_wren_keeper", "kind": "spoken", "where": { "type": "character", "id": "c_rook" }, "alternatives": [], "requirements": {}, "text": "Rook once mended a coat stitched W.T. and cannot say whose it was." },
-    { "id": "cl_bramwell_oil", "truth_id": "t_oil_from_memories", "kind": "spoken", "where": { "type": "character", "id": "c_bramwell" }, "alternatives": [], "requirements": {}, "text": "Bramwell mumbles that oil is pressed from memories freely given, and that givers fade." },
-    { "id": "cl_founders_recipe", "truth_id": "t_oil_from_memories", "kind": "object", "where": { "type": "location", "id": "l_founders_cellar" }, "alternatives": [], "requirements": {}, "text": "The founders' recipe book describes oil made from given memories." },
-    { "id": "cl_archive_recipe_copy", "truth_id": "t_oil_from_memories", "kind": "object", "where": { "type": "location", "id": "l_archive" }, "alternatives": [], "requirements": {}, "text": "A copied page of the founders' recipe says burning the oil fades the giver." },
-    { "id": "cl_cistern_plaque", "truth_id": "t_oil_from_memories", "kind": "place", "where": { "type": "location", "id": "l_memory_cistern" }, "alternatives": [], "requirements": {}, "text": "A plaque on the cistern thanks every giver of a memory." },
-    { "id": "cl_dorrin_barometer", "truth_id": "t_hush_seven_years", "kind": "spoken", "where": { "type": "character", "id": "c_dorrin" }, "alternatives": [], "requirements": {}, "text": "Dorrin's barometer lore: the village drifted into the Hush seven years ago." },
-    { "id": "cl_pilchard_log", "truth_id": "t_hush_seven_years", "kind": "object", "where": { "type": "location", "id": "l_wreck_pilchard" }, "alternatives": [], "requirements": {}, "text": "The Pilchard's scorched log records the Hush seven years ago." },
-    { "id": "cl_quay_hush", "truth_id": "t_hush_seven_years", "kind": "spoken", "where": { "type": "character", "id": "c_quay" }, "alternatives": [], "requirements": {}, "text": "Quay remembers the Hush swallowing his ship's lamp seven years ago." },
-    { "id": "cl_oil_tally_cold", "truth_id": "t_hush_seven_years", "kind": "object", "where": { "type": "location", "id": "l_oil_press" }, "alternatives": [], "requirements": {}, "text": "The Oil Press tally shows the oil ran cold seven years ago." },
-    { "id": "cl_hester_dark", "truth_id": "t_hush_seven_years", "kind": "spoken", "where": { "type": "character", "id": "c_hester" }, "alternatives": [], "requirements": {}, "text": "Hester says the Mothlight went dark seven years ago, in the Hush." },
-    { "id": "cl_quay_singing_light", "truth_id": "t_wren_lit_lamp", "kind": "spoken", "where": { "type": "character", "id": "c_quay" }, "alternatives": [], "requirements": {}, "text": "Quay tells of a small light that sang and led his ship out of the fog." },
-    { "id": "cl_bell_ledger", "truth_id": "t_wren_lit_lamp", "kind": "object", "where": { "type": "location", "id": "l_bell_tower" }, "alternatives": [], "requirements": {}, "text": "The Bell Tower ledger shows the thirteenth bell rung once that night." },
-    { "id": "cl_rook_small_light", "truth_id": "t_wren_lit_lamp", "kind": "spoken", "where": { "type": "character", "id": "c_rook" }, "alternatives": [], "requirements": {}, "text": "Rook heard a small light that sang, the night of the Hush." },
-    { "id": "cl_archive_bell_copy", "truth_id": "t_wren_lit_lamp", "kind": "object", "where": { "type": "location", "id": "l_archive" }, "alternatives": [], "requirements": {}, "text": "A copy of the Bell Tower ledger page shows the lamp lit that night." },
-    { "id": "cl_tamsin_fade", "truth_id": "t_village_forgot", "kind": "spoken", "where": { "type": "character", "id": "c_tamsin" }, "alternatives": [], "requirements": {}, "text": "Tamsin says names fade in the order the lamps were lit." },
-    { "id": "cl_granny_buns", "truth_id": "t_village_forgot", "kind": "spoken", "where": { "type": "character", "id": "c_granny" }, "alternatives": [], "requirements": {}, "text": "Granny bakes thirteen buns and cannot say why her notes fade." },
-    { "id": "cl_lamp_room_flicker", "truth_id": "t_village_forgot", "kind": "place", "where": { "type": "location", "id": "l_mothlight_lamp_room" }, "alternatives": [], "requirements": {}, "text": "The Mothlight flickers as if answering a name nobody can recall." },
-    { "id": "cl_oil_tally_flow", "truth_id": "t_oil_flows_to_deep", "kind": "object", "where": { "type": "location", "id": "l_oil_press" }, "alternatives": [], "requirements": {}, "text": "The Oil Press tally ledger shows the loss following the tide." },
-    { "id": "cl_kelp_threads", "truth_id": "t_oil_flows_to_deep", "kind": "place", "where": { "type": "location", "id": "l_kelp_garden" }, "alternatives": [], "requirements": {}, "text": "Amber threads of oil drift downward through the kelp." },
-    { "id": "cl_nim_tide", "truth_id": "t_oil_flows_to_deep", "kind": "spoken", "where": { "type": "character", "id": "c_nim" }, "alternatives": [], "requirements": {}, "text": "Nim says the tide runs warm and amber down the steps." },
-    { "id": "cl_gallery_threads", "truth_id": "t_oil_flows_to_deep", "kind": "place", "where": { "type": "location", "id": "l_drowned_gallery" }, "alternatives": [], "requirements": {}, "text": "Amber threads flow in at the gallery windows towards a distant light." },
-    { "id": "cl_nim_wave", "truth_id": "t_wren_alive", "kind": "spoken", "where": { "type": "character", "id": "c_nim" }, "alternatives": [], "requirements": {}, "text": "Nim says the girl in the water waves back." },
-    { "id": "cl_spyglass_glow", "truth_id": "t_wren_alive", "kind": "item_combination", "where": { "type": "location", "id": "l_stargazers_roof" }, "alternatives": [], "requirements": { "items": ["i_brass_spyglass"] }, "text": "Through the brass spyglass, a glow shows below the tide." },
-    { "id": "cl_drowned_lamp_glow", "truth_id": "t_wren_alive", "kind": "place", "where": { "type": "location", "id": "l_drowned_lamp" }, "alternatives": [], "requirements": {}, "text": "A warm glow with a small figure sitting beside it." },
-    { "id": "cl_wren_alive", "truth_id": "t_wren_alive", "kind": "spoken", "where": { "type": "character", "id": "c_wren" }, "alternatives": [], "requirements": {}, "text": "Wren greets the player and says she has kept the lamp warm." },
-    { "id": "cl_attic_cot", "truth_id": "t_player_was_spark", "kind": "object", "where": { "type": "location", "id": "l_keepers_attic" }, "alternatives": [], "requirements": {}, "text": "The apprentice cot and scarf bear the player's own handwriting." },
-    { "id": "cl_lumi_spark", "truth_id": "t_player_was_spark", "kind": "spoken", "where": { "type": "character", "id": "c_lumi" }, "alternatives": [], "requirements": {}, "text": "Lumi chimes the word Spark and circles the player." },
-    { "id": "cl_base_hook", "truth_id": "t_player_was_spark", "kind": "object", "where": { "type": "location", "id": "l_mothlight_base" }, "alternatives": [], "requirements": {}, "text": "An apprentice hook at the Mothlight Base, with the player's half-sewn tag matching its thread." },
-    { "id": "cl_wren_spark", "truth_id": "t_player_was_spark", "kind": "spoken", "where": { "type": "character", "id": "c_wren" }, "alternatives": [], "requirements": {}, "text": "Wren calls the player Spark and asks about the lost year." },
-    { "id": "cl_rook_spark", "truth_id": "t_player_was_spark", "kind": "spoken", "where": { "type": "character", "id": "c_rook" }, "alternatives": [], "requirements": {}, "text": "Rook squints at the player and says aye, you were Spark." },
-    { "id": "cl_hobb_locket", "truth_id": "t_hobb_remembers", "kind": "place", "where": { "type": "location", "id": "l_council_hall" }, "alternatives": [], "requirements": {}, "text": "In Hobb's study sits a locket engraved with a wren." },
-    { "id": "cl_hobb_letters", "truth_id": "t_hobb_remembers", "kind": "object", "where": { "type": "location", "id": "l_founders_cellar" }, "alternatives": [], "requirements": {}, "text": "Hobb's unsent letters to Wren, tied with string, lie in a cellar box." },
-    { "id": "cl_hobb_speaks", "truth_id": "t_hobb_remembers", "kind": "spoken", "where": { "type": "character", "id": "c_hobb" }, "alternatives": [], "requirements": {}, "text": "Hobb quietly admits he remembers his granddaughter." },
-    { "id": "cl_chorus_rite", "truth_id": "t_told_aloud", "kind": "object", "where": { "type": "location", "id": "l_founders_cellar" }, "alternatives": [], "requirements": {}, "text": "The founders' chorus rite page says burnt memories return when told aloud together." },
-    { "id": "cl_flask_cistern", "truth_id": "t_told_aloud", "kind": "item_combination", "where": { "type": "location", "id": "l_memory_cistern" }, "alternatives": [], "requirements": { "items": ["i_empty_flask", "i_warm_bun"] }, "text": "The Empty Flask and a remembered bun make the cistern hum." },
-    { "id": "cl_wren_chorus", "truth_id": "t_told_aloud", "kind": "spoken", "where": { "type": "character", "id": "c_wren" }, "alternatives": [], "requirements": {}, "text": "Wren explains that the village must tell its memories of her together." },
-    { "id": "cl_granny_favourite", "truth_id": "t_side_bun", "kind": "spoken", "where": { "type": "character", "id": "c_granny" }, "alternatives": [], "requirements": { "goal_states": ["gs_granny_recipe"] }, "text": "Granny says the thirteen-spice bun was a young keeper's favourite." },
-    { "id": "cl_pell_spyglass", "truth_id": "t_side_spyglass", "kind": "spoken", "where": { "type": "character", "id": "c_pell" }, "alternatives": [], "requirements": { "goal_states": ["gs_pell_trade"] }, "text": "Pell admits the brass spyglass belonged to the thirteenth keeper." },
-    { "id": "cl_dorrin_hush_date", "truth_id": "t_side_hush_returns", "kind": "spoken", "where": { "type": "character", "id": "c_dorrin" }, "alternatives": [], "requirements": { "goal_states": ["gs_dorrin_barometer"] }, "text": "Dorrin's mended barometer says the Hush returns in seven years, which is now." },
-    { "id": "cl_yarrow_star", "truth_id": "t_side_banner_star", "kind": "spoken", "where": { "type": "character", "id": "c_yarrow" }, "alternatives": [], "requirements": { "goal_states": ["gs_yarrow_banner"] }, "text": "Yarrow notices the thirteenth star is in a hand she does not know." },
-    { "id": "cl_nim_glow", "truth_id": "t_side_amber_glow", "kind": "spoken", "where": { "type": "character", "id": "c_nim" }, "alternatives": [], "requirements": { "goal_states": ["gs_nim_kite"] }, "text": "Nim points at the tidepool, where an amber glow shimmers under the water." },
-    { "id": "cl_hester_echo", "truth_id": "t_side_mothlight_echo", "kind": "spoken", "where": { "type": "character", "id": "c_hester" }, "alternatives": [], "requirements": { "goal_states": ["gs_hester_flame"] }, "text": "Hester says the Mothlight flickers like an echo of another lamp." },
-    { "id": "cl_quay_tale", "truth_id": "t_side_singing_light", "kind": "spoken", "where": { "type": "character", "id": "c_quay" }, "alternatives": [], "requirements": { "goal_states": ["gs_quay_true_tale"] }, "text": "Quay tells it true: a small light that sang led his ship out of the Hush." },
-    { "id": "cl_rook_wick", "truth_id": "t_side_wick", "kind": "spoken", "where": { "type": "character", "id": "c_rook" }, "alternatives": [], "requirements": { "goal_states": ["gs_rook_confession"] }, "text": "Rook admits he rows to Berth Thirteen each year with a lamp-wick." },
-    { "id": "cl_name_tag", "kind": "object", "where": { "type": "location", "id": "l_lantern_square" }, "alternatives": [], "requirements": {}, "text": "The player's half-sewn name tag has only a few stitched letters." },
-    { "id": "cl_pell_suspect", "kind": "spoken", "where": { "type": "character", "id": "c_pell" }, "alternatives": [], "requirements": {}, "text": "Villagers whisper that Pell takes oil from the press." },
-    { "id": "cl_tamsin_suspects", "kind": "spoken", "where": { "type": "character", "id": "c_tamsin" }, "alternatives": [], "requirements": {}, "text": "Tamsin suspects Bramwell of taking oil from the press." },
-    { "id": "cl_hobb_warning", "kind": "spoken", "where": { "type": "character", "id": "c_hobb" }, "alternatives": [], "requirements": {}, "text": "Hobb warns the player not to go asking about the harbour." },
-    { "id": "cl_study_locked", "kind": "place", "where": { "type": "location", "id": "l_council_hall" }, "alternatives": [], "requirements": {}, "text": "Hobb's study door is locked and his lamp burns late." },
-    { "id": "cl_ghost_light", "kind": "place", "where": { "type": "location", "id": "l_whisper_fog_edge" }, "alternatives": [], "requirements": {}, "text": "A pale ghost light drifts in the fog at the edge of the Hush." },
-    { "id": "cl_rook_midnight", "kind": "place", "where": { "type": "location", "id": "l_tallow_row" }, "alternatives": [], "requirements": {}, "text": "Wet oars and a small boat tied up after midnight on Tallow Row." },
-    { "id": "cl_bad_luck_lamp", "kind": "object", "where": { "type": "location", "id": "l_wreck_pilchard" }, "alternatives": [], "requirements": {}, "text": "Sailors say a bad-luck lamp sits in the wreck of the Pilchard." }
+    {
+      "id": "cl_berth_empty",
+      "truth_id": "t_thirteen_berths",
+      "kind": "place",
+      "where": {
+        "type": "location",
+        "id": "l_berth_thirteen"
+      },
+      "alternatives": [],
+      "requirements": {},
+      "text": "Thirteen mooring rings, and one empty lamp-stand with nothing to light."
+    },
+    {
+      "id": "cl_dorrin_count",
+      "truth_id": "t_thirteen_berths",
+      "kind": "spoken",
+      "where": {
+        "type": "character",
+        "id": "c_dorrin"
+      },
+      "alternatives": [],
+      "requirements": {},
+      "text": "Dorrin counts the lights from Foghorn Rock: twelve, and thirteen berths."
+    },
+    {
+      "id": "cl_banner_stars",
+      "truth_id": "t_thirteen_berths",
+      "kind": "object",
+      "where": {
+        "type": "location",
+        "id": "l_sailmakers_loft"
+      },
+      "alternatives": [],
+      "requirements": {},
+      "text": "The Founders' banner has thirteen stars, one more than there are lights."
+    },
+    {
+      "id": "cl_hester_berths",
+      "truth_id": "t_thirteen_berths",
+      "kind": "spoken",
+      "where": {
+        "type": "character",
+        "id": "c_hester"
+      },
+      "alternatives": [],
+      "requirements": {},
+      "text": "Hester worries that the harbour has a berth too many for its lights."
+    },
+    {
+      "id": "cl_ledger_entry",
+      "truth_id": "t_wren_keeper",
+      "kind": "object",
+      "where": {
+        "type": "location",
+        "id": "l_archive"
+      },
+      "alternatives": [],
+      "requirements": {
+        "items": [
+          "i_dusk_ink"
+        ]
+      },
+      "text": "Dusk Ink brings up a faded ledger line: Berth Thirteen, Keeper W. Tallow."
+    },
+    {
+      "id": "cl_attic_initials",
+      "truth_id": "t_wren_keeper",
+      "kind": "place",
+      "where": {
+        "type": "location",
+        "id": "l_keepers_attic"
+      },
+      "alternatives": [],
+      "requirements": {},
+      "text": "W.T. is sewn inside an old coat and carved under the cot."
+    },
+    {
+      "id": "cl_rook_coat",
+      "truth_id": "t_wren_keeper",
+      "kind": "spoken",
+      "where": {
+        "type": "character",
+        "id": "c_rook"
+      },
+      "alternatives": [],
+      "requirements": {},
+      "text": "Rook once mended a coat stitched W.T. and cannot say whose it was."
+    },
+    {
+      "id": "cl_bramwell_oil",
+      "truth_id": "t_oil_from_memories",
+      "kind": "spoken",
+      "where": {
+        "type": "character",
+        "id": "c_bramwell"
+      },
+      "alternatives": [],
+      "requirements": {},
+      "text": "Bramwell mumbles that oil is pressed from memories freely given, and that givers fade."
+    },
+    {
+      "id": "cl_founders_recipe",
+      "truth_id": "t_oil_from_memories",
+      "kind": "object",
+      "where": {
+        "type": "location",
+        "id": "l_founders_cellar"
+      },
+      "alternatives": [],
+      "requirements": {},
+      "text": "The founders' recipe book describes oil made from given memories."
+    },
+    {
+      "id": "cl_archive_recipe_copy",
+      "truth_id": "t_oil_from_memories",
+      "kind": "object",
+      "where": {
+        "type": "location",
+        "id": "l_archive"
+      },
+      "alternatives": [],
+      "requirements": {},
+      "text": "A copied page of the founders' recipe says burning the oil fades the giver."
+    },
+    {
+      "id": "cl_cistern_plaque",
+      "truth_id": "t_oil_from_memories",
+      "kind": "place",
+      "where": {
+        "type": "location",
+        "id": "l_memory_cistern"
+      },
+      "alternatives": [],
+      "requirements": {},
+      "text": "A plaque on the cistern thanks every giver of a memory."
+    },
+    {
+      "id": "cl_dorrin_barometer",
+      "truth_id": "t_hush_seven_years",
+      "kind": "spoken",
+      "where": {
+        "type": "character",
+        "id": "c_dorrin"
+      },
+      "alternatives": [],
+      "requirements": {},
+      "text": "Dorrin's barometer lore: the village drifted into the Hush seven years ago."
+    },
+    {
+      "id": "cl_pilchard_log",
+      "truth_id": "t_hush_seven_years",
+      "kind": "object",
+      "where": {
+        "type": "location",
+        "id": "l_wreck_pilchard"
+      },
+      "alternatives": [],
+      "requirements": {},
+      "text": "The Pilchard's scorched log records the Hush seven years ago."
+    },
+    {
+      "id": "cl_quay_hush",
+      "truth_id": "t_hush_seven_years",
+      "kind": "spoken",
+      "where": {
+        "type": "character",
+        "id": "c_quay"
+      },
+      "alternatives": [],
+      "requirements": {},
+      "text": "Quay remembers the Hush swallowing his ship's lamp seven years ago."
+    },
+    {
+      "id": "cl_oil_tally_cold",
+      "truth_id": "t_hush_seven_years",
+      "kind": "object",
+      "where": {
+        "type": "location",
+        "id": "l_oil_press"
+      },
+      "alternatives": [],
+      "requirements": {},
+      "text": "The Oil Press tally shows the oil ran cold seven years ago."
+    },
+    {
+      "id": "cl_hester_dark",
+      "truth_id": "t_hush_seven_years",
+      "kind": "spoken",
+      "where": {
+        "type": "character",
+        "id": "c_hester"
+      },
+      "alternatives": [],
+      "requirements": {},
+      "text": "Hester says the Mothlight went dark seven years ago, in the Hush."
+    },
+    {
+      "id": "cl_quay_singing_light",
+      "truth_id": "t_wren_lit_lamp",
+      "kind": "spoken",
+      "where": {
+        "type": "character",
+        "id": "c_quay"
+      },
+      "alternatives": [],
+      "requirements": {},
+      "text": "Quay tells of a small light that sang and led his ship out of the fog."
+    },
+    {
+      "id": "cl_bell_ledger",
+      "truth_id": "t_wren_lit_lamp",
+      "kind": "object",
+      "where": {
+        "type": "location",
+        "id": "l_bell_tower"
+      },
+      "alternatives": [],
+      "requirements": {},
+      "text": "The Bell Tower ledger shows the thirteenth bell rung once that night."
+    },
+    {
+      "id": "cl_rook_small_light",
+      "truth_id": "t_wren_lit_lamp",
+      "kind": "spoken",
+      "where": {
+        "type": "character",
+        "id": "c_rook"
+      },
+      "alternatives": [],
+      "requirements": {},
+      "text": "Rook heard a small light that sang, the night of the Hush."
+    },
+    {
+      "id": "cl_archive_bell_copy",
+      "truth_id": "t_wren_lit_lamp",
+      "kind": "object",
+      "where": {
+        "type": "location",
+        "id": "l_archive"
+      },
+      "alternatives": [],
+      "requirements": {},
+      "text": "A copy of the Bell Tower ledger page shows the lamp lit that night."
+    },
+    {
+      "id": "cl_tamsin_fade",
+      "truth_id": "t_village_forgot",
+      "kind": "spoken",
+      "where": {
+        "type": "character",
+        "id": "c_tamsin"
+      },
+      "alternatives": [],
+      "requirements": {},
+      "text": "Tamsin says names fade in the order the lamps were lit."
+    },
+    {
+      "id": "cl_granny_buns",
+      "truth_id": "t_village_forgot",
+      "kind": "spoken",
+      "where": {
+        "type": "character",
+        "id": "c_granny"
+      },
+      "alternatives": [],
+      "requirements": {},
+      "text": "Granny bakes thirteen buns and cannot say why her notes fade."
+    },
+    {
+      "id": "cl_lamp_room_flicker",
+      "truth_id": "t_village_forgot",
+      "kind": "place",
+      "where": {
+        "type": "location",
+        "id": "l_mothlight_lamp_room"
+      },
+      "alternatives": [],
+      "requirements": {},
+      "text": "The Mothlight flickers as if answering a name nobody can recall."
+    },
+    {
+      "id": "cl_oil_tally_flow",
+      "truth_id": "t_oil_flows_to_deep",
+      "kind": "object",
+      "where": {
+        "type": "location",
+        "id": "l_oil_press"
+      },
+      "alternatives": [],
+      "requirements": {},
+      "text": "The Oil Press tally ledger shows the loss following the tide."
+    },
+    {
+      "id": "cl_kelp_threads",
+      "truth_id": "t_oil_flows_to_deep",
+      "kind": "place",
+      "where": {
+        "type": "location",
+        "id": "l_kelp_garden"
+      },
+      "alternatives": [],
+      "requirements": {},
+      "text": "Amber threads of oil drift downward through the kelp."
+    },
+    {
+      "id": "cl_nim_tide",
+      "truth_id": "t_oil_flows_to_deep",
+      "kind": "spoken",
+      "where": {
+        "type": "character",
+        "id": "c_nim"
+      },
+      "alternatives": [],
+      "requirements": {},
+      "text": "Nim says the tide runs warm and amber down the steps."
+    },
+    {
+      "id": "cl_gallery_threads",
+      "truth_id": "t_oil_flows_to_deep",
+      "kind": "place",
+      "where": {
+        "type": "location",
+        "id": "l_drowned_gallery"
+      },
+      "alternatives": [],
+      "requirements": {},
+      "text": "Amber threads flow in at the gallery windows towards a distant light."
+    },
+    {
+      "id": "cl_nim_wave",
+      "truth_id": "t_wren_alive",
+      "kind": "spoken",
+      "where": {
+        "type": "character",
+        "id": "c_nim"
+      },
+      "alternatives": [],
+      "requirements": {},
+      "text": "Nim says the girl in the water waves back."
+    },
+    {
+      "id": "cl_spyglass_glow",
+      "truth_id": "t_wren_alive",
+      "kind": "item_combination",
+      "where": {
+        "type": "location",
+        "id": "l_stargazers_roof"
+      },
+      "alternatives": [],
+      "requirements": {
+        "items": [
+          "i_brass_spyglass"
+        ]
+      },
+      "text": "Through the brass spyglass, a glow shows below the tide."
+    },
+    {
+      "id": "cl_drowned_lamp_glow",
+      "truth_id": "t_wren_alive",
+      "kind": "place",
+      "where": {
+        "type": "location",
+        "id": "l_drowned_lamp"
+      },
+      "alternatives": [],
+      "requirements": {},
+      "text": "A warm glow with a small figure sitting beside it."
+    },
+    {
+      "id": "cl_wren_alive",
+      "truth_id": "t_wren_alive",
+      "kind": "spoken",
+      "where": {
+        "type": "character",
+        "id": "c_wren"
+      },
+      "alternatives": [],
+      "requirements": {},
+      "text": "Wren greets the player and says she has kept the lamp warm."
+    },
+    {
+      "id": "cl_attic_cot",
+      "truth_id": "t_player_was_spark",
+      "kind": "object",
+      "where": {
+        "type": "location",
+        "id": "l_keepers_attic"
+      },
+      "alternatives": [],
+      "requirements": {},
+      "text": "The apprentice cot and scarf bear the player's own handwriting."
+    },
+    {
+      "id": "cl_lumi_spark",
+      "truth_id": "t_player_was_spark",
+      "kind": "spoken",
+      "where": {
+        "type": "character",
+        "id": "c_lumi"
+      },
+      "alternatives": [],
+      "requirements": {},
+      "text": "Lumi chimes the word Spark and circles the player."
+    },
+    {
+      "id": "cl_base_hook",
+      "truth_id": "t_player_was_spark",
+      "kind": "object",
+      "where": {
+        "type": "location",
+        "id": "l_mothlight_base"
+      },
+      "alternatives": [],
+      "requirements": {},
+      "text": "An apprentice hook at the Mothlight Base, with the player's half-sewn tag matching its thread."
+    },
+    {
+      "id": "cl_wren_spark",
+      "truth_id": "t_player_was_spark",
+      "kind": "spoken",
+      "where": {
+        "type": "character",
+        "id": "c_wren"
+      },
+      "alternatives": [],
+      "requirements": {},
+      "text": "Wren calls the player Spark and asks about the lost year."
+    },
+    {
+      "id": "cl_rook_spark",
+      "truth_id": "t_player_was_spark",
+      "kind": "spoken",
+      "where": {
+        "type": "character",
+        "id": "c_rook"
+      },
+      "alternatives": [],
+      "requirements": {},
+      "text": "Rook squints at the player and says aye, you were Spark."
+    },
+    {
+      "id": "cl_hobb_locket",
+      "truth_id": "t_hobb_remembers",
+      "kind": "place",
+      "where": {
+        "type": "location",
+        "id": "l_council_hall"
+      },
+      "alternatives": [],
+      "requirements": {},
+      "text": "In Hobb's study sits a locket engraved with a wren."
+    },
+    {
+      "id": "cl_hobb_letters",
+      "truth_id": "t_hobb_remembers",
+      "kind": "object",
+      "where": {
+        "type": "location",
+        "id": "l_founders_cellar"
+      },
+      "alternatives": [],
+      "requirements": {},
+      "text": "Hobb's unsent letters to Wren, tied with string, lie in a cellar box."
+    },
+    {
+      "id": "cl_hobb_speaks",
+      "truth_id": "t_hobb_remembers",
+      "kind": "spoken",
+      "where": {
+        "type": "character",
+        "id": "c_hobb"
+      },
+      "alternatives": [],
+      "requirements": {},
+      "text": "Hobb quietly admits he remembers his granddaughter."
+    },
+    {
+      "id": "cl_chorus_rite",
+      "truth_id": "t_told_aloud",
+      "kind": "object",
+      "where": {
+        "type": "location",
+        "id": "l_founders_cellar"
+      },
+      "alternatives": [],
+      "requirements": {},
+      "text": "The founders' chorus rite page says burnt memories return when told aloud together."
+    },
+    {
+      "id": "cl_flask_cistern",
+      "truth_id": "t_told_aloud",
+      "kind": "item_combination",
+      "where": {
+        "type": "location",
+        "id": "l_memory_cistern"
+      },
+      "alternatives": [],
+      "requirements": {
+        "items": [
+          "i_empty_flask",
+          "i_warm_bun"
+        ]
+      },
+      "text": "The Empty Flask and a remembered bun make the cistern hum."
+    },
+    {
+      "id": "cl_wren_chorus",
+      "truth_id": "t_told_aloud",
+      "kind": "spoken",
+      "where": {
+        "type": "character",
+        "id": "c_wren"
+      },
+      "alternatives": [],
+      "requirements": {},
+      "text": "Wren explains that the village must tell its memories of her together."
+    },
+    {
+      "id": "cl_granny_favourite",
+      "truth_id": "t_side_bun",
+      "kind": "spoken",
+      "where": {
+        "type": "character",
+        "id": "c_granny"
+      },
+      "alternatives": [],
+      "requirements": {
+        "goal_states": [
+          "gs_granny_recipe"
+        ]
+      },
+      "text": "Granny says the thirteen-spice bun was a young keeper's favourite."
+    },
+    {
+      "id": "cl_pell_spyglass",
+      "truth_id": "t_side_spyglass",
+      "kind": "spoken",
+      "where": {
+        "type": "character",
+        "id": "c_pell"
+      },
+      "alternatives": [],
+      "requirements": {
+        "goal_states": [
+          "gs_pell_trade"
+        ]
+      },
+      "text": "Pell admits the brass spyglass belonged to the thirteenth keeper."
+    },
+    {
+      "id": "cl_dorrin_hush_date",
+      "truth_id": "t_side_hush_returns",
+      "kind": "spoken",
+      "where": {
+        "type": "character",
+        "id": "c_dorrin"
+      },
+      "alternatives": [],
+      "requirements": {
+        "goal_states": [
+          "gs_dorrin_barometer"
+        ]
+      },
+      "text": "Dorrin's mended barometer says the Hush returns in seven years, which is now."
+    },
+    {
+      "id": "cl_yarrow_star",
+      "truth_id": "t_side_banner_star",
+      "kind": "spoken",
+      "where": {
+        "type": "character",
+        "id": "c_yarrow"
+      },
+      "alternatives": [],
+      "requirements": {
+        "goal_states": [
+          "gs_yarrow_banner"
+        ]
+      },
+      "text": "Yarrow notices the thirteenth star is in a hand she does not know."
+    },
+    {
+      "id": "cl_nim_glow",
+      "truth_id": "t_side_amber_glow",
+      "kind": "spoken",
+      "where": {
+        "type": "character",
+        "id": "c_nim"
+      },
+      "alternatives": [],
+      "requirements": {
+        "goal_states": [
+          "gs_nim_kite"
+        ]
+      },
+      "text": "Nim points at the tidepool, where an amber glow shimmers under the water."
+    },
+    {
+      "id": "cl_hester_echo",
+      "truth_id": "t_side_mothlight_echo",
+      "kind": "spoken",
+      "where": {
+        "type": "character",
+        "id": "c_hester"
+      },
+      "alternatives": [],
+      "requirements": {
+        "goal_states": [
+          "gs_hester_flame"
+        ]
+      },
+      "text": "Hester says the Mothlight flickers like an echo of another lamp."
+    },
+    {
+      "id": "cl_quay_tale",
+      "truth_id": "t_side_singing_light",
+      "kind": "spoken",
+      "where": {
+        "type": "character",
+        "id": "c_quay"
+      },
+      "alternatives": [],
+      "requirements": {
+        "goal_states": [
+          "gs_quay_true_tale"
+        ]
+      },
+      "text": "Quay tells it true: a small light that sang led his ship out of the Hush."
+    },
+    {
+      "id": "cl_rook_wick",
+      "truth_id": "t_side_wick",
+      "kind": "spoken",
+      "where": {
+        "type": "character",
+        "id": "c_rook"
+      },
+      "alternatives": [],
+      "requirements": {
+        "goal_states": [
+          "gs_rook_confession"
+        ]
+      },
+      "text": "Rook admits he rows to Berth Thirteen each year with a lamp-wick."
+    },
+    {
+      "id": "cl_name_tag",
+      "kind": "object",
+      "where": {
+        "type": "location",
+        "id": "l_lantern_square"
+      },
+      "alternatives": [],
+      "requirements": {},
+      "text": "The player's half-sewn name tag has only a few stitched letters."
+    },
+    {
+      "id": "cl_pell_suspect",
+      "kind": "spoken",
+      "where": {
+        "type": "character",
+        "id": "c_pell"
+      },
+      "alternatives": [],
+      "requirements": {},
+      "text": "Villagers whisper that Pell takes oil from the press."
+    },
+    {
+      "id": "cl_tamsin_suspects",
+      "kind": "spoken",
+      "where": {
+        "type": "character",
+        "id": "c_tamsin"
+      },
+      "alternatives": [],
+      "requirements": {},
+      "text": "Tamsin suspects Bramwell of taking oil from the press."
+    },
+    {
+      "id": "cl_hobb_warning",
+      "kind": "spoken",
+      "where": {
+        "type": "character",
+        "id": "c_hobb"
+      },
+      "alternatives": [],
+      "requirements": {},
+      "text": "Hobb warns the player not to go asking about the harbour."
+    },
+    {
+      "id": "cl_study_locked",
+      "kind": "place",
+      "where": {
+        "type": "location",
+        "id": "l_council_hall"
+      },
+      "alternatives": [],
+      "requirements": {},
+      "text": "Hobb's study door is locked and his lamp burns late."
+    },
+    {
+      "id": "cl_ghost_light",
+      "kind": "place",
+      "where": {
+        "type": "location",
+        "id": "l_whisper_fog_edge"
+      },
+      "alternatives": [],
+      "requirements": {},
+      "text": "A pale ghost light drifts in the fog at the edge of the Hush."
+    },
+    {
+      "id": "cl_rook_midnight",
+      "kind": "place",
+      "where": {
+        "type": "location",
+        "id": "l_tallow_row"
+      },
+      "alternatives": [],
+      "requirements": {},
+      "text": "Wet oars and a small boat tied up after midnight on Tallow Row."
+    },
+    {
+      "id": "cl_bad_luck_lamp",
+      "kind": "object",
+      "where": {
+        "type": "location",
+        "id": "l_wreck_pilchard"
+      },
+      "alternatives": [],
+      "requirements": {},
+      "text": "Sailors say a bad-luck lamp sits in the wreck of the Pilchard."
+    }
   ],
   "items": [
-    { "id": "i_dusk_ink", "name": "Dusk Ink", "description": "A small bottle of dark blue ink that shows faded writing.", "icon_recipe": "shape=potion; primaryColor=ink; secondaryColor=accent", "key": true, "found_at": { "type": "location", "id": "l_oil_press" }, "purpose": "Reveals fading ledger entries and mends Dorrin's barometer scale." },
-    { "id": "i_tallow_key", "name": "Tallow Key", "description": "A small brass key with a wren stamped on its bow.", "icon_recipe": "shape=key; primaryColor=accent; secondaryColor=earth", "key": true, "found_at": { "type": "location", "id": "l_lost_found_shed" }, "purpose": "Opens the way from Berth Thirteen down to the Lantern Deep." },
-    { "id": "i_mothlight_ember", "name": "Mothlight Ember", "description": "A warm ember that glows without burning.", "icon_recipe": "shape=lantern; primaryColor=accent; secondaryColor=highlight", "key": true, "found_at": { "type": "location", "id": "l_mothlight_lamp_room" }, "purpose": "Opens the Whisper Fog Edge and lights lanterns." },
-    { "id": "i_brass_spyglass", "name": "Brass Spyglass", "description": "A dented spyglass with W.T. scratched on the rim.", "icon_recipe": "shape=gem; primaryColor=accent; secondaryColor=highlight", "key": false, "found_at": { "type": "location", "id": "l_wreck_pilchard" }, "purpose": "Shows the glow below the tide from Stargazers' Roof." },
-    { "id": "i_empty_flask", "name": "Empty Flask", "description": "A clear glass flask with a cork stopper.", "icon_recipe": "shape=potion; primaryColor=cream; secondaryColor=water", "key": false, "found_at": { "type": "location", "id": "l_memory_cistern" }, "purpose": "Held at the Memory Cistern with a remembered bun to make it hum." },
-    { "id": "i_warm_bun", "name": "Warm Bun", "description": "A thirteen-spice bun that smells of home.", "icon_recipe": "shape=coin; primaryColor=earth; secondaryColor=cream", "key": false, "purpose": "A memory trigger used with the Empty Flask at the Memory Cistern." },
-    { "id": "i_wick", "name": "Lamp-Wick", "description": "A neatly braided lamp-wick that Rook keeps for Berth Thirteen.", "icon_recipe": "shape=feather; primaryColor=cream; secondaryColor=shadow", "key": false, "purpose": "A keepsake Rook leaves at Berth Thirteen each year." }
+    {
+      "id": "i_dusk_ink",
+      "name": "Dusk Ink",
+      "description": "A small bottle of dark blue ink that shows faded writing.",
+      "icon_recipe": "shape=potion; primaryColor=ink; secondaryColor=accent",
+      "key": true,
+      "found_at": {
+        "type": "location",
+        "id": "l_oil_press"
+      },
+      "purpose": "Reveals fading ledger entries and mends Dorrin's barometer scale."
+    },
+    {
+      "id": "i_tallow_key",
+      "name": "Tallow Key",
+      "description": "A small brass key with a wren stamped on its bow.",
+      "icon_recipe": "shape=key; primaryColor=accent; secondaryColor=earth",
+      "key": true,
+      "found_at": {
+        "type": "location",
+        "id": "l_lost_found_shed"
+      },
+      "purpose": "Opens the way from Berth Thirteen down to the Lantern Deep."
+    },
+    {
+      "id": "i_mothlight_ember",
+      "name": "Mothlight Ember",
+      "description": "A warm ember that glows without burning.",
+      "icon_recipe": "shape=lantern; primaryColor=accent; secondaryColor=highlight",
+      "key": true,
+      "found_at": {
+        "type": "location",
+        "id": "l_mothlight_lamp_room"
+      },
+      "purpose": "Opens the Whisper Fog Edge and lights lanterns."
+    },
+    {
+      "id": "i_brass_spyglass",
+      "name": "Brass Spyglass",
+      "description": "A dented spyglass with W.T. scratched on the rim.",
+      "icon_recipe": "shape=gem; primaryColor=accent; secondaryColor=highlight",
+      "key": false,
+      "found_at": {
+        "type": "location",
+        "id": "l_wreck_pilchard"
+      },
+      "purpose": "Shows the glow below the tide from Stargazers' Roof."
+    },
+    {
+      "id": "i_empty_flask",
+      "name": "Empty Flask",
+      "description": "A clear glass flask with a cork stopper.",
+      "icon_recipe": "shape=potion; primaryColor=cream; secondaryColor=water",
+      "key": false,
+      "found_at": {
+        "type": "location",
+        "id": "l_memory_cistern"
+      },
+      "purpose": "Held at the Memory Cistern with a remembered bun to make it hum."
+    },
+    {
+      "id": "i_warm_bun",
+      "name": "Warm Bun",
+      "description": "A thirteen-spice bun that smells of home.",
+      "icon_recipe": "shape=coin; primaryColor=earth; secondaryColor=cream",
+      "key": false,
+      "purpose": "A memory trigger used with the Empty Flask at the Memory Cistern."
+    },
+    {
+      "id": "i_wick",
+      "name": "Lamp-Wick",
+      "description": "A neatly braided lamp-wick that Rook keeps for Berth Thirteen.",
+      "icon_recipe": "shape=feather; primaryColor=cream; secondaryColor=shadow",
+      "key": false,
+      "purpose": "A keepsake Rook leaves at Berth Thirteen each year."
+    }
   ],
   "locations": [
-    { "id": "l_mooring_steps", "name": "Mooring Steps", "biome": "harbour", "mood": "sleepy and salty, with ferry bells", "palette": "shore", "role": "Start of the Long and Medium stories. The ferry lands here.", "hub": true, "required_characters": [], "objects": [{ "id": "o_ferry_bell", "name": "Ferry bell", "description": "A small bell that rings when the ferry arrives." }], "doors": [{ "id": "d_mooring_quay", "to": "l_kettle_quay" }, { "id": "d_mooring_square", "to": "l_lantern_square" }] },
-    { "id": "l_kettle_quay", "name": "Kettle Quay", "biome": "harbour", "mood": "busy, steamy and loud with boasting", "palette": "shore", "role": "Captain Quay's quay. Gateway to the Drift.", "hub": false, "required_characters": ["c_quay"], "objects": [{ "id": "o_regatta_poster", "name": "Regatta poster", "description": "A faded poster for the Founders' Regatta." }], "doors": [{ "id": "d_quay_loft", "to": "l_sailmakers_loft" }, { "id": "d_quay_reedbed", "to": "l_reedbed_shallows" }, { "id": "d_quay_wreck", "to": "l_wreck_pilchard" }] },
-    { "id": "l_sailmakers_loft", "name": "Sailmaker's Loft", "biome": "harbour interior", "mood": "airy and full of humming", "palette": "village", "role": "Yarrow mends the Founders' banner here.", "hub": false, "required_characters": ["c_yarrow"], "objects": [{ "id": "o_founders_banner", "name": "Founders' banner", "description": "A torn banner with thirteen stitched stars." }], "doors": [{ "id": "d_loft_square", "to": "l_lantern_square" }] },
-    { "id": "l_lantern_square", "name": "Lantern Square", "biome": "village square", "mood": "warm and bustling as the lamps come on", "palette": "village", "role": "Hub. The start of the Short story.", "hub": true, "required_characters": [], "objects": [{ "id": "o_lamp_post", "name": "Lantern post", "description": "A row of lantern posts, each lit by a keeper." }, { "id": "o_notice_board", "name": "Notice board", "description": "A board of chores, ferries and lost things." }], "doors": [{ "id": "d_square_bakery", "to": "l_bakery" }, { "id": "d_square_hall", "to": "l_council_hall" }, { "id": "d_square_tallow", "to": "l_tallow_row" }, { "id": "d_square_oilpress", "to": "l_oil_press" }] },
-    { "id": "l_bakery", "name": "Thirteen Buns Bakery", "biome": "village interior", "mood": "cosy and sweet-smelling", "palette": "village", "role": "Granny Fennick bakes thirteen buns each day.", "hub": false, "required_characters": ["c_granny"], "objects": [{ "id": "o_bun_tray", "name": "Bun tray", "description": "A tray of thirteen buns, one more than anyone orders." }], "doors": [] },
-    { "id": "l_council_hall", "name": "Council Hall", "biome": "village interior", "mood": "formal, hushed and a little cold", "palette": "ruins", "role": "Elder Hobb's hall, with his locked study.", "hub": false, "required_characters": ["c_hobb"], "objects": [{ "id": "o_study_door", "name": "Study door", "description": "Hobb's study, where a locket lies on the desk." }], "doors": [{ "id": "d_hall_archive", "to": "l_archive" }, { "id": "d_hall_cellar", "to": "l_founders_cellar" }] },
-    { "id": "l_archive", "name": "Archive", "biome": "village interior", "mood": "dusty and orderly, with faded pages", "palette": "dusk", "role": "Holds the ledgers and copied lore.", "hub": false, "required_characters": ["c_tamsin"], "objects": [{ "id": "o_ledger_desk", "name": "Ledger desk", "description": "A desk with fading ledgers and a drawer of copies." }], "doors": [{ "id": "d_archive_tallow", "to": "l_tallow_row" }] },
-    { "id": "l_tallow_row", "name": "Tallow Row", "biome": "village street", "mood": "homely, with candle smoke and chatter", "palette": "village", "role": "Rook's street, and the way to the Mothlight.", "hub": false, "required_characters": ["c_rook"], "objects": [{ "id": "o_boat_hook", "name": "Boat-hook", "description": "A boat-hook leaning by a wet doorstep." }], "doors": [{ "id": "d_tallow_base", "to": "l_mothlight_base" }, { "id": "d_tallow_attic", "to": "l_keepers_attic" }, { "id": "d_tallow_shed", "to": "l_lost_found_shed" }] },
-    { "id": "l_oil_press", "name": "Oil Press", "biome": "village workshop", "mood": "warm, humming and slightly sticky", "palette": "village", "role": "Bramwell presses remembrance oil here.", "hub": false, "required_characters": ["c_bramwell"], "objects": [{ "id": "o_tally_ledger", "name": "Tally ledger", "description": "A ledger tracking how much oil is lost each night." }, { "id": "o_ink_shelf", "name": "Ink shelf", "description": "A shelf with a bottle of dark Dusk Ink." }], "doors": [{ "id": "d_oilpress_tidepool", "to": "l_tidepool_steps" }] },
-    { "id": "l_keepers_attic", "name": "Keeper's Attic", "biome": "village interior", "mood": "snug and a little sad", "palette": "dusk", "role": "The player's old room, with the apprentice cot.", "hub": false, "required_characters": [], "objects": [{ "id": "o_apprentice_cot", "name": "Apprentice cot", "description": "A small cot with a scarf and the letters W.T. carved beneath." }, { "id": "o_old_coat", "name": "Old coat", "description": "A coat with W.T. sewn inside the collar." }], "doors": [] },
-    { "id": "l_lost_found_shed", "name": "Lost-and-Found Shed", "biome": "village shed", "mood": "cluttered, shiny and cheerful", "palette": "village", "role": "Pell's hoard of lost things, and the Tallow Key.", "hub": false, "required_characters": ["c_pell"], "objects": [{ "id": "o_hoard_shelf", "name": "Hoard shelf", "description": "A shelf of buttons, spoons and a small brass key." }], "doors": [] },
-    { "id": "l_mothlight_base", "name": "Mothlight Base", "biome": "lighthouse base", "mood": "steady and reassuring", "palette": "dusk", "role": "Hub at the foot of the Mothlight. Emotional centre of the story.", "hub": true, "required_characters": ["c_hester"], "objects": [{ "id": "o_apprentice_hook", "name": "Apprentice hook", "description": "A coat hook with a small scarf thread caught on it." }], "doors": [{ "id": "d_base_lamproom", "to": "l_mothlight_lamp_room" }, { "id": "d_base_belltower", "to": "l_bell_tower" }, { "id": "d_base_foghorn", "to": "l_foghorn_rock" }, { "id": "d_base_berth", "to": "l_berth_thirteen" }] },
-    { "id": "l_mothlight_lamp_room", "name": "Mothlight Lamp Room", "biome": "lighthouse top", "mood": "glowing and flickering", "palette": "dusk", "role": "Holds the flickering Mothlight and an ember bowl.", "hub": false, "required_characters": [], "objects": [{ "id": "o_ember_bowl", "name": "Ember bowl", "description": "A bowl holding a warm Mothlight Ember." }], "doors": [{ "id": "d_lamproom_roof", "to": "l_stargazers_roof" }] },
-    { "id": "l_stargazers_roof", "name": "Stargazers' Roof", "biome": "rooftop", "mood": "airy and full of stars", "palette": "dusk", "role": "Where the brass spyglass shows the glow below the tide.", "hub": false, "required_characters": [], "objects": [{ "id": "o_spyglass_stand", "name": "Spyglass stand", "description": "A brass stand pointing at the dark tide." }], "doors": [] },
-    { "id": "l_bell_tower", "name": "Bell Tower", "biome": "village tower", "mood": "sleepy, with a deep hum", "palette": "ruins", "role": "Ismay rings twelve bells and one more.", "hub": false, "required_characters": ["c_ismay"], "objects": [{ "id": "o_bell_ledger", "name": "Bell ledger", "description": "A ledger of every bell rung, including a thirteenth." }], "doors": [] },
-    { "id": "l_berth_thirteen", "name": "Berth Thirteen", "biome": "harbour berth", "mood": "quiet and expectant", "palette": "shore", "role": "The hinge between village and Deep. An empty lamp-stand waits here.", "hub": false, "required_characters": [], "objects": [{ "id": "o_empty_lamp_stand", "name": "Empty lamp-stand", "description": "A lamp-stand with thirteen mooring rings around it and no lamp." }], "doors": [{ "id": "d_berth_deepstair", "to": "l_deep_stair", "lock": { "items": ["i_tallow_key"] } }] },
-    { "id": "l_founders_cellar", "name": "Old Founders' Cellar", "biome": "cellar", "mood": "cool, musty and secretive", "palette": "cave", "role": "Holds founders' lore and Hobb's letters.", "hub": false, "required_characters": [], "objects": [{ "id": "o_recipe_book", "name": "Recipe book", "description": "The founders' recipe book and a chorus rite page." }, { "id": "o_letter_box", "name": "Letter box", "description": "A box of unsent letters tied with string." }], "doors": [] },
-    { "id": "l_foghorn_rock", "name": "Foghorn Rock", "biome": "rocky islet", "mood": "windy and grumbling", "palette": "mist", "role": "Dorrin's fog-watch. Gateway to the Drift.", "hub": false, "required_characters": ["c_dorrin"], "objects": [{ "id": "o_barometer", "name": "Barometer", "description": "A cracked barometer with a faded scale." }], "doors": [{ "id": "d_foghorn_fogedge", "to": "l_whisper_fog_edge", "lock": { "items": ["i_mothlight_ember"] } }, { "id": "d_foghorn_meadow", "to": "l_glow_moth_meadow" }] },
-    { "id": "l_whisper_fog_edge", "name": "Whisper Fog Edge", "biome": "foggy shore", "mood": "hushed and softly eerie", "palette": "mist", "role": "Hush atmosphere and a ghost-light red herring.", "hub": false, "required_characters": [], "objects": [{ "id": "o_fog_bank", "name": "Fog bank", "description": "A soft wall of whispering fog with pale lights in it." }], "doors": [] },
-    { "id": "l_glow_moth_meadow", "name": "Glow-Moth Meadow", "biome": "meadow", "mood": "gentle and twinkling", "palette": "meadow", "role": "Lumi's meadow, full of glow-moths.", "hub": false, "required_characters": ["c_lumi"], "objects": [{ "id": "o_moth_flowers", "name": "Moth flowers", "description": "Night flowers the glow-moths love." }], "doors": [{ "id": "d_meadow_reedbed", "to": "l_reedbed_shallows" }] },
-    { "id": "l_reedbed_shallows", "name": "Reedbed Shallows", "biome": "shallow reeds", "mood": "squelchy and calm", "palette": "meadow", "role": "A quiet link between the quay, meadow and kelp.", "hub": false, "required_characters": [], "objects": [{ "id": "o_reed_boat", "name": "Reed boat", "description": "A little boat tangled in the reeds." }], "doors": [{ "id": "d_reedbed_kelp", "to": "l_kelp_garden" }] },
-    { "id": "l_kelp_garden", "name": "Kelp Garden", "biome": "kelp shallows", "mood": "green, swaying and dreamy", "palette": "forest", "role": "Amber threads of oil flow downward here.", "hub": false, "required_characters": [], "objects": [{ "id": "o_amber_threads", "name": "Amber threads", "description": "Glowing amber threads drifting down through the kelp." }], "doors": [{ "id": "d_kelp_tidepool", "to": "l_tidepool_steps" }] },
-    { "id": "l_tidepool_steps", "name": "Tidepool Steps", "biome": "tidepools", "mood": "splashy and bright", "palette": "shore", "role": "Nim plays here, and an amber glow shimmers below.", "hub": false, "required_characters": ["c_nim"], "objects": [{ "id": "o_tidepool", "name": "Glowing tidepool", "description": "A tidepool with a faint amber glow in its depths." }], "doors": [] },
-    { "id": "l_wreck_pilchard", "name": "Wreck of the Pilchard", "biome": "wreck", "mood": "creaky and a little spooky", "palette": "cave", "role": "Holds the scorched log, the brass spyglass and the bad-luck lamp.", "hub": false, "required_characters": [], "objects": [{ "id": "o_scorched_log", "name": "Scorched log", "description": "A ship's log scorched at the edges." }, { "id": "o_signal_mirrors", "name": "Signalling mirrors", "description": "Old signalling mirrors in a battered chest." }], "doors": [] },
-    { "id": "l_deep_stair", "name": "Lantern Deep Stair", "biome": "underwater stair", "mood": "hushed and softly glowing", "palette": "cave", "role": "A stair down from Berth Thirteen into the Deep.", "hub": false, "required_characters": [], "objects": [{ "id": "o_stair_lanterns", "name": "Stair lanterns", "description": "Dim lanterns lining each stair." }], "doors": [{ "id": "d_stair_gallery", "to": "l_drowned_gallery" }] },
-    { "id": "l_drowned_gallery", "name": "Drowned Gallery", "biome": "underwater hall", "mood": "echoing, with drifting amber light", "palette": "cave", "role": "Amber threads flow in at the windows.", "hub": false, "required_characters": [], "objects": [{ "id": "o_gallery_windows", "name": "Gallery windows", "description": "Tall windows with amber threads streaming past." }], "doors": [{ "id": "d_gallery_cistern", "to": "l_memory_cistern" }, { "id": "d_gallery_lamp", "to": "l_drowned_lamp" }] },
-    { "id": "l_memory_cistern", "name": "Memory Cistern", "biome": "underwater cistern", "mood": "still and humming", "palette": "cave", "role": "Where an Empty Flask and a remembered bun make the cistern hum.", "hub": false, "required_characters": [], "objects": [{ "id": "o_cistern_plaque", "name": "Cistern plaque", "description": "A plaque thanking every giver of a memory." }, { "id": "o_cistern_shelf", "name": "Cistern shelf", "description": "A shelf holding a clear Empty Flask." }], "doors": [] },
-    { "id": "l_drowned_lamp", "name": "Drowned Lamp", "biome": "underwater lamp", "mood": "warm, amber and nearly out", "palette": "dusk", "role": "The Thirteenth Light, nearly out of oil.", "hub": false, "required_characters": [], "objects": [{ "id": "o_thirteenth_light", "name": "The Thirteenth Light", "description": "A bright but tired lamp with a small figure beside it." }], "doors": [{ "id": "d_lamp_wrenroom", "to": "l_wrens_lamp_room", "lock": { "truths": ["t_wren_alive"] } }] },
-    { "id": "l_wrens_lamp_room", "name": "Wren's Lamp Room", "biome": "underwater room", "mood": "intimate, glowing and bittersweet", "palette": "dusk", "role": "Where Wren waits and the ending choice is made.", "hub": false, "required_characters": ["c_wren"], "objects": [{ "id": "o_wren_cot", "name": "Wren's cot", "description": "A tiny cot beside the lamp, with a wren-stamped mug." }], "doors": [] }
+    {
+      "id": "l_mooring_steps",
+      "name": "Mooring Steps",
+      "biome": "harbour",
+      "mood": "sleepy and salty, with ferry bells",
+      "palette": "shore",
+      "role": "Start of the Long and Medium stories. The ferry lands here.",
+      "hub": true,
+      "required_characters": [],
+      "objects": [
+        {
+          "id": "o_ferry_bell",
+          "name": "Ferry bell",
+          "description": "A small bell that rings when the ferry arrives."
+        }
+      ],
+      "doors": [
+        {
+          "id": "d_mooring_quay",
+          "to": "l_kettle_quay"
+        },
+        {
+          "id": "d_mooring_square",
+          "to": "l_lantern_square"
+        }
+      ]
+    },
+    {
+      "id": "l_kettle_quay",
+      "name": "Kettle Quay",
+      "biome": "harbour",
+      "mood": "busy, steamy and loud with boasting",
+      "palette": "shore",
+      "role": "Captain Quay's quay. Gateway to the Drift.",
+      "hub": false,
+      "required_characters": [
+        "c_quay"
+      ],
+      "objects": [
+        {
+          "id": "o_regatta_poster",
+          "name": "Regatta poster",
+          "description": "A faded poster for the Founders' Regatta."
+        }
+      ],
+      "doors": [
+        {
+          "id": "d_quay_loft",
+          "to": "l_sailmakers_loft"
+        },
+        {
+          "id": "d_quay_reedbed",
+          "to": "l_reedbed_shallows"
+        },
+        {
+          "id": "d_quay_wreck",
+          "to": "l_wreck_pilchard"
+        }
+      ]
+    },
+    {
+      "id": "l_sailmakers_loft",
+      "name": "Sailmaker's Loft",
+      "biome": "harbour interior",
+      "mood": "airy and full of humming",
+      "palette": "village",
+      "role": "Yarrow mends the Founders' banner here.",
+      "hub": false,
+      "required_characters": [
+        "c_yarrow"
+      ],
+      "objects": [
+        {
+          "id": "o_founders_banner",
+          "name": "Founders' banner",
+          "description": "A torn banner with thirteen stitched stars."
+        }
+      ],
+      "doors": [
+        {
+          "id": "d_loft_square",
+          "to": "l_lantern_square"
+        }
+      ]
+    },
+    {
+      "id": "l_lantern_square",
+      "name": "Lantern Square",
+      "biome": "village square",
+      "mood": "warm and bustling as the lamps come on",
+      "palette": "village",
+      "role": "Hub. The start of the Short story.",
+      "hub": true,
+      "required_characters": [],
+      "objects": [
+        {
+          "id": "o_lamp_post",
+          "name": "Lantern post",
+          "description": "A row of lantern posts, each lit by a keeper."
+        },
+        {
+          "id": "o_notice_board",
+          "name": "Notice board",
+          "description": "A board of chores, ferries and lost things."
+        }
+      ],
+      "doors": [
+        {
+          "id": "d_square_bakery",
+          "to": "l_bakery"
+        },
+        {
+          "id": "d_square_hall",
+          "to": "l_council_hall"
+        },
+        {
+          "id": "d_square_tallow",
+          "to": "l_tallow_row"
+        },
+        {
+          "id": "d_square_oilpress",
+          "to": "l_oil_press"
+        }
+      ]
+    },
+    {
+      "id": "l_bakery",
+      "name": "Thirteen Buns Bakery",
+      "biome": "village interior",
+      "mood": "cosy and sweet-smelling",
+      "palette": "village",
+      "role": "Granny Fennick bakes thirteen buns each day.",
+      "hub": false,
+      "required_characters": [
+        "c_granny"
+      ],
+      "objects": [
+        {
+          "id": "o_bun_tray",
+          "name": "Bun tray",
+          "description": "A tray of thirteen buns, one more than anyone orders."
+        }
+      ],
+      "doors": []
+    },
+    {
+      "id": "l_council_hall",
+      "name": "Council Hall",
+      "biome": "village interior",
+      "mood": "formal, hushed and a little cold",
+      "palette": "ruins",
+      "role": "Elder Hobb's hall, with his locked study.",
+      "hub": false,
+      "required_characters": [
+        "c_hobb"
+      ],
+      "objects": [
+        {
+          "id": "o_study_door",
+          "name": "Study door",
+          "description": "Hobb's study, where a locket lies on the desk."
+        }
+      ],
+      "doors": [
+        {
+          "id": "d_hall_archive",
+          "to": "l_archive"
+        },
+        {
+          "id": "d_hall_cellar",
+          "to": "l_founders_cellar"
+        }
+      ]
+    },
+    {
+      "id": "l_archive",
+      "name": "Archive",
+      "biome": "village interior",
+      "mood": "dusty and orderly, with faded pages",
+      "palette": "dusk",
+      "role": "Holds the ledgers and copied lore.",
+      "hub": false,
+      "required_characters": [
+        "c_tamsin"
+      ],
+      "objects": [
+        {
+          "id": "o_ledger_desk",
+          "name": "Ledger desk",
+          "description": "A desk with fading ledgers and a drawer of copies."
+        }
+      ],
+      "doors": [
+        {
+          "id": "d_archive_tallow",
+          "to": "l_tallow_row"
+        }
+      ]
+    },
+    {
+      "id": "l_tallow_row",
+      "name": "Tallow Row",
+      "biome": "village street",
+      "mood": "homely, with candle smoke and chatter",
+      "palette": "village",
+      "role": "Rook's street, and the way to the Mothlight.",
+      "hub": false,
+      "required_characters": [
+        "c_rook"
+      ],
+      "objects": [
+        {
+          "id": "o_boat_hook",
+          "name": "Boat-hook",
+          "description": "A boat-hook leaning by a wet doorstep."
+        }
+      ],
+      "doors": [
+        {
+          "id": "d_tallow_base",
+          "to": "l_mothlight_base"
+        },
+        {
+          "id": "d_tallow_attic",
+          "to": "l_keepers_attic"
+        },
+        {
+          "id": "d_tallow_shed",
+          "to": "l_lost_found_shed"
+        }
+      ]
+    },
+    {
+      "id": "l_oil_press",
+      "name": "Oil Press",
+      "biome": "village workshop",
+      "mood": "warm, humming and slightly sticky",
+      "palette": "village",
+      "role": "Bramwell presses remembrance oil here.",
+      "hub": false,
+      "required_characters": [
+        "c_bramwell"
+      ],
+      "objects": [
+        {
+          "id": "o_tally_ledger",
+          "name": "Tally ledger",
+          "description": "A ledger tracking how much oil is lost each night."
+        },
+        {
+          "id": "o_ink_shelf",
+          "name": "Ink shelf",
+          "description": "A shelf with a bottle of dark Dusk Ink."
+        }
+      ],
+      "doors": [
+        {
+          "id": "d_oilpress_tidepool",
+          "to": "l_tidepool_steps"
+        }
+      ]
+    },
+    {
+      "id": "l_keepers_attic",
+      "name": "Keeper's Attic",
+      "biome": "village interior",
+      "mood": "snug and a little sad",
+      "palette": "dusk",
+      "role": "The player's old room, with the apprentice cot.",
+      "hub": false,
+      "required_characters": [],
+      "objects": [
+        {
+          "id": "o_apprentice_cot",
+          "name": "Apprentice cot",
+          "description": "A small cot with a scarf and the letters W.T. carved beneath."
+        },
+        {
+          "id": "o_old_coat",
+          "name": "Old coat",
+          "description": "A coat with W.T. sewn inside the collar."
+        }
+      ],
+      "doors": []
+    },
+    {
+      "id": "l_lost_found_shed",
+      "name": "Lost-and-Found Shed",
+      "biome": "village shed",
+      "mood": "cluttered, shiny and cheerful",
+      "palette": "village",
+      "role": "Pell's hoard of lost things, and the Tallow Key.",
+      "hub": false,
+      "required_characters": [
+        "c_pell"
+      ],
+      "objects": [
+        {
+          "id": "o_hoard_shelf",
+          "name": "Hoard shelf",
+          "description": "A shelf of buttons, spoons and a small brass key."
+        }
+      ],
+      "doors": []
+    },
+    {
+      "id": "l_mothlight_base",
+      "name": "Mothlight Base",
+      "biome": "lighthouse base",
+      "mood": "steady and reassuring",
+      "palette": "dusk",
+      "role": "Hub at the foot of the Mothlight. Emotional centre of the story.",
+      "hub": true,
+      "required_characters": [
+        "c_hester"
+      ],
+      "objects": [
+        {
+          "id": "o_apprentice_hook",
+          "name": "Apprentice hook",
+          "description": "A coat hook with a small scarf thread caught on it."
+        }
+      ],
+      "doors": [
+        {
+          "id": "d_base_lamproom",
+          "to": "l_mothlight_lamp_room"
+        },
+        {
+          "id": "d_base_belltower",
+          "to": "l_bell_tower"
+        },
+        {
+          "id": "d_base_foghorn",
+          "to": "l_foghorn_rock"
+        },
+        {
+          "id": "d_base_berth",
+          "to": "l_berth_thirteen"
+        }
+      ]
+    },
+    {
+      "id": "l_mothlight_lamp_room",
+      "name": "Mothlight Lamp Room",
+      "biome": "lighthouse top",
+      "mood": "glowing and flickering",
+      "palette": "dusk",
+      "role": "Holds the flickering Mothlight and an ember bowl.",
+      "hub": false,
+      "required_characters": [],
+      "objects": [
+        {
+          "id": "o_ember_bowl",
+          "name": "Ember bowl",
+          "description": "A bowl holding a warm Mothlight Ember."
+        }
+      ],
+      "doors": [
+        {
+          "id": "d_lamproom_roof",
+          "to": "l_stargazers_roof"
+        }
+      ]
+    },
+    {
+      "id": "l_stargazers_roof",
+      "name": "Stargazers' Roof",
+      "biome": "rooftop",
+      "mood": "airy and full of stars",
+      "palette": "dusk",
+      "role": "Where the brass spyglass shows the glow below the tide.",
+      "hub": false,
+      "required_characters": [],
+      "objects": [
+        {
+          "id": "o_spyglass_stand",
+          "name": "Spyglass stand",
+          "description": "A brass stand pointing at the dark tide."
+        }
+      ],
+      "doors": []
+    },
+    {
+      "id": "l_bell_tower",
+      "name": "Bell Tower",
+      "biome": "village tower",
+      "mood": "sleepy, with a deep hum",
+      "palette": "ruins",
+      "role": "Ismay rings twelve bells and one more.",
+      "hub": false,
+      "required_characters": [
+        "c_ismay"
+      ],
+      "objects": [
+        {
+          "id": "o_bell_ledger",
+          "name": "Bell ledger",
+          "description": "A ledger of every bell rung, including a thirteenth."
+        }
+      ],
+      "doors": []
+    },
+    {
+      "id": "l_berth_thirteen",
+      "name": "Berth Thirteen",
+      "biome": "harbour berth",
+      "mood": "quiet and expectant",
+      "palette": "shore",
+      "role": "The hinge between village and Deep. An empty lamp-stand waits here.",
+      "hub": false,
+      "required_characters": [],
+      "objects": [
+        {
+          "id": "o_empty_lamp_stand",
+          "name": "Empty lamp-stand",
+          "description": "A lamp-stand with thirteen mooring rings around it and no lamp."
+        }
+      ],
+      "doors": [
+        {
+          "id": "d_berth_deepstair",
+          "to": "l_deep_stair",
+          "lock": {
+            "items": [
+              "i_tallow_key"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "l_founders_cellar",
+      "name": "Old Founders' Cellar",
+      "biome": "cellar",
+      "mood": "cool, musty and secretive",
+      "palette": "cave",
+      "role": "Holds founders' lore and Hobb's letters.",
+      "hub": false,
+      "required_characters": [],
+      "objects": [
+        {
+          "id": "o_recipe_book",
+          "name": "Recipe book",
+          "description": "The founders' recipe book and a chorus rite page."
+        },
+        {
+          "id": "o_letter_box",
+          "name": "Letter box",
+          "description": "A box of unsent letters tied with string."
+        }
+      ],
+      "doors": []
+    },
+    {
+      "id": "l_foghorn_rock",
+      "name": "Foghorn Rock",
+      "biome": "rocky islet",
+      "mood": "windy and grumbling",
+      "palette": "mist",
+      "role": "Dorrin's fog-watch. Gateway to the Drift.",
+      "hub": false,
+      "required_characters": [
+        "c_dorrin"
+      ],
+      "objects": [
+        {
+          "id": "o_barometer",
+          "name": "Barometer",
+          "description": "A cracked barometer with a faded scale."
+        }
+      ],
+      "doors": [
+        {
+          "id": "d_foghorn_fogedge",
+          "to": "l_whisper_fog_edge",
+          "lock": {
+            "items": [
+              "i_mothlight_ember"
+            ]
+          }
+        },
+        {
+          "id": "d_foghorn_meadow",
+          "to": "l_glow_moth_meadow"
+        }
+      ]
+    },
+    {
+      "id": "l_whisper_fog_edge",
+      "name": "Whisper Fog Edge",
+      "biome": "foggy shore",
+      "mood": "hushed and softly eerie",
+      "palette": "mist",
+      "role": "Hush atmosphere and a ghost-light red herring.",
+      "hub": false,
+      "required_characters": [],
+      "objects": [
+        {
+          "id": "o_fog_bank",
+          "name": "Fog bank",
+          "description": "A soft wall of whispering fog with pale lights in it."
+        }
+      ],
+      "doors": []
+    },
+    {
+      "id": "l_glow_moth_meadow",
+      "name": "Glow-Moth Meadow",
+      "biome": "meadow",
+      "mood": "gentle and twinkling",
+      "palette": "meadow",
+      "role": "Lumi's meadow, full of glow-moths.",
+      "hub": false,
+      "required_characters": [
+        "c_lumi"
+      ],
+      "objects": [
+        {
+          "id": "o_moth_flowers",
+          "name": "Moth flowers",
+          "description": "Night flowers the glow-moths love."
+        }
+      ],
+      "doors": [
+        {
+          "id": "d_meadow_reedbed",
+          "to": "l_reedbed_shallows"
+        }
+      ]
+    },
+    {
+      "id": "l_reedbed_shallows",
+      "name": "Reedbed Shallows",
+      "biome": "shallow reeds",
+      "mood": "squelchy and calm",
+      "palette": "meadow",
+      "role": "A quiet link between the quay, meadow and kelp.",
+      "hub": false,
+      "required_characters": [],
+      "objects": [
+        {
+          "id": "o_reed_boat",
+          "name": "Reed boat",
+          "description": "A little boat tangled in the reeds."
+        }
+      ],
+      "doors": [
+        {
+          "id": "d_reedbed_kelp",
+          "to": "l_kelp_garden"
+        }
+      ]
+    },
+    {
+      "id": "l_kelp_garden",
+      "name": "Kelp Garden",
+      "biome": "kelp shallows",
+      "mood": "green, swaying and dreamy",
+      "palette": "forest",
+      "role": "Amber threads of oil flow downward here.",
+      "hub": false,
+      "required_characters": [],
+      "objects": [
+        {
+          "id": "o_amber_threads",
+          "name": "Amber threads",
+          "description": "Glowing amber threads drifting down through the kelp."
+        }
+      ],
+      "doors": [
+        {
+          "id": "d_kelp_tidepool",
+          "to": "l_tidepool_steps"
+        }
+      ]
+    },
+    {
+      "id": "l_tidepool_steps",
+      "name": "Tidepool Steps",
+      "biome": "tidepools",
+      "mood": "splashy and bright",
+      "palette": "shore",
+      "role": "Nim plays here, and an amber glow shimmers below.",
+      "hub": false,
+      "required_characters": [
+        "c_nim"
+      ],
+      "objects": [
+        {
+          "id": "o_tidepool",
+          "name": "Glowing tidepool",
+          "description": "A tidepool with a faint amber glow in its depths."
+        }
+      ],
+      "doors": []
+    },
+    {
+      "id": "l_wreck_pilchard",
+      "name": "Wreck of the Pilchard",
+      "biome": "wreck",
+      "mood": "creaky and a little spooky",
+      "palette": "cave",
+      "role": "Holds the scorched log, the brass spyglass and the bad-luck lamp.",
+      "hub": false,
+      "required_characters": [],
+      "objects": [
+        {
+          "id": "o_scorched_log",
+          "name": "Scorched log",
+          "description": "A ship's log scorched at the edges."
+        },
+        {
+          "id": "o_signal_mirrors",
+          "name": "Signalling mirrors",
+          "description": "Old signalling mirrors in a battered chest."
+        }
+      ],
+      "doors": []
+    },
+    {
+      "id": "l_deep_stair",
+      "name": "Lantern Deep Stair",
+      "biome": "underwater stair",
+      "mood": "hushed and softly glowing",
+      "palette": "cave",
+      "role": "A stair down from Berth Thirteen into the Deep.",
+      "hub": false,
+      "required_characters": [],
+      "objects": [
+        {
+          "id": "o_stair_lanterns",
+          "name": "Stair lanterns",
+          "description": "Dim lanterns lining each stair."
+        }
+      ],
+      "doors": [
+        {
+          "id": "d_stair_gallery",
+          "to": "l_drowned_gallery"
+        }
+      ]
+    },
+    {
+      "id": "l_drowned_gallery",
+      "name": "Drowned Gallery",
+      "biome": "underwater hall",
+      "mood": "echoing, with drifting amber light",
+      "palette": "cave",
+      "role": "Amber threads flow in at the windows.",
+      "hub": false,
+      "required_characters": [],
+      "objects": [
+        {
+          "id": "o_gallery_windows",
+          "name": "Gallery windows",
+          "description": "Tall windows with amber threads streaming past."
+        }
+      ],
+      "doors": [
+        {
+          "id": "d_gallery_cistern",
+          "to": "l_memory_cistern"
+        },
+        {
+          "id": "d_gallery_lamp",
+          "to": "l_drowned_lamp"
+        }
+      ]
+    },
+    {
+      "id": "l_memory_cistern",
+      "name": "Memory Cistern",
+      "biome": "underwater cistern",
+      "mood": "still and humming",
+      "palette": "cave",
+      "role": "Where an Empty Flask and a remembered bun make the cistern hum.",
+      "hub": false,
+      "required_characters": [],
+      "objects": [
+        {
+          "id": "o_cistern_plaque",
+          "name": "Cistern plaque",
+          "description": "A plaque thanking every giver of a memory."
+        },
+        {
+          "id": "o_cistern_shelf",
+          "name": "Cistern shelf",
+          "description": "A shelf holding a clear Empty Flask."
+        }
+      ],
+      "doors": []
+    },
+    {
+      "id": "l_drowned_lamp",
+      "name": "Drowned Lamp",
+      "biome": "underwater lamp",
+      "mood": "warm, amber and nearly out",
+      "palette": "dusk",
+      "role": "The Thirteenth Light, nearly out of oil.",
+      "hub": false,
+      "required_characters": [],
+      "objects": [
+        {
+          "id": "o_thirteenth_light",
+          "name": "The Thirteenth Light",
+          "description": "A bright but tired lamp with a small figure beside it."
+        }
+      ],
+      "doors": [
+        {
+          "id": "d_lamp_wrenroom",
+          "to": "l_wrens_lamp_room",
+          "lock": {
+            "truths": [
+              "t_wren_alive"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "l_wrens_lamp_room",
+      "name": "Wren's Lamp Room",
+      "biome": "underwater room",
+      "mood": "intimate, glowing and bittersweet",
+      "palette": "dusk",
+      "role": "Where Wren waits and the ending choice is made.",
+      "hub": false,
+      "required_characters": [
+        "c_wren"
+      ],
+      "objects": [
+        {
+          "id": "o_wren_cot",
+          "name": "Wren's cot",
+          "description": "A tiny cot beside the lamp, with a wren-stamped mug."
+        }
+      ],
+      "doors": []
+    }
   ],
   "twists": [
-    { "id": "tw_apprentice", "description": "You were her apprentice. The half-sewn name tag and Rook's recognition point to the player's past as Spark.", "setup_clues": ["cl_name_tag", "cl_rook_spark"], "payoff_trigger": { "truths": ["t_player_was_spark"] } },
-    { "id": "tw_thief_is_lamp", "description": "The suspected thief is a lamp. The missing oil flows down the tide to the Thirteenth Light.", "setup_clues": ["cl_tamsin_suspects"], "payoff_trigger": { "truths": ["t_oil_flows_to_deep"] } },
-    { "id": "tw_villain_remembers", "description": "The villain remembers. Hobb was protecting the lamp, not hiding a crime.", "setup_clues": ["cl_hobb_warning", "cl_study_locked"], "payoff_trigger": { "truths": ["t_hobb_remembers"] } }
+    {
+      "id": "tw_apprentice",
+      "description": "You were her apprentice. The half-sewn name tag and Rook's recognition point to the player's past as Spark.",
+      "setup_clues": [
+        "cl_name_tag",
+        "cl_rook_spark"
+      ],
+      "payoff_trigger": {
+        "truths": [
+          "t_player_was_spark"
+        ]
+      }
+    },
+    {
+      "id": "tw_thief_is_lamp",
+      "description": "The suspected thief is a lamp. The missing oil flows down the tide to the Thirteenth Light.",
+      "setup_clues": [
+        "cl_tamsin_suspects"
+      ],
+      "payoff_trigger": {
+        "truths": [
+          "t_oil_flows_to_deep"
+        ]
+      }
+    },
+    {
+      "id": "tw_villain_remembers",
+      "description": "The villain remembers. Hobb was protecting the lamp, not hiding a crime.",
+      "setup_clues": [
+        "cl_hobb_warning",
+        "cl_study_locked"
+      ],
+      "payoff_trigger": {
+        "truths": [
+          "t_hobb_remembers"
+        ]
+      }
+    }
   ],
   "red_herrings": [
-    { "id": "rh_pell_oil", "description": "Pell is suspected of stealing oil from the press. In the Medium length Tamsin suspects Bramwell instead.", "setup_clues": ["cl_tamsin_suspects"], "resolution": "Pell only collects lost things, and the oil is not stolen: the lamp in the Deep draws it." },
-    { "id": "rh_ghost_light", "description": "A ghost light drifts in the Whisper Fog Edge.", "setup_clues": ["cl_ghost_light"], "resolution": "The pale lights are only glow-moths." },
-    { "id": "rh_midnight_rowing", "description": "Rook rows out at midnight and nobody knows why.", "setup_clues": ["cl_rook_midnight"], "resolution": "He leaves a lamp-wick at Berth Thirteen each year, without knowing why." },
-    { "id": "rh_bad_luck_lamp", "description": "Sailors say the Wreck of the Pilchard holds a bad-luck lamp.", "setup_clues": ["cl_bad_luck_lamp"], "resolution": "It holds only old signalling mirrors." },
-    { "id": "rh_locked_study", "description": "Hobb's study is always locked.", "setup_clues": ["cl_study_locked"], "resolution": "It holds only a locket and letters to Wren." }
+    {
+      "id": "rh_pell_oil",
+      "description": "Pell is suspected of stealing oil from the press. In the Medium length Tamsin suspects Bramwell instead.",
+      "setup_clues": [
+        "cl_tamsin_suspects"
+      ],
+      "resolution": "Pell only collects lost things, and the oil is not stolen: the lamp in the Deep draws it."
+    },
+    {
+      "id": "rh_ghost_light",
+      "description": "A ghost light drifts in the Whisper Fog Edge.",
+      "setup_clues": [
+        "cl_ghost_light"
+      ],
+      "resolution": "The pale lights are only glow-moths."
+    },
+    {
+      "id": "rh_midnight_rowing",
+      "description": "Rook rows out at midnight and nobody knows why.",
+      "setup_clues": [
+        "cl_rook_midnight"
+      ],
+      "resolution": "He leaves a lamp-wick at Berth Thirteen each year, without knowing why."
+    },
+    {
+      "id": "rh_bad_luck_lamp",
+      "description": "Sailors say the Wreck of the Pilchard holds a bad-luck lamp.",
+      "setup_clues": [
+        "cl_bad_luck_lamp"
+      ],
+      "resolution": "It holds only old signalling mirrors."
+    },
+    {
+      "id": "rh_locked_study",
+      "description": "Hobb's study is always locked.",
+      "setup_clues": [
+        "cl_study_locked"
+      ],
+      "resolution": "It holds only a locket and letters to Wren."
+    }
   ],
   "endings": [
     {
       "id": "e_thirteenth_dawn",
-      "conditions": { "truths": ["t_thirteen_berths", "t_wren_keeper", "t_oil_from_memories", "t_hush_seven_years", "t_wren_lit_lamp", "t_player_was_spark"], "goal_states": [], "choices": ["choice_bring_her_home"] },
+      "conditions": {
+        "truths": [
+          "t_thirteen_berths",
+          "t_wren_keeper",
+          "t_oil_from_memories",
+          "t_hush_seven_years",
+          "t_wren_lit_lamp",
+          "t_player_was_spark"
+        ],
+        "goal_states": [],
+        "choices": [
+          "choice_bring_her_home"
+        ]
+      },
       "scene_outline": "The village gathers at Berth Thirteen and each tells Wren's name and a memory. The lamp is relit above the tide, Wren returns, and the player regains their lost year. In the Short length the choice is saying her name at the berth.",
       "tone": "Joyful and warm.",
       "epilogue_notes": "Vary the epilogue with the goals the player resolved. Shared conditions are the core truths common to every length."
     },
     {
       "id": "e_shared_light",
-      "conditions": { "truths": ["t_thirteen_berths", "t_wren_keeper", "t_oil_from_memories", "t_hush_seven_years", "t_wren_lit_lamp", "t_village_forgot", "t_oil_flows_to_deep", "t_wren_alive", "t_player_was_spark", "t_hobb_remembers", "t_told_aloud"], "goal_states": [], "choices": ["choice_keep_light_together"] },
+      "conditions": {
+        "truths": [
+          "t_thirteen_berths",
+          "t_wren_keeper",
+          "t_oil_from_memories",
+          "t_hush_seven_years",
+          "t_wren_lit_lamp",
+          "t_village_forgot",
+          "t_oil_flows_to_deep",
+          "t_wren_alive",
+          "t_player_was_spark",
+          "t_hobb_remembers",
+          "t_told_aloud"
+        ],
+        "goal_states": [],
+        "choices": [
+          "choice_keep_light_together"
+        ]
+      },
       "scene_outline": "Wren stays as the lamp's keeper. The village remembers her and the Thirteenth Light shines beside the others. The player visits often.",
       "tone": "Bittersweet and warm.",
       "epilogue_notes": "Hobb and Wren share the harbour at dusk. The player keeps their year."
     },
     {
       "id": "e_drift_on",
-      "conditions": { "truths": ["t_wren_alive"], "goal_states": [], "choices": ["choice_not_yet"] },
+      "conditions": {
+        "truths": [
+          "t_wren_alive"
+        ],
+        "goal_states": [],
+        "choices": [
+          "choice_not_yet"
+        ]
+      },
       "scene_outline": "The lamp holds one more year and the Hush passes. The village stays cosy but forgetful, and the player keeps one lantern burning for her.",
       "tone": "Gentle and wistful. A fallback ending.",
       "epilogue_notes": "Wren waves from the water. The player promises to come back."
     },
     {
       "id": "e_thirteen_lanterns",
-      "conditions": { "truths": ["t_thirteen_berths", "t_wren_keeper", "t_oil_from_memories", "t_hush_seven_years", "t_wren_lit_lamp", "t_village_forgot", "t_oil_flows_to_deep", "t_wren_alive", "t_player_was_spark", "t_hobb_remembers", "t_told_aloud"], "goal_states": ["gs_granny_recipe", "gs_yarrow_banner", "gs_pell_trade", "gs_hester_flame", "gs_dorrin_barometer", "gs_tamsin_ledger"], "choices": ["choice_bring_her_home"] },
+      "conditions": {
+        "truths": [
+          "t_thirteen_berths",
+          "t_wren_keeper",
+          "t_oil_from_memories",
+          "t_hush_seven_years",
+          "t_wren_lit_lamp",
+          "t_village_forgot",
+          "t_oil_flows_to_deep",
+          "t_wren_alive",
+          "t_player_was_spark",
+          "t_hobb_remembers",
+          "t_told_aloud"
+        ],
+        "goal_states": [
+          "gs_granny_recipe",
+          "gs_yarrow_banner",
+          "gs_pell_trade",
+          "gs_hester_flame",
+          "gs_dorrin_barometer",
+          "gs_tamsin_ledger"
+        ],
+        "choices": [
+          "choice_bring_her_home"
+        ]
+      },
       "scene_outline": "Every villager brings a lantern, the banner flies with thirteen stars, and the Hush never comes back.",
       "tone": "Triumphant and joyful. A secret bonus ending.",
       "epilogue_notes": "Mention each resolved subplot by name."
@@ -541,58 +4246,424 @@
     "short": {
       "target_minutes": 15,
       "start_location": "l_lantern_square",
-      "cast": ["c_bramwell", "c_tamsin", "c_hester", "c_rook"],
-      "core_truths": ["t_thirteen_berths", "t_wren_keeper", "t_oil_from_memories", "t_hush_seven_years", "t_wren_lit_lamp", "t_player_was_spark"],
-      "side_truths": ["t_side_wick"],
+      "opening": {
+        "context": "You are Spark, Hearthdrift's apprentice keeper, returned with a year missing from your memory. The Mothlight is flickering and its oil is disappearing; the village's clues may explain why."
+      },
+      "cast": [
+        "c_bramwell",
+        "c_tamsin",
+        "c_hester",
+        "c_rook"
+      ],
+      "core_truths": [
+        "t_thirteen_berths",
+        "t_wren_keeper",
+        "t_oil_from_memories",
+        "t_hush_seven_years",
+        "t_wren_lit_lamp",
+        "t_player_was_spark"
+      ],
+      "side_truths": [
+        "t_side_wick"
+      ],
       "subplots": [],
-      "twists": ["tw_apprentice"],
-      "red_herrings": ["rh_midnight_rowing"],
-      "endings": ["e_thirteenth_dawn"],
+      "twists": [
+        "tw_apprentice"
+      ],
+      "red_herrings": [
+        "rh_midnight_rowing"
+      ],
+      "endings": [
+        "e_thirteenth_dawn"
+      ],
       "beats": [
-        { "id": "b_short_arrival", "title": "Arrival", "locations": ["l_lantern_square", "l_oil_press", "l_tallow_row"], "must_find": { "truths": ["t_oil_from_memories"] } },
-        { "id": "b_short_ledger_light", "title": "The ledger and the light", "locations": ["l_archive", "l_mothlight_base"], "must_find": { "truths": ["t_wren_keeper", "t_hush_seven_years", "t_wren_lit_lamp"] } },
-        { "id": "b_short_berth", "title": "Berth Thirteen", "locations": ["l_berth_thirteen"], "must_find": { "truths": ["t_thirteen_berths", "t_wren_keeper", "t_oil_from_memories", "t_hush_seven_years", "t_wren_lit_lamp", "t_player_was_spark"] } }
+        {
+          "id": "b_short_arrival",
+          "title": "Arrival",
+          "objective": "Learn what remembrance oil is made from and what burning it costs.",
+          "guidance": "From Lantern Square, follow the Oil Press door and ask Bramwell about the oil.",
+          "locations": [
+            "l_lantern_square",
+            "l_oil_press",
+            "l_tallow_row"
+          ],
+          "must_find": {
+            "truths": [
+              "t_oil_from_memories"
+            ]
+          }
+        },
+        {
+          "id": "b_short_ledger_light",
+          "title": "The ledger and the light",
+          "objective": "Find out whose name vanished from the records and why the Mothlight flickers.",
+          "guidance": "Visit Tamsin in the Archive, then follow the clues toward the Mothlight.",
+          "locations": [
+            "l_archive",
+            "l_mothlight_base"
+          ],
+          "must_find": {
+            "truths": [
+              "t_wren_keeper",
+              "t_hush_seven_years",
+              "t_wren_lit_lamp"
+            ]
+          }
+        },
+        {
+          "id": "b_short_berth",
+          "title": "Berth Thirteen",
+          "objective": "Reach Berth Thirteen and learn the truth about the missing keeper and your lost year.",
+          "guidance": "Follow the route from the Mothlight into the Lantern Deep.",
+          "locations": [
+            "l_berth_thirteen"
+          ],
+          "must_find": {
+            "truths": [
+              "t_thirteen_berths",
+              "t_wren_keeper",
+              "t_oil_from_memories",
+              "t_hush_seven_years",
+              "t_wren_lit_lamp",
+              "t_player_was_spark"
+            ]
+          }
+        }
       ]
     },
     "medium": {
       "target_minutes": 45,
       "start_location": "l_mooring_steps",
-      "cast": ["c_bramwell", "c_tamsin", "c_hester", "c_rook", "c_dorrin", "c_quay", "c_ismay", "c_wren"],
-      "core_truths": ["t_thirteen_berths", "t_wren_keeper", "t_oil_from_memories", "t_hush_seven_years", "t_wren_lit_lamp", "t_oil_flows_to_deep", "t_wren_alive", "t_player_was_spark"],
-      "side_truths": ["t_side_hush_returns", "t_side_singing_light", "t_side_wick"],
-      "subplots": [
-        { "id": "sp_ledger_repair", "title": "Ledger Repair", "description": "Tamsin restores the fading ledger pages with Dusk Ink and keeps a complete ledger for the epilogue.", "cast": ["c_tamsin"], "truths": [] }
+      "opening": {
+        "context": "You arrive at Mooring Steps as an apprentice keeper with a year missing from your memory. Hearthdrift has twelve lights but thirteen berths, and the village still speaks of a fog called the Hush."
+      },
+      "cast": [
+        "c_bramwell",
+        "c_tamsin",
+        "c_hester",
+        "c_rook",
+        "c_dorrin",
+        "c_quay",
+        "c_ismay",
+        "c_wren"
       ],
-      "twists": ["tw_apprentice", "tw_thief_is_lamp"],
-      "red_herrings": ["rh_midnight_rowing", "rh_pell_oil"],
-      "endings": ["e_thirteenth_dawn", "e_drift_on"],
+      "core_truths": [
+        "t_thirteen_berths",
+        "t_wren_keeper",
+        "t_oil_from_memories",
+        "t_hush_seven_years",
+        "t_wren_lit_lamp",
+        "t_oil_flows_to_deep",
+        "t_wren_alive",
+        "t_player_was_spark"
+      ],
+      "side_truths": [
+        "t_side_hush_returns",
+        "t_side_singing_light",
+        "t_side_wick"
+      ],
+      "subplots": [
+        {
+          "id": "sp_ledger_repair",
+          "title": "Ledger Repair",
+          "description": "Tamsin restores the fading ledger pages with Dusk Ink and keeps a complete ledger for the epilogue.",
+          "cast": [
+            "c_tamsin"
+          ],
+          "truths": []
+        }
+      ],
+      "twists": [
+        "tw_apprentice",
+        "tw_thief_is_lamp"
+      ],
+      "red_herrings": [
+        "rh_midnight_rowing",
+        "rh_pell_oil"
+      ],
+      "endings": [
+        "e_thirteenth_dawn",
+        "e_drift_on"
+      ],
       "beats": [
-        { "id": "b_medium_harbour", "title": "Harbour", "locations": ["l_mooring_steps", "l_kettle_quay", "l_lantern_square", "l_oil_press"], "must_find": { "truths": ["t_oil_from_memories", "t_hush_seven_years"] } },
-        { "id": "b_medium_lights", "title": "The Lights", "locations": ["l_tallow_row", "l_archive", "l_keepers_attic", "l_mothlight_base", "l_bell_tower", "l_foghorn_rock"], "must_find": { "truths": ["t_thirteen_berths", "t_wren_keeper", "t_wren_lit_lamp", "t_player_was_spark"], "items": ["i_tallow_key"] } },
-        { "id": "b_medium_deep", "title": "The Deep", "locations": ["l_berth_thirteen", "l_deep_stair", "l_drowned_gallery", "l_drowned_lamp", "l_wrens_lamp_room"], "must_find": { "truths": ["t_oil_flows_to_deep", "t_wren_alive"] } }
+        {
+          "id": "b_medium_harbour",
+          "title": "Harbour",
+          "objective": "Learn how remembrance oil works and what the Hush did to the village.",
+          "guidance": "From Mooring Steps, explore Lantern Square and Kettle Quay; follow the clues to the Oil Press.",
+          "locations": [
+            "l_mooring_steps",
+            "l_kettle_quay",
+            "l_lantern_square",
+            "l_oil_press"
+          ],
+          "must_find": {
+            "truths": [
+              "t_oil_from_memories",
+              "t_hush_seven_years"
+            ]
+          }
+        },
+        {
+          "id": "b_medium_lights",
+          "title": "The Lights",
+          "objective": "Discover who kept Berth Thirteen and what happened to the Mothlight.",
+          "guidance": "Search the Archive and Keeper's Attic, then follow the path to the Mothlight and Foghorn Rock.",
+          "locations": [
+            "l_tallow_row",
+            "l_archive",
+            "l_keepers_attic",
+            "l_mothlight_base",
+            "l_bell_tower",
+            "l_foghorn_rock"
+          ],
+          "must_find": {
+            "truths": [
+              "t_thirteen_berths",
+              "t_wren_keeper",
+              "t_wren_lit_lamp",
+              "t_player_was_spark"
+            ],
+            "items": [
+              "i_tallow_key"
+            ]
+          }
+        },
+        {
+          "id": "b_medium_deep",
+          "title": "The Deep",
+          "objective": "Follow the remembrance oil into the Lantern Deep and find Wren.",
+          "guidance": "Use the newly revealed route to reach Berth Thirteen.",
+          "locations": [
+            "l_berth_thirteen",
+            "l_deep_stair",
+            "l_drowned_gallery",
+            "l_drowned_lamp",
+            "l_wrens_lamp_room"
+          ],
+          "must_find": {
+            "truths": [
+              "t_oil_flows_to_deep",
+              "t_wren_alive"
+            ]
+          }
+        }
       ]
     },
     "long": {
       "target_minutes": 90,
       "start_location": "l_mooring_steps",
-      "cast": ["c_hester", "c_hobb", "c_pell", "c_dorrin", "c_nim", "c_granny", "c_quay", "c_tamsin", "c_bramwell", "c_lumi", "c_yarrow", "c_ismay", "c_rook", "c_wren"],
-      "core_truths": ["t_thirteen_berths", "t_wren_keeper", "t_oil_from_memories", "t_hush_seven_years", "t_wren_lit_lamp", "t_village_forgot", "t_oil_flows_to_deep", "t_wren_alive", "t_player_was_spark", "t_hobb_remembers", "t_told_aloud"],
-      "side_truths": ["t_side_bun", "t_side_spyglass", "t_side_hush_returns", "t_side_banner_star", "t_side_amber_glow", "t_side_mothlight_echo", "t_side_singing_light", "t_side_wick"],
-      "subplots": [
-        { "id": "sp_thirteen_buns", "title": "Thirteen Buns", "description": "Granny finishes her lantern-bun recipe and gives a Warm Bun, a memory trigger for the Flask.", "cast": ["c_granny"], "truths": ["t_side_bun"] },
-        { "id": "sp_banner_of_stars", "title": "Banner of Stars", "description": "Yarrow mends the Founders' banner and finds the Tallow Key sewn in its hem.", "cast": ["c_yarrow"], "truths": ["t_side_banner_star"] },
-        { "id": "sp_pells_hoard", "title": "Pell's Hoard", "description": "The player returns lost things to their owners, and Pell trades the brass spyglass.", "cast": ["c_pell", "c_nim"], "truths": ["t_side_spyglass", "t_side_amber_glow"] },
-        { "id": "sp_mothlight_flicker", "title": "Mothlight Flicker", "description": "Hester and Dorrin work out why the Mothlight flickers. Reward: the Mothlight Ember.", "cast": ["c_hester", "c_dorrin"], "truths": ["t_side_mothlight_echo", "t_side_hush_returns"] },
-        { "id": "sp_ledger_repair", "title": "Ledger Repair", "description": "Tamsin restores the fading ledger pages with Dusk Ink and keeps a complete ledger for the epilogue.", "cast": ["c_tamsin"], "truths": [] }
+      "opening": {
+        "context": "The ferry brings you to Mooring Steps, an apprentice keeper returned after losing a year. Hearthdrift has twelve lights and thirteen berths; the old Hush may be only one of the things the village has forgotten."
+      },
+      "cast": [
+        "c_hester",
+        "c_hobb",
+        "c_pell",
+        "c_dorrin",
+        "c_nim",
+        "c_granny",
+        "c_quay",
+        "c_tamsin",
+        "c_bramwell",
+        "c_lumi",
+        "c_yarrow",
+        "c_ismay",
+        "c_rook",
+        "c_wren"
       ],
-      "twists": ["tw_apprentice", "tw_thief_is_lamp", "tw_villain_remembers"],
-      "red_herrings": ["rh_pell_oil", "rh_ghost_light", "rh_midnight_rowing", "rh_bad_luck_lamp", "rh_locked_study"],
-      "endings": ["e_thirteenth_dawn", "e_shared_light", "e_drift_on", "e_thirteen_lanterns"],
+      "core_truths": [
+        "t_thirteen_berths",
+        "t_wren_keeper",
+        "t_oil_from_memories",
+        "t_hush_seven_years",
+        "t_wren_lit_lamp",
+        "t_village_forgot",
+        "t_oil_flows_to_deep",
+        "t_wren_alive",
+        "t_player_was_spark",
+        "t_hobb_remembers",
+        "t_told_aloud"
+      ],
+      "side_truths": [
+        "t_side_bun",
+        "t_side_spyglass",
+        "t_side_hush_returns",
+        "t_side_banner_star",
+        "t_side_amber_glow",
+        "t_side_mothlight_echo",
+        "t_side_singing_light",
+        "t_side_wick"
+      ],
+      "subplots": [
+        {
+          "id": "sp_thirteen_buns",
+          "title": "Thirteen Buns",
+          "description": "Granny finishes her lantern-bun recipe and gives a Warm Bun, a memory trigger for the Flask.",
+          "cast": [
+            "c_granny"
+          ],
+          "truths": [
+            "t_side_bun"
+          ]
+        },
+        {
+          "id": "sp_banner_of_stars",
+          "title": "Banner of Stars",
+          "description": "Yarrow mends the Founders' banner and finds the Tallow Key sewn in its hem.",
+          "cast": [
+            "c_yarrow"
+          ],
+          "truths": [
+            "t_side_banner_star"
+          ]
+        },
+        {
+          "id": "sp_pells_hoard",
+          "title": "Pell's Hoard",
+          "description": "The player returns lost things to their owners, and Pell trades the brass spyglass.",
+          "cast": [
+            "c_pell",
+            "c_nim"
+          ],
+          "truths": [
+            "t_side_spyglass",
+            "t_side_amber_glow"
+          ]
+        },
+        {
+          "id": "sp_mothlight_flicker",
+          "title": "Mothlight Flicker",
+          "description": "Hester and Dorrin work out why the Mothlight flickers. Reward: the Mothlight Ember.",
+          "cast": [
+            "c_hester",
+            "c_dorrin"
+          ],
+          "truths": [
+            "t_side_mothlight_echo",
+            "t_side_hush_returns"
+          ]
+        },
+        {
+          "id": "sp_ledger_repair",
+          "title": "Ledger Repair",
+          "description": "Tamsin restores the fading ledger pages with Dusk Ink and keeps a complete ledger for the epilogue.",
+          "cast": [
+            "c_tamsin"
+          ],
+          "truths": []
+        }
+      ],
+      "twists": [
+        "tw_apprentice",
+        "tw_thief_is_lamp",
+        "tw_villain_remembers"
+      ],
+      "red_herrings": [
+        "rh_pell_oil",
+        "rh_ghost_light",
+        "rh_midnight_rowing",
+        "rh_bad_luck_lamp",
+        "rh_locked_study"
+      ],
+      "endings": [
+        "e_thirteenth_dawn",
+        "e_shared_light",
+        "e_drift_on",
+        "e_thirteen_lanterns"
+      ],
       "beats": [
-        { "id": "b_long_harbour", "title": "Harbour", "locations": ["l_mooring_steps", "l_kettle_quay", "l_sailmakers_loft", "l_lantern_square", "l_bakery", "l_council_hall"], "must_find": { "truths": ["t_thirteen_berths", "t_hush_seven_years"] } },
-        { "id": "b_long_lights", "title": "The Lights", "locations": ["l_tallow_row", "l_oil_press", "l_archive", "l_founders_cellar", "l_keepers_attic", "l_lost_found_shed", "l_mothlight_base", "l_mothlight_lamp_room", "l_stargazers_roof", "l_bell_tower"], "must_find": { "truths": ["t_wren_keeper", "t_oil_from_memories", "t_wren_lit_lamp", "t_village_forgot", "t_hobb_remembers"], "items": ["i_tallow_key"] } },
-        { "id": "b_long_drift", "title": "The Drift", "locations": ["l_foghorn_rock", "l_whisper_fog_edge", "l_glow_moth_meadow", "l_reedbed_shallows", "l_kelp_garden", "l_tidepool_steps", "l_wreck_pilchard"], "must_find": { "truths": ["t_oil_flows_to_deep", "t_wren_alive"] } },
-        { "id": "b_long_deep", "title": "The Deep", "locations": ["l_berth_thirteen", "l_deep_stair", "l_drowned_gallery", "l_memory_cistern", "l_drowned_lamp", "l_wrens_lamp_room"], "must_find": { "truths": ["t_player_was_spark", "t_told_aloud"] } }
+        {
+          "id": "b_long_harbour",
+          "title": "Harbour",
+          "objective": "Find out why there are thirteen berths but only twelve lights, and what the Hush changed.",
+          "guidance": "From Mooring Steps, explore Kettle Quay, Lantern Square, and the Sailmaker's Loft.",
+          "locations": [
+            "l_mooring_steps",
+            "l_kettle_quay",
+            "l_sailmakers_loft",
+            "l_lantern_square",
+            "l_bakery",
+            "l_council_hall"
+          ],
+          "must_find": {
+            "truths": [
+              "t_thirteen_berths",
+              "t_hush_seven_years"
+            ]
+          }
+        },
+        {
+          "id": "b_long_lights",
+          "title": "The Lights",
+          "objective": "Trace the lost keeper's name and the echo behind the Mothlight's flicker.",
+          "guidance": "Search the Archive and Keeper's Attic, then speak with Hester at the Mothlight.",
+          "locations": [
+            "l_tallow_row",
+            "l_oil_press",
+            "l_archive",
+            "l_founders_cellar",
+            "l_keepers_attic",
+            "l_lost_found_shed",
+            "l_mothlight_base",
+            "l_mothlight_lamp_room",
+            "l_stargazers_roof",
+            "l_bell_tower"
+          ],
+          "must_find": {
+            "truths": [
+              "t_wren_keeper",
+              "t_oil_from_memories",
+              "t_wren_lit_lamp",
+              "t_village_forgot",
+              "t_hobb_remembers"
+            ],
+            "items": [
+              "i_tallow_key"
+            ]
+          }
+        },
+        {
+          "id": "b_long_drift",
+          "title": "The Drift",
+          "objective": "Follow the missing remembrance oil across the Drift to its source.",
+          "guidance": "Take the newly opened paths beyond the harbour and compare what you learn with the Oil Press records.",
+          "locations": [
+            "l_foghorn_rock",
+            "l_whisper_fog_edge",
+            "l_glow_moth_meadow",
+            "l_reedbed_shallows",
+            "l_kelp_garden",
+            "l_tidepool_steps",
+            "l_wreck_pilchard"
+          ],
+          "must_find": {
+            "truths": [
+              "t_oil_flows_to_deep",
+              "t_wren_alive"
+            ]
+          }
+        },
+        {
+          "id": "b_long_deep",
+          "title": "The Deep",
+          "objective": "Reach Berth Thirteen, meet Wren, and choose what Hearthdrift will remember.",
+          "guidance": "Follow the opened way into the Lantern Deep.",
+          "locations": [
+            "l_berth_thirteen",
+            "l_deep_stair",
+            "l_drowned_gallery",
+            "l_memory_cistern",
+            "l_drowned_lamp",
+            "l_wrens_lamp_room"
+          ],
+          "must_find": {
+            "truths": [
+              "t_player_was_spark",
+              "t_told_aloud"
+            ]
+          }
+        }
       ]
     }
   }

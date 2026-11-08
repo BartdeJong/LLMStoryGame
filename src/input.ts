@@ -1,6 +1,20 @@
+import { gamepadInput } from "./input/gamepad";
+import { setInputMode } from "./input/mode";
+
 export interface MovementInput {
   readonly x: number;
   readonly y: number;
+}
+
+export function mergeMovementInputs(...inputs: readonly MovementInput[]): MovementInput {
+  let x = inputs.reduce((sum, input) => sum + input.x, 0);
+  let y = inputs.reduce((sum, input) => sum + input.y, 0);
+  const magnitude = Math.hypot(x, y);
+  if (magnitude > 1) {
+    x /= magnitude;
+    y /= magnitude;
+  }
+  return { x, y };
 }
 
 export class InputController {
@@ -33,13 +47,10 @@ export class InputController {
     if (this.keys.has("ArrowUp") || this.keys.has("w")) y -= 1;
     if (this.keys.has("ArrowDown") || this.keys.has("s")) y += 1;
 
-    const magnitude = Math.hypot(x, y);
-    if (magnitude > 1) {
-      x /= magnitude;
-      y /= magnitude;
-    }
-
-    return { x, y };
+    const gamepadMovement = gamepadInput.current.uiConsumed
+      ? { x: 0, y: 0 }
+      : gamepadInput.current.movement;
+    return mergeMovementInputs({ x, y }, gamepadMovement);
   }
 
   clear(): void {
@@ -61,6 +72,12 @@ export class InputController {
   }
 
   private readonly handleKeyDown = (event: KeyboardEvent): void => {
+    if (
+      event.target instanceof HTMLElement
+      && event.target.closest("input, textarea, select, button, a[href], [contenteditable='true']")
+    ) return;
+
+    setInputMode("keyboard");
     const key = event.key.length === 1 ? event.key.toLowerCase() : event.key;
     if (["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown", " "].includes(key)) {
       event.preventDefault();
@@ -77,6 +94,7 @@ export class InputController {
   };
 
   private readonly handlePointerDown = (event: PointerEvent): void => {
+    setInputMode("touch");
     this.joystick.setPointerCapture(event.pointerId);
     this.updateJoystick(event);
   };

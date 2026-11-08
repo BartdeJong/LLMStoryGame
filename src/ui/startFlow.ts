@@ -1,12 +1,15 @@
 import { Game } from "../game";
 import { LLMClient } from "../llm/client";
+import { BedrockGatewayBackend } from "../llm/bedrockGatewayBackend";
 import { MockBackend } from "../llm/mock";
+import type { LLMProviderSettings } from "../llm/providerSettings";
 import { checkSupport } from "../llm/support";
 import { WebLLMBackend } from "../llm/webllmBackend";
 import { storyMockRespond } from "../story/mockResponder";
 import { StorySession } from "../story/storySession";
 import { mountUnsupportedScreen, runModelSetup } from "./modelScreens";
 import { mountStorySelectScreen } from "./storySelect";
+import { mountStoryOpeningScreen } from "./storyOpening";
 import { mountTitleScreen } from "./title";
 import { getLengthView, type LengthView } from "../story/loader";
 import type { StoryPack } from "../story/types";
@@ -15,6 +18,7 @@ import { loadPackForSave } from "../save/pack";
 import { mountLoadGameScreen, mountSaveSlotPicker } from "../save/screens";
 import type { GamePersistence } from "../game";
 import type { GameSave } from "../save/types";
+import { mountProviderSetup } from "./providerSetup";
 
 const SCREEN_CLASS = "llm-debug-mode"; // lets the menu screens scroll; removed when the game starts
 
@@ -34,7 +38,8 @@ export async function startGame(shell: HTMLElement, root: HTMLElement, useMock: 
   document.body.classList.add(SCREEN_CLASS);
   shell.remove();
 
-  if (!useMock) {
+  const providerSettings: LLMProviderSettings | undefined = useMock ? undefined : await mountProviderSetup(root);
+  if (!useMock && providerSettings?.provider === "local") {
     const report = await checkSupport();
     if (!report.supported) {
       mountUnsupportedScreen(root, report);
@@ -56,8 +61,18 @@ export async function startGame(shell: HTMLElement, root: HTMLElement, useMock: 
     storageNote = `Persistent storage could not be enabled: ${error instanceof Error ? error.message : String(error)}. Export saves as backups.`;
   }
   const saves = new SaveRepository();
-  const client = new LLMClient(useMock ? new MockBackend({ delayMs: 120, respond: storyMockRespond }) : new WebLLMBackend());
+  const client = new LLMClient(
+    useMock
+      ? new MockBackend({ delayMs: 120, respond: storyMockRespond })
+      : providerSettings?.provider === "bedrock"
+        ? new BedrockGatewayBackend({
+          endpoint: providerSettings.bedrockEndpoint,
+          token: providerSettings.bedrockToken,
+        })
+        : new WebLLMBackend(),
+  );
   if (useMock) await client.load();
+  else if (providerSettings?.provider === "bedrock") await client.load("bedrock");
   else await runModelSetup(root, client);
 
   const canvas = shell.querySelector<HTMLCanvasElement>("#game");
@@ -93,7 +108,11 @@ export async function startGame(shell: HTMLElement, root: HTMLElement, useMock: 
   const chooseStory = (slotId: string): void => {
     document.documentElement.classList.add(SCREEN_CLASS);
     document.body.classList.add(SCREEN_CLASS);
-    void mountStorySelectScreen(root, (view, pack) => { void beginStory(view, pack, slotId); });
+    void mountStorySelectScreen(
+      root,
+      (view, pack) => { void beginStory(view, pack, slotId); },
+      chooseNewGame,
+    );
   };
   const chooseNewGame = (): void => {
     void mountSaveSlotPicker(root, saves, chooseStory, backToTitle);
@@ -107,7 +126,12 @@ export async function startGame(shell: HTMLElement, root: HTMLElement, useMock: 
     try {
       const story = new StorySession(pack, view, client);
       const startArea = await story.start();
-      startSession(story, startArea, { repository: saves, slotId, timePlayedMs: 0 });
+      const persistence = { repository: saves, slotId, timePlayedMs: 0 };
+      if (view.definition.opening) {
+        mountStoryOpeningScreen(root, story, () => startSession(story, startArea, persistence));
+      } else {
+        startSession(story, startArea, persistence);
+      }
     } catch (error) {
       root.replaceChildren(note(`Could not start the story: ${error instanceof Error ? error.message : String(error)}`));
     }

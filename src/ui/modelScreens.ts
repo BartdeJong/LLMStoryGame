@@ -3,6 +3,7 @@ import type { LLMClient } from "../llm/client";
 import type { SupportReport } from "../llm/support";
 import type { LoadResult } from "../llm/types";
 import { isModelCached } from "../llm/webllmBackend";
+import { activateGamepadFocus } from "../input/focus";
 
 function el<K extends keyof HTMLElementTagNameMap>(tag: K, className: string, text = ""): HTMLElementTagNameMap[K] {
   const node = document.createElement(tag);
@@ -16,6 +17,7 @@ function screen(root: HTMLElement, title: string): HTMLElement {
   const box = el("section", "llm-screen");
   box.append(el("h1", "llm-screen-title", title));
   root.append(box);
+  activateGamepadFocus(box);
   return box;
 }
 
@@ -41,8 +43,11 @@ export async function runModelSetup(root: HTMLElement, client: LLMClient, modelI
   action.type = "button";
 
   if (!cached) {
+    const downloadEstimate = /(?:8B|9B)/.test(modelId)
+      ? "several GB"
+      : `about ${LLM_CONFIG.approxDownloadMB.min / 1000} to ${LLM_CONFIG.approxDownloadMB.max / 1000} GB`;
     box.append(
-      el("p", "", `The story model (${modelId}) must be downloaded once: about ${LLM_CONFIG.approxDownloadMB.min / 1000} to ${LLM_CONFIG.approxDownloadMB.max / 1000} GB. Wi-Fi is recommended.`),
+      el("p", "", `The story model (${modelId}) must be downloaded once: ${downloadEstimate}. Wi-Fi is recommended.`),
       el("p", "llm-screen-note", "It is stored on this device, so the game works offline afterwards and will not download it again unless the model changes. If the download is interrupted, start again and it continues where it stopped."),
     );
   }

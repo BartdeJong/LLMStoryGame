@@ -122,7 +122,13 @@ describe("validator rejects broken packs", () => {
   it("warns about unused cast and items without failing", () => {
     const pack = fresh();
     pack.lengths.short!.cast = ["c_mira", "c_oswin", "c_pip", "c_hollis"];
-    pack.cast.push({ ...pack.cast[2], id: "c_extra", name: "Extra", goal_states: [] });
+    pack.cast.push({
+      ...pack.cast[2],
+      id: "c_extra",
+      name: "Extra",
+      goal_states: [],
+      knowledge: pack.cast[2].knowledge.map(({ clue_id: _clue, truth_id: _truth, ...rest }) => rest),
+    });
     pack.items.push({ ...pack.items[2], id: "i_spare" });
     const report = validateStoryPack(pack);
     expect(report.ok).toBe(true);

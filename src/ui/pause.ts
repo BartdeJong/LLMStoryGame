@@ -2,6 +2,7 @@ import { soundEffects } from "../audio/soundEffects";
 import { normalizeSave, type SaveRepository } from "../save/repository";
 import type { GameSave } from "../save/types";
 import { createPreferenceControls } from "./preferences";
+import { activateGamepadFocus } from "../input/focus";
 
 function button(text: string, onClick: () => void): HTMLButtonElement {
   const node = document.createElement("button");
@@ -49,6 +50,7 @@ export function mountPauseMenu(
   status.className = "llm-screen-note pause-status";
   status.setAttribute("aria-live", "polite");
   const resume = button("Resume", actions.onResume);
+  resume.dataset.padHint = "B";
   const save = button("Save now", () => {
     save.disabled = true;
     status.textContent = "Saving...";
@@ -105,6 +107,7 @@ export function mountPauseMenu(
   panel.append(title, resume, save, exportSave, importSave, file, titleButton, preferences, status);
   overlay.append(panel);
   root.append(overlay);
+  activateGamepadFocus(overlay, { onBack: actions.onResume });
   resume.focus();
   return overlay;
 }

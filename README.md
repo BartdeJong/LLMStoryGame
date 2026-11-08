@@ -16,9 +16,44 @@ Run `npm test` for unit tests and `npm run validate-stories` to validate every
 story pack. Open `http://localhost:5173/?debug=art` to review procedural art,
 or `http://localhost:5173/?debug=world` to regenerate maps by biome and seed.
 
+## Test character dialogue and save feedback
+
+Run `npm run dev` and open `http://localhost:5173/?debug=dialogue`. Load the
+on-device model, choose a story, length, and character, then start a conversation.
+After each character reply, add feedback or explicitly choose **No feedback**
+before continuing. The optional story-context controls let you set known truths
+and inventory items for a test.
+
+The dialogue lab is development-only. It saves each session, including the full
+chat and feedback attached to each character reply, under the git-ignored
+`.dialogue-feedback/` folder. `?debug=dialogue&mock=1` opens the lab with a mock
+model to check its interface without WebGPU or a model download; use the real
+model for response-quality feedback. The local save endpoint is not included in
+production builds.
+
 The title screen offers **New game** (choose a save slot) and **Load game**.
 Saved games autosave locally; use **Export JSON** in the load screen to keep a
 backup, or import that file on another device.
+
+## Use an AWS Bedrock gateway
+
+At startup, choose **AWS Bedrock gateway** and enter the HTTPS URL and bearer
+secret for a gateway you trust. The PWA saves these values in that browser's
+local storage for later use. They are not encrypted; anyone with access to the
+browser profile can potentially read the saved secret. Do not enter AWS access
+keys. The on-device model remains available as an alternative.
+
+The configured URL must accept a `POST` with an `Authorization: Bearer <secret>`
+header and a JSON body containing `messages`, `maxTokens`, `temperature`, and
+`jsonSchema`. It must return JSON in the form `{ "text": "..." }`. The gateway
+is responsible for authenticating the secret and translating requests to
+Bedrock Agent Runtime. Keep AWS credentials and agent identifiers on the
+gateway, and restrict its IAM role to the intended agent alias. The game client
+does not create or deploy this gateway; it must already be available over HTTPS
+and allow browser requests from the game's origin (CORS).
+
+Deployment source and instructions are in
+[infra/CozyStoryAgent/README.md](./infra/CozyStoryAgent/README.md).
 
 The on-device story model requires WebGPU. On iPhone and iPad, use Safari on
 iOS/iPadOS 26 or newer. WebGPU requires HTTPS; if opening the dev server from

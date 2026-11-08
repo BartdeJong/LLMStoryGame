@@ -1,5 +1,5 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "identity": {
     "id": "example",
     "version": 1,
@@ -34,7 +34,32 @@
       "home_location": "l_bakery",
       "knows_truths": ["t_missing"],
       "goal_states": [],
-      "voice_notes": "Cheerful, offers food, rambles a little."
+      "voice_notes": "Cheerful, offers food, rambles a little.",
+      "greetings": [
+        "Oh, hello, dear! Have a bun and tell me what brings you by.",
+        "Come in, come in! Mind the flour, and don't mind my chatter.",
+        "Hello again, dear! Everything is upside down today, but I'm glad of company."
+      ],
+      "knowledge": [
+        { "id": "k_mira_lantern", "topic": "Missing lantern", "ask": "What happened to the missing lantern?", "text": "The lantern's hook on the square was empty this morning, and the festival is tonight!", "keywords": ["lantern", "missing", "hook", "square", "gone"], "clue_id": "cl_mira_talk", "truth_id": "t_missing" },
+        { "id": "k_mira_festival", "topic": "The festival", "ask": "When does the festival start?", "text": "Tonight at dusk, and I still have two trays of buns to bake before then.", "keywords": ["festival", "tonight", "dusk", "start", "when"] },
+        { "id": "k_mira_buns", "topic": "Her baking", "ask": "What are you baking?", "text": "Cardamom buns, mostly. Folk are kinder after a warm bun, I find.", "keywords": ["bake", "baking", "bun", "bread", "bakery"] },
+        { "id": "k_mira_flour", "topic": "Floury footprints", "ask": "Did anyone come into your bakery?", "text": "Somebody tracked flour out of my bakery this morning. Little footprints all the way to the square.", "keywords": ["flour", "footprints", "prints", "bakery", "tracks"] },
+        { "id": "k_mira_oswin", "topic": "The librarian", "ask": "Do you know Oswin the librarian?", "text": "Oswin keeps the tower key log. Fussy owl, but he notices everything.", "keywords": ["oswin", "librarian", "owl", "library", "key"] },
+        { "id": "k_mira_hollis", "topic": "The clock keeper", "ask": "Who looks after the clock tower?", "text": "Hollis, our clock keeper. Shy fellow. He hasn't been to the bakery all week.", "keywords": ["hollis", "clock", "keeper", "tower", "shy"] }
+      ],
+      "goal_hints": {
+        "unmet": ["I need the festival to go ahead, and it can't without its lantern.", "Help me find that lantern, dear, and I'll feel so much better."],
+        "in_progress": ["We're getting closer, I can feel it. Keep asking around the village.", "Somebody must know more; try the others in the village."],
+        "resolved": ["Thank you, dear. The lantern is back and the festival is saved.", "Have another bun; there is nothing left to worry about."]
+      },
+      "deflections": [
+        "Oh dear, I really couldn't say, love.",
+        "Hmm, that's a mystery to me, dear.",
+        "You'd have to ask someone else about that.",
+        "Goodness, my head is all flour and worry today.",
+        "I wish I knew, truly I do."
+      ]
     },
     {
       "id": "c_oswin",
@@ -57,7 +82,32 @@
           "reveals": "Oswin shares the key log."
         }
       ],
-      "voice_notes": "Precise, a bit stuffy, warms up when thanked."
+      "voice_notes": "Precise, a bit stuffy, warms up when thanked.",
+      "greetings": [
+        "Good day. Quiet voices, please, and mind the shelves.",
+        "Ah, a visitor. Do wipe your feet; the floors are freshly swept.",
+        "Welcome to the library. Touch nothing without asking, please."
+      ],
+      "knowledge": [
+        { "id": "k_oswin_book", "topic": "Overdue book", "ask": "What is this overdue book?", "text": "A volume on tower clocks, due back three weeks ago. Whoever borrowed it knows who they are.", "keywords": ["book", "overdue", "borrowed", "return", "volume"] },
+        { "id": "k_oswin_rules", "topic": "Library rules", "ask": "What are the library rules?", "text": "Books return on time, shelves stay tidy, and voices stay low. Simple rules.", "keywords": ["rules", "rule", "library", "quiet", "shelves"] },
+        { "id": "k_oswin_log", "topic": "The key log", "ask": "What is in the key log?", "text": "I log every key that leaves this library. The tower key was out all night.", "keywords": ["key", "log", "ledger", "tower", "logbook"] },
+        { "id": "k_oswin_lantern", "topic": "Missing lantern", "ask": "Do you know about the missing lantern?", "text": "The festival lantern? Dreadful business. I only know what my log shows.", "keywords": ["lantern", "missing", "festival", "stolen", "gone"] },
+        { "id": "k_oswin_taker", "topic": "Who took it", "ask": "Who took the tower key?", "text": "The key log names Hollis. He took the tower key the night the lantern vanished.", "keywords": ["taker", "took", "key", "name", "who", "log"], "clue_id": "cl_oswin_ledger", "truth_id": "t_taker" },
+        { "id": "k_oswin_owl", "topic": "Being an owl", "ask": "Why is the librarian an owl?", "text": "Owls keep quiet hours and watch carefully. It suits the work.", "keywords": ["owl", "owls", "night", "hoot", "librarian"] }
+      ],
+      "goal_hints": {
+        "unmet": ["I need my overdue book returned before I can help with anything else.", "That overdue book is three weeks late, and it troubles me."],
+        "in_progress": ["I am waiting on one last thing, then we can talk freely.", "Almost settled, but there is one loose end left."],
+        "resolved": ["Thank you for returning my book; the shelves feel whole again.", "The key log is open to you now; ask what you like."]
+      },
+      "deflections": [
+        "I'm afraid that is outside my shelves.",
+        "Hmm. I could not say, and I do not guess.",
+        "That is not in any book I have read.",
+        "Perhaps ask someone else. I deal in books and keys.",
+        "I would rather not speculate; it is unseemly."
+      ]
     },
     {
       "id": "c_pip",
@@ -72,7 +122,32 @@
       "home_location": "l_garden",
       "knows_truths": ["t_night"],
       "goal_states": [],
-      "voice_notes": "Short purring sentences, speaks in hints."
+      "voice_notes": "Short purring sentences, speaks in hints.",
+      "greetings": [
+        "Mrrp. Hello, friend. The night was very busy.",
+        "Ah, a visitor. Sit, sit. I notice things, you know.",
+        "Purr. You walk quietly. I approve."
+      ],
+      "knowledge": [
+        { "id": "k_pip_figure", "topic": "Night figure", "ask": "What did you see last night?", "text": "A tall figure carried a glow up the tower stairs. I watched from the garden wall.", "keywords": ["night", "saw", "seen", "figure", "glow", "stairs"], "clue_id": "cl_pip_saw", "truth_id": "t_night" },
+        { "id": "k_pip_garden", "topic": "The garden", "ask": "What do you do in the garden?", "text": "I patrol it at night. Mice, moths, secrets. I know them all.", "keywords": ["garden", "patrol", "night", "mice", "wall"] },
+        { "id": "k_pip_detective", "topic": "Being a detective", "ask": "Are you a good detective?", "text": "The very best. Nobody has told me so yet, but I live in hope.", "keywords": ["detective", "clever", "good", "solve", "mystery"] },
+        { "id": "k_pip_tower", "topic": "The tower", "ask": "What is up in the tower?", "text": "Stairs, mostly. And the clock keeper's workshop, if the door lets you in.", "keywords": ["tower", "stairs", "clock", "workshop", "door"] },
+        { "id": "k_pip_lantern", "topic": "Missing lantern", "ask": "Do you know where the lantern went?", "text": "Somebody carried a light up the tower. That is all I say for free.", "keywords": ["lantern", "missing", "light", "gone", "festival"] },
+        { "id": "k_pip_mira", "topic": "The baker", "ask": "Does Mira feed you?", "text": "Mira leaves crumbs by the bakery door. A splendid woman.", "keywords": ["mira", "baker", "bakery", "crumbs", "feed"] }
+      ],
+      "goal_hints": {
+        "unmet": ["I would like someone to say I'm a good detective.", "Tell me I'm a clever detective, and I might share more."],
+        "in_progress": ["You are asking good questions. Keep going.", "I am warming to you. Keep asking."],
+        "resolved": ["Everyone knows I'm the village's best detective.", "A fine day. I was right about everything."]
+      },
+      "deflections": [
+        "Mrrp. That is beyond my whiskers.",
+        "I did not see that. Ask me about the night.",
+        "Hm. Cats do not guess.",
+        "Purr. A mystery even to me.",
+        "Not my business. Try the others."
+      ]
     },
     {
       "id": "c_hollis",
@@ -94,7 +169,32 @@
           "reveals": "Hollis returns the lantern."
         }
       ],
-      "voice_notes": "Quiet, hesitant, relieved when understood."
+      "voice_notes": "Quiet, hesitant, relieved when understood.",
+      "greetings": [
+        "Oh. Hello. I did not hear you come in.",
+        "Ah... a visitor. Do mind the gears.",
+        "Hello. Forgive me, I am a little busy with the clock."
+      ],
+      "knowledge": [
+        { "id": "k_hollis_clock", "topic": "The clock", "ask": "How is the clock tower?", "text": "The gears need oil and patience. I have plenty of one.", "keywords": ["clock", "gears", "tower", "oil", "time"] },
+        { "id": "k_hollis_lantern", "topic": "The lantern", "ask": "Do you know about the lantern?", "text": "I heard it went missing. A pity. I would hate for anyone to be upset.", "keywords": ["lantern", "missing", "festival", "gone", "cracked"] },
+        { "id": "k_hollis_confess", "topic": "His motive", "ask": "Why did you take the lantern?", "text": "I only wanted to mend the crack in secret. I never meant to steal it.", "keywords": ["took", "taken", "lantern", "why", "crack", "mend", "secret"], "clue_id": "cl_hollis_confess", "truth_id": "t_motive" },
+        { "id": "k_hollis_workshop", "topic": "The workshop", "ask": "What is in your workshop?", "text": "Gears, springs, a little glue. Please do not touch the tiny brushes.", "keywords": ["workshop", "bench", "glue", "brushes", "tools"] },
+        { "id": "k_hollis_key", "topic": "The tower key", "ask": "Who has the tower key?", "text": "The key stays with the library. Oswin guards it closely.", "keywords": ["key", "tower", "oswin", "library", "lock"] },
+        { "id": "k_hollis_shy", "topic": "How he feels", "ask": "Are you alright?", "text": "I'm fine, thank you. Just shy of crowds, and fond of quiet.", "keywords": ["alright", "fine", "shy", "nervous", "quiet"] }
+      ],
+      "goal_hints": {
+        "unmet": ["I need to mend what I broke before anyone notices.", "If only someone understood, I could stop hiding."],
+        "in_progress": ["I am almost ready to speak plainly.", "Perhaps it is time to stop hiding this."],
+        "resolved": ["Thank you for being kind. I feel lighter already.", "The lantern goes back tonight; I will carry it myself."]
+      },
+      "deflections": [
+        "Oh. I would rather not say.",
+        "I do not know. Please, ask me something else.",
+        "That is not something I can answer.",
+        "Hm. The gears take my full attention.",
+        "I am sorry, I cannot help with that."
+      ]
     }
   ],
   "truths": [
@@ -153,6 +253,9 @@
     "short": {
       "target_minutes": 15,
       "start_location": "l_square",
+      "opening": {
+        "context": "The village's Moon Lantern vanished the night before the festival. You have until the festival begins to discover who took it, and why."
+      },
       "cast": ["c_mira", "c_oswin", "c_pip", "c_hollis"],
       "core_truths": ["t_missing", "t_night", "t_taker", "t_motive"],
       "side_truths": [],
@@ -161,8 +264,8 @@
       "red_herrings": ["rh_flour_prints"],
       "endings": ["e_lantern_returns"],
       "beats": [
-        { "id": "b_square", "title": "The empty hook", "locations": ["l_square", "l_bakery", "l_garden"], "must_find": { "truths": ["t_missing"] } },
-        { "id": "b_tower", "title": "Up the clock tower", "locations": ["l_library", "l_clocktower"], "must_find": {} }
+        { "id": "b_square", "title": "The empty hook", "objective": "Find out what happened to the Moon Lantern and who had a reason to take it.", "guidance": "Start at the village square; inspect the empty hook and ask neighbors what they saw.", "locations": ["l_square", "l_bakery", "l_garden"], "must_find": { "truths": ["t_missing"] } },
+        { "id": "b_tower", "title": "Up the clock tower", "objective": "Follow the clues to the Clock Tower and uncover the taker's motive.", "guidance": "Visit the library, then climb to the Clock Tower.", "locations": ["l_library", "l_clocktower"], "must_find": {} }
       ]
     }
   }

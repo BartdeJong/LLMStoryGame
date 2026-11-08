@@ -3,8 +3,38 @@ import { soundEffects } from "./audio/soundEffects";
 import { mountArtDebugScreen } from "./art/debug";
 import { mountWorldDebugScreen } from "./world/debug";
 import { applySavedTextSize } from "./ui/preferences";
+import { gamepadInput } from "./input/gamepad";
+import { trackInputMode } from "./input/mode";
 
 applySavedTextSize();
+trackInputMode();
+
+let toastTimer = 0;
+let toastElement: HTMLElement | null = null;
+gamepadInput.onConnection((connected) => {
+  const text = connected ? "Controller connected" : "Controller disconnected";
+  const message = document.querySelector<HTMLElement>("#game-message");
+  if (message) {
+    const previous = message.textContent;
+    message.textContent = text;
+    window.clearTimeout(toastTimer);
+    toastTimer = window.setTimeout(() => {
+      if (message.isConnected && message.textContent === text) message.textContent = previous;
+    }, 1800);
+    return;
+  }
+  toastElement?.remove();
+  toastElement = document.createElement("div");
+  toastElement.className = "controller-toast";
+  toastElement.setAttribute("role", "status");
+  toastElement.textContent = text;
+  document.body.append(toastElement);
+  window.setTimeout(() => {
+    toastElement?.remove();
+    toastElement = null;
+  }, 1800);
+});
+gamepadInput.start();
 
 if (import.meta.env.PROD && "serviceWorker" in navigator) {
   void navigator.serviceWorker.register(`${import.meta.env.BASE_URL}sw.js`, { scope: import.meta.env.BASE_URL })
@@ -26,6 +56,15 @@ if (debugMode === "art") {
   mountWorldDebugScreen();
 } else if (debugMode === "llm") {
   void import("./llm/debug").then((module) => module.mountLLMDebugScreen());
+} else if (debugMode === "dialogue" && import.meta.env.DEV) {
+  void import("./dialogue/debug")
+    .then((module) => module.mountDialogueDebugScreen())
+    .catch((error: unknown) => {
+      const box = document.createElement("section");
+      box.className = "llm-screen";
+      box.textContent = `Could not open the dialogue lab: ${error instanceof Error ? error.message : String(error)}`;
+      document.body.replaceChildren(box);
+    });
 } else if (debugMode === "stories") {
   void import("./ui/storySelect").then(({ mountStorySelectScreen, describeLengthView }) => {
     document.documentElement.classList.add("llm-debug-mode");

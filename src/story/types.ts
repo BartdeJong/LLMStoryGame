@@ -54,6 +54,23 @@ export interface Relationship {
   relation: string;
 }
 
+// A fact a character can tell. Code retrieves these by keyword; the model only phrases them.
+export interface KnowledgeItem {
+  id: string;
+  topic: string; // at most 3 words
+  ask: string; // what a player would naturally say to bring this up
+  text: string;
+  keywords: string[];
+  clue_id?: string; // telling this fact explicitly marks the clue as found
+  truth_id?: string;
+}
+
+export interface GoalHints {
+  unmet: string[];
+  in_progress: string[];
+  resolved: string[];
+}
+
 export interface CastMember {
   id: string;
   name: string;
@@ -68,6 +85,10 @@ export interface CastMember {
   knows_truths: string[];
   goal_states: GoalState[];
   voice_notes: string;
+  greetings: string[];
+  knowledge: KnowledgeItem[];
+  goal_hints: GoalHints;
+  deflections: string[];
 }
 
 export type Importance = "core" | "side";
@@ -157,8 +178,14 @@ export interface Ending {
 export interface Beat {
   id: string;
   title: string;
+  objective?: string;
+  guidance?: string;
   locations: string[];
   must_find: Requirement; // must hold before the next beat opens
+}
+
+export interface StoryOpening {
+  context: string;
 }
 
 export interface Subplot {
@@ -172,6 +199,7 @@ export interface Subplot {
 export interface LengthDefinition {
   target_minutes: number;
   start_location: string;
+  opening?: StoryOpening;
   cast: string[];
   core_truths: string[];
   side_truths: string[];
@@ -209,4 +237,4 @@ export interface StoryIndex {
   stories: StoryIndexEntry[];
 }
 
-export const SCHEMA_VERSION = 1;
+export const SCHEMA_VERSION = 2;

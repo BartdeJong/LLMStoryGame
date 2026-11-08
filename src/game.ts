@@ -4,13 +4,17 @@ import type { DialogueTurn } from "./dialogue/controller";
 import { ConversationController } from "./dialogue/controller";
 import type { AppliedEffects } from "./dialogue/effects";
 import type { DialogueContext } from "./dialogue/prompt";
+import { QUICK_GOODBYE } from "./dialogue/knowledge";
+import type { DialogueHandlers } from "./dialogue/ui";
 import { createDialogueBox, type DialogueBox } from "./dialogue/ui";
 import { InputController } from "./input";
+import { gamepadInput } from "./input/gamepad";
 import { listInventory } from "./items/inventory";
 import { createInventoryUI, type InventoryUI } from "./items/inventoryUi";
 import { Renderer, VIEW_HEIGHT, VIEW_WIDTH } from "./renderer";
 import { mountEndingChoiceScreen, mountEndingScreen } from "./ui/ending";
 import { mountPauseMenu } from "./ui/pause";
+import { createObjectiveHud, type ObjectiveHud } from "./ui/objectiveHud";
 import { createWorldMap, type WorldMap } from "./ui/worldMap";
 import type { EndingChoice } from "./story/ending";
 import type { StorySession } from "./story/storySession";
@@ -44,10 +48,12 @@ export class Game {
   private areaId: string;
   private readonly renderer: Renderer;
   private readonly input: InputController;
+  private readonly stopGamepadListener: () => void;
   private readonly player: { x: number; y: number };
   private readonly locationLabel: HTMLElement | null;
   private readonly dialogueBox: DialogueBox;
   private readonly inventoryUI: InventoryUI;
+  private readonly objectiveHud: ObjectiveHud;
   private readonly worldMap: WorldMap;
   private transitioning = false;
   private running = false;
@@ -89,6 +95,10 @@ export class Game {
     this.locationLabel = document.querySelector<HTMLElement>(".location-label");
     if (this.locationLabel) this.locationLabel.textContent = startArea.name.toLocaleUpperCase();
     this.message.textContent = this.story.getBrief(startArea.id)?.description ?? "";
+    const hud = canvas.parentElement?.querySelector<HTMLElement>(".game-hud");
+    if (!hud) throw new Error("The game page is missing its HUD.");
+    this.objectiveHud = createObjectiveHud(hud);
+    this.refreshObjective();
     this.renderer = new Renderer(canvas);
     this.input = new InputController(joystick, actionButton, () => {
       this.interact();
@@ -102,6 +112,19 @@ export class Game {
       () => this.areaId,
     );
     this.refreshInventory();
+    this.stopGamepadListener = gamepadInput.onFrame((frame) => {
+      if (!this.running || frame.uiConsumed) return;
+      if (frame.pressed.menu) {
+        this.openPauseMenu();
+        return;
+      }
+      if (this.worldMap.isOpen) return;
+      if (frame.pressed.y) {
+        this.inventoryUI.toggleButton.click();
+        return;
+      }
+      if (frame.pressed.a) this.interact();
+    });
     canvas.addEventListener("pointerup", this.handleCanvasTap);
     window.addEventListener("keydown", this.handlePauseKeyDown);
     window.addEventListener("keydown", this.handleMapKeyDown);
@@ -185,12 +208,14 @@ export class Game {
     this.stopAutosave();
     window.removeEventListener("keydown", this.handlePauseKeyDown);
     window.removeEventListener("keydown", this.handleMapKeyDown);
+    this.stopGamepadListener();
     this.pauseButton.removeEventListener("click", this.openPauseMenu);
     this.canvas.removeEventListener("pointerup", this.handleCanvasTap);
     this.input.destroy();
     this.worldMap.remove();
     this.dialogueBox.element.remove();
     for (const element of this.inventoryUI.elements) element.remove();
+    this.objectiveHud.element.remove();
     this.pauseOverlay?.remove();
     this.pauseOverlay = null;
   }
@@ -295,6 +320,7 @@ export class Game {
     const nearby = world.doors.find((door) => distance(door) <= INTERACT_RANGE);
     if (entity && (!nearby || distance(entity) < distance(nearby))) {
       this.examine(entity);
+      this.refreshObjective();
     } else if (nearby) {
       this.enterDoorIfUnlocked(nearby);
     } else {
@@ -321,6 +347,7 @@ export class Game {
     const entity = (world.entities ?? []).find(near);
     if (entity) {
       this.examine(entity);
+      this.refreshObjective();
       return;
     }
     const door = world.doors.find(near);
@@ -379,6 +406,10 @@ export class Game {
     this.inventoryUI.render(listInventory(this.story.pack, this.story.state), this.story.getArea(this.areaId).palette);
   }
 
+  private refreshObjective(): void {
+    this.objectiveHud.update(this.story.currentBeat);
+  }
+
   private async openConversation(name: string, character: CastMember): Promise<void> {
     const brief = this.story.getBrief(this.areaId);
     const area = this.story.getArea(this.areaId);
@@ -386,51 +417,86 @@ export class Game {
       locationName: brief?.name ?? area.name,
       locationMood: brief?.mood ?? area.mood,
       storySummary: this.story.state.summary,
+      knownFacts: character.knows_truths
+        .filter((truthId) => this.story.state.truthsFound.includes(truthId))
+        .flatMap((truthId) => {
+          const truth = this.story.pack.truths.find((entry) => entry.id === truthId);
+          return truth ? [{ id: truth.id, text: truth.text }] : [];
+        }),
       inventory: listInventory(this.story.pack, this.story.state).map((item) => ({ id: item.id, name: item.name })),
-      getAvailableClues: () => this.story.getAvailableCharacterClues(character.id),
+      getInventory: () => listInventory(this.story.pack, this.story.state).map((item) => ({ id: item.id, name: item.name })),
     };
     this.conversation = new ConversationController(this.story.client, this.story.pack, this.story.state, character, context);
-    this.dialogueBox.open(name);
+    this.dialogueBox.open(name, this.dialogueHandlers());
+    this.dialogueBox.setBusy(true);
     await this.runDialogueTurn(this.conversation.start());
   }
 
   private async runDialogueTurn(pending: Promise<DialogueTurn>): Promise<void> {
     this.dialogueBox.setBusy(true);
     let turn: DialogueTurn;
+    let errorNotice: string | undefined;
     try {
       turn = await pending;
-    } catch {
-      this.dialogueBox.setBusy(false);
-      this.dialogueBox.showTurn({ line: "They seem lost in thought. Try again in a moment.", mode: "free", choices: [] }, this.dialogueHandlers());
-      return;
+    } catch (error) {
+      turn = this.conversation?.fallbackTurn() ?? {
+        line: "I'm sorry, I lost my words. Please try again.",
+        mode: "free",
+        choices: [],
+        gives: [],
+        effects: { resolvedGoal: null, givenItem: null, revealedClue: null },
+        quality: "fallback",
+        notice: "A reply could not be generated.",
+      };
+      errorNotice = `A reply could not be generated: ${error instanceof Error ? error.message : String(error)}`;
     }
     this.dialogueBox.setBusy(false);
     soundEffects.play("dialogue");
     this.announceEffects(turn.effects);
+    this.refreshObjective();
+    if (errorNotice || turn.notice) this.dialogueBox.showNotice(errorNotice ?? turn.notice ?? "");
     void this.saveProgress();
     this.dialogueBox.showTurn(turn, this.dialogueHandlers());
     void this.maybeFinish();
   }
 
-  private dialogueHandlers(): { onReply: (text: string) => void; onLeave: () => void } {
+  private dialogueHandlers(): DialogueHandlers {
     return {
       onReply: (text: string) => {
-        if (this.conversation) void this.runDialogueTurn(this.conversation.reply(text));
+        if (!this.conversation) return;
+        if (text === QUICK_GOODBYE) {
+          this.leaveConversation();
+          return;
+        }
+        this.dialogueBox.showPlayerReply(text);
+        void this.runDialogueTurn(this.conversation.reply(text));
       },
-      onLeave: () => {
-        this.dialogueBox.close();
-        this.conversation = null;
-        void this.saveProgress();
+      onGive: (itemId: string) => {
+        if (!this.conversation) return;
+        const name = this.story.pack.items.find((item) => item.id === itemId)?.name ?? itemId;
+        this.dialogueBox.showPlayerReply(`Here, take the ${name}.`);
+        void this.runDialogueTurn(this.conversation.give(itemId));
       },
+      onLeave: () => this.leaveConversation(),
     };
   }
 
+  private leaveConversation(): void {
+    this.dialogueBox.close();
+    this.conversation = null;
+    void this.saveProgress();
+  }
+
   private announceEffects(effects: AppliedEffects): void {
-    if (!effects.givenItem) return;
-    soundEffects.play("item");
-    const item = this.story.pack.items.find((candidate) => candidate.id === effects.givenItem);
-    this.dialogueBox.showNotice(`You received: ${item?.name ?? effects.givenItem}.`);
-    this.refreshInventory();
+    const notices: string[] = [];
+    if (effects.resolvedGoal) notices.push("Goal completed.");
+    if (effects.givenItem) {
+      soundEffects.play("item");
+      const item = this.story.pack.items.find((candidate) => candidate.id === effects.givenItem);
+      notices.push(`Received: ${item?.name ?? effects.givenItem}.`);
+      this.refreshInventory();
+    }
+    if (notices.length > 0) this.dialogueBox.showNotice(notices.join(" "));
   }
 
 
@@ -447,6 +513,7 @@ export class Game {
       this.areaId = transition.area.id;
       this.player.x = transition.spawn.x * TILE_SIZE + TILE_SIZE / 2;
       this.player.y = transition.spawn.y * TILE_SIZE + TILE_SIZE / 2;
+      this.refreshObjective();
       const description = this.story.getBrief(transition.area.id)?.description;
       this.message.textContent = description ?? `You arrive at ${transition.area.name}.`;
       if (this.locationLabel) this.locationLabel.textContent = transition.area.name.toLocaleUpperCase();
@@ -474,6 +541,10 @@ export class Game {
     this.stopAutosave();
     this.dialogueBox.close();
     this.conversation = null;
+    const leaveEnding = (): void => {
+      this.stop();
+      this.onBackToTitle();
+    };
     const finish = async (choiceIds: string[]): Promise<void> => {
       const ending = await this.story.finishEnding(choiceIds, this.areaId);
       await this.saveProgress();
@@ -493,13 +564,13 @@ export class Game {
       );
     };
     if (choices.some((choice) => choice.choices.length > 0)) {
-      mountEndingChoiceScreen(this.appRoot, this.story.pack.identity.title, choices, finish);
+      mountEndingChoiceScreen(this.appRoot, this.story.pack.identity.title, choices, finish, leaveEnding);
     } else {
       const automatic: EndingChoice = choices[0]!;
       try {
         await finish(automatic.choices);
       } catch (error) {
-        mountEndingChoiceScreen(this.appRoot, this.story.pack.identity.title, choices, finish);
+        mountEndingChoiceScreen(this.appRoot, this.story.pack.identity.title, choices, finish, leaveEnding);
         const note = document.createElement("p");
         note.className = "llm-screen-note";
         note.textContent = `The ending could not be completed: ${error instanceof Error ? error.message : String(error)}`;

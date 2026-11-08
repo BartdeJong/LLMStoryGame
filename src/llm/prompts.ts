@@ -8,6 +8,10 @@ export const SYSTEM =
   "You are the narrator of a cozy mystery exploration game. Write warm, gentle, short text. English only. " +
   "Never invent plot facts beyond what you are told.";
 
+export const DIALOGUE_SYSTEM =
+  "You speak as one character in a cozy mystery exploration game. English only. " +
+  "Reply with spoken words only; never narrate, describe the scene or the character from outside, or speak for the player.";
+
 export const recipeHelp =
   `sprite_recipe: {body: ${BODY_SHAPES.join("|")}, bodyColor/accentColor/skinColor: ${PALETTE_COLOR_SLOTS.join("|")}, feature: ${CHARACTER_FEATURES.join("|")}}. ` +
   `icon_recipe: {shape: ${ICON_SHAPES.join("|")}, primaryColor/secondaryColor: ${PALETTE_COLOR_SLOTS.join("|")}}.`;
@@ -44,15 +48,18 @@ export function characterRequest(priority: Priority = Priority.Area): JSONReques
 export function dialogueTurnRequest(priority: Priority = Priority.Dialogue): JSONRequest<DialogueTurnOutput> {
   return {
     priority,
-    system: SYSTEM,
+    system: DIALOGUE_SYSTEM,
     tag: "dialogue",
     schema: dialogueTurnSchema,
     maxTokens: 300,
     temperature: 0.8,
     prompt:
-      "You are Maribel, a cheerful baker whose goal is to find out who borrowed her prize-winning recipe book. " +
-      'The player says: "Have you seen anything strange this morning?" ' +
-      'Keys: line (1-2 sentences), mode ("choices" or "free"), choices (0-3 short replies), ' +
+      "Character: Maribel, a cheerful baker. Voice: warm, quick-witted. Goal: find out who borrowed her prize-winning recipe book. " +
+      'Player asks: "Have you seen anything strange this morning?" ' +
+      "Answer the question directly using only supplied facts. If Maribel does not know, say so; do not change the subject. " +
+      "Do not narrate or speak for the player. Do not repeat an earlier character line. " +
+      'line (1-3 short, natural spoken sentences), mode ("choices" or "free"), ' +
+      'choices (0-3 distinct player-intent labels such as "Ask about the recipe book", not first-person dialogue), ' +
       "effects {give_item: string|null, reveal_clue: string|null, goal_progress: number 0..1 or null}.",
   };
 }

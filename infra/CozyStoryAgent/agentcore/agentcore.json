@@ -1,0 +1,14 @@
+{
+  "name": "CozyStoryAgent",
+  "version": 2,
+  "managedBy": "CDK",
+  "runtimes": [
+    {
+      "name": "agent",
+      "build": "CodeZip",
+      "entrypoint": "main.py",
+      "codeLocation": "app/agent",
+      "runtimeVersion": "PYTHON_3_14"
+    }
+  ]
+}
