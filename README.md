@@ -35,6 +35,11 @@ The title screen offers **New game** (choose a save slot) and **Load game**.
 Saved games autosave locally; use **Export JSON** in the load screen to keep a
 backup, or import that file on another device.
 
+Choose an on-device model on the storyteller setup screen. During a game, open
+the pause menu and choose **Change AI provider or model** to change providers or
+models without leaving the app. The game saves the current slot before setup and
+reloads it afterward; canceling returns to the game.
+
 ## Use an AWS Bedrock gateway
 
 At startup, choose **AWS Bedrock gateway** and enter the HTTPS URL and bearer

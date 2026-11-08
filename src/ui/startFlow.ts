@@ -1,8 +1,9 @@
 import { Game } from "../game";
 import { LLMClient } from "../llm/client";
 import { BedrockGatewayBackend } from "../llm/bedrockGatewayBackend";
+import { saveSelectedLocalModelId } from "../llm/config";
 import { MockBackend } from "../llm/mock";
-import type { LLMProviderSettings } from "../llm/providerSettings";
+import { saveLLMProviderSettings } from "../llm/providerSettings";
 import { checkSupport } from "../llm/support";
 import { WebLLMBackend } from "../llm/webllmBackend";
 import { storyMockRespond } from "../story/mockResponder";
@@ -19,6 +20,7 @@ import { mountLoadGameScreen, mountSaveSlotPicker } from "../save/screens";
 import type { GamePersistence } from "../game";
 import type { GameSave } from "../save/types";
 import { mountProviderSetup } from "./providerSetup";
+import type { ProviderSetupSelection } from "./providerSetup";
 
 const SCREEN_CLASS = "llm-debug-mode"; // lets the menu screens scroll; removed when the game starts
 
@@ -31,6 +33,23 @@ function note(text: string): HTMLElement {
   return box;
 }
 
+function showActionScreen(
+  root: HTMLElement,
+  text: string,
+  actions: readonly { label: string; run: () => void }[],
+): void {
+  const box = note(text);
+  for (const action of actions) {
+    const button = document.createElement("button");
+    button.className = "llm-button";
+    button.type = "button";
+    button.textContent = action.label;
+    button.addEventListener("click", action.run);
+    box.append(button);
+  }
+  root.replaceChildren(box);
+}
+
 // Start flow: device check, model setup, story and length choice, first area, then the game itself.
 // `?mock=1` swaps in the mock LLM so the whole flow runs without WebGPU or a download.
 export async function startGame(shell: HTMLElement, root: HTMLElement, useMock: boolean): Promise<void> {
@@ -38,8 +57,9 @@ export async function startGame(shell: HTMLElement, root: HTMLElement, useMock: 
   document.body.classList.add(SCREEN_CLASS);
   shell.remove();
 
-  const providerSettings: LLMProviderSettings | undefined = useMock ? undefined : await mountProviderSetup(root);
-  if (!useMock && providerSettings?.provider === "local") {
+  let selection: ProviderSetupSelection | undefined = useMock ? undefined : await mountProviderSetup(root);
+  if (!useMock && !selection) return;
+  if (selection?.settings.provider === "local") {
     const report = await checkSupport();
     if (!report.supported) {
       mountUnsupportedScreen(root, report);
@@ -61,19 +81,34 @@ export async function startGame(shell: HTMLElement, root: HTMLElement, useMock: 
     storageNote = `Persistent storage could not be enabled: ${error instanceof Error ? error.message : String(error)}. Export saves as backups.`;
   }
   const saves = new SaveRepository();
-  const client = new LLMClient(
+  const createClient = (providerSelection: ProviderSetupSelection | undefined): LLMClient => new LLMClient(
     useMock
       ? new MockBackend({ delayMs: 120, respond: storyMockRespond })
-      : providerSettings?.provider === "bedrock"
+      : providerSelection?.settings.provider === "bedrock"
         ? new BedrockGatewayBackend({
-          endpoint: providerSettings.bedrockEndpoint,
-          token: providerSettings.bedrockToken,
+          endpoint: providerSelection.settings.bedrockEndpoint,
+          token: providerSelection.settings.bedrockToken,
         })
         : new WebLLMBackend(),
   );
+  let client = createClient(selection);
+  const loadSelection = async (
+    target: LLMClient,
+    providerSelection: ProviderSetupSelection,
+    allowCancel = false,
+  ): Promise<boolean> => {
+    if (providerSelection.settings.provider === "bedrock") {
+      await target.load("bedrock");
+      return true;
+    }
+    if (allowCancel) {
+      return (await runModelSetup(root, target, providerSelection.modelId, true)) !== undefined;
+    }
+    await runModelSetup(root, target, providerSelection.modelId);
+    return true;
+  };
   if (useMock) await client.load();
-  else if (providerSettings?.provider === "bedrock") await client.load("bedrock");
-  else await runModelSetup(root, client);
+  else if (selection) await loadSelection(client, selection);
 
   const canvas = shell.querySelector<HTMLCanvasElement>("#game");
   const joystick = shell.querySelector<HTMLButtonElement>("#joystick");
@@ -103,6 +138,7 @@ export async function startGame(shell: HTMLElement, root: HTMLElement, useMock: 
       root,
       chooseNewGame,
       backToTitle,
+      useMock ? undefined : (slotId) => changeAISettings(slotId),
       persistence,
       (save) => beginLoadedGame(save),
     ).start();
@@ -150,6 +186,106 @@ export async function startGame(shell: HTMLElement, root: HTMLElement, useMock: 
       timePlayedMs: save.metadata.timePlayedMs,
       player: save.player,
     });
+  };
+  const restorePreviousGame = async (
+    save: GameSave,
+    previousClient: LLMClient,
+    previousSelection: ProviderSetupSelection,
+    reload: boolean,
+  ): Promise<void> => {
+    if (reload) await loadSelection(previousClient, previousSelection);
+    saveLLMProviderSettings(previousSelection.settings);
+    saveSelectedLocalModelId(previousSelection.modelId);
+    selection = previousSelection;
+    client = previousClient;
+    await beginLoadedGame(save);
+  };
+  const changeAISettings = async (slotId: string): Promise<void> => {
+    const previousSelection = selection;
+    if (!previousSelection) throw new Error("The current AI settings are unavailable.");
+    const previousClient = client;
+    let save: GameSave;
+    try {
+      const currentSave = await saves.get(slotId);
+      if (!currentSave) throw new Error("The current game save could not be found.");
+      save = currentSave;
+    } catch (error) {
+      showActionScreen(root, `Could not open AI settings: ${error instanceof Error ? error.message : String(error)}`, [
+        { label: "Return to title", run: () => mountTitleScreen(root, chooseNewGame, chooseLoadGame, storageNote) },
+      ]);
+      return;
+    }
+
+    const returnToPrevious = (reload: boolean): void => {
+      void restorePreviousGame(save, previousClient, previousSelection, reload).catch((error: unknown) => {
+        showActionScreen(root, `Could not return to the saved game: ${error instanceof Error ? error.message : String(error)}.`, [
+          { label: "Try again", run: () => returnToPrevious(reload) },
+          { label: "Choose AI settings again", run: () => { void changeAISettings(slotId); } },
+        ]);
+      });
+    };
+
+    let previousUnloaded = false;
+    let nextClient: LLMClient | null = null;
+    try {
+      const requested = await mountProviderSetup(root, true);
+      if (!requested) {
+        await restorePreviousGame(save, previousClient, previousSelection, false);
+        return;
+      }
+
+      if (requested.settings.provider === "local") {
+        const report = await checkSupport();
+        if (!report.supported) {
+          showActionScreen(root, report.reason ?? "The on-device model cannot run on this device.", [
+            { label: "Choose another AI provider", run: () => { void changeAISettings(slotId); } },
+            { label: "Return to game", run: () => returnToPrevious(false) },
+          ]);
+          return;
+        }
+      }
+
+      previousUnloaded = true;
+      await previousClient.unload();
+      nextClient = createClient(requested);
+      if (!await loadSelection(nextClient, requested, true)) {
+        await restorePreviousGame(save, previousClient, previousSelection, true);
+        return;
+      }
+      selection = requested;
+      client = nextClient;
+      await beginLoadedGame(save);
+    } catch (error) {
+      if (nextClient) {
+        try {
+          await nextClient.unload();
+        } catch (unloadError) {
+          console.error("Could not unload the replacement storyteller.", unloadError);
+        }
+      }
+      try {
+        await restorePreviousGame(save, previousClient, previousSelection, previousUnloaded);
+        message.textContent = `AI settings were not changed: ${error instanceof Error ? error.message : String(error)}. Your previous game was restored.`;
+      } catch (restoreError) {
+        showActionScreen(
+          root,
+          `Could not change AI settings (${error instanceof Error ? error.message : String(error)}), and the previous storyteller could not be restored (${restoreError instanceof Error ? restoreError.message : String(restoreError)}). Your save is safe.`,
+          [
+            {
+              label: "Retry previous storyteller",
+              run: () => {
+                void restorePreviousGame(save, previousClient, previousSelection, true).catch((retryError: unknown) => {
+                  showActionScreen(root, `Could not restore the previous storyteller: ${retryError instanceof Error ? retryError.message : String(retryError)}.`, [
+                    { label: "Try again", run: () => { void changeAISettings(slotId); } },
+                  ]);
+                });
+              },
+            },
+            { label: "Choose AI settings again", run: () => { void changeAISettings(slotId); } },
+          ],
+        );
+      }
+    }
   };
   mountTitleScreen(root, chooseNewGame, chooseLoadGame, storageNote);
 }

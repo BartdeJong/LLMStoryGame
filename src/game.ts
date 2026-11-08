@@ -85,6 +85,7 @@ export class Game {
     private readonly appRoot: HTMLElement,
     private readonly onNewStory: () => void,
     private readonly onBackToTitle: () => void,
+    private readonly onChangeAISettings: ((slotId: string) => Promise<void>) | undefined,
     private readonly persistence: GamePersistence,
     private readonly onLoadSave: (save: GameSave) => Promise<void>,
   ) {
@@ -172,11 +173,17 @@ export class Game {
     this.worldMap.close();
     this.paused = true;
     this.input.clear();
+    const changeAISettings = this.onChangeAISettings;
     this.pauseOverlay = mountPauseMenu(this.appRoot, this.persistence.repository, this.persistence.slotId, {
       onResume: () => this.resume(),
       onSave: async () => {
         if (!await this.saveProgress()) throw new Error("The save could not be written. Check available storage.");
       },
+      onChangeAISettings: changeAISettings ? async () => {
+        if (!await this.saveProgress()) throw new Error("The save could not be written. Check available storage.");
+        this.stop();
+        await changeAISettings(this.persistence.slotId);
+      } : undefined,
       onTitle: () => {
         this.stop();
         this.onBackToTitle();

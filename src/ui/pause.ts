@@ -25,6 +25,7 @@ function download(json: string, fileName: string): void {
 export interface PauseMenuActions {
   onResume(): void;
   onSave(): Promise<void>;
+  onChangeAISettings?(): Promise<void>;
   onTitle(): void;
   onImport(save: GameSave): void;
 }
@@ -60,6 +61,19 @@ export function mountPauseMenu(
       status.textContent = `Could not save your game: ${error instanceof Error ? error.message : String(error)}`;
     }).finally(() => { save.disabled = false; });
   });
+  const onChangeAISettings = actions.onChangeAISettings;
+  const changeAISettings = onChangeAISettings
+    ? button("Change AI provider or model", () => {
+      const currentButton = changeAISettings;
+      if (!currentButton) return;
+      currentButton.disabled = true;
+      status.textContent = "Saving and opening AI settings...";
+      void onChangeAISettings().catch((error: unknown) => {
+        status.textContent = `Could not change AI settings: ${error instanceof Error ? error.message : String(error)}`;
+        currentButton.disabled = false;
+      });
+    })
+    : null;
   const exportSave = button("Export current save", () => {
     exportSave.disabled = true;
     void actions.onSave().then(() => repository.exportJson(slotId)).then((json) => {
@@ -104,7 +118,9 @@ export function mountPauseMenu(
       if (!soundEffects.muted) soundEffects.play("dialogue");
     });
   }
-  panel.append(title, resume, save, exportSave, importSave, file, titleButton, preferences, status);
+  panel.append(title, resume, save);
+  if (changeAISettings) panel.append(changeAISettings);
+  panel.append(exportSave, importSave, file, titleButton, preferences, status);
   overlay.append(panel);
   root.append(overlay);
   activateGamepadFocus(overlay, { onBack: actions.onResume });

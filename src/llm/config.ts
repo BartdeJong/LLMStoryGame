@@ -24,4 +24,21 @@ export const LLM_CONFIG = {
   maxRetries: 2,
   maxQueuedPrefetch: 4,
   loadedModelStorageKey: "llm.loadedModelId",
+  selectedModelStorageKey: "llm.selectedModelId",
 } as const;
+
+export type LocalModelId = (typeof LLM_CONFIG.candidates)[number];
+
+export function isLocalModelId(value: string | null): value is LocalModelId {
+  return value !== null && (LLM_CONFIG.candidates as readonly string[]).includes(value);
+}
+
+export function getSelectedLocalModelId(): LocalModelId {
+  const saved = localStorage.getItem(LLM_CONFIG.selectedModelStorageKey);
+  return isLocalModelId(saved) ? saved : LLM_CONFIG.modelId;
+}
+
+export function saveSelectedLocalModelId(modelId: string): void {
+  if (!isLocalModelId(modelId)) throw new Error("The selected on-device model is invalid.");
+  localStorage.setItem(LLM_CONFIG.selectedModelStorageKey, modelId);
+}

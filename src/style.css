@@ -746,7 +746,8 @@ body.llm-debug-mode {
 }
 
 .provider-connection[hidden],
-.provider-privacy[hidden] {
+.provider-privacy[hidden],
+.provider-label[hidden] {
   display: none;
 }
 

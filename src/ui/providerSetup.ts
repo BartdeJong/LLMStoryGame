@@ -1,4 +1,5 @@
 import { activateGamepadFocus } from "../input/focus";
+import { getSelectedLocalModelId, LLM_CONFIG, saveSelectedLocalModelId } from "../llm/config";
 import { getLLMProviderSettings, saveLLMProviderSettings, validateBedrockEndpoint } from "../llm/providerSettings";
 import type { LLMProviderSettings } from "../llm/providerSettings";
 
@@ -9,7 +10,14 @@ function el<K extends keyof HTMLElementTagNameMap>(tag: K, className: string, te
   return node;
 }
 
-export function mountProviderSetup(root: HTMLElement): Promise<LLMProviderSettings> {
+export interface ProviderSetupSelection {
+  readonly settings: LLMProviderSettings;
+  readonly modelId: string;
+}
+
+export function mountProviderSetup(root: HTMLElement): Promise<ProviderSetupSelection>;
+export function mountProviderSetup(root: HTMLElement, allowCancel: true): Promise<ProviderSetupSelection | undefined>;
+export function mountProviderSetup(root: HTMLElement, allowCancel = false): Promise<ProviderSetupSelection | undefined> {
   const saved = getLLMProviderSettings();
   root.replaceChildren();
   const screen = el("section", "llm-screen provider-screen");
@@ -32,6 +40,19 @@ export function mountProviderSetup(root: HTMLElement): Promise<LLMProviderSettin
   }
   provider.value = saved.provider;
   providerLabel.append(provider);
+
+  const modelLabel = el("label", "provider-label", "On-device model");
+  const model = document.createElement("select");
+  model.name = "model";
+  model.setAttribute("aria-label", "On-device model");
+  for (const modelId of LLM_CONFIG.candidates) {
+    const option = document.createElement("option");
+    option.value = modelId;
+    option.textContent = modelId;
+    model.append(option);
+  }
+  model.value = getSelectedLocalModelId();
+  modelLabel.append(model);
 
   const connection = el("div", "provider-connection");
   const endpointLabel = el("label", "provider-label", "Gateway URL");
@@ -60,18 +81,22 @@ export function mountProviderSetup(root: HTMLElement): Promise<LLMProviderSettin
   status.setAttribute("role", "alert");
   const submit = el("button", "llm-button", "Continue");
   submit.type = "submit";
+  const cancel = el("button", "llm-button", "Cancel and return to game");
+  cancel.type = "button";
 
   const updateProviderFields = (): void => {
     const useBedrock = provider.value === "bedrock";
     connection.hidden = !useBedrock;
     privacy.hidden = !useBedrock;
+    modelLabel.hidden = useBedrock;
     endpoint.required = useBedrock;
     token.required = useBedrock;
   };
   provider.addEventListener("change", updateProviderFields);
   updateProviderFields();
 
-  form.append(providerLabel, connection, privacy, status, submit);
+  form.append(providerLabel, modelLabel, connection, privacy, status, submit);
+  if (allowCancel) form.append(cancel);
   form.addEventListener("submit", (event) => {
     event.preventDefault();
     const settings: LLMProviderSettings = {
@@ -94,18 +119,23 @@ export function mountProviderSetup(root: HTMLElement): Promise<LLMProviderSettin
     }
     try {
       saveLLMProviderSettings(settings);
+      saveSelectedLocalModelId(model.value);
       root.replaceChildren();
-      resolveSetup(settings);
+      resolveSetup({ settings, modelId: model.value });
     } catch (error) {
       status.textContent = `Could not save AI settings: ${error instanceof Error ? error.message : String(error)}`;
     }
+  });
+  cancel.addEventListener("click", () => {
+    root.replaceChildren();
+    resolveSetup(undefined);
   });
 
   screen.append(form);
   root.append(screen);
   activateGamepadFocus(screen);
 
-  let resolveSetup!: (settings: LLMProviderSettings) => void;
-  const result = new Promise<LLMProviderSettings>((resolve) => { resolveSetup = resolve; });
+  let resolveSetup!: (selection: ProviderSetupSelection | undefined) => void;
+  const result = new Promise<ProviderSetupSelection | undefined>((resolve) => { resolveSetup = resolve; });
   return result;
 }
