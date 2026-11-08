@@ -11,6 +11,7 @@ import { createInventoryUI, type InventoryUI } from "./items/inventoryUi";
 import { Renderer, VIEW_HEIGHT, VIEW_WIDTH } from "./renderer";
 import { mountEndingChoiceScreen, mountEndingScreen } from "./ui/ending";
 import { mountPauseMenu } from "./ui/pause";
+import { createWorldMap, type WorldMap } from "./ui/worldMap";
 import type { EndingChoice } from "./story/ending";
 import type { StorySession } from "./story/storySession";
 import type { CastMember } from "./story/types";
@@ -47,6 +48,7 @@ export class Game {
   private readonly locationLabel: HTMLElement | null;
   private readonly dialogueBox: DialogueBox;
   private readonly inventoryUI: InventoryUI;
+  private readonly worldMap: WorldMap;
   private transitioning = false;
   private running = false;
   private ending = false;
@@ -94,9 +96,15 @@ export class Game {
     const shell = canvas.parentElement ?? document.body;
     this.dialogueBox = createDialogueBox(shell);
     this.inventoryUI = createInventoryUI(shell);
+    this.worldMap = createWorldMap(
+      shell,
+      () => this.story.getSavedAreas().map(({ area }) => area),
+      () => this.areaId,
+    );
     this.refreshInventory();
     canvas.addEventListener("pointerup", this.handleCanvasTap);
     window.addEventListener("keydown", this.handlePauseKeyDown);
+    window.addEventListener("keydown", this.handleMapKeyDown);
     this.pauseButton.addEventListener("click", this.openPauseMenu);
   }
 
@@ -112,12 +120,26 @@ export class Game {
   private readonly handlePauseKeyDown = (event: KeyboardEvent): void => {
     if (event.key !== "Escape" || !this.running) return;
     event.preventDefault();
+    if (this.worldMap.isOpen) {
+      this.worldMap.close();
+      return;
+    }
     if (this.paused) this.resume();
     else this.openPauseMenu();
   };
 
+  private readonly handleMapKeyDown = (event: KeyboardEvent): void => {
+    if (event.key.toLowerCase() !== "m" || !this.running || this.paused
+      || this.transitioning || this.inDialogue) return;
+    if (!this.worldMap.isOpen && event.target instanceof HTMLElement
+      && event.target.closest("input, textarea, select, button, a[href], [contenteditable='true']")) return;
+    event.preventDefault();
+    this.worldMap.toggle();
+  };
+
   private readonly openPauseMenu = (): void => {
     if (this.paused || !this.running) return;
+    this.worldMap.close();
     this.paused = true;
     this.input.clear();
     this.pauseOverlay = mountPauseMenu(this.appRoot, this.persistence.repository, this.persistence.slotId, {
@@ -162,9 +184,11 @@ export class Game {
     this.animationFrame = null;
     this.stopAutosave();
     window.removeEventListener("keydown", this.handlePauseKeyDown);
+    window.removeEventListener("keydown", this.handleMapKeyDown);
     this.pauseButton.removeEventListener("click", this.openPauseMenu);
     this.canvas.removeEventListener("pointerup", this.handleCanvasTap);
     this.input.destroy();
+    this.worldMap.remove();
     this.dialogueBox.element.remove();
     for (const element of this.inventoryUI.elements) element.remove();
     this.pauseOverlay?.remove();
@@ -225,7 +249,7 @@ export class Game {
   };
 
   private update(delta: number): void {
-    if (this.transitioning || this.inDialogue) return;
+    if (this.transitioning || this.inDialogue || this.worldMap.isOpen) return;
     const world = this.story.getArea(this.areaId);
     const movement = this.input.getMovement();
     const deltaX = movement.x * PLAYER_SPEED * delta;
@@ -258,7 +282,7 @@ export class Game {
   }
 
   private interact(): void {
-    if (!this.running || this.paused || this.transitioning || this.inDialogue) return;
+    if (!this.running || this.paused || this.transitioning || this.inDialogue || this.worldMap.isOpen) return;
     const world = this.story.getArea(this.areaId);
     const distance = (point: { x: number; y: number }): number => {
       const dx = this.player.x - (point.x * TILE_SIZE + TILE_SIZE / 2);
@@ -280,7 +304,7 @@ export class Game {
 
   // Tap a nearby character, object or door directly on the screen to interact with it.
   private readonly handleCanvasTap = (event: PointerEvent): void => {
-    if (!this.running || this.paused || this.transitioning || this.inDialogue) return;
+    if (!this.running || this.paused || this.transitioning || this.inDialogue || this.worldMap.isOpen) return;
     const rect = this.canvas.getBoundingClientRect();
     if (rect.width === 0 || rect.height === 0) return;
     const worldX = ((event.clientX - rect.left) * VIEW_WIDTH) / rect.width + this.camera.x;
