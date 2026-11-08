@@ -16,3 +16,5 @@ export { getTileCanvas, paintTile, TILE_TYPES } from "./tiles";
 export type { TileType } from "./tiles";
 export { createSeededRandom } from "./random";
 export type { Seed } from "./random";
+export { getStoryVisualTheme } from "./storyTheme";
+export type { StoryAtmosphere, StoryVisualTheme } from "./storyTheme";

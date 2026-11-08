@@ -1,7 +1,16 @@
 import { TILE_SIZE, Tile, type Area, type AreaEntity } from "./world";
 import type { DoorKind } from "./world";
 import type { Position } from "./camera";
-import { DEFAULT_CHARACTER_RECIPE, getCharacterSprite, getIconCanvas, getTileCanvas, type PaletteName, type TileType } from "./art";
+import {
+  DEFAULT_CHARACTER_RECIPE,
+  getCharacterSprite,
+  getIconCanvas,
+  getTileCanvas,
+  getStoryVisualTheme,
+  type PaletteName,
+  type StoryVisualTheme,
+  type TileType,
+} from "./art";
 
 export const VIEW_WIDTH = 320;
 export const VIEW_HEIGHT = 180;
@@ -28,14 +37,17 @@ const doorTiles: Record<DoorKind, TileType> = {
 
 export class Renderer {
   private readonly context: CanvasRenderingContext2D;
+  private readonly storyTheme: StoryVisualTheme;
 
-  constructor(canvas: HTMLCanvasElement) {
+  constructor(canvas: HTMLCanvasElement, storyId: string) {
     const context = canvas.getContext("2d", { alpha: false });
     if (!context) {
       throw new Error("This browser could not create a 2D canvas context.");
     }
     this.context = context;
     this.context.imageSmoothingEnabled = false;
+    this.storyTheme = getStoryVisualTheme(storyId);
+    canvas.style.filter = this.storyTheme.canvasFilter;
   }
 
   draw(world: Area, player: Position, camera: Position, transitionOpacity = 0): void {
@@ -78,7 +90,8 @@ export class Renderer {
     }
 
     for (const entity of world.entities ?? []) this.drawEntity(world.palette, entity, camera);
-    this.drawPlayer(Math.round(player.x - camera.x), Math.round(player.y - camera.y));
+    this.drawPlayer(world.palette, Math.round(player.x - camera.x), Math.round(player.y - camera.y));
+    this.drawStoryAtmosphere(context);
     if (transitionOpacity > 0) this.drawFog(transitionOpacity);
   }
 
@@ -116,7 +129,25 @@ export class Renderer {
     }
   }
 
-  private drawPlayer(x: number, y: number): void {
-    this.context.drawImage(getCharacterSprite(DEFAULT_CHARACTER_RECIPE, "meadow", "down"), x - 8, y - 8);
+  private drawPlayer(palette: PaletteName, x: number, y: number): void {
+    this.context.drawImage(getCharacterSprite(DEFAULT_CHARACTER_RECIPE, palette, "down"), x - 8, y - 8);
+  }
+
+  private drawStoryAtmosphere(context: CanvasRenderingContext2D): void {
+    if (document.documentElement.dataset.reducedMotion === "true") return;
+    const time = performance.now() / 1000;
+    context.save();
+    context.fillStyle = this.storyTheme.particle;
+    for (let index = 0; index < 8; index += 1) {
+      const x = (index * 47 + Math.sin(time * 0.18 + index * 1.7) * 18 + VIEW_WIDTH) % VIEW_WIDTH;
+      const drift = this.storyTheme.atmosphere === "falling-ash" ? time * (4 + index % 4) : time * 2;
+      const y = (index * 29 + drift + Math.sin(time * 0.5 + index) * 4) % VIEW_HEIGHT;
+      const size = this.storyTheme.atmosphere === "tide-glow" && index % 3 === 0 ? 2 : 1;
+      context.globalAlpha = this.storyTheme.atmosphere === "falling-ash"
+        ? 0.24
+        : 0.35 + (Math.sin(time * 1.2 + index) + 1) * 0.2;
+      context.fillRect(Math.round(x), Math.round(y), size, size);
+    }
+    context.restore();
   }
 }

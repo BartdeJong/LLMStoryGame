@@ -9,6 +9,7 @@ import type { DialogueHandlers } from "./dialogue/ui";
 import { createDialogueBox, type DialogueBox } from "./dialogue/ui";
 import { InputController } from "./input";
 import { gamepadInput } from "./input/gamepad";
+import { getStoryVisualTheme } from "./art";
 import { listInventory } from "./items/inventory";
 import { createInventoryUI, type InventoryUI } from "./items/inventoryUi";
 import { Renderer, VIEW_HEIGHT, VIEW_WIDTH } from "./renderer";
@@ -103,11 +104,19 @@ export class Game {
     if (!hud) throw new Error("The game page is missing its HUD.");
     this.objectiveHud = createObjectiveHud(hud);
     this.refreshObjective();
-    this.renderer = new Renderer(canvas);
+    this.renderer = new Renderer(canvas, this.story.pack.identity.id);
     this.input = new InputController(joystick, actionButton, () => {
       this.interact();
     });
     const shell = canvas.parentElement ?? document.body;
+    const visualTheme = getStoryVisualTheme(this.story.pack.identity.id);
+    shell.style.setProperty("--story-frame", visualTheme.frame);
+    shell.style.setProperty("--story-panel", visualTheme.panel);
+    shell.style.setProperty("--story-accent", visualTheme.accent);
+    shell.style.setProperty("--story-text", visualTheme.text);
+    shell.style.setProperty("--story-muted", visualTheme.muted);
+    shell.style.setProperty("--story-control", visualTheme.control);
+    shell.style.setProperty("--story-active-control", visualTheme.activeControl);
     this.dialogueBox = createDialogueBox(shell);
     this.inventoryUI = createInventoryUI(shell);
     this.storyJournal = createStoryJournal(shell);

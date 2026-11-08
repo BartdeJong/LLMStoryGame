@@ -50,9 +50,10 @@ body {
   left: max(14px, env(safe-area-inset-left));
   max-width: min(70vw, 360px);
   padding: 8px 12px;
-  border: 2px solid #536a4c;
+  border: 2px solid var(--story-frame, #536a4c);
   border-radius: 6px;
-  background: rgb(23 37 29 / 88%);
+  background: var(--story-panel, rgb(23 37 29 / 88%));
+  color: var(--story-text, #f5f0d7);
   box-shadow: 0 3px 0 rgb(0 0 0 / 25%);
   pointer-events: none;
 }
@@ -64,7 +65,7 @@ body {
 }
 
 .location-label {
-  color: #e7cd84;
+  color: var(--story-accent, #e7cd84);
   font-size: 10px !important;
   font-weight: 800;
   letter-spacing: 0.12em;
@@ -77,7 +78,7 @@ body {
 .objective-hud {
   margin-top: 7px;
   padding-top: 6px;
-  border-top: 1px solid rgb(231 205 132 / 45%);
+  border-top: 1px solid var(--story-frame, #536a4c);
 }
 
 .objective-hud p {
@@ -87,7 +88,7 @@ body {
 }
 
 .objective-hud-heading {
-  color: #e7cd84;
+  color: var(--story-accent, #e7cd84);
   font-size: 9px !important;
   font-weight: 800;
   letter-spacing: 0.1em;
@@ -100,7 +101,7 @@ body {
 
 .objective-hud-guidance {
   margin-top: 2px !important;
-  color: #d3ddc2;
+  color: var(--story-muted, #d3ddc2);
 }
 
 .story-opening {
@@ -152,9 +153,9 @@ body {
 .map-button {
   display: grid;
   place-items: center;
-  border: 2px solid rgb(245 240 215 / 65%);
-  color: #f5f0d7;
-  background: rgb(23 37 29 / 62%);
+  border: 2px solid var(--story-frame, rgb(245 240 215 / 65%));
+  color: var(--story-text, #f5f0d7);
+  background: var(--story-control, rgb(23 37 29 / 62%));
   box-shadow: 0 3px 0 rgb(0 0 0 / 24%);
   touch-action: none;
   -webkit-tap-highlight-color: transparent;
@@ -172,9 +173,9 @@ body {
 .joystick-thumb {
   width: 44px;
   height: 44px;
-  border: 2px solid rgb(245 240 215 / 88%);
+  border: 2px solid var(--story-frame, rgb(245 240 215 / 88%));
   border-radius: 50%;
-  background: rgb(120 151 100 / 82%);
+  background: var(--story-active-control, rgb(120 151 100 / 82%));
   transform: translate(var(--stick-x, 0px), var(--stick-y, 0px));
   pointer-events: none;
 }
@@ -201,7 +202,7 @@ body {
 .joystick:active,
 .action-button:active,
 .map-button:active {
-  background: rgb(83 106 76 / 88%);
+  background: var(--story-active-control, rgb(83 106 76 / 88%));
 }
 
 @media (max-height: 430px) {
