@@ -1,0 +1,3371 @@
+{
+  "schema_version": 2,
+  "identity": {
+    "id": "holmesashenvelope",
+    "version": 1,
+    "title": "The Ashen Envelope",
+    "logline": "A riverside clerk is found dead beside a blackened envelope; help Holmes learn where he died, who silenced him, and what the missing relief money concealed.",
+    "setting": "Soot-dark Victorian London, from 221B Baker Street and Scotland Yard to Blackfriars, a fever ward, Fleet Street, and the Thames.",
+    "tone": "Dark Victorian detective mystery; grave, atmospheric, humane, and restrained.",
+    "themes": [
+      "evidence",
+      "conscience",
+      "poverty",
+      "justice"
+    ],
+    "content_notes": [
+      "Murder and a fatal head injury, described without lingering detail.",
+      "A body, blood evidence, institutional poverty, and financial betrayal.",
+      "No sexual violence, harm to children, hate content, or graphic gore."
+    ]
+  },
+  "style_guide": {
+    "narrator_voice": "Second person, present tense, restrained and atmospheric; dialogue fields contain only first-person spoken words.",
+    "use": [
+      "fog",
+      "soot",
+      "river",
+      "paper",
+      "ink",
+      "gaslight",
+      "account",
+      "evidence",
+      "silence",
+      "inquest"
+    ],
+    "avoid": [
+      "modern slang",
+      "modern forensic terms",
+      "melodrama",
+      "supernatural explanations",
+      "jokes about the dead",
+      "lurid injury detail"
+    ],
+    "naming_conventions": "Use period-appropriate British names and specific London places. Keep Holmes exact, Watson humane, Lestrade plain, Hudson warm, and every other voice distinct.",
+    "examples": [
+      {
+        "cast_id": "c_holmes",
+        "lines": [
+          "I distrust a conclusion that arrives before its evidence."
+        ]
+      },
+      {
+        "cast_id": "c_watson",
+        "lines": [
+          "I have seen grief sharpen a memory, and sometimes cloud it."
+        ]
+      },
+      {
+        "cast_id": "c_lestrade",
+        "lines": [
+          "I want proof that will bear the light of a courtroom."
+        ]
+      },
+      {
+        "cast_id": "c_hudson",
+        "lines": [
+          "I can be kind without being blind, my dear."
+        ]
+      }
+    ]
+  },
+  "cast": [
+    {
+      "id": "c_holmes",
+      "name": "Sherlock Holmes",
+      "species": "person",
+      "personality": "Precise, dry, and impatient with loose inference.",
+      "goal": "Establish who killed Elias Wren and why.",
+      "secret": "I suspected the riverside scene was staged before I asked for your help.",
+      "motivations": [
+        "separate fact from appearance",
+        "bring a sound case to Lestrade"
+      ],
+      "relationships": [
+        {
+          "cast_id": "c_watson",
+          "relation": "trusted companion"
+        },
+        {
+          "cast_id": "c_hudson",
+          "relation": "landlady"
+        },
+        {
+          "cast_id": "c_lestrade",
+          "relation": "police counterpart"
+        }
+      ],
+      "sprite_recipe": "body=tall; bodyColor=ink; accentColor=earth; skinColor=skin; feature=hat; walkFrames=2",
+      "home_location": "l_baker_street",
+      "knows_truths": [
+        "t_scene_staged",
+        "t_wren_discovered",
+        "t_fane_killed_wren",
+        "t_diversion_for_ward"
+      ],
+      "goal_states": [
+        {
+          "id": "gs_holmes_solution",
+          "description": "Holmes has established the killer and motive.",
+          "requires": {
+            "truths": [
+              "t_fane_killed_wren",
+              "t_diversion_for_ward"
+            ]
+          },
+          "reveals": "I can now explain who killed Wren and why."
+        }
+      ],
+      "voice_notes": "Exact, concise, dry; deductions are brief and never boastful.",
+      "greetings": [
+        "I have a question for you: why was Wren found at the river?",
+        "I see you are new to my rooms; this case will reward a patient eye.",
+        "I require an unclouded account of Elias Wren's death."
+      ],
+      "knowledge": [
+        {
+          "id": "k_holmes_case",
+          "topic": "The case",
+          "ask": "What is the central question?",
+          "text": "I ask where Wren died, who moved him, and why the envelope was burned.",
+          "keywords": [
+            "case",
+            "Wren",
+            "envelope"
+          ],
+          "truth_id": "t_scene_staged"
+        },
+        {
+          "id": "k_holmes_wren",
+          "topic": "Wren's books",
+          "ask": "What did Wren discover?",
+          "text": "I believe Wren found irregular payments in the Relief Fund accounts.",
+          "keywords": [
+            "Wren",
+            "accounts",
+            "payments"
+          ],
+          "truth_id": "t_wren_discovered"
+        },
+        {
+          "id": "k_holmes_ward",
+          "topic": "The ward",
+          "ask": "Why was money sent to the ward?",
+          "text": "I have reason to think the fever ward received money meant for another account.",
+          "keywords": [
+            "ward",
+            "money",
+            "account"
+          ],
+          "truth_id": "t_diversion_for_ward"
+        },
+        {
+          "id": "k_holmes_vale",
+          "topic": "Gideon Vale",
+          "ask": "Why do you suspect Vale?",
+          "text": "I find Vale's account of the evening inconsistent with the physical evidence.",
+          "keywords": [
+            "Vale",
+            "evening",
+            "evidence"
+          ],
+          "truth_id": "t_fane_killed_wren"
+        },
+        {
+          "id": "k_holmes_place",
+          "topic": "The river",
+          "ask": "What troubles you about the stairs?",
+          "text": "I see no reason to accept the river stairs as the place of death.",
+          "keywords": [
+            "river",
+            "stairs",
+            "death"
+          ],
+          "truth_id": "t_scene_staged"
+        }
+      ],
+      "goal_hints": {
+        "unmet": [
+          "I need facts, not a convenient story.",
+          "I cannot name a killer until the scene and accounts agree."
+        ],
+        "in_progress": [
+          "I am comparing the body's evidence with the riverbank.",
+          "I need the ward's history before I judge the missing money."
+        ],
+        "resolved": [
+          "I can now state the case without conjecture.",
+          "I have enough to explain Vale's crime and motive."
+        ]
+      },
+      "deflections": [
+        "I do not speculate upon a fact we have not established.",
+        "I shall not confuse a suspicion with a proof.",
+        "I have no useful comment on gossip about my methods.",
+        "I decline to discuss a private matter unrelated to Wren.",
+        "I cannot tell you what the evidence has not yet told me."
+      ]
+    },
+    {
+      "id": "c_watson",
+      "name": "Dr John Watson",
+      "species": "person",
+      "personality": "Warm and practical, with a physician's care for exact observations.",
+      "goal": "Establish where Wren died and what the wound can tell us.",
+      "secret": "I recognize the wound pattern, but I will not claim more than it proves.",
+      "motivations": [
+        "give Wren a truthful account",
+        "keep Holmes attentive to human cost"
+      ],
+      "relationships": [
+        {
+          "cast_id": "c_holmes",
+          "relation": "friend and colleague"
+        },
+        {
+          "cast_id": "c_hudson",
+          "relation": "close household friend"
+        },
+        {
+          "cast_id": "c_shaw",
+          "relation": "medical colleague"
+        }
+      ],
+      "sprite_recipe": "body=round; bodyColor=earth; accentColor=cream; skinColor=skin; feature=hat; walkFrames=2",
+      "home_location": "l_baker_street",
+      "knows_truths": [
+        "t_wren_discovered",
+        "t_scene_staged",
+        "t_diversion_for_ward"
+      ],
+      "goal_states": [
+        {
+          "id": "gs_watson_scene",
+          "description": "Watson has established the true place of death.",
+          "requires": {
+            "truths": [
+              "t_scene_staged"
+            ]
+          },
+          "reveals": "I can give my medical account with confidence now."
+        }
+      ],
+      "voice_notes": "Warm, plain-spoken, observant, and careful not to overstate.",
+      "greetings": [
+        "I am glad of another pair of eyes; the dead deserve accuracy.",
+        "I hope you will help us distinguish what we know from what we fear.",
+        "I have seen enough cases to distrust a tidy explanation."
+      ],
+      "knowledge": [
+        {
+          "id": "k_watson_case",
+          "topic": "The case",
+          "ask": "What can you tell me about Wren?",
+          "text": "I examined Wren and found evidence that does not fit a simple fall at the river.",
+          "keywords": [
+            "Wren",
+            "examination",
+            "river"
+          ],
+          "truth_id": "t_scene_staged"
+        },
+        {
+          "id": "k_watson_wren",
+          "topic": "Wren's plan",
+          "ask": "What was Wren going to do?",
+          "text": "I understood that Wren meant to report irregular payments, not steal them.",
+          "keywords": [
+            "Wren",
+            "report",
+            "payments"
+          ],
+          "clue_id": "cl_watson_inquest",
+          "truth_id": "t_wren_discovered"
+        },
+        {
+          "id": "k_watson_ward",
+          "topic": "Ward supplies",
+          "ask": "Were the ward's bills paid?",
+          "text": "I saw supply vouchers that remained unpaid despite the ward's urgent need.",
+          "keywords": [
+            "ward",
+            "vouchers",
+            "supplies"
+          ],
+          "truth_id": "t_diversion_for_ward"
+        },
+        {
+          "id": "k_watson_vale",
+          "topic": "The injury",
+          "ask": "What does the injury suggest?",
+          "text": "I can say the injury came before the river journey; I cannot name its author from that alone.",
+          "keywords": [
+            "injury",
+            "river",
+            "timing"
+          ],
+          "truth_id": "t_scene_staged"
+        },
+        {
+          "id": "k_watson_place",
+          "topic": "The mortuary",
+          "ask": "What should I learn there?",
+          "text": "I would compare the fibres on Wren's coat with the marks at the stairs.",
+          "keywords": [
+            "fibres",
+            "coat",
+            "stairs"
+          ],
+          "truth_id": "t_scene_staged"
+        }
+      ],
+      "goal_hints": {
+        "unmet": [
+          "I need to know whether the river was the first scene.",
+          "I will not call a wound evidence of more than it shows."
+        ],
+        "in_progress": [
+          "I am weighing the fibres against the river marks.",
+          "I need the docket to understand what Wren was carrying."
+        ],
+        "resolved": [
+          "I can now place the injury before the river journey.",
+          "I have given Holmes the medical facts he needs."
+        ]
+      },
+      "deflections": [
+        "I cannot discuss another patient's private history.",
+        "I will not dress uncertainty as medical certainty.",
+        "I have no appetite for rumors about the ward.",
+        "I cannot repeat a confidence entrusted to me.",
+        "I shall leave the legal conclusion to Lestrade."
+      ]
+    },
+    {
+      "id": "c_hudson",
+      "name": "Mrs Hudson",
+      "species": "person",
+      "personality": "Motherly and sharp, kind without being easily deceived.",
+      "goal": "Return Ada's private letter without exposing its contents.",
+      "secret": "I once helped Ada find respectable work and know she is protecting her brother's name.",
+      "motivations": [
+        "protect the household",
+        "keep kindness from becoming an excuse"
+      ],
+      "relationships": [
+        {
+          "cast_id": "c_holmes",
+          "relation": "landlady"
+        },
+        {
+          "cast_id": "c_watson",
+          "relation": "dear friend"
+        },
+        {
+          "cast_id": "c_ada",
+          "relation": "former helpful acquaintance"
+        }
+      ],
+      "sprite_recipe": "body=small; bodyColor=cream; accentColor=earth; skinColor=skin; feature=none; walkFrames=2",
+      "home_location": "l_baker_street",
+      "knows_truths": [
+        "t_diversion_for_ward",
+        "t_wren_discovered"
+      ],
+      "goal_states": [
+        {
+          "id": "gs_hudson_letter",
+          "description": "Hudson has understood Ada's connection to Wren's letter.",
+          "requires": {
+            "truths": [
+              "t_wren_discovered"
+            ]
+          },
+          "reveals": "I can tell you why Ada feared for her brother's name."
+        }
+      ],
+      "voice_notes": "Gentle, maternal, and pointed when someone mistakes kindness for naivety.",
+      "greetings": [
+        "I am pleased to see a new face, though I wish the reason were happier.",
+        "I have tea for the living and a sharp memory for the dead.",
+        "I know Holmes can be abrupt; I hope you will hear the human part too."
+      ],
+      "knowledge": [
+        {
+          "id": "k_hudson_case",
+          "topic": "Ada Wren",
+          "ask": "How do you know Ada?",
+          "text": "I knew Ada before this sorrow, and I will not let gossip make her grief a crime.",
+          "keywords": [
+            "Ada",
+            "grief",
+            "gossip"
+          ],
+          "truth_id": "t_wren_discovered"
+        },
+        {
+          "id": "k_hudson_wren",
+          "topic": "Wren's worry",
+          "ask": "What worried Wren?",
+          "text": "I heard Wren feared the Relief Fund books would be made to accuse an honest man.",
+          "keywords": [
+            "Wren",
+            "books",
+            "honest"
+          ],
+          "truth_id": "t_wren_discovered"
+        },
+        {
+          "id": "k_hudson_ward",
+          "topic": "The ward",
+          "ask": "What did the ward need?",
+          "text": "I remember a plea for supplies when the ward's promised funds did not arrive.",
+          "keywords": [
+            "ward",
+            "supplies",
+            "funds"
+          ],
+          "clue_id": "cl_ward_appeal",
+          "truth_id": "t_diversion_for_ward"
+        },
+        {
+          "id": "k_hudson_vale",
+          "topic": "Mr Vale",
+          "ask": "Did Vale visit here?",
+          "text": "I heard Vale speak politely of charity, but I never mistook manners for proof.",
+          "keywords": [
+            "Vale",
+            "charity",
+            "manners"
+          ],
+          "truth_id": "t_diversion_for_ward"
+        },
+        {
+          "id": "k_hudson_place",
+          "topic": "The letter",
+          "ask": "Why does Ada hide a letter?",
+          "text": "I believe Ada protects her brother's good name, not a guilty secret.",
+          "keywords": [
+            "Ada",
+            "letter",
+            "brother"
+          ],
+          "truth_id": "t_wren_discovered"
+        }
+      ],
+      "goal_hints": {
+        "unmet": [
+          "I want Ada's letter understood, not exposed.",
+          "I cannot help her if we confuse privacy with guilt."
+        ],
+        "in_progress": [
+          "I am waiting for the truth about Wren's accounts.",
+          "I need to know whether the letter concerns his work."
+        ],
+        "resolved": [
+          "I can now explain why Ada guarded that letter.",
+          "I have kept her confidence without hiding the evidence."
+        ]
+      },
+      "deflections": [
+        "I will not repeat a private letter for curiosity's sake.",
+        "I cannot tell you what Ada has not chosen to share.",
+        "I have no patience for unkind talk about a grieving sister.",
+        "I shall not pretend a good deed makes a murder harmless.",
+        "I cannot answer for a man who is not in this room."
+      ]
+    },
+    {
+      "id": "c_lestrade",
+      "name": "Inspector Lestrade",
+      "species": "person",
+      "personality": "Gruff but fair, careful with evidence and the demands of court.",
+      "goal": "Build a case against the killer that will stand in court.",
+      "secret": "I accepted Vale's timetable before I had the river evidence.",
+      "motivations": [
+        "secure admissible evidence",
+        "correct a mistaken public account"
+      ],
+      "relationships": [
+        {
+          "cast_id": "c_holmes",
+          "relation": "respected, exasperating colleague"
+        },
+        {
+          "cast_id": "c_watson",
+          "relation": "trusted witness"
+        },
+        {
+          "cast_id": "c_vale",
+          "relation": "fund treasurer under inquiry"
+        }
+      ],
+      "sprite_recipe": "body=tall; bodyColor=shadow; accentColor=ink; skinColor=skin; feature=hat; walkFrames=2",
+      "home_location": "l_scotland_yard",
+      "knows_truths": [
+        "t_scene_staged",
+        "t_fane_access",
+        "t_fane_killed_wren"
+      ],
+      "goal_states": [
+        {
+          "id": "gs_lestrade_case",
+          "description": "Lestrade has enough evidence to charge the killer.",
+          "requires": {
+            "truths": [
+              "t_fane_killed_wren"
+            ]
+          },
+          "reveals": "I can put the corrected evidence before a magistrate."
+        }
+      ],
+      "voice_notes": "Direct, skeptical, gruff, and willing to revise a conclusion.",
+      "greetings": [
+        "I have a case that needs more than a clever guess.",
+        "I am Inspector Lestrade; I will hear evidence, not rumor.",
+        "I will admit when the facts prove me wrong, but bring me facts."
+      ],
+      "knowledge": [
+        {
+          "id": "k_lestrade_case",
+          "topic": "The inquiry",
+          "ask": "What do you know so far?",
+          "text": "I first took the river stairs for the scene, but the medical evidence has unsettled me.",
+          "keywords": [
+            "inquiry",
+            "river",
+            "medical"
+          ],
+          "truth_id": "t_scene_staged"
+        },
+        {
+          "id": "k_lestrade_wren",
+          "topic": "Wren's books",
+          "ask": "Was Wren under suspicion?",
+          "text": "I found no proof Wren stole from the Fund; I did find an irregular account.",
+          "keywords": [
+            "Wren",
+            "Fund",
+            "account"
+          ],
+          "truth_id": "t_wren_discovered"
+        },
+        {
+          "id": "k_lestrade_ward",
+          "topic": "The ward",
+          "ask": "Did the ward receive money?",
+          "text": "I have no wish to punish a patient for a committee's bookkeeping.",
+          "keywords": [
+            "ward",
+            "patient",
+            "committee"
+          ],
+          "truth_id": "t_diversion_for_ward"
+        },
+        {
+          "id": "k_lestrade_vale",
+          "topic": "Vale's key",
+          "ask": "Who had access to the office?",
+          "text": "I have a record that Vale held a treasurer's key after hours.",
+          "keywords": [
+            "Vale",
+            "key",
+            "office"
+          ],
+          "truth_id": "t_fane_access"
+        },
+        {
+          "id": "k_lestrade_place",
+          "topic": "The evidence",
+          "ask": "What will persuade a court?",
+          "text": "I need two independent facts before I put a man's name in a charge.",
+          "keywords": [
+            "court",
+            "facts",
+            "charge"
+          ],
+          "clue_id": "cl_lestrade_keylog",
+          "truth_id": "t_fane_killed_wren"
+        }
+      ],
+      "goal_hints": {
+        "unmet": [
+          "I need evidence that connects a suspect to the death.",
+          "I will not take a man to court on a tidy theory."
+        ],
+        "in_progress": [
+          "I am checking the key register against the scene.",
+          "I need a corrected timeline before I trust Vale's account."
+        ],
+        "resolved": [
+          "I can now make a case that will bear examination.",
+          "I have corrected my first account of the river scene."
+        ]
+      },
+      "deflections": [
+        "I will not discuss evidence that has not been entered in the record.",
+        "I cannot give you a suspect's private address without cause.",
+        "I have no comment on Holmes's manners.",
+        "I shall not repeat dockside rumor as testimony.",
+        "I cannot promise a verdict; I can promise a fair inquiry."
+      ]
+    },
+    {
+      "id": "c_vale",
+      "name": "Gideon Vale",
+      "species": "person",
+      "personality": "Composed treasurer whose courtesy hardens when his accounts are questioned.",
+      "goal": "Keep the fever ward supplied and prevent his own disgrace.",
+      "secret": "I diverted Fund money and killed Wren when he threatened to expose it.",
+      "motivations": [
+        "keep the ward open",
+        "conceal an unauthorized transfer"
+      ],
+      "relationships": [
+        {
+          "cast_id": "c_ada",
+          "relation": "deceased clerk's sister"
+        },
+        {
+          "cast_id": "c_lestrade",
+          "relation": "police investigator"
+        },
+        {
+          "cast_id": "c_pembroke",
+          "relation": "solicitor"
+        }
+      ],
+      "sprite_recipe": "body=tall; bodyColor=cream; accentColor=ink; skinColor=skin; feature=hat; walkFrames=2",
+      "home_location": "l_relief_office",
+      "knows_truths": [
+        "t_wren_discovered",
+        "t_scene_staged",
+        "t_fane_killed_wren",
+        "t_fane_alibi_false",
+        "t_fane_access",
+        "t_fane_diverted",
+        "t_diversion_for_ward",
+        "t_envelope_decoy",
+        "t_duplicate_ledger",
+        "t_silas_framed"
+      ],
+      "goal_states": [
+        {
+          "id": "gs_vale_account",
+          "description": "Vale's diversion has been established from the records.",
+          "requires": {
+            "truths": [
+              "t_fane_diverted"
+            ]
+          },
+          "reveals": "I cannot deny that the Fund's books were altered."
+        }
+      ],
+      "voice_notes": "Measured, formal, self-justifying; avoids direct answers until evidence is specific.",
+      "greetings": [
+        "I have already answered the Inspector's questions about my accounts.",
+        "I am sorry that Wren's death has drawn the Fund into suspicion.",
+        "I will speak of the ward's needs, though I cannot approve every method used."
+      ],
+      "knowledge": [
+        {
+          "id": "k_vale_case",
+          "topic": "The death",
+          "ask": "When did you last see Wren?",
+          "text": "I last saw Wren in the ordinary course of Fund business.",
+          "keywords": [
+            "Wren",
+            "business",
+            "Fund"
+          ],
+          "truth_id": "t_fane_killed_wren"
+        },
+        {
+          "id": "k_vale_wren",
+          "topic": "Wren's work",
+          "ask": "What was Wren checking?",
+          "text": "I know Wren examined the accounts closely and questioned several payments.",
+          "keywords": [
+            "Wren",
+            "accounts",
+            "payments"
+          ],
+          "truth_id": "t_wren_discovered"
+        },
+        {
+          "id": "k_vale_ward",
+          "topic": "The ward",
+          "ask": "Why did the ward need money?",
+          "text": "I know the promised grant failed, and the ward still required its supplies.",
+          "keywords": [
+            "grant",
+            "ward",
+            "supplies"
+          ],
+          "truth_id": "t_diversion_for_ward"
+        },
+        {
+          "id": "k_vale_books",
+          "topic": "The books",
+          "ask": "Were the accounts altered?",
+          "text": "I cannot defend every entry in the Fund's books.",
+          "keywords": [
+            "books",
+            "entry",
+            "Fund"
+          ],
+          "truth_id": "t_fane_diverted"
+        },
+        {
+          "id": "k_vale_place",
+          "topic": "The office",
+          "ask": "Who had a key to the countinghouse?",
+          "text": "I held a treasurer's key, as my office required.",
+          "keywords": [
+            "key",
+            "treasurer",
+            "office"
+          ],
+          "clue_id": "cl_vale_key_admission",
+          "truth_id": "t_fane_access"
+        }
+      ],
+      "goal_hints": {
+        "unmet": [
+          "I need the ward's needs considered apart from my accounts.",
+          "I will not discuss a transfer on the strength of rumor."
+        ],
+        "in_progress": [
+          "I can explain the ward's shortage, but not every entry.",
+          "I need the committee to hear the circumstances of the grant."
+        ],
+        "resolved": [
+          "I can no longer deny the altered accounts.",
+          "I have admitted the transfers, though not the crime that followed."
+        ]
+      },
+      "deflections": [
+        "I have no recollection of every hour that evening.",
+        "I will not answer an accusation dressed as a question.",
+        "I cannot discuss Ada's private correspondence.",
+        "I have nothing to say about a printer's habits.",
+        "I will speak to the Inspector when he presents a formal charge."
+      ]
+    },
+    {
+      "id": "c_ada",
+      "name": "Ada Wren",
+      "species": "person",
+      "personality": "Proud, grieving, and guarded, with a clear sense of her brother's character.",
+      "goal": "Keep Elias from being remembered as a thief.",
+      "secret": "I delivered Elias's sealed parcel to Pembroke before his death.",
+      "motivations": [
+        "protect her brother's reputation",
+        "keep a private letter private"
+      ],
+      "relationships": [
+        {
+          "cast_id": "c_hudson",
+          "relation": "former helpful acquaintance"
+        },
+        {
+          "cast_id": "c_vale",
+          "relation": "Fund treasurer"
+        },
+        {
+          "cast_id": "c_pembroke",
+          "relation": "solicitor who received a parcel"
+        }
+      ],
+      "sprite_recipe": "body=small; bodyColor=accent; accentColor=cream; skinColor=skin; feature=hat; walkFrames=2",
+      "home_location": "l_relief_office",
+      "knows_truths": [
+        "t_wren_discovered",
+        "t_duplicate_ledger"
+      ],
+      "goal_states": [
+        {
+          "id": "gs_ada_name",
+          "description": "Ada's account of the parcel supports Wren's honesty.",
+          "requires": {
+            "truths": [
+              "t_duplicate_ledger"
+            ]
+          },
+          "reveals": "I can tell you what I carried to Pembroke."
+        }
+      ],
+      "voice_notes": "Dignified and restrained; grief never makes her passive or vague.",
+      "greetings": [
+        "I will answer what I can, but I will not hear my brother called a thief.",
+        "I have already lost Elias; I will not surrender his good name as well.",
+        "I came for the truth, not a kindness that hides it."
+      ],
+      "knowledge": [
+        {
+          "id": "k_ada_case",
+          "topic": "Elias's name",
+          "ask": "Why are you afraid for your brother's name?",
+          "text": "I know Elias found irregular payments; I never believed he stole from the Fund.",
+          "keywords": [
+            "Elias",
+            "payments",
+            "Fund"
+          ],
+          "truth_id": "t_wren_discovered"
+        },
+        {
+          "id": "k_ada_wren",
+          "topic": "His work",
+          "ask": "What did Elias tell you?",
+          "text": "I heard Elias say he meant to report the accounts, not flee from them.",
+          "keywords": [
+            "Elias",
+            "report",
+            "accounts"
+          ],
+          "truth_id": "t_wren_discovered"
+        },
+        {
+          "id": "k_ada_ward",
+          "topic": "The ward",
+          "ask": "Did Elias care about the patients?",
+          "text": "I know Elias feared that an inquiry would leave the ward without supplies.",
+          "keywords": [
+            "Elias",
+            "ward",
+            "supplies"
+          ],
+          "truth_id": "t_diversion_for_ward"
+        },
+        {
+          "id": "k_ada_letter",
+          "topic": "The parcel",
+          "ask": "What did you carry to Pembroke?",
+          "text": "I carried a sealed parcel for Elias, and I will explain it when the evidence requires it.",
+          "keywords": [
+            "parcel",
+            "Elias",
+            "Pembroke"
+          ],
+          "truth_id": "t_duplicate_ledger"
+        },
+        {
+          "id": "k_ada_place",
+          "topic": "Vale's account",
+          "ask": "Did you see Vale that night?",
+          "text": "I cannot confirm his journey, but I know the office kept a key register.",
+          "keywords": [
+            "Vale",
+            "journey",
+            "register"
+          ],
+          "truth_id": "t_fane_access"
+        }
+      ],
+      "goal_hints": {
+        "unmet": [
+          "I need evidence that Elias meant to report the accounts.",
+          "I will not trade my brother's privacy for a convenient rumor."
+        ],
+        "in_progress": [
+          "I am ready to speak about the parcel when its record is found.",
+          "I need the books to show what Elias discovered."
+        ],
+        "resolved": [
+          "I can now tell you the parcel was meant for Pembroke.",
+          "I have helped restore Elias's name without hiding the truth."
+        ]
+      },
+      "deflections": [
+        "I will not read Elias's private words aloud.",
+        "I cannot speak for him about matters he never told me.",
+        "I have no answer to idle questions about my grief.",
+        "I will not accuse a man without evidence.",
+        "I cannot confirm Vale's journey from what I did not see."
+      ]
+    },
+    {
+      "id": "c_silas",
+      "name": "Silas Ward",
+      "species": "person",
+      "personality": "Blunt dock watchman, more patient than his manner suggests.",
+      "goal": "Clear his name after an oily rag is found at the riverside.",
+      "secret": "I repaired the ferry pump that night and had grease on my hands.",
+      "motivations": [
+        "keep his work",
+        "correct a false accusation"
+      ],
+      "relationships": [
+        {
+          "cast_id": "c_nora",
+          "relation": "ferry-side acquaintance"
+        },
+        {
+          "cast_id": "c_lestrade",
+          "relation": "questioned witness"
+        },
+        {
+          "cast_id": "c_vale",
+          "relation": "distrusted employer"
+        }
+      ],
+      "sprite_recipe": "body=round; bodyColor=shadow; accentColor=earth; skinColor=skin; feature=hat; walkFrames=2",
+      "home_location": "l_dock_watch_hut",
+      "knows_truths": [
+        "t_scene_staged",
+        "t_silas_framed",
+        "t_fane_alibi_false"
+      ],
+      "goal_states": [
+        {
+          "id": "gs_silas_clear",
+          "description": "Silas has been cleared of planting the oily rag.",
+          "requires": {
+            "truths": [
+              "t_silas_framed"
+            ]
+          },
+          "reveals": "I can show you what the grease came from."
+        }
+      ],
+      "voice_notes": "Blunt, economical, with a dockworker's dry patience.",
+      "greetings": [
+        "I have no time for a story that begins by blaming the man who works here.",
+        "I know my hands are dirty; I will tell you why.",
+        "I will answer plain questions, if you ask them plainly."
+      ],
+      "knowledge": [
+        {
+          "id": "k_silas_case",
+          "topic": "The accusation",
+          "ask": "Why do they suspect you?",
+          "text": "I know an oily rag was found near Wren, and I know how that looks.",
+          "keywords": [
+            "rag",
+            "Wren",
+            "oily"
+          ],
+          "truth_id": "t_silas_framed"
+        },
+        {
+          "id": "k_silas_wren",
+          "topic": "Wren's death",
+          "ask": "Did you know Elias Wren?",
+          "text": "I knew Wren by sight; he kept to the books and left the dock alone.",
+          "keywords": [
+            "Wren",
+            "books",
+            "dock"
+          ],
+          "truth_id": "t_scene_staged"
+        },
+        {
+          "id": "k_silas_ward",
+          "topic": "Fund money",
+          "ask": "What do you know of the Relief Fund?",
+          "text": "I heard the ward needed supplies, but nobody told a watchman where the money went.",
+          "keywords": [
+            "ward",
+            "supplies",
+            "money"
+          ],
+          "truth_id": "t_diversion_for_ward"
+        },
+        {
+          "id": "k_silas_pump",
+          "topic": "The pump",
+          "ask": "Why was your rag greasy?",
+          "text": "I repaired the ferry pump; that grease belongs to my work, not Wren's death.",
+          "keywords": [
+            "pump",
+            "grease",
+            "work"
+          ],
+          "clue_id": "cl_silas_pump_grease",
+          "truth_id": "t_silas_framed"
+        },
+        {
+          "id": "k_silas_place",
+          "topic": "The ferry",
+          "ask": "When did Vale cross the river?",
+          "text": "I saw no crossing that can prove Vale's account of the evening.",
+          "keywords": [
+            "Vale",
+            "crossing",
+            "evening"
+          ],
+          "truth_id": "t_fane_alibi_false"
+        }
+      ],
+      "goal_hints": {
+        "unmet": [
+          "I need someone to learn where that grease came from.",
+          "I will not be cleared by a kind word alone."
+        ],
+        "in_progress": [
+          "I can explain the pump work and the rag.",
+          "I need the scene examined before anyone calls me a killer."
+        ],
+        "resolved": [
+          "I can go back to my watch without a stain on my name.",
+          "I have told you plainly what my work explains."
+        ]
+      },
+      "deflections": [
+        "I will not repeat what the dock says about Vale.",
+        "I have no knowledge of the committee's private books.",
+        "I cannot tell you what happened inside the countinghouse.",
+        "I do not discuss my wages with strangers.",
+        "I will not pretend I saw a crossing I did not see."
+      ]
+    },
+    {
+      "id": "c_shaw",
+      "name": "Dr Miriam Shaw",
+      "species": "person",
+      "personality": "Exact and humane, resistant to committee pressure.",
+      "goal": "Keep the fever ward supplied through a lawful source of support.",
+      "secret": "I retained the ward receipts after Vale asked me to discard obsolete papers.",
+      "motivations": [
+        "protect patients from the inquiry's consequences",
+        "preserve an honest record"
+      ],
+      "relationships": [
+        {
+          "cast_id": "c_watson",
+          "relation": "medical colleague"
+        },
+        {
+          "cast_id": "c_crane",
+          "relation": "ward colleague"
+        },
+        {
+          "cast_id": "c_vale",
+          "relation": "fund treasurer"
+        }
+      ],
+      "sprite_recipe": "body=tall; bodyColor=cream; accentColor=accent; skinColor=skin; feature=glasses; walkFrames=2",
+      "home_location": "l_fever_ward",
+      "knows_truths": [
+        "t_diversion_for_ward",
+        "t_fane_diverted",
+        "t_wren_discovered"
+      ],
+      "goal_states": [
+        {
+          "id": "gs_shaw_ward",
+          "description": "Shaw's records establish how the ward received the funds.",
+          "requires": {
+            "truths": [
+              "t_diversion_for_ward"
+            ]
+          },
+          "reveals": "I can show which supplies the ward received and when."
+        }
+      ],
+      "voice_notes": "Measured, clinical without coldness, and protective of patients.",
+      "greetings": [
+        "I can speak of the ward, but not turn its patients into evidence.",
+        "I have kept the receipts because someone must remember what was supplied.",
+        "I will answer carefully; a careless word can close this ward."
+      ],
+      "knowledge": [
+        {
+          "id": "k_shaw_case",
+          "topic": "The inquiry",
+          "ask": "Why is the ward part of this case?",
+          "text": "I know Wren's account included payments that reached this ward.",
+          "keywords": [
+            "Wren",
+            "payments",
+            "ward"
+          ],
+          "truth_id": "t_fane_diverted"
+        },
+        {
+          "id": "k_shaw_wren",
+          "topic": "Wren's concern",
+          "ask": "What did Wren ask you?",
+          "text": "I told Wren which bills remained unpaid after the promised grant failed.",
+          "keywords": [
+            "Wren",
+            "bills",
+            "grant"
+          ],
+          "truth_id": "t_wren_discovered"
+        },
+        {
+          "id": "k_shaw_ward",
+          "topic": "Ward supplies",
+          "ask": "How did the ward get its supplies?",
+          "text": "I received supplies when the grant failed, though I did not approve every entry.",
+          "keywords": [
+            "supplies",
+            "grant",
+            "entry"
+          ],
+          "truth_id": "t_diversion_for_ward"
+        },
+        {
+          "id": "k_shaw_receipts",
+          "topic": "The receipts",
+          "ask": "Why did you keep the receipts?",
+          "text": "I kept dated receipts for every delivery; they show where the money went.",
+          "keywords": [
+            "receipts",
+            "delivery",
+            "money"
+          ],
+          "clue_id": "cl_ward_receipts",
+          "truth_id": "t_fane_diverted"
+        },
+        {
+          "id": "k_shaw_place",
+          "topic": "Vale's request",
+          "ask": "Did Vale ask you to discard papers?",
+          "text": "I was asked to discard old receipts, but I judged them relevant to the ward.",
+          "keywords": [
+            "Vale",
+            "receipts",
+            "papers"
+          ],
+          "truth_id": "t_fane_diverted"
+        }
+      ],
+      "goal_hints": {
+        "unmet": [
+          "I need support for the ward that does not depend on false accounts.",
+          "I will not trade patient privacy for a convenient story."
+        ],
+        "in_progress": [
+          "I can show the dates and totals on my receipts.",
+          "I need the committee to hear what the grant failure meant."
+        ],
+        "resolved": [
+          "I can tell the committee which supplies reached us.",
+          "I have kept the ward's need distinct from Vale's crime."
+        ]
+      },
+      "deflections": [
+        "I will not name a patient to satisfy a curious stranger.",
+        "I cannot disclose a patient's condition.",
+        "I have no authority to excuse an altered account.",
+        "I will not call a crime charity because the ward benefited.",
+        "I cannot speculate about the place of Wren's death."
+      ]
+    },
+    {
+      "id": "c_nora",
+      "name": "Nora Finch",
+      "species": "person",
+      "personality": "Crisp telegraph clerk with a precise memory for times and corrections.",
+      "goal": "Correct the ferry departure record so it cannot support a false alibi.",
+      "secret": "I copied a corrected time after a faulty clock misled a porter.",
+      "motivations": [
+        "keep the public record accurate",
+        "avoid blaming an innocent witness"
+      ],
+      "relationships": [
+        {
+          "cast_id": "c_silas",
+          "relation": "ferry-side acquaintance"
+        },
+        {
+          "cast_id": "c_kit",
+          "relation": "neighboring tradesperson"
+        },
+        {
+          "cast_id": "c_lestrade",
+          "relation": "official inquiry contact"
+        }
+      ],
+      "sprite_recipe": "body=small; bodyColor=water; accentColor=ink; skinColor=skin; feature=glasses; walkFrames=2",
+      "home_location": "l_telegraph_office",
+      "knows_truths": [
+        "t_fane_alibi_false",
+        "t_fane_access",
+        "t_scene_staged"
+      ],
+      "goal_states": [
+        {
+          "id": "gs_nora_record",
+          "description": "Nora has corrected the time used in Vale's alibi.",
+          "requires": {
+            "truths": [
+              "t_fane_alibi_false"
+            ]
+          },
+          "reveals": "I can certify the corrected ferry time."
+        }
+      ],
+      "voice_notes": "Precise, brisk, and exact about what a record does and does not prove.",
+      "greetings": [
+        "I keep times for a living, so I notice when one is made to lie.",
+        "I can help with the ferry record if you want the exact hour.",
+        "I would rather correct a mistake than let it become a man's alibi."
+      ],
+      "knowledge": [
+        {
+          "id": "k_nora_case",
+          "topic": "The timeline",
+          "ask": "Why does the hour matter?",
+          "text": "I know Vale's claimed departure depends on a ferry time that was copied wrongly.",
+          "keywords": [
+            "Vale",
+            "departure",
+            "time"
+          ],
+          "truth_id": "t_fane_alibi_false"
+        },
+        {
+          "id": "k_nora_wren",
+          "topic": "Elias Wren",
+          "ask": "Did Wren send a message?",
+          "text": "I saw Wren's name in a message register, but it does not place him on the ferry.",
+          "keywords": [
+            "Wren",
+            "message",
+            "ferry"
+          ],
+          "truth_id": "t_wren_discovered"
+        },
+        {
+          "id": "k_nora_ferry",
+          "topic": "Ferry time",
+          "ask": "What does the register say?",
+          "text": "I checked the corrected register; Vale could not have crossed at the time he claimed.",
+          "keywords": [
+            "register",
+            "Vale",
+            "crossed"
+          ],
+          "truth_id": "t_fane_alibi_false"
+        },
+        {
+          "id": "k_nora_clock",
+          "topic": "The clock",
+          "ask": "Why was the time copied incorrectly?",
+          "text": "I know the station clock ran late, and a porter copied its face without checking.",
+          "keywords": [
+            "clock",
+            "porter",
+            "late"
+          ],
+          "truth_id": "t_fane_alibi_false"
+        },
+        {
+          "id": "k_nora_place",
+          "topic": "The key book",
+          "ask": "What record might show office access?",
+          "text": "I heard the countinghouse kept a separate key book for after-hours use.",
+          "keywords": [
+            "countinghouse",
+            "key",
+            "book"
+          ],
+          "truth_id": "t_fane_access"
+        }
+      ],
+      "goal_hints": {
+        "unmet": [
+          "I need the original register, not a remembered hour.",
+          "I will not sign a correction until I can verify it."
+        ],
+        "in_progress": [
+          "I am comparing the ferry book with the station clock.",
+          "I need the cab entry to check the other end of the journey."
+        ],
+        "resolved": [
+          "I can certify that Vale's crossing time was false.",
+          "I have corrected the record without blaming the porter."
+        ]
+      },
+      "deflections": [
+        "I cannot discuss private telegraph messages.",
+        "I will not guess at a time I have not checked.",
+        "I have no evidence about what happened inside the countinghouse.",
+        "I cannot read a passenger's private correspondence to you.",
+        "I will not let a faulty clock become a witness."
+      ]
+    },
+    {
+      "id": "c_kit",
+      "name": "Kit Marlow",
+      "species": "person",
+      "personality": "Quick-witted printer, proud of clean type and cleaner hands.",
+      "goal": "Prove the pressroom printed no false account of Wren's books.",
+      "secret": "I printed the harmless proof found in the charred envelope.",
+      "motivations": [
+        "protect the pressroom's reputation",
+        "keep a truthful public record"
+      ],
+      "relationships": [
+        {
+          "cast_id": "c_nora",
+          "relation": "neighboring tradesperson"
+        },
+        {
+          "cast_id": "c_ada",
+          "relation": "friend of the family"
+        },
+        {
+          "cast_id": "c_pembroke",
+          "relation": "occasional client"
+        }
+      ],
+      "sprite_recipe": "body=round; bodyColor=earth; accentColor=accent; skinColor=skin; feature=hat; walkFrames=3",
+      "home_location": "l_fleet_street_press",
+      "knows_truths": [
+        "t_envelope_decoy",
+        "t_wren_discovered"
+      ],
+      "goal_states": [
+        {
+          "id": "gs_kit_proof",
+          "description": "Kit has identified the envelope's harmless printed proof.",
+          "requires": {
+            "truths": [
+              "t_envelope_decoy"
+            ]
+          },
+          "reveals": "I can identify the type and the day I printed it."
+        }
+      ],
+      "voice_notes": "Bright, quick, and faintly comic without mocking the case.",
+      "greetings": [
+        "I know what ink looks like, and I know what an accusation looks like.",
+        "I can tell you when a sheet left my press.",
+        "I have no wish to be famous for a murder I did not print."
+      ],
+      "knowledge": [
+        {
+          "id": "k_kit_case",
+          "topic": "The envelope",
+          "ask": "What was inside the envelope?",
+          "text": "I printed a proof for a public notice; it was not a ledger or a confession.",
+          "keywords": [
+            "proof",
+            "notice",
+            "ledger"
+          ],
+          "truth_id": "t_envelope_decoy"
+        },
+        {
+          "id": "k_kit_wren",
+          "topic": "Wren's books",
+          "ask": "Did Wren ask you to print accounts?",
+          "text": "I never printed Wren's private accounts; I only knew he questioned the Fund.",
+          "keywords": [
+            "Wren",
+            "accounts",
+            "Fund"
+          ],
+          "truth_id": "t_wren_discovered"
+        },
+        {
+          "id": "k_kit_proof",
+          "topic": "The proof",
+          "ask": "Can you identify the printed sheet?",
+          "text": "I recognize my own proof and the small flaw in its headline.",
+          "keywords": [
+            "proof",
+            "headline",
+            "flaw"
+          ],
+          "truth_id": "t_envelope_decoy"
+        },
+        {
+          "id": "k_kit_ink",
+          "topic": "Printer's ink",
+          "ask": "Why is there ink on the envelope?",
+          "text": "I know the ink came from the press proof, not from altered figures.",
+          "keywords": [
+            "ink",
+            "proof",
+            "figures"
+          ],
+          "truth_id": "t_envelope_decoy"
+        },
+        {
+          "id": "k_kit_place",
+          "topic": "Print date",
+          "ask": "When did you print the proof?",
+          "text": "I entered the print date in my archive before Wren was killed.",
+          "keywords": [
+            "print",
+            "date",
+            "archive"
+          ],
+          "truth_id": "t_envelope_decoy"
+        }
+      ],
+      "goal_hints": {
+        "unmet": [
+          "I need the sheet identified before anyone blames my press.",
+          "I will not certify a date from memory alone."
+        ],
+        "in_progress": [
+          "I can compare the type with my archive entry.",
+          "I need the proof itself to settle the question."
+        ],
+        "resolved": [
+          "I can say exactly what I printed and when.",
+          "I have cleared my press without softening the evidence."
+        ]
+      },
+      "deflections": [
+        "I will not print a rumor merely because it sells.",
+        "I have no comment on Vale's private business.",
+        "I cannot tell you what the charred paper once contained beyond my own proof.",
+        "I will not disclose a client's private address.",
+        "I have nothing amusing to say about a dead man."
+      ]
+    },
+    {
+      "id": "c_pembroke",
+      "name": "Arthur Pembroke",
+      "species": "person",
+      "personality": "Measured solicitor who dislikes theatrical accusations.",
+      "goal": "Protect Wren's duplicate ledger for a lawful inquiry.",
+      "secret": "I received Wren's parcel before his death and preserved its contents.",
+      "motivations": [
+        "preserve chain of custody",
+        "protect a lawful inquiry from gossip"
+      ],
+      "relationships": [
+        {
+          "cast_id": "c_ada",
+          "relation": "client and trusted messenger"
+        },
+        {
+          "cast_id": "c_vale",
+          "relation": "professional acquaintance"
+        },
+        {
+          "cast_id": "c_holmes",
+          "relation": "investigator seeking evidence"
+        }
+      ],
+      "sprite_recipe": "body=tall; bodyColor=shadow; accentColor=cream; skinColor=skin; feature=glasses; walkFrames=2",
+      "home_location": "l_pembroke_chambers",
+      "knows_truths": [
+        "t_duplicate_ledger",
+        "t_wren_discovered",
+        "t_fane_diverted"
+      ],
+      "goal_states": [
+        {
+          "id": "gs_pembroke_copy",
+          "description": "Pembroke has produced the duplicate ledger for proper examination.",
+          "requires": {
+            "truths": [
+              "t_duplicate_ledger"
+            ]
+          },
+          "reveals": "I can release the copy through the proper inquiry."
+        }
+      ],
+      "voice_notes": "Formal, precise, and quietly protective of evidence and clients.",
+      "greetings": [
+        "I will discuss evidence in the order it was received.",
+        "I am willing to cooperate, provided my client's confidence is respected.",
+        "I have little patience for accusations that outrun their papers."
+      ],
+      "knowledge": [
+        {
+          "id": "k_pembroke_case",
+          "topic": "The inquiry",
+          "ask": "Why did Wren contact you?",
+          "text": "I know Wren feared the Fund's true accounts would disappear.",
+          "keywords": [
+            "Wren",
+            "Fund",
+            "accounts"
+          ],
+          "truth_id": "t_wren_discovered"
+        },
+        {
+          "id": "k_pembroke_wren",
+          "topic": "Wren's parcel",
+          "ask": "Did Wren leave anything with you?",
+          "text": "I received a sealed parcel from Wren before his death.",
+          "keywords": [
+            "Wren",
+            "parcel",
+            "death"
+          ],
+          "truth_id": "t_duplicate_ledger"
+        },
+        {
+          "id": "k_pembroke_ledger",
+          "topic": "The duplicate",
+          "ask": "What was inside the parcel?",
+          "text": "I preserved a duplicate ledger that records the Fund's altered entries.",
+          "keywords": [
+            "duplicate",
+            "ledger",
+            "entries"
+          ],
+          "clue_id": "cl_pembroke_copy",
+          "truth_id": "t_duplicate_ledger"
+        },
+        {
+          "id": "k_pembroke_ada",
+          "topic": "Ada Wren",
+          "ask": "Did Ada bring the parcel?",
+          "text": "I can confirm Ada delivered the parcel, and I kept a dated receipt.",
+          "keywords": [
+            "Ada",
+            "parcel",
+            "receipt"
+          ],
+          "truth_id": "t_duplicate_ledger"
+        },
+        {
+          "id": "k_pembroke_place",
+          "topic": "The accounts",
+          "ask": "What do the entries show?",
+          "text": "I see transfers that were not authorized by the Relief Fund committee.",
+          "keywords": [
+            "transfers",
+            "authorized",
+            "committee"
+          ],
+          "truth_id": "t_fane_diverted"
+        }
+      ],
+      "goal_hints": {
+        "unmet": [
+          "I need the chain of custody kept clear.",
+          "I will not place a client's paper in careless hands."
+        ],
+        "in_progress": [
+          "I can produce the ledger once its receipt is understood.",
+          "I need the inquiry to distinguish a copy from an original."
+        ],
+        "resolved": [
+          "I can release the duplicate through a lawful inquiry.",
+          "I have preserved Wren's evidence without concealing it."
+        ]
+      },
+      "deflections": [
+        "I will not disclose the contents of another client's letters.",
+        "I cannot advise a suspect while assisting an inquiry.",
+        "I have no comment on Vale's character outside the record.",
+        "I will not permit a private paper to be mistaken for public proof.",
+        "I cannot promise what a court will decide."
+      ]
+    },
+    {
+      "id": "c_crane",
+      "name": "Elspeth Crane",
+      "species": "person",
+      "personality": "Brisk ward matron, compassionate without sentimentality.",
+      "goal": "Keep the ward supplied without making patients bear the cost of the inquiry.",
+      "secret": "I tracked every donated shilling after the promised grant failed.",
+      "motivations": [
+        "protect the ward's patients",
+        "keep donations honestly accounted"
+      ],
+      "relationships": [
+        {
+          "cast_id": "c_shaw",
+          "relation": "ward colleague"
+        },
+        {
+          "cast_id": "c_watson",
+          "relation": "medical acquaintance"
+        },
+        {
+          "cast_id": "c_hudson",
+          "relation": "neighborly ally"
+        }
+      ],
+      "sprite_recipe": "body=round; bodyColor=cream; accentColor=water; skinColor=skin; feature=none; walkFrames=2",
+      "home_location": "l_fever_ward",
+      "knows_truths": [
+        "t_diversion_for_ward",
+        "t_fane_diverted"
+      ],
+      "goal_states": [
+        {
+          "id": "gs_crane_patients",
+          "description": "Crane has secured lawful support for the ward.",
+          "requires": {
+            "truths": [
+              "t_diversion_for_ward"
+            ]
+          },
+          "reveals": "I can account for the supplies without calling the transfer lawful."
+        }
+      ],
+      "voice_notes": "Brisk and unsentimental, with a practical kindness.",
+      "greetings": [
+        "I have no time for pity that does not bring a clean account.",
+        "I will speak of the ward, not of its patients by name.",
+        "I know what a shortage costs, and I will not pretend otherwise."
+      ],
+      "knowledge": [
+        {
+          "id": "k_crane_case",
+          "topic": "The ward",
+          "ask": "How is the ward tied to Wren?",
+          "text": "I know some Relief Fund money reached the ward after the promised grant failed.",
+          "keywords": [
+            "Fund",
+            "ward",
+            "grant"
+          ],
+          "truth_id": "t_diversion_for_ward"
+        },
+        {
+          "id": "k_crane_wren",
+          "topic": "Wren's help",
+          "ask": "Did Wren help the ward?",
+          "text": "I heard Wren ask that every delivery be entered against a proper account.",
+          "keywords": [
+            "Wren",
+            "delivery",
+            "account"
+          ],
+          "truth_id": "t_wren_discovered"
+        },
+        {
+          "id": "k_crane_ward",
+          "topic": "The supplies",
+          "ask": "What did the ward receive?",
+          "text": "I recorded the supplies we received, though I did not approve their funding.",
+          "keywords": [
+            "supplies",
+            "recorded",
+            "funding"
+          ],
+          "truth_id": "t_diversion_for_ward"
+        },
+        {
+          "id": "k_crane_books",
+          "topic": "The records",
+          "ask": "Did you keep a list of deliveries?",
+          "text": "I kept a list of every delivery and can match it to Shaw's receipts.",
+          "keywords": [
+            "list",
+            "delivery",
+            "receipts"
+          ],
+          "truth_id": "t_fane_diverted"
+        },
+        {
+          "id": "k_crane_place",
+          "topic": "The committee",
+          "ask": "What should the committee understand?",
+          "text": "I need the committee to see that patients needed supplies and Vale still broke the law.",
+          "keywords": [
+            "committee",
+            "patients",
+            "law"
+          ],
+          "truth_id": "t_diversion_for_ward"
+        }
+      ],
+      "goal_hints": {
+        "unmet": [
+          "I need a lawful source of support for the ward.",
+          "I will not let a patient's need erase the Fund's duty."
+        ],
+        "in_progress": [
+          "I can account for each delivery without naming a patient.",
+          "I need the committee to hear both the shortage and the breach."
+        ],
+        "resolved": [
+          "I can keep the ward's needs separate from Vale's crime.",
+          "I have secured an honest account of what we received."
+        ]
+      },
+      "deflections": [
+        "I will not tell you a patient's name.",
+        "I cannot excuse an altered account because the ward benefited.",
+        "I have no authority to speak for the committee.",
+        "I will not discuss a patient's illness as evidence.",
+        "I cannot make a promise about funding I do not control."
+      ]
+    }
+  ],
+  "truths": [
+    {
+      "id": "t_wren_discovered",
+      "text": "Elias Wren discovered irregular Relief Fund payments and meant to report them.",
+      "depends_on": [],
+      "importance": "core",
+      "revealed_by": [
+        "cl_wren_docket",
+        "cl_watson_inquest"
+      ]
+    },
+    {
+      "id": "t_scene_staged",
+      "text": "Wren died in the countinghouse; his body was moved to the river stairs.",
+      "depends_on": [],
+      "importance": "core",
+      "revealed_by": [
+        "cl_mortuary_fibres",
+        "cl_river_drag"
+      ]
+    },
+    {
+      "id": "t_fane_killed_wren",
+      "text": "Gideon Vale killed Wren in the countinghouse and staged the riverside discovery.",
+      "depends_on": [
+        "t_scene_staged"
+      ],
+      "importance": "core",
+      "revealed_by": [
+        "cl_wax_initials",
+        "cl_lestrade_keylog"
+      ]
+    },
+    {
+      "id": "t_diversion_for_ward",
+      "text": "Vale diverted subscriptions to keep the fever ward supplied after his promised grant failed.",
+      "depends_on": [
+        "t_wren_discovered"
+      ],
+      "importance": "core",
+      "revealed_by": [
+        "cl_ward_appeal",
+        "cl_unpaid_vouchers"
+      ]
+    },
+    {
+      "id": "t_fane_alibi_false",
+      "text": "Vale's claimed ferry departure before Wren's death was false.",
+      "depends_on": [
+        "t_scene_staged"
+      ],
+      "importance": "core",
+      "revealed_by": [
+        "cl_token_register",
+        "cl_cab_entry"
+      ]
+    },
+    {
+      "id": "t_fane_access",
+      "text": "Vale used his treasurer's key to enter the countinghouse after hours.",
+      "depends_on": [
+        "t_scene_staged"
+      ],
+      "importance": "core",
+      "revealed_by": [
+        "cl_vale_key_admission",
+        "cl_duplicate_key"
+      ]
+    },
+    {
+      "id": "t_fane_diverted",
+      "text": "Vale concealed unauthorized transfers in the Relief Fund accounts.",
+      "depends_on": [
+        "t_wren_discovered"
+      ],
+      "importance": "core",
+      "revealed_by": [
+        "cl_relief_columns",
+        "cl_ward_receipts"
+      ]
+    },
+    {
+      "id": "t_envelope_decoy",
+      "text": "The charred envelope was a decoy; its paper held no incriminating account.",
+      "depends_on": [
+        "t_wren_discovered"
+      ],
+      "importance": "core",
+      "revealed_by": [
+        "cl_envelope_proof",
+        "cl_press_archive"
+      ]
+    },
+    {
+      "id": "t_duplicate_ledger",
+      "text": "Wren left a true duplicate ledger with Pembroke before his death.",
+      "depends_on": [
+        "t_wren_discovered"
+      ],
+      "importance": "core",
+      "revealed_by": [
+        "cl_pembroke_copy",
+        "cl_ada_receipt"
+      ]
+    },
+    {
+      "id": "t_silas_framed",
+      "text": "Vale planted dock grease to implicate Silas, whose grease came from ordinary pump work.",
+      "depends_on": [
+        "t_scene_staged"
+      ],
+      "importance": "core",
+      "revealed_by": [
+        "cl_silas_pump_grease",
+        "cl_planting_trace"
+      ]
+    }
+  ],
+  "clues": [
+    {
+      "id": "cl_wren_docket",
+      "truth_id": "t_wren_discovered",
+      "kind": "object",
+      "where": {
+        "type": "location",
+        "id": "l_st_barts_mortuary"
+      },
+      "alternatives": [],
+      "requirements": {
+        "items": [
+          "i_wren_docket"
+        ]
+      },
+      "text": "Wren's pocket docket records the irregular payments and his intention to report them."
+    },
+    {
+      "id": "cl_watson_inquest",
+      "truth_id": "t_wren_discovered",
+      "kind": "spoken",
+      "where": {
+        "type": "character",
+        "id": "c_watson"
+      },
+      "alternatives": [],
+      "requirements": {},
+      "text": "Watson recalls that Wren meant to report the accounts, not flee with the money."
+    },
+    {
+      "id": "cl_mortuary_fibres",
+      "truth_id": "t_scene_staged",
+      "kind": "object",
+      "where": {
+        "type": "location",
+        "id": "l_st_barts_mortuary"
+      },
+      "alternatives": [],
+      "requirements": {},
+      "text": "The fibres and blood pattern show that Wren's body was moved after the fatal injury."
+    },
+    {
+      "id": "cl_river_drag",
+      "truth_id": "t_scene_staged",
+      "kind": "place",
+      "where": {
+        "type": "location",
+        "id": "l_blackfriars_stairs"
+      },
+      "alternatives": [],
+      "requirements": {},
+      "text": "The scuffs, undisturbed silt, and oily rag's placement show the rag was left after the body; it does not identify a dockworker."
+    },
+    {
+      "id": "cl_wax_initials",
+      "truth_id": "t_fane_killed_wren",
+      "kind": "object",
+      "where": {
+        "type": "location",
+        "id": "l_wren_countinghouse"
+      },
+      "alternatives": [],
+      "requirements": {},
+      "text": "The Fund seal bears Vale's distinct initials beside signs of a hurried struggle."
+    },
+    {
+      "id": "cl_lestrade_keylog",
+      "truth_id": "t_fane_killed_wren",
+      "kind": "spoken",
+      "where": {
+        "type": "character",
+        "id": "c_lestrade"
+      },
+      "alternatives": [],
+      "requirements": {},
+      "text": "Lestrade's after-hours key record places Vale at the countinghouse when Wren could not have left it."
+    },
+    {
+      "id": "cl_vale_key_admission",
+      "truth_id": "t_fane_access",
+      "kind": "spoken",
+      "where": {
+        "type": "character",
+        "id": "c_vale"
+      },
+      "alternatives": [],
+      "requirements": {},
+      "text": "Vale admits that he held a treasurer's key and could enter the countinghouse after hours."
+    },
+    {
+      "id": "cl_ward_appeal",
+      "truth_id": "t_diversion_for_ward",
+      "kind": "spoken",
+      "where": {
+        "type": "character",
+        "id": "c_hudson"
+      },
+      "alternatives": [],
+      "requirements": {},
+      "text": "Hudson remembers the ward's appeal after Vale's promised grant failed."
+    },
+    {
+      "id": "cl_unpaid_vouchers",
+      "truth_id": "t_diversion_for_ward",
+      "kind": "object",
+      "where": {
+        "type": "location",
+        "id": "l_st_barts_mortuary"
+      },
+      "alternatives": [],
+      "requirements": {},
+      "text": "Wren's vouchers show the ward had unpaid supply bills when the transfer was made."
+    },
+    {
+      "id": "cl_token_register",
+      "truth_id": "t_fane_alibi_false",
+      "kind": "object",
+      "where": {
+        "type": "location",
+        "id": "l_ferry_landing"
+      },
+      "alternatives": [],
+      "requirements": {
+        "items": [
+          "i_ferry_token"
+        ]
+      },
+      "text": "The corrected ferry register leaves no crossing at the hour Vale claimed."
+    },
+    {
+      "id": "cl_cab_entry",
+      "truth_id": "t_fane_alibi_false",
+      "kind": "object",
+      "where": {
+        "type": "location",
+        "id": "l_cab_stand"
+      },
+      "alternatives": [],
+      "requirements": {},
+      "text": "The cab fare book places Vale near the countinghouse after his claimed departure."
+    },
+    {
+      "id": "cl_duplicate_key",
+      "truth_id": "t_fane_access",
+      "kind": "object",
+      "where": {
+        "type": "location",
+        "id": "l_relief_office"
+      },
+      "alternatives": [],
+      "requirements": {},
+      "text": "The office register records Vale's duplicate key and its after-hours return."
+    },
+    {
+      "id": "cl_relief_columns",
+      "truth_id": "t_fane_diverted",
+      "kind": "object",
+      "where": {
+        "type": "location",
+        "id": "l_relief_office"
+      },
+      "alternatives": [],
+      "requirements": {},
+      "text": "Repeated altered columns conceal transfers that the committee never authorized."
+    },
+    {
+      "id": "cl_ward_receipts",
+      "truth_id": "t_fane_diverted",
+      "kind": "spoken",
+      "where": {
+        "type": "character",
+        "id": "c_shaw"
+      },
+      "alternatives": [],
+      "requirements": {
+        "items": [
+          "i_ward_receipt"
+        ]
+      },
+      "text": "Shaw's dated receipts match the unauthorized transfers to ward deliveries."
+    },
+    {
+      "id": "cl_envelope_proof",
+      "truth_id": "t_envelope_decoy",
+      "kind": "object",
+      "where": {
+        "type": "location",
+        "id": "l_british_museum"
+      },
+      "alternatives": [],
+      "requirements": {
+        "items": [
+          "i_charred_envelope"
+        ]
+      },
+      "text": "A preserved press archive identifies the envelope paper as a harmless public-notice proof."
+    },
+    {
+      "id": "cl_press_archive",
+      "truth_id": "t_envelope_decoy",
+      "kind": "object",
+      "where": {
+        "type": "location",
+        "id": "l_record_vault"
+      },
+      "alternatives": [],
+      "requirements": {
+        "items": [
+          "i_press_proof"
+        ]
+      },
+      "text": "The dated municipal archive record proves the proof predates Wren's murder."
+    },
+    {
+      "id": "cl_pembroke_copy",
+      "truth_id": "t_duplicate_ledger",
+      "kind": "spoken",
+      "where": {
+        "type": "character",
+        "id": "c_pembroke"
+      },
+      "alternatives": [],
+      "requirements": {
+        "items": [
+          "i_duplicate_ledger"
+        ]
+      },
+      "text": "Pembroke confirms that Wren left a duplicate ledger with him before the murder."
+    },
+    {
+      "id": "cl_ada_receipt",
+      "truth_id": "t_duplicate_ledger",
+      "kind": "object",
+      "where": {
+        "type": "location",
+        "id": "l_parcels_office"
+      },
+      "alternatives": [],
+      "requirements": {},
+      "text": "Ada's dated parcel receipt confirms she delivered Wren's sealed package to Pembroke."
+    },
+    {
+      "id": "cl_silas_pump_grease",
+      "truth_id": "t_silas_framed",
+      "kind": "spoken",
+      "where": {
+        "type": "character",
+        "id": "c_silas"
+      },
+      "alternatives": [],
+      "requirements": {},
+      "text": "Silas explains that the grease came from repairing the ferry pump."
+    },
+    {
+      "id": "cl_planting_trace",
+      "truth_id": "t_silas_framed",
+      "kind": "object",
+      "where": {
+        "type": "location",
+        "id": "l_warehouse_yard"
+      },
+      "alternatives": [],
+      "requirements": {},
+      "text": "The planted rag carries Vale's boot grit and lies outside Silas's usual route."
+    }
+  ],
+  "items": [
+    {
+      "id": "i_wren_docket",
+      "name": "Wren's pocket docket",
+      "description": "A narrow book of figures and notes about the Relief Fund.",
+      "icon_recipe": "shape=book; primaryColor=ink; secondaryColor=cream",
+      "key": true,
+      "found_at": {
+        "type": "location",
+        "id": "l_st_barts_mortuary"
+      },
+      "purpose": "Records Wren's discovery and intended report."
+    },
+    {
+      "id": "i_charred_envelope",
+      "name": "Charred envelope",
+      "description": "A blackened envelope with a trace of printing ink beneath the ash.",
+      "icon_recipe": "shape=book; primaryColor=shadow; secondaryColor=accent",
+      "key": true,
+      "found_at": {
+        "type": "location",
+        "id": "l_wren_countinghouse"
+      },
+      "purpose": "Connects the staged scene to the harmless proof."
+    },
+    {
+      "id": "i_ferry_token",
+      "name": "Brass ferry token",
+      "description": "A worn token recovered beside the ferry register.",
+      "icon_recipe": "shape=coin; primaryColor=earth; secondaryColor=cream",
+      "key": true,
+      "found_at": {
+        "type": "location",
+        "id": "l_ferry_landing"
+      },
+      "purpose": "Allows the corrected crossing record to be checked."
+    },
+    {
+      "id": "i_ward_receipt",
+      "name": "Ward supply receipt",
+      "description": "A dated receipt for supplies delivered to St Bartholomew's fever ward.",
+      "icon_recipe": "shape=book; primaryColor=cream; secondaryColor=ink",
+      "key": true,
+      "found_at": {
+        "type": "location",
+        "id": "l_fever_ward"
+      },
+      "purpose": "Matches the ward's delivery to the altered Fund accounts."
+    },
+    {
+      "id": "i_press_proof",
+      "name": "Press proof",
+      "description": "A small public-notice proof with a visible flaw in its headline.",
+      "icon_recipe": "shape=feather; primaryColor=ink; secondaryColor=cream",
+      "key": true,
+      "found_at": {
+        "type": "location",
+        "id": "l_print_archive"
+      },
+      "purpose": "Identifies the charred envelope as a decoy."
+    },
+    {
+      "id": "i_duplicate_ledger",
+      "name": "Duplicate ledger",
+      "description": "Wren's copy of the Relief Fund accounts, kept by Pembroke.",
+      "icon_recipe": "shape=book; primaryColor=earth; secondaryColor=ink",
+      "key": true,
+      "found_at": {
+        "type": "location",
+        "id": "l_pembroke_chambers"
+      },
+      "purpose": "Preserves the original record of unauthorized transfers."
+    }
+  ],
+  "locations": [
+    {
+      "id": "l_baker_street",
+      "name": "221B Baker Street",
+      "biome": "building",
+      "mood": "gaslit and close, with rain at the panes",
+      "palette": "village",
+      "role": "The hub and first meeting; Holmes states the central question and points toward the river evidence.",
+      "hub": true,
+      "required_characters": [
+        "c_holmes",
+        "c_watson",
+        "c_hudson"
+      ],
+      "objects": [
+        {
+          "id": "cl_watson_inquest",
+          "name": "Watson's account",
+          "description": "Watson's spoken recollection of Wren's intended report."
+        },
+        {
+          "id": "cl_ward_appeal",
+          "name": "Hudson's recollection",
+          "description": "Hudson remembers the fever ward's appeal."
+        }
+      ],
+      "doors": [
+        {
+          "id": "d_baker_street_scotland_yard",
+          "to": "l_scotland_yard"
+        }
+      ]
+    },
+    {
+      "id": "l_scotland_yard",
+      "name": "Scotland Yard",
+      "biome": "building",
+      "mood": "formal and guarded",
+      "palette": "village",
+      "role": "Police records test the timeline and Vale's access.",
+      "hub": false,
+      "required_characters": [
+        "c_lestrade"
+      ],
+      "objects": [
+        {
+          "id": "cl_lestrade_keylog",
+          "name": "After-hours key record",
+          "description": "Lestrade's record of the countinghouse key."
+        }
+      ],
+      "doors": [
+        {
+          "id": "d_scotland_yard_baker_street",
+          "to": "l_baker_street"
+        },
+        {
+          "id": "d_scotland_yard_st_barts_mortuary",
+          "to": "l_st_barts_mortuary"
+        }
+      ]
+    },
+    {
+      "id": "l_st_barts_mortuary",
+      "name": "St Bartholomew's mortuary",
+      "biome": "building",
+      "mood": "quiet and clinical, rain against glass",
+      "palette": "dusk",
+      "role": "Medical and paper evidence challenges the riverside account.",
+      "hub": false,
+      "required_characters": [
+        "c_watson"
+      ],
+      "objects": [
+        {
+          "id": "i_wren_docket",
+          "name": "Wren's pocket docket",
+          "description": "A narrow book of figures and notes."
+        },
+        {
+          "id": "cl_wren_docket",
+          "name": "Pocket docket",
+          "description": "Wren's notes record the irregular payments."
+        },
+        {
+          "id": "cl_mortuary_fibres",
+          "name": "Coat fibres",
+          "description": "Fibres and blood marks indicate that the body was moved."
+        },
+        {
+          "id": "cl_unpaid_vouchers",
+          "name": "Unpaid vouchers",
+          "description": "Wren's vouchers show the ward's unpaid bills."
+        }
+      ],
+      "doors": [
+        {
+          "id": "d_st_barts_mortuary_scotland_yard",
+          "to": "l_scotland_yard"
+        },
+        {
+          "id": "d_st_barts_mortuary_blackfriars_stairs",
+          "to": "l_blackfriars_stairs"
+        }
+      ]
+    },
+    {
+      "id": "l_blackfriars_stairs",
+      "name": "Blackfriars riverside stairs",
+      "biome": "shore",
+      "mood": "slippery, dark, and tide-worn",
+      "palette": "dusk",
+      "role": "The apparent murder scene; the scuffs and undisturbed silt show it was staged.",
+      "hub": false,
+      "required_characters": [
+        "c_lestrade"
+      ],
+      "objects": [
+        {
+          "id": "cl_river_drag",
+          "name": "Tide mark",
+          "description": "Scuffs, undisturbed silt, and a late-placed oily rag contradict the dockside assault."
+        }
+      ],
+      "doors": [
+        {
+          "id": "d_blackfriars_stairs_st_barts_mortuary",
+          "to": "l_st_barts_mortuary"
+        },
+        {
+          "id": "d_blackfriars_stairs_wren_countinghouse",
+          "to": "l_wren_countinghouse"
+        }
+      ]
+    },
+    {
+      "id": "l_wren_countinghouse",
+      "name": "Wren's countinghouse",
+      "biome": "building",
+      "mood": "close and paper-dry",
+      "palette": "dusk",
+      "role": "The true scene of death and the Short-version solution point.",
+      "hub": false,
+      "required_characters": [
+        "c_holmes"
+      ],
+      "objects": [
+        {
+          "id": "i_charred_envelope",
+          "name": "Charred envelope",
+          "description": "A blackened envelope with a trace of printing ink."
+        },
+        {
+          "id": "cl_wax_initials",
+          "name": "Fund seal",
+          "description": "Vale's distinct initials remain in the wax beside signs of a struggle."
+        }
+      ],
+      "doors": [
+        {
+          "id": "d_wren_countinghouse_blackfriars_stairs",
+          "to": "l_blackfriars_stairs"
+        },
+        {
+          "id": "d_wren_countinghouse_relief_office",
+          "to": "l_relief_office"
+        }
+      ]
+    },
+    {
+      "id": "l_relief_office",
+      "name": "Thames Relief Fund office",
+      "biome": "building",
+      "mood": "respectable, tense, and ink-stained",
+      "palette": "village",
+      "role": "The account books and key register reveal the unauthorized transfers.",
+      "hub": false,
+      "required_characters": [
+        "c_vale"
+      ],
+      "objects": [
+        {
+          "id": "cl_duplicate_key",
+          "name": "Key register",
+          "description": "The office record of Vale's duplicate key."
+        },
+        {
+          "id": "cl_relief_columns",
+          "name": "Account columns",
+          "description": "Repeated alterations conceal unauthorized transfers."
+        }
+      ],
+      "doors": [
+        {
+          "id": "d_relief_office_wren_countinghouse",
+          "to": "l_wren_countinghouse"
+        },
+        {
+          "id": "d_relief_office_fever_ward",
+          "to": "l_fever_ward"
+        }
+      ]
+    },
+    {
+      "id": "l_fever_ward",
+      "name": "St Bartholomew's fever ward",
+      "biome": "building",
+      "mood": "hushed, strained, and humane",
+      "palette": "village",
+      "role": "The ward subplot reveals the human need and the paper trail without excusing Vale.",
+      "hub": false,
+      "required_characters": [
+        "c_shaw",
+        "c_crane"
+      ],
+      "objects": [
+        {
+          "id": "i_ward_receipt",
+          "name": "Ward supply receipt",
+          "description": "A dated record of delivered supplies."
+        }
+      ],
+      "doors": [
+        {
+          "id": "d_fever_ward_relief_office",
+          "to": "l_relief_office"
+        },
+        {
+          "id": "d_fever_ward_fleet_street_press",
+          "to": "l_fleet_street_press"
+        }
+      ]
+    },
+    {
+      "id": "l_fleet_street_press",
+      "name": "Fleet Street pressroom",
+      "biome": "building",
+      "mood": "clattering and sharp with ink",
+      "palette": "dusk",
+      "role": "An empty pressroom in Medium; Kit's testimony belongs to the Long investigation.",
+      "hub": false,
+      "required_characters": [],
+      "objects": [],
+      "doors": [
+        {
+          "id": "d_fleet_street_press_fever_ward",
+          "to": "l_fever_ward"
+        },
+        {
+          "id": "d_fleet_street_press_print_archive",
+          "to": "l_print_archive"
+        }
+      ]
+    },
+    {
+      "id": "l_print_archive",
+      "name": "Press archive",
+      "biome": "building",
+      "mood": "dry stacks and old ink",
+      "palette": "village",
+      "role": "A proof is collected here and matched against Long-version records later.",
+      "hub": false,
+      "required_characters": [],
+      "objects": [
+        {
+          "id": "i_press_proof",
+          "name": "Press proof",
+          "description": "A public notice proof with a flaw in its headline."
+        }
+      ],
+      "doors": [
+        {
+          "id": "d_print_archive_fleet_street_press",
+          "to": "l_fleet_street_press"
+        },
+        {
+          "id": "d_print_archive_cab_stand",
+          "to": "l_cab_stand"
+        }
+      ]
+    },
+    {
+      "id": "l_cab_stand",
+      "name": "Blackfriars cab stand",
+      "biome": "village",
+      "mood": "rain-dark and watchful",
+      "palette": "dusk",
+      "role": "The cab fare book tests Vale's claimed departure.",
+      "hub": false,
+      "required_characters": [
+        "c_lestrade"
+      ],
+      "objects": [
+        {
+          "id": "cl_cab_entry",
+          "name": "Cab fare book",
+          "description": "A time and fare entry contradicts Vale's journey."
+        }
+      ],
+      "doors": [
+        {
+          "id": "d_cab_stand_print_archive",
+          "to": "l_print_archive"
+        },
+        {
+          "id": "d_cab_stand_dock_watch_hut",
+          "to": "l_dock_watch_hut"
+        }
+      ]
+    },
+    {
+      "id": "l_dock_watch_hut",
+      "name": "Dock watch hut",
+      "biome": "building",
+      "mood": "sooty shelter above the quay",
+      "palette": "dusk",
+      "role": "Silas explains the pump grease and the planted suspicion.",
+      "hub": false,
+      "required_characters": [
+        "c_silas"
+      ],
+      "objects": [
+        {
+          "id": "cl_silas_pump_grease",
+          "name": "Pump grease",
+          "description": "Silas's explanation of the grease from ordinary repair work."
+        }
+      ],
+      "doors": [
+        {
+          "id": "d_dock_watch_hut_cab_stand",
+          "to": "l_cab_stand"
+        },
+        {
+          "id": "d_dock_watch_hut_ferry_landing",
+          "to": "l_ferry_landing"
+        }
+      ]
+    },
+    {
+      "id": "l_ferry_landing",
+      "name": "South-bank ferry landing",
+      "biome": "shore",
+      "mood": "fog-bound but ordinary",
+      "palette": "mist",
+      "role": "The corrected register disproves Vale's alibi.",
+      "hub": false,
+      "required_characters": [
+        "c_silas"
+      ],
+      "objects": [
+        {
+          "id": "i_ferry_token",
+          "name": "Brass ferry token",
+          "description": "A worn token recovered beside the register."
+        },
+        {
+          "id": "cl_token_register",
+          "name": "Ferry register",
+          "description": "The corrected times leave no crossing at Vale's claimed hour."
+        }
+      ],
+      "doors": [
+        {
+          "id": "d_ferry_landing_dock_watch_hut",
+          "to": "l_dock_watch_hut"
+        },
+        {
+          "id": "d_ferry_landing_warehouse_yard",
+          "to": "l_warehouse_yard"
+        }
+      ]
+    },
+    {
+      "id": "l_warehouse_yard",
+      "name": "Old warehouse yard",
+      "biome": "village",
+      "mood": "empty, wet, and exposed",
+      "palette": "dusk",
+      "role": "A planted trail is tested against Silas's route.",
+      "hub": false,
+      "required_characters": [
+        "c_lestrade",
+        "c_silas"
+      ],
+      "objects": [
+        {
+          "id": "cl_planting_trace",
+          "name": "Boot grit",
+          "description": "The rag lies outside Silas's route and carries Vale's boot grit."
+        }
+      ],
+      "doors": [
+        {
+          "id": "d_warehouse_yard_ferry_landing",
+          "to": "l_ferry_landing"
+        },
+        {
+          "id": "d_warehouse_yard_warehouse_loft",
+          "to": "l_warehouse_loft"
+        }
+      ]
+    },
+    {
+      "id": "l_warehouse_loft",
+      "name": "Warehouse loft",
+      "biome": "building",
+      "mood": "dusty and long abandoned",
+      "palette": "dusk",
+      "role": "An old workroom resolves the suspicion attached to Silas's former employment.",
+      "hub": false,
+      "required_characters": [
+        "c_silas"
+      ],
+      "objects": [],
+      "doors": [
+        {
+          "id": "d_warehouse_loft_warehouse_yard",
+          "to": "l_warehouse_yard"
+        },
+        {
+          "id": "d_warehouse_loft_pawnshop",
+          "to": "l_pawnshop"
+        }
+      ]
+    },
+    {
+      "id": "l_pawnshop",
+      "name": "Bell Lane pawnshop",
+      "biome": "building",
+      "mood": "narrow and guarded",
+      "palette": "village",
+      "role": "Ada's private letter is separated from guilt.",
+      "hub": false,
+      "required_characters": [
+        "c_ada"
+      ],
+      "objects": [],
+      "doors": [
+        {
+          "id": "d_pawnshop_warehouse_loft",
+          "to": "l_warehouse_loft"
+        },
+        {
+          "id": "d_pawnshop_clockmaker",
+          "to": "l_clockmaker"
+        }
+      ]
+    },
+    {
+      "id": "l_clockmaker",
+      "name": "Rook's clockmaker shop",
+      "biome": "building",
+      "mood": "measured and close",
+      "palette": "village",
+      "role": "A service record checks the faulty public clock.",
+      "hub": false,
+      "required_characters": [
+        "c_nora"
+      ],
+      "objects": [],
+      "doors": [
+        {
+          "id": "d_clockmaker_pawnshop",
+          "to": "l_pawnshop"
+        },
+        {
+          "id": "d_clockmaker_telegraph_office",
+          "to": "l_telegraph_office"
+        }
+      ]
+    },
+    {
+      "id": "l_telegraph_office",
+      "name": "Telegraph office",
+      "biome": "building",
+      "mood": "official, hurried, and imperfect",
+      "palette": "dusk",
+      "role": "Nora explains the correction to the recorded time.",
+      "hub": false,
+      "required_characters": [
+        "c_nora"
+      ],
+      "objects": [],
+      "doors": [
+        {
+          "id": "d_telegraph_office_clockmaker",
+          "to": "l_clockmaker"
+        },
+        {
+          "id": "d_telegraph_office_charing_cross_hall",
+          "to": "l_charing_cross_hall"
+        }
+      ]
+    },
+    {
+      "id": "l_charing_cross_hall",
+      "name": "Charing Cross booking hall",
+      "biome": "building",
+      "mood": "crowded and impatient",
+      "palette": "village",
+      "role": "The public timetable is compared with Vale's account.",
+      "hub": false,
+      "required_characters": [
+        "c_lestrade",
+        "c_vale"
+      ],
+      "objects": [],
+      "doors": [
+        {
+          "id": "d_charing_cross_hall_telegraph_office",
+          "to": "l_telegraph_office"
+        },
+        {
+          "id": "d_charing_cross_hall_parcels_office",
+          "to": "l_parcels_office"
+        }
+      ]
+    },
+    {
+      "id": "l_parcels_office",
+      "name": "Railway parcels office",
+      "biome": "building",
+      "mood": "sealed, labelled, and impersonal",
+      "palette": "dusk",
+      "role": "Ada's receipt follows Wren's evidence trail.",
+      "hub": false,
+      "required_characters": [
+        "c_ada"
+      ],
+      "objects": [
+        {
+          "id": "cl_ada_receipt",
+          "name": "Parcel receipt",
+          "description": "Ada's dated receipt for the parcel delivered to Pembroke."
+        }
+      ],
+      "doors": [
+        {
+          "id": "d_parcels_office_charing_cross_hall",
+          "to": "l_charing_cross_hall"
+        },
+        {
+          "id": "d_parcels_office_british_museum",
+          "to": "l_british_museum"
+        }
+      ]
+    },
+    {
+      "id": "l_british_museum",
+      "name": "British Museum reading room",
+      "biome": "building",
+      "mood": "quiet and watchful",
+      "palette": "village",
+      "role": "Dated public records confirm what paper Kit printed.",
+      "hub": false,
+      "required_characters": [
+        "c_holmes",
+        "c_kit"
+      ],
+      "objects": [
+        {
+          "id": "cl_envelope_proof",
+          "name": "Press archive entry",
+          "description": "A preserved notice identifies the envelope's harmless paper."
+        }
+      ],
+      "doors": [
+        {
+          "id": "d_british_museum_parcels_office",
+          "to": "l_parcels_office"
+        },
+        {
+          "id": "d_british_museum_record_vault",
+          "to": "l_record_vault"
+        }
+      ]
+    },
+    {
+      "id": "l_record_vault",
+      "name": "Municipal record vault",
+      "biome": "building",
+      "mood": "dusty and impersonal",
+      "palette": "dusk",
+      "role": "The Fund charter and proof date establish who authorized transfers and when the paper was printed.",
+      "hub": false,
+      "required_characters": [
+        "c_lestrade"
+      ],
+      "objects": [
+        {
+          "id": "cl_press_archive",
+          "name": "Print date",
+          "description": "A dated municipal archive record proves the proof predates Wren's murder."
+        }
+      ],
+      "doors": [
+        {
+          "id": "d_record_vault_british_museum",
+          "to": "l_british_museum"
+        },
+        {
+          "id": "d_record_vault_pembroke_chambers",
+          "to": "l_pembroke_chambers"
+        }
+      ]
+    },
+    {
+      "id": "l_pembroke_chambers",
+      "name": "Pembroke's chambers",
+      "biome": "building",
+      "mood": "respectable and exact",
+      "palette": "village",
+      "role": "Wren's duplicate ledger survives for the inquiry.",
+      "hub": false,
+      "required_characters": [
+        "c_pembroke",
+        "c_ada"
+      ],
+      "objects": [
+        {
+          "id": "i_duplicate_ledger",
+          "name": "Duplicate ledger",
+          "description": "Wren's copy of the Relief Fund accounts."
+        }
+      ],
+      "doors": [
+        {
+          "id": "d_pembroke_chambers_record_vault",
+          "to": "l_record_vault"
+        },
+        {
+          "id": "d_pembroke_chambers_hampstead_house",
+          "to": "l_hampstead_house"
+        }
+      ]
+    },
+    {
+      "id": "l_hampstead_house",
+      "name": "Vale's Hampstead house",
+      "biome": "building",
+      "mood": "controlled and severe",
+      "palette": "dusk",
+      "role": "Vale's private grant letter gives context to the diversion.",
+      "hub": false,
+      "required_characters": [
+        "c_vale"
+      ],
+      "objects": [],
+      "doors": [
+        {
+          "id": "d_hampstead_house_pembroke_chambers",
+          "to": "l_pembroke_chambers"
+        },
+        {
+          "id": "d_hampstead_house_church_hall",
+          "to": "l_church_hall"
+        }
+      ]
+    },
+    {
+      "id": "l_church_hall",
+      "name": "St Jude's parish hall",
+      "biome": "building",
+      "mood": "communal and wary",
+      "palette": "village",
+      "role": "Ada's reputation and the ward's needs are discussed without turning grief into spectacle.",
+      "hub": false,
+      "required_characters": [
+        "c_ada",
+        "c_hudson",
+        "c_crane"
+      ],
+      "objects": [],
+      "doors": [
+        {
+          "id": "d_church_hall_hampstead_house",
+          "to": "l_hampstead_house"
+        },
+        {
+          "id": "d_church_hall_relief_committee",
+          "to": "l_relief_committee"
+        }
+      ]
+    },
+    {
+      "id": "l_relief_committee",
+      "name": "Relief Fund committee room",
+      "biome": "building",
+      "mood": "stifled, solemn, and public",
+      "palette": "dusk",
+      "role": "The complete record is confronted and the Long endings become available.",
+      "hub": false,
+      "required_characters": [
+        "c_holmes",
+        "c_watson",
+        "c_hudson",
+        "c_lestrade",
+        "c_vale",
+        "c_ada",
+        "c_silas",
+        "c_shaw",
+        "c_nora",
+        "c_kit",
+        "c_pembroke",
+        "c_crane"
+      ],
+      "objects": [],
+      "doors": [
+        {
+          "id": "d_relief_committee_church_hall",
+          "to": "l_church_hall"
+        }
+      ]
+    }
+  ],
+  "twists": [
+    {
+      "id": "tw_staged_scene",
+      "description": "Wren's body was moved from the countinghouse to the river stairs.",
+      "setup_clues": [
+        "cl_mortuary_fibres",
+        "cl_river_drag"
+      ],
+      "payoff_trigger": {
+        "truths": [
+          "t_scene_staged"
+        ]
+      }
+    },
+    {
+      "id": "tw_ward_diversion",
+      "description": "Vale diverted money to keep the fever ward supplied after his promised grant failed; need explains the destination, not the crime.",
+      "setup_clues": [
+        "cl_ward_appeal",
+        "cl_ward_receipts"
+      ],
+      "payoff_trigger": {
+        "truths": [
+          "t_diversion_for_ward",
+          "t_fane_diverted"
+        ]
+      }
+    },
+    {
+      "id": "tw_decoy_envelope",
+      "description": "The charred envelope contains a harmless proof, while Wren's true ledger survived elsewhere.",
+      "setup_clues": [
+        "cl_envelope_proof",
+        "cl_press_archive"
+      ],
+      "payoff_trigger": {
+        "truths": [
+          "t_envelope_decoy",
+          "t_duplicate_ledger"
+        ]
+      }
+    }
+  ],
+  "red_herrings": [
+    {
+      "id": "rh_silas_grease",
+      "description": "An oily rag suggests that a dockworker attacked Wren.",
+      "setup_clues": [
+        "cl_river_drag"
+      ],
+      "resolution": "The short route shows the rag was placed after the body and cannot identify an attacker; longer routes establish that the grease came from Silas's ordinary pump work."
+    },
+    {
+      "id": "rh_false_ferry",
+      "description": "A brass token appears to support Vale's claim that he crossed the river before Wren died.",
+      "setup_clues": [
+        "cl_token_register"
+      ],
+      "resolution": "The corrected register and cab entry show Vale could not have made the claimed crossing."
+    },
+    {
+      "id": "rh_ada_letter",
+      "description": "Ada's guarded letter makes her seem to conceal her brother's guilt.",
+      "setup_clues": [
+        "cl_ada_receipt"
+      ],
+      "resolution": "The parcel receipt shows Ada preserved Wren's evidence; she concealed private grief, not a crime."
+    },
+    {
+      "id": "rh_kit_ink",
+      "description": "Printer's ink on the charred envelope points toward Kit's pressroom.",
+      "setup_clues": [
+        "cl_envelope_proof",
+        "cl_press_archive"
+      ],
+      "resolution": "Kit's dated proof predates the murder and contains no account or confession."
+    }
+  ],
+  "endings": [
+    {
+      "id": "e_first_accounting",
+      "conditions": {
+        "truths": [
+          "t_wren_discovered",
+          "t_scene_staged",
+          "t_fane_killed_wren",
+          "t_diversion_for_ward"
+        ],
+        "goal_states": [
+          "gs_lestrade_case"
+        ],
+        "choices": []
+      },
+      "scene_outline": "Lestrade proceeds with a compact, defensible case. Holmes explains the moved body and Vale's motive; the ward's need is acknowledged without excusing the killing.",
+      "tone": "Grave and clarifying.",
+      "epilogue_notes": "Ada's brother is not branded a thief, and the ward's future remains uncertain but public."
+    },
+    {
+      "id": "e_ward_inquest",
+      "conditions": {
+        "truths": [
+          "t_fane_killed_wren",
+          "t_fane_diverted",
+          "t_diversion_for_ward"
+        ],
+        "goal_states": [
+          "gs_lestrade_case",
+          "gs_shaw_ward"
+        ],
+        "choices": []
+      },
+      "scene_outline": "The inquest names Vale and the diversion plainly, rejects the dockside rumor, and asks the committee to support the ward lawfully.",
+      "tone": "Sober, humane, and firm.",
+      "epilogue_notes": "The patients are not made a spectacle, and no act of charity erases Wren's murder."
+    },
+    {
+      "id": "e_public_trial",
+      "conditions": {
+        "truths": [
+          "t_fane_killed_wren",
+          "t_duplicate_ledger",
+          "t_silas_framed"
+        ],
+        "goal_states": [
+          "gs_lestrade_case",
+          "gs_pembroke_copy",
+          "gs_silas_clear"
+        ],
+        "choices": []
+      },
+      "scene_outline": "The duplicate ledger and planted evidence support a public trial; Silas is cleared and the Relief Fund committee must answer for its failures.",
+      "tone": "Forceful, public, and unsentimental.",
+      "epilogue_notes": "Ada sees her brother's name restored, though the ward still needs lawful support."
+    },
+    {
+      "id": "e_tempered_truth",
+      "conditions": {
+        "truths": [
+          "t_fane_killed_wren",
+          "t_duplicate_ledger",
+          "t_envelope_decoy"
+        ],
+        "goal_states": [
+          "gs_ada_name",
+          "gs_pembroke_copy"
+        ],
+        "choices": []
+      },
+      "scene_outline": "Pembroke protects Wren's copy and Ada's privacy; Vale is charged, with the evidence brought to court without turning the ward's patients into spectacle.",
+      "tone": "Bittersweet and restrained.",
+      "epilogue_notes": "Justice begins, but neither an inquest nor a ledger can restore Elias Wren."
+    }
+  ],
+  "lengths": {
+    "short": {
+      "target_minutes": 15,
+      "start_location": "l_baker_street",
+      "opening": {
+        "context": "A young newcomer is asked to help Holmes and Watson investigate the death of Relief Fund clerk Elias Wren, found by Blackfriars. His sister fears the papers will call him a thief. Holmes asks where Wren died, who silenced him, and why."
+      },
+      "cast": [
+        "c_holmes",
+        "c_watson",
+        "c_hudson",
+        "c_lestrade"
+      ],
+      "core_truths": [
+        "t_wren_discovered",
+        "t_scene_staged",
+        "t_fane_killed_wren",
+        "t_diversion_for_ward"
+      ],
+      "side_truths": [],
+      "subplots": [],
+      "twists": [
+        "tw_staged_scene"
+      ],
+      "red_herrings": [
+        "rh_silas_grease"
+      ],
+      "endings": [
+        "e_first_accounting"
+      ],
+      "beats": [
+        {
+          "id": "b_opening",
+          "title": "The question at Baker Street",
+          "objective": "Learn what Wren was investigating and why the river scene is uncertain.",
+          "guidance": "Talk with Holmes, Watson, and Hudson, then compare their accounts with the records at Scotland Yard.",
+          "locations": [
+            "l_baker_street"
+          ],
+          "must_find": {}
+        },
+        {
+          "id": "b_river",
+          "title": "A body out of place",
+          "objective": "Establish where Wren died, who killed him, and what the missing money meant.",
+          "guidance": "Examine the mortuary and riverside evidence, then speak with Lestrade and Holmes at the connected locations.",
+          "locations": [
+            "l_scotland_yard",
+            "l_st_barts_mortuary",
+            "l_blackfriars_stairs",
+            "l_wren_countinghouse"
+          ],
+          "must_find": {
+            "truths": [
+              "t_wren_discovered"
+            ]
+          }
+        }
+      ]
+    },
+    "medium": {
+      "target_minutes": 35,
+      "start_location": "l_baker_street",
+      "opening": {
+        "context": "Elias Wren, a Relief Fund clerk, has been found dead beside the Thames. Holmes suspects the apparent riverside assault hides a dispute over the Fund's books. Help him test the scene, the accounts, and one official's alibi."
+      },
+      "cast": [
+        "c_holmes",
+        "c_watson",
+        "c_hudson",
+        "c_lestrade",
+        "c_vale",
+        "c_silas",
+        "c_shaw",
+        "c_crane"
+      ],
+      "core_truths": [
+        "t_wren_discovered",
+        "t_scene_staged",
+        "t_fane_killed_wren",
+        "t_diversion_for_ward",
+        "t_fane_alibi_false",
+        "t_fane_access",
+        "t_fane_diverted",
+        "t_silas_framed"
+      ],
+      "side_truths": [],
+      "subplots": [
+        {
+          "id": "sp_fever_ward",
+          "title": "The ward's account",
+          "description": "Shaw and Crane seek lawful support while the evidence traces the Fund's money.",
+          "cast": [
+            "c_shaw",
+            "c_crane"
+          ],
+          "truths": [
+            "t_diversion_for_ward",
+            "t_fane_diverted"
+          ]
+        }
+      ],
+      "twists": [
+        "tw_staged_scene",
+        "tw_ward_diversion"
+      ],
+      "red_herrings": [
+        "rh_silas_grease",
+        "rh_false_ferry"
+      ],
+      "endings": [
+        "e_first_accounting",
+        "e_ward_inquest"
+      ],
+      "beats": [
+        {
+          "id": "b_opening",
+          "title": "The question at Baker Street",
+          "objective": "Learn what Wren was investigating and why the river scene is uncertain.",
+          "guidance": "Talk with Holmes, Watson, and Hudson, then compare their accounts with the records at Scotland Yard.",
+          "locations": [
+            "l_baker_street",
+            "l_scotland_yard",
+            "l_st_barts_mortuary",
+            "l_blackfriars_stairs",
+            "l_wren_countinghouse"
+          ],
+          "must_find": {}
+        },
+        {
+          "id": "b_accounts",
+          "title": "A fund under strain",
+          "objective": "Find who had access to the books and why the ward received money.",
+          "guidance": "Examine the Relief Fund office and talk with Vale, Shaw, and Crane about the dated records.",
+          "locations": [
+            "l_relief_office",
+            "l_fever_ward"
+          ],
+          "must_find": {
+            "truths": [
+              "t_wren_discovered",
+              "t_scene_staged"
+            ]
+          }
+        },
+        {
+          "id": "b_witnesses",
+          "title": "The false crossing",
+          "objective": "Test Vale's account against the ferry and cab records.",
+          "guidance": "Compare the corrected ferry register with the cab fare book, and ask Silas what the grease can prove.",
+          "locations": [
+            "l_fleet_street_press",
+            "l_print_archive",
+            "l_cab_stand",
+            "l_dock_watch_hut",
+            "l_ferry_landing",
+            "l_warehouse_yard"
+          ],
+          "must_find": {
+            "truths": [
+              "t_fane_access",
+              "t_fane_diverted"
+            ]
+          }
+        }
+      ]
+    },
+    "long": {
+      "target_minutes": 65,
+      "start_location": "l_baker_street",
+      "opening": {
+        "context": "Elias Wren, a Relief Fund clerk, has been found dead beside the Thames. Holmes suspects a staged scene and a missing account, while Wren's sister fears a public accusation. Help the inquiry follow the evidence from Baker Street to the committee room."
+      },
+      "cast": [
+        "c_holmes",
+        "c_watson",
+        "c_hudson",
+        "c_lestrade",
+        "c_vale",
+        "c_ada",
+        "c_silas",
+        "c_shaw",
+        "c_nora",
+        "c_kit",
+        "c_pembroke",
+        "c_crane"
+      ],
+      "core_truths": [
+        "t_wren_discovered",
+        "t_scene_staged",
+        "t_fane_killed_wren",
+        "t_diversion_for_ward",
+        "t_fane_alibi_false",
+        "t_fane_access",
+        "t_fane_diverted",
+        "t_envelope_decoy",
+        "t_duplicate_ledger",
+        "t_silas_framed"
+      ],
+      "side_truths": [],
+      "subplots": [
+        {
+          "id": "sp_fever_ward",
+          "title": "The ward's account",
+          "description": "Shaw and Crane seek lawful support while the evidence traces the Fund's money.",
+          "cast": [
+            "c_shaw",
+            "c_crane"
+          ],
+          "truths": [
+            "t_diversion_for_ward",
+            "t_fane_diverted"
+          ]
+        },
+        {
+          "id": "sp_ada_reputation",
+          "title": "A brother's name",
+          "description": "Ada protects Wren's reputation and explains the parcel that survived his death.",
+          "cast": [
+            "c_ada",
+            "c_hudson"
+          ],
+          "truths": [
+            "t_wren_discovered",
+            "t_duplicate_ledger"
+          ]
+        },
+        {
+          "id": "sp_kit_press",
+          "title": "Ink and evidence",
+          "description": "Kit identifies the harmless proof and clears the pressroom without hiding the decoy.",
+          "cast": [
+            "c_kit"
+          ],
+          "truths": [
+            "t_envelope_decoy"
+          ]
+        }
+      ],
+      "twists": [
+        "tw_staged_scene",
+        "tw_ward_diversion",
+        "tw_decoy_envelope"
+      ],
+      "red_herrings": [
+        "rh_silas_grease",
+        "rh_false_ferry",
+        "rh_ada_letter",
+        "rh_kit_ink"
+      ],
+      "endings": [
+        "e_ward_inquest",
+        "e_public_trial",
+        "e_tempered_truth"
+      ],
+      "beats": [
+        {
+          "id": "b_opening",
+          "title": "The question at Baker Street",
+          "objective": "Learn what Wren was investigating and why the river scene is uncertain.",
+          "guidance": "Talk with Holmes, Watson, and Hudson, then compare their accounts with the records at Scotland Yard.",
+          "locations": [
+            "l_baker_street",
+            "l_scotland_yard",
+            "l_st_barts_mortuary",
+            "l_blackfriars_stairs",
+            "l_wren_countinghouse"
+          ],
+          "must_find": {}
+        },
+        {
+          "id": "b_accounts",
+          "title": "A fund under strain",
+          "objective": "Find who had access to the books and why the ward received money.",
+          "guidance": "Examine the Relief Fund office and talk with Vale, Ada, Shaw, and Crane about the dated records.",
+          "locations": [
+            "l_relief_office",
+            "l_fever_ward"
+          ],
+          "must_find": {
+            "truths": [
+              "t_wren_discovered",
+              "t_scene_staged"
+            ]
+          }
+        },
+        {
+          "id": "b_witnesses",
+          "title": "The false crossing",
+          "objective": "Test Vale's account against the ferry and cab records.",
+          "guidance": "Compare the corrected ferry register with the cab fare book, and ask Silas what the grease can prove.",
+          "locations": [
+            "l_fleet_street_press",
+            "l_print_archive",
+            "l_cab_stand",
+            "l_dock_watch_hut",
+            "l_ferry_landing"
+          ],
+          "must_find": {
+            "truths": [
+              "t_fane_access",
+              "t_fane_diverted"
+            ]
+          }
+        },
+        {
+          "id": "b_records",
+          "title": "The paper trail",
+          "objective": "Resolve the planted suspicion, the envelope, and Wren's missing ledger.",
+          "guidance": "Follow the connected yard, station, and solicitor records; talk with Kit, Ada, and Pembroke about what each paper proves.",
+          "locations": [
+            "l_warehouse_yard",
+            "l_warehouse_loft",
+            "l_pawnshop",
+            "l_clockmaker",
+            "l_telegraph_office",
+            "l_charing_cross_hall",
+            "l_parcels_office",
+            "l_british_museum",
+            "l_record_vault",
+            "l_pembroke_chambers"
+          ],
+          "must_find": {
+            "truths": [
+              "t_fane_alibi_false",
+              "t_fane_killed_wren"
+            ]
+          }
+        },
+        {
+          "id": "b_confrontation",
+          "title": "The committee's account",
+          "objective": "Bring the full evidence together and reach a just ending.",
+          "guidance": "Compare Vale's grant account with Ada's evidence, then discuss the findings with the Relief Fund committee.",
+          "locations": [
+            "l_hampstead_house",
+            "l_church_hall",
+            "l_relief_committee"
+          ],
+          "must_find": {
+            "truths": [
+              "t_envelope_decoy",
+              "t_duplicate_ledger",
+              "t_silas_framed"
+            ]
+          }
+        }
+      ]
+    }
+  }
+}

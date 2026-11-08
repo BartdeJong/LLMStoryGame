@@ -13,6 +13,13 @@
       "logline": "In a village of drifting lighthouses, an apprentice keeper with a lost year follows the missing oil to a thirteenth light that nobody remembers.",
       "lengths": ["short", "medium", "long"],
       "estimated_minutes": { "short": 15, "medium": 45, "long": 90 }
+    },
+    {
+      "id": "holmesashenvelope",
+      "title": "The Ashen Envelope",
+      "logline": "A riverside clerk is found dead beside a blackened envelope; help Holmes learn where he died, who silenced him, and what the missing relief money concealed.",
+      "lengths": ["short", "medium", "long"],
+      "estimated_minutes": { "short": 15, "medium": 35, "long": 65 }
     }
   ]
 }
