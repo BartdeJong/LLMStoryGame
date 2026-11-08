@@ -1,0 +1,10 @@
+{
+  "targets": {
+    "default": {
+      "stackArn": "arn:aws:cloudformation:eu-central-1:309632359432:stack/AgentCore-CozyStoryAgent-default/38f5f8e0-db65-11f1-9890-06d6555b9179",
+      "resources": {
+        "credentials": {}
+      }
+    }
+  }
+}
