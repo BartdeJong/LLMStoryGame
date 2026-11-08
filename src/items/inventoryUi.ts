@@ -1,4 +1,4 @@
-import { getIconCanvas } from "../art";
+import { getAshenObjectSprite, getIconCanvas } from "../art";
 import type { PaletteName } from "../art";
 import type { InventoryItem } from "./inventory";
 import { activateGamepadFocus } from "../input/focus";
@@ -57,7 +57,7 @@ export function createInventoryUI(container: HTMLElement): InventoryUI {
     status.textContent = query ? `${filtered.length} of ${currentItems.length} items` : `${currentItems.length} ${currentItems.length === 1 ? "item" : "items"}`;
     for (const item of filtered) {
       const row = el("article", "inventory-item");
-      const canvas = getIconCanvas(item.icon, currentPalette);
+      const canvas = getAshenObjectSprite(item.id, currentPalette) ?? getIconCanvas(item.icon, currentPalette);
       const icon = canvas.cloneNode(true) as HTMLCanvasElement;
       icon.className = "inventory-item-icon";
       icon.setAttribute("aria-hidden", "true");

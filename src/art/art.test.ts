@@ -9,13 +9,16 @@ import {
   PALETTE_NAMES,
   PALETTES,
   WALK_FRAME_COUNTS,
+  ASHEN_OBJECT_SPRITE_IDS,
   paintCharacterSprite,
+  getAshenObjectSprite,
   paintIcon,
   paintTile,
   TILE_TYPES,
   type CharacterRecipe,
   type IconRecipe,
 } from "./index";
+import ashenStory from "../../public/stories/holmesashenvelope.json";
 
 interface DrawCommand {
   readonly x: number;
@@ -141,5 +144,23 @@ describe("art painters", () => {
       expect(canvas.height).toBe(16);
       expect(commandsOf(canvas).length).toBeGreaterThan(0);
     }
+  });
+
+  it("defines a distinct sprite for every Ashen story object", () => {
+    const storyObjectIds = new Set([
+      ...ashenStory.items.map((item) => item.id),
+      ...ashenStory.locations.flatMap((location) => location.objects.map((object) => object.id)),
+    ]);
+    expect([...ASHEN_OBJECT_SPRITE_IDS].sort()).toEqual([...storyObjectIds].sort());
+
+    const sprites = ASHEN_OBJECT_SPRITE_IDS.map((id) => getAshenObjectSprite(id, "village"));
+    expect(sprites.every((sprite) => sprite !== null)).toBe(true);
+    for (const sprite of sprites) {
+      expect(sprite!.width).toBe(16);
+      expect(sprite!.height).toBe(16);
+      expect(commandsOf(sprite!).length).toBeGreaterThan(0);
+    }
+    expect(new Set(sprites.map((sprite) => JSON.stringify(commandsOf(sprite!)))).size)
+      .toBe(ASHEN_OBJECT_SPRITE_IDS.length);
   });
 });

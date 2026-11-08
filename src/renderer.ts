@@ -4,6 +4,7 @@ import type { Position } from "./camera";
 import {
   DEFAULT_CHARACTER_RECIPE,
   getCharacterSprite,
+  getAshenObjectSprite,
   getIconCanvas,
   getTileCanvas,
   getStoryVisualTheme,
@@ -123,8 +124,11 @@ export class Renderer {
     const x = Math.round(entity.x * TILE_SIZE - camera.x);
     const y = Math.round(entity.y * TILE_SIZE - camera.y);
     if (x < -TILE_SIZE || y < -TILE_SIZE || x > VIEW_WIDTH || y > VIEW_HEIGHT) return;
+    const objectSprite = entity.packId ? getAshenObjectSprite(entity.packId, palette) : null;
     if (entity.character) {
       this.context.drawImage(getCharacterSprite(entity.character, palette, "down"), x, y);
+    } else if (objectSprite) {
+      this.context.drawImage(objectSprite, x, y);
     } else if (entity.icon) {
       this.context.drawImage(getIconCanvas(entity.icon, palette), x, y);
     }

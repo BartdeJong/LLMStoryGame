@@ -2,6 +2,8 @@ export { PALETTES, PALETTE_COLOR_SLOTS, PALETTE_NAMES, getPaletteColor } from ".
 export type { Palette, PaletteColorSlot, PaletteName } from "./palettes";
 export { ICON_SHAPES, getIconCanvas, paintIcon } from "./icons";
 export type { IconRecipe, IconShape } from "./icons";
+export { ASHEN_OBJECT_SPRITE_IDS, getAshenObjectSprite } from "./ashenObjects";
+export type { AshenObjectId } from "./ashenObjects";
 export {
   BODY_SHAPES,
   CHARACTER_FEATURES,
