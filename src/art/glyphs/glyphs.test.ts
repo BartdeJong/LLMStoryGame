@@ -96,6 +96,8 @@ describe("glyph lint", () => {
       "gears", "crank", "metal_pipe", "lever", "clockwork_box", "cart_wheel",
       "dagger", "revolver", "poison_bottle", "bloodstain", "footprints", "broken_glass", "cut_rope",
       "cobweb", "skull", "scorched_paper", "handcuffs",
+      "storage_bin", "letter_box", "display_stand", "lamp_stand", "bedside_table",
+      "cooling_table", "council_table", "stool", "receipt",
     ];
     const availableIds = new Set(GLYPH_CATALOG.map((glyph) => glyph.id));
 
