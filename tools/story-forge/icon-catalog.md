@@ -26,8 +26,8 @@ Choose a glyph by id. Do not use a wrong icon; add a `visual_requests` entry whe
 - `bowl` — Bowl · stone · bowl, ramen, dish, food, kitchen, emberbowl, washbasin
 - `jug` — Jug · glass · jug, goldfish, bag, water, festival, container
 - `canister` — Canister · metal · canister, ink, writing, bottle, container, duskink, inkshelf
-- `storage_bin` — Storage bin · wood · bin, dough, flour, storage, grain, wood, container
-- `letter_box` — Letter box · metal · box, letter, mailbox, parcel, mail, delivery, container
+- `storage_bin` — Storage bin · wood · storage, bin, wooden, bulk, open, compartment, supplies
+- `letter_box` — Letter box · metal · letter, box, mail, postal, mailbox, slot, correspondence
 - `purse` — Purse · cloth · purse, bag, handbag, money, wallet, leather, coin
 
 ## tool
@@ -79,7 +79,7 @@ Choose a glyph by id. Do not use a wrong icon; add a `visual_requests` entry whe
 - `stamp` — Stamp · paper · stamp, postage, postal, circle, mark, paper, envelope
 - `wax_seal` — Wax seal · misc · wax, seal, stamp, crest, letter, paper, royal
 - `blueprint` — Blueprint · paper · blueprint, plan, design, schematic, star, chart, paper
-- `receipt` — Receipt · paper · receipt, paper, document, payment, purchase, printed, record
+- `receipt` — Receipt · paper · receipt, bill, invoice, purchase, payment, total, paper
 
 ## valuable
 
@@ -143,12 +143,12 @@ Choose a glyph by id. Do not use a wrong icon; add a `visual_requests` entry whe
 - `mirror` — Mirror · glass · mirror, glass, reflection, looking, surface, window, windows, tall, attic, gallery, round, harbour, berths, tide, gold
 - `painting` — Painting · cloth · painting, picture, wall, art, frame, founders, banner, stars, torn, stitched
 - `statue` — Statue · stone · statue, sculpture, stone, hero, figure, monument
-- `display_stand` — Display stand · wood · stand, pedestal, spyglass, telescope, display, support, mount
-- `lamp_stand` — Lamp stand · metal · lamp, stand, floor, lighting, shade, fixture
-- `bedside_table` — Bedside table · wood · bedside, nightstand, night, table, drawer, bedroom, lamp
-- `cooling_table` — Cooling table · wood · cooling, bakery, pastry, rack, table, kitchen, worktop
-- `council_table` — Council table · wood · council, meeting, civic, assembly, table, round, conference
-- `stool` — Stool · wood · stool, seat, furniture, wood, footrest, workshop, small
+- `display_stand` — Display stand · wood · display, stand, pedestal, exhibit, plinth, platform, showcase
+- `lamp_stand` — Lamp stand · metal · lamp, stand, holder, empty, tripod, base, support
+- `bedside_table` — Bedside table · wood · bedside, table, nightstand, drawer, bedroom, cabinet, furniture
+- `cooling_table` — Cooling table · wood · cooling, table, rack, tray, bakery, baking, kitchen
+- `council_table` — Council table · wood · council, table, meeting, conference, oval, long, chamber
+- `stool` — Stool · wood · stool, seat, round, backless, seating, wooden, furniture
 
 ## machine
 
