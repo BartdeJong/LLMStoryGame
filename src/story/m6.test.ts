@@ -37,6 +37,7 @@ describe("items and doors", () => {
     const first = story.collectItem(bookEntity!);
     expect(first).toMatchObject({ given: true });
     expect(story.state.itemsHeld).toEqual(["i_overdue_book"]);
+    expect(story.getArea(area.id).entities).not.toContainEqual(bookEntity);
 
     const second = story.collectItem(bookEntity!);
     expect(second).toMatchObject({ given: false });

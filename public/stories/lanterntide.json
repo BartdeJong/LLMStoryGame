@@ -3400,6 +3400,16 @@
           "id": "o_founders_banner",
           "name": "Founders' banner",
           "description": "A torn banner with thirteen stitched stars."
+        },
+        {
+          "id": "o_loft_worktable",
+          "name": "Sailmaker's worktable",
+          "description": "A broad table scattered with thread, needles and folded canvas."
+        },
+        {
+          "id": "o_loft_spool_basket",
+          "name": "Spool basket",
+          "description": "A wicker basket full of colored thread and sailmaker's twine."
         }
       ],
       "doors": [
@@ -3465,6 +3475,16 @@
           "id": "o_bun_tray",
           "name": "Bun tray",
           "description": "A tray of thirteen buns, one more than anyone orders."
+        },
+        {
+          "id": "o_bakery_flour_sack",
+          "name": "Flour sack",
+          "description": "A flour sack with a wooden scoop tucked into its folded top."
+        },
+        {
+          "id": "o_bakery_cooling_rack",
+          "name": "Cooling table",
+          "description": "A sturdy table where warm buns cool beside the oven."
         }
       ],
       "doors": []
@@ -3485,6 +3505,16 @@
           "id": "o_study_door",
           "name": "Study door",
           "description": "Hobb's study, where a locket lies on the desk."
+        },
+        {
+          "id": "o_hall_council_table",
+          "name": "Council table",
+          "description": "A long oak table polished smooth by years of careful meetings."
+        },
+        {
+          "id": "o_hall_windows",
+          "name": "Tall windows",
+          "description": "Tall windows look out over the harbour and its many berths."
         }
       ],
       "doors": [
@@ -3514,6 +3544,16 @@
           "id": "o_ledger_desk",
           "name": "Ledger desk",
           "description": "A desk with fading ledgers and a drawer of copies."
+        },
+        {
+          "id": "o_archive_bookshelf",
+          "name": "Archive bookshelf",
+          "description": "A tall shelf holds carefully labeled books and bundles of paper."
+        },
+        {
+          "id": "o_archive_chair",
+          "name": "Reading chair",
+          "description": "A well-used chair sits beside the desk for long afternoons of copying."
         }
       ],
       "doors": [
@@ -3577,6 +3617,11 @@
           "id": "o_ink_shelf",
           "name": "Ink shelf",
           "description": "A shelf with a bottle of dark Dusk Ink."
+        },
+        {
+          "id": "o_press_stool",
+          "name": "Press stool",
+          "description": "A stout wooden stool stands beside the humming oil press."
         }
       ],
       "doors": [
@@ -3605,6 +3650,16 @@
           "id": "o_old_coat",
           "name": "Old coat",
           "description": "A coat with W.T. sewn inside the collar."
+        },
+        {
+          "id": "o_attic_window",
+          "name": "Attic window",
+          "description": "A small round window catches the last gold of the evening tide."
+        },
+        {
+          "id": "o_attic_bedside_table",
+          "name": "Bedside table",
+          "description": "A little table holds a chipped cup and a folded handkerchief."
         }
       ],
       "doors": []
@@ -3625,6 +3680,16 @@
           "id": "o_hoard_shelf",
           "name": "Hoard shelf",
           "description": "A shelf of buttons, spoons and a small brass key."
+        },
+        {
+          "id": "o_shed_peg_rail",
+          "name": "Peg rail",
+          "description": "A wooden rail is crowded with hats, aprons and odd lengths of string."
+        },
+        {
+          "id": "o_shed_washbasin",
+          "name": "Washbasin",
+          "description": "A tin basin and a folded towel sit by the shed's little window."
         }
       ],
       "doors": []
@@ -3645,6 +3710,16 @@
           "id": "o_apprentice_hook",
           "name": "Apprentice hook",
           "description": "A coat hook with a small scarf thread caught on it."
+        },
+        {
+          "id": "o_base_keeper_chair",
+          "name": "Keeper's chair",
+          "description": "A broad chair waits beside the warm lamp for a tired keeper."
+        },
+        {
+          "id": "o_base_oil_cupboard",
+          "name": "Oil cupboard",
+          "description": "A wooden cupboard keeps spare wicks and clean oil tins close at hand."
         }
       ],
       "doors": [
@@ -3680,6 +3755,16 @@
           "id": "o_ember_bowl",
           "name": "Ember bowl",
           "description": "A bowl holding a warm Mothlight Ember."
+        },
+        {
+          "id": "o_lamproom_oilcan",
+          "name": "Oil can",
+          "description": "A small brass can rests near the lamp's careful controls."
+        },
+        {
+          "id": "o_lamproom_window",
+          "name": "Lamp-room window",
+          "description": "A narrow window opens onto the drifting islands below."
         }
       ],
       "doors": [
@@ -3723,6 +3808,16 @@
           "id": "o_bell_ledger",
           "name": "Bell ledger",
           "description": "A ledger of every bell rung, including a thirteenth."
+        },
+        {
+          "id": "o_belltower_rope",
+          "name": "Bell rope",
+          "description": "A thick rope hangs from the rafters, polished by many careful hands."
+        },
+        {
+          "id": "o_belltower_stool",
+          "name": "Keeper's stool",
+          "description": "A small stool sits beside the bell ledger."
         }
       ],
       "doors": []
@@ -4061,6 +4156,16 @@
           "id": "o_wren_cot",
           "name": "Wren's cot",
           "description": "A tiny cot beside the lamp, with a wren-stamped mug."
+        },
+        {
+          "id": "o_wren_bedside_table",
+          "name": "Bedside table",
+          "description": "A narrow table holds a chipped cup and a neatly folded blanket."
+        },
+        {
+          "id": "o_wren_window",
+          "name": "Round window",
+          "description": "A round window looks out toward the quiet tide."
         }
       ],
       "doors": []

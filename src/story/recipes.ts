@@ -75,6 +75,9 @@ export function seededCharacterRecipe(seed: string): CharacterRecipe {
 
 export function inferIconShape(name: string, description = ""): IconRecipe["shape"] | null {
   const text = `${name} ${description}`.toLowerCase().replace(/[_-]/g, " ");
+  if (/\b(shelf|bookcase)\b/.test(name.toLowerCase())) return "shelf";
+  if (/\b(window)\b/.test(name.toLowerCase())) return "window";
+  if (/\b(chair|table|cot|bed|cabinet|wardrobe|stool|bench|desk)\b/.test(name.toLowerCase())) return "furniture";
   if (/\b(book|ledger|receipt|register|account|journal|notebook)\b/.test(text)) return "book";
   if (/\b(envelope|letter|mail|note)\b/.test(text)) return "envelope";
   if (/\b(spyglass|telescope|lens)\b/.test(text)) return "spyglass";

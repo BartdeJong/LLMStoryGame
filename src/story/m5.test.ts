@@ -7,7 +7,7 @@ import { MockBackend, type MockOptions } from "../llm/mock";
 import { allPointsReachable, reachableTiles } from "../world/connectivity";
 import { buildBriefPrompt } from "./briefPrompt";
 import { buildStoryArea } from "./briefToMap";
-import { buildGuard, findViolations, generateAreaBrief } from "./briefs";
+import { buildGuard, fallbackBrief, findViolations, generateAreaBrief } from "./briefs";
 import { getLengthView, type LengthView } from "./loader";
 import { storyMockRespond, mockAreaBrief } from "./mockResponder";
 import { BriefService } from "./prefetch";
@@ -148,6 +148,21 @@ describe("brief validation against the pack", () => {
 });
 
 describe("brief-to-map placement", () => {
+  it("adds furnishings to Lantern Tide interiors and draws the ink shelf as a shelf", () => {
+    const pack = loadPack("lanterntide");
+    const view = getLengthView(pack, "long");
+    const guard = buildGuard(pack);
+    const bakery = buildLocationSlice(pack, view, "l_bakery");
+    const oilPress = buildLocationSlice(pack, view, "l_oil_press");
+    const bakeryBrief = fallbackBrief(bakery, guard);
+    const oilPressBrief = fallbackBrief(oilPress, guard);
+    const inkShelf = oilPressBrief.objects.find((object) => object.packId === "o_ink_shelf");
+
+    expect(bakery.objects.length).toBeGreaterThan(1);
+    expect(inkShelf?.icon.shape).toBe("shelf");
+    expect(buildStoryArea(bakeryBrief, "lanterntide:1").entities?.length).toBeGreaterThan(3);
+  });
+
   for (const [id, length] of CASES) {
     it(`places every required entity on a reachable tile: ${id} (${length}), mock and fallback`, async () => {
       const pack = loadPack(id);

@@ -371,7 +371,6 @@ export class Game {
 
   private update(delta: number): void {
     if (this.transitioning || this.inDialogue || this.worldMap.isOpen) return;
-    const world = this.story.getArea(this.areaId);
     const movement = this.input.getMovement();
     const speed = PLAYER_SPEED * getMovementSpeed();
     const deltaX = movement.x * speed * delta;
@@ -397,13 +396,6 @@ export class Game {
         && performance.now() - this.lastFootstepAt >= 300) {
         soundEffects.play("footstep");
         this.lastFootstepAt = performance.now();
-      }
-      const door = world.doors.find((candidate) =>
-        Math.floor(this.player.x / TILE_SIZE) === candidate.x
-        && Math.floor(this.player.y / TILE_SIZE) === candidate.y);
-      if (door) {
-        this.enterDoorIfUnlocked(door);
-        return;
       }
       this.message.textContent = "Explore with WASD, arrows, or the joystick.";
     }
@@ -465,9 +457,9 @@ export class Game {
         : entity ? `Examine ${entity.name}` : "";
     const lockMessage = door ? this.story.describeDoorLock(this.areaId, door.id) : null;
     const prompt = useEntity
-      ? `Tap / E / A · ${action}`
+      ? `Action / E / A · ${action}`
       : door
-        ? `Tap / E / A · ${lockMessage ? `${door.label} (locked)` : `Enter ${door.label}`}`
+        ? `Action / E / A · ${lockMessage ? `${door.label} (locked)` : `Enter ${door.label}`}`
         : "";
     if (this.interactionPrompt.textContent !== prompt) this.interactionPrompt.textContent = prompt;
     this.interactionPrompt.hidden = !entity && !door;
@@ -494,10 +486,7 @@ export class Game {
     if (entity) {
       this.examine(entity);
       this.refreshObjective();
-      return;
     }
-    const door = world.doors.find(near);
-    if (door) this.enterDoorIfUnlocked(door);
   };
 
   private enterDoorIfUnlocked(door: AreaDoor): void {

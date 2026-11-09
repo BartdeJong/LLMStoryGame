@@ -90,10 +90,12 @@ export class StorySession {
     );
     for (const savedArea of save.areas) {
       const area = savedArea.area;
-      const entities = area.entities?.map((entity) => {
-        const recipe = entity.packId ? characterRecipes.get(entity.packId) : undefined;
-        return recipe ? { ...entity, character: recipe } : entity;
-      });
+      const entities = area.entities
+        ?.filter((entity) => !this.state.collectedEntities.includes(entity.id))
+        .map((entity) => {
+          const recipe = entity.packId ? characterRecipes.get(entity.packId) : undefined;
+          return recipe ? { ...entity, character: recipe } : entity;
+        });
       this.areas.set(area.id, entities ? { ...area, entities } : area);
       if (savedArea.brief) this.briefsByArea.set(savedArea.area.id, savedArea.brief);
     }
@@ -205,6 +207,14 @@ export class StorySession {
     if (!item) return null;
     if (!isRequirementMet(item.found_requires, this.state)) return { item, given: false, blocked: true };
     markCollected(this.state, entity.id);
+    for (const [areaId, area] of this.areas) {
+      if (!area.entities?.some((candidate) => candidate.id === entity.id)) continue;
+      this.areas.set(areaId, {
+        ...area,
+        entities: area.entities.filter((candidate) => candidate.id !== entity.id),
+      });
+      break;
+    }
     return { item, given: giveItem(this.state, item.id), blocked: false };
   }
 

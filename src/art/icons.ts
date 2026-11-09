@@ -4,6 +4,7 @@ import { PALETTES, type PaletteColorSlot, type PaletteName } from "./palettes";
 export const ICON_SHAPES = [
   "key", "potion", "book", "gem", "leaf", "feather", "lantern", "coin",
   "envelope", "shard", "spyglass", "bread", "wick", "scroll", "shell", "flower",
+  "shelf", "furniture", "window",
 ] as const;
 export type IconShape = (typeof ICON_SHAPES)[number];
 
@@ -149,6 +150,32 @@ export function paintIcon(recipe: IconRecipe, paletteName: PaletteName): HTMLCan
       pixel(primary, 6, 9, 4, 3);
       pixel(secondary, 6, 6, 4, 3);
       pixel(palette.leafLight, 7, 10, 2, 4);
+      break;
+    case "shelf":
+      pixel(secondary, 7, 1, 2, 1);
+      pixel(primary, 6, 2, 4, 1);
+      pixel(primary, 5, 3, 6, 3);
+      pixel(secondary, 6, 4, 1, 1);
+      pixel(primary, 2, 7, 12, 2);
+      pixel(primary, 3, 9, 2, 5);
+      pixel(primary, 11, 9, 2, 5);
+      pixel(primary, 3, 11, 10, 2);
+      pixel(palette.shadow, 2, 14, 12, 1);
+      break;
+    case "furniture":
+      pixel(primary, 3, 4, 10, 3);
+      pixel(secondary, 4, 5, 8, 1);
+      pixel(primary, 4, 7, 2, 7);
+      pixel(primary, 10, 7, 2, 7);
+      pixel(palette.shadow, 3, 14, 10, 1);
+      break;
+    case "window":
+      pixel(palette.shadow, 2, 2, 12, 12);
+      pixel(secondary, 3, 3, 10, 10);
+      pixel(primary, 4, 4, 8, 8);
+      pixel(secondary, 7, 4, 2, 8);
+      pixel(secondary, 4, 7, 8, 2);
+      pixel(palette.highlight, 5, 5, 2, 1);
       break;
   }
 

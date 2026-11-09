@@ -147,8 +147,8 @@ describe("save persistence", () => {
     story.restoreSave(save);
 
     expect(story.state).toEqual(save.storyState);
-    expect(story.getSavedAreas()).toEqual(save.areas);
-    expect(story.getArea(areaId)).toEqual(save.areas[0]?.area);
+    expect(story.getSavedAreas()[0]?.area.entities).toEqual([]);
+    expect(story.getArea(areaId).entities).toEqual([]);
     expect(story.getBrief(areaId)).toEqual(save.areas[0]?.brief);
   });
 
