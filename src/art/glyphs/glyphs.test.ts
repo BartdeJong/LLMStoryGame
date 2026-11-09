@@ -3,6 +3,7 @@ import { GLYPH_CATALOG, type GlyphDefinition } from "./catalog";
 import { resolveVisual, tokenizeVisualText } from "./matcher";
 import { lintGlyphCatalog } from "./lint";
 import { renderGlyph } from "./render";
+import { getVisualCanvas } from "./legacy";
 
 afterEach(() => {
   vi.unstubAllGlobals();
@@ -27,6 +28,32 @@ describe("glyph renderer", () => {
     expect([rendered.width, rendered.height]).toEqual([16, 16]);
     expect(context.imageSmoothingEnabled).toBe(false);
     expect(drawn.length).toBeGreaterThan(30);
+  });
+
+  it("uses an inferred catalog glyph instead of its legacy icon recipe", () => {
+    const renderSignature = (draw: () => void): string[] => {
+      const pixels: string[] = [];
+      const context = {
+        fillStyle: "",
+        imageSmoothingEnabled: true,
+        fillRect: (x: number, y: number, width: number, height: number) =>
+          pixels.push(`${context.fillStyle}:${x},${y},${width},${height}`),
+      } as unknown as CanvasRenderingContext2D;
+      vi.stubGlobal("document", { createElement: () => ({
+        width: 0,
+        height: 0,
+        getContext: () => context,
+      } as unknown as HTMLCanvasElement) });
+      draw();
+      return pixels;
+    };
+    const visual = { icon: "lamp_post" };
+    const recipe = { shape: "book", primaryColor: "accent", secondaryColor: "cream" } as const;
+    const inferred = renderSignature(() => getVisualCanvas(visual, "meadow", recipe, true, "Lantern post inferred"));
+    const glyph = GLYPH_CATALOG.find((entry) => entry.id === "lamp_post")!;
+    const direct = renderSignature(() => renderGlyph(glyph, { palette: "meadow", seed: "Lantern post direct" }));
+
+    expect(inferred).toEqual(direct);
   });
 
   it("applies seeded modifiers deterministically", () => {

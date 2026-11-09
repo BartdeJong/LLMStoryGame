@@ -51,7 +51,6 @@ export function getVisualCanvas(
   inferred = false,
   seed = visual.icon,
 ): HTMLCanvasElement {
-  if (inferred && recipe) return getIconCanvas(recipe, palette);
   const glyph = renderGlyphById(visual.icon, {
     palette,
     accent: visual.accent,
@@ -59,6 +58,7 @@ export function getVisualCanvas(
     seed,
   });
   if (glyph) return glyph;
+  if (inferred && recipe) return getIconCanvas(recipe, palette);
   const legacy = renderLegacyAdapter(visual.icon, palette, recipe);
   if (legacy) return legacy;
   throw new Error(`Unknown visual glyph "${visual.icon}".`);
