@@ -13,6 +13,8 @@ import type { Direction } from "./art";
 import { getStoryVisualTheme } from "./art";
 import { listInventory } from "./items/inventory";
 import { createInventoryUI, type InventoryUI } from "./items/inventoryUi";
+import { createExamineUI, type ExamineUI } from "./items/examineUi";
+import { resolveVisualSpec } from "./art/glyphs";
 import { Renderer, VIEW_HEIGHT, VIEW_WIDTH } from "./renderer";
 import { mountEndingChoiceScreen, mountEndingScreen } from "./ui/ending";
 import { mountPauseMenu } from "./ui/pause";
@@ -59,6 +61,7 @@ export class Game {
   private readonly interactionPrompt: HTMLElement;
   private readonly dialogueBox: DialogueBox;
   private readonly inventoryUI: InventoryUI;
+  private readonly examineUI: ExamineUI;
   private readonly storyJournal: StoryJournal;
   private readonly objectiveHud: ObjectiveHud;
   private readonly worldMap: WorldMap;
@@ -131,6 +134,7 @@ export class Game {
     });
     this.dialogueBox = createDialogueBox(shell);
     this.inventoryUI = createInventoryUI(shell);
+    this.examineUI = createExamineUI(shell);
     this.storyJournal = createStoryJournal(shell);
     this.worldMap = createWorldMap(
       shell,
@@ -500,6 +504,19 @@ export class Game {
   }
 
   private examine(entity: AreaEntity): void {
+    if (entity.kind === "character") {
+      this.examineUI.hide();
+    } else {
+      const area = this.story.getArea(this.areaId);
+      this.examineUI.show(
+        entity.name,
+        entity.description,
+        entity.visual ?? resolveVisualSpec(entity.name, entity.description),
+        area.palette,
+        entity.icon,
+        entity.visualInferred ?? !entity.visual,
+      );
+    }
     const clue = this.story.examineClue(entity);
     if (clue !== null) {
       this.message.textContent = `Clue: ${clue}`;
@@ -701,6 +718,7 @@ export class Game {
 
   private async travel(door: AreaDoor): Promise<void> {
     if (!this.running) return;
+    this.examineUI.hide();
     this.transitioning = true;
     try {
       for (let step = 1; step <= 6; step += 1) {

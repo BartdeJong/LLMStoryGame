@@ -33,6 +33,7 @@ function entityRequests(brief: StoryAreaBrief): PendingEntity[] {
       make: (point) => ({
         ...point, id, kind, required: object.required, packId: object.packId ?? undefined,
         name: object.name, description: object.description, icon: object.icon,
+        visual: object.visual, visualInferred: object.visualInferred,
       }),
     });
   });

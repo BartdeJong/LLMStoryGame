@@ -13,6 +13,11 @@ Do not change the schema to make a pack pass; fix the pack instead.
 - Story index: `../../public/stories/index.json`
 - Brief and bible folders: `stories/briefs/` and `stories/bibles/`
 - Validator: from the repository root, run `npm run validate-stories`
+- Visual catalog and checks: run `npm run icon-catalog`, `npm run icon-lint`,
+  `npm run visual-report -- <story-id>`, and `npm run list-visual-requests`.
+  `validate-stories` also regenerates `icon-catalog.md`.
+- Visual review pages: open `?debug=icons` or
+  `?debug=story-visuals&story=<story-id>`.
 - Read-through: from the repository root, run
   `npm run story-readthrough -- <story-id> <short|medium|long>`
 
@@ -65,6 +70,11 @@ pack; the example currently has only `short`.
 - The pack fixes plot facts, cast, mystery, clues, key items, locations, and
   endings. Runtime generation may add only surface descriptions, dialogue,
   flavor, and minor extras without contradicting the pack.
+- Choose `visual.icon` for every item and location object from
+  `icon-catalog.md`, using a catalog id. Use `accent` and `states` only when
+  they help the object read clearly. If no glyph fits, add a
+  `visual_requests` entry with its name, description, and suggested category;
+  do not use a wrong icon. Fix every `weak visual match` warning before review.
 - Follow `schema/story-pack.schema.json` and the validator's reference and text
   limits. Keep all three lengths coherent; every core truth needs two
   independent clue routes, and key items cannot be missable.

@@ -50,7 +50,16 @@ window.addEventListener("pointerdown", unlockAudio, { once: true });
 window.addEventListener("keydown", unlockAudio, { once: true });
 
 const debugMode = new URLSearchParams(window.location.search).get("debug");
-if (debugMode === "art") {
+if (debugMode === "icons") {
+  void import("./art/glyphs/debug").then(({ mountGlyphDebugScreen }) => mountGlyphDebugScreen());
+} else if (debugMode === "story-visuals") {
+  const storyId = new URLSearchParams(window.location.search).get("story");
+  if (storyId) {
+    void import("./art/glyphs/debug").then(({ mountStoryVisualDebugScreen }) => mountStoryVisualDebugScreen(storyId));
+  } else {
+    document.body.textContent = "Add a story id with ?debug=story-visuals&story=<id>.";
+  }
+} else if (debugMode === "art") {
   mountArtDebugScreen();
 } else if (debugMode === "world") {
   mountWorldDebugScreen();

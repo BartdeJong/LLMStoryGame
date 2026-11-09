@@ -1,5 +1,7 @@
 import { formatIssue, validateStoryPack } from "./validate";
 import { LENGTH_IDS, type Beat, type CastMember, type Ending, type LengthDefinition, type LengthId, type Location, type StoryIndex, type StoryIndexEntry, type StoryPack, type Truth } from "./types";
+import { resolveVisualSpec } from "../art/glyphs";
+import type { VisualSpec } from "../art/glyphs";
 
 export class StoryLoadError extends Error {
   constructor(message: string, readonly details: string[] = []) {
@@ -9,6 +11,12 @@ export class StoryLoadError extends Error {
 }
 
 type Fetcher = (url: string) => Promise<Response>;
+
+function inferredVisual<T extends object>(entry: T, visual: VisualSpec): T & { visual: VisualSpec; visualInferred: true } {
+  const resolved = Object.assign({}, entry, { visual, visualInferred: true as const });
+  Object.defineProperty(resolved, "visualInferred", { value: true, enumerable: false });
+  return resolved;
+}
 
 // Relative URLs keep this working under a GitHub Pages sub-path.
 export function storiesUrl(file: string): string {
@@ -58,7 +66,18 @@ export async function loadStoryPack(id: string, fetcher: Fetcher = fetch): Promi
   if (report.pack.identity.id !== id) {
     throw new StoryLoadError(`Story file "${id}.json" has identity.id "${report.pack.identity.id}". They must match.`);
   }
-  return report.pack;
+  return {
+    ...report.pack,
+    items: report.pack.items.map((item) => item.visual
+      ? item
+      : inferredVisual(item, resolveVisualSpec(item.name, item.description))),
+    locations: report.pack.locations.map((location) => ({
+      ...location,
+      objects: location.objects.map((object) => object.visual
+        ? object
+        : inferredVisual(object, resolveVisualSpec(object.name, object.description))),
+    })),
+  };
 }
 
 export interface LengthView {

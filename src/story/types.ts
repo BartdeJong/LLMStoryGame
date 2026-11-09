@@ -1,6 +1,8 @@
 // Story pack types. Keep in sync with tools/story-forge/schema/story-pack.schema.json
 // (a unit test checks that the example pack passes the schema).
 
+import type { GlyphCategory, VisualSpec } from "../art/glyphs";
+
 export const LENGTH_IDS = ["short", "medium", "long"] as const;
 export type LengthId = (typeof LENGTH_IDS)[number];
 
@@ -116,6 +118,8 @@ export interface Item {
   name: string;
   description: string;
   icon_recipe: string;
+  visual?: VisualSpec;
+  visualInferred?: boolean;
   key: boolean; // key items can never be missable
   found_at?: SourceRef;
   found_requires?: Requirement;
@@ -132,6 +136,14 @@ export interface WorldObject {
   id: string;
   name: string;
   description: string;
+  visual?: VisualSpec;
+  visualInferred?: boolean;
+}
+
+export interface VisualRequest {
+  name: string;
+  description: string;
+  suggested_category: GlyphCategory;
 }
 
 export interface Location {
@@ -218,6 +230,7 @@ export interface StoryPack {
   truths: Truth[];
   clues: Clue[];
   items: Item[];
+  visual_requests?: VisualRequest[];
   locations: Location[];
   twists: Twist[];
   red_herrings: RedHerring[];

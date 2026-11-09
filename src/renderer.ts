@@ -14,6 +14,7 @@ import {
   type StoryVisualTheme,
   type TileType,
 } from "./art";
+import { getGlyph, getVisualCanvas } from "./art/glyphs";
 
 export const VIEW_WIDTH = 320;
 export const VIEW_HEIGHT = 180;
@@ -125,13 +126,31 @@ export class Renderer {
     const y = Math.round(entity.y * TILE_SIZE - camera.y);
     if (x < -TILE_SIZE || y < -TILE_SIZE || x > VIEW_WIDTH || y > VIEW_HEIGHT) return;
     const objectSprite = entity.packId ? getAshenObjectSprite(entity.packId, palette) : null;
+    if (!entity.character) this.drawObjectShadow(x, y);
     if (entity.character) {
       this.context.drawImage(getCharacterSprite(entity.character, palette, "down"), x, y);
+    } else if (entity.visual && (!entity.visualInferred || !objectSprite)) {
+      const openId = `${entity.visual.icon}_open`;
+      const visual = entity.opened && getGlyph(openId) ? { ...entity.visual, icon: openId } : entity.visual;
+      this.context.drawImage(getVisualCanvas(visual, palette, entity.icon, entity.visualInferred, entity.id), x, y);
     } else if (objectSprite) {
       this.context.drawImage(objectSprite, x, y);
     } else if (entity.icon) {
       this.context.drawImage(getIconCanvas(entity.icon, palette), x, y);
     }
+  }
+
+  private drawObjectShadow(x: number, y: number): void {
+    const context = this.context;
+    context.save();
+    const shadow = context.createRadialGradient(x + 8, y + 15, 0, x + 8, y + 15, 8);
+    shadow.addColorStop(0, "rgba(0, 0, 0, 0.42)");
+    shadow.addColorStop(1, "rgba(0, 0, 0, 0)");
+    context.fillStyle = shadow;
+    context.beginPath();
+    context.ellipse(x + 8, y + 15, 8, 2.5, 0, 0, Math.PI * 2);
+    context.fill();
+    context.restore();
   }
 
   // Dark veil with slow drifting fog banks; used while an area is loading.
@@ -166,8 +185,10 @@ export class Renderer {
   }
 
   private drawInteractionMarker(entity: AreaEntity, camera: Position, paletteName: PaletteName): void {
-    const x = Math.round(entity.x * TILE_SIZE - camera.x + TILE_SIZE / 2);
-    const y = Math.round(entity.y * TILE_SIZE - camera.y - 5 + Math.sin(performance.now() / 180) * 1.5);
+    const entityX = Math.round(entity.x * TILE_SIZE - camera.x);
+    const entityY = Math.round(entity.y * TILE_SIZE - camera.y);
+    const x = entityX + TILE_SIZE / 2;
+    const y = entityY + TILE_SIZE / 2 - 5 + Math.sin(performance.now() / 180) * 1.5;
     const context = this.context;
     context.save();
     context.fillStyle = PALETTES[paletteName].highlight;
@@ -181,6 +202,14 @@ export class Renderer {
     context.fill();
     context.fillStyle = PALETTES[paletteName].ink;
     context.fillRect(x, y - 1, 1, 2);
+    context.font = "8px monospace";
+    context.textAlign = "center";
+    context.textBaseline = "bottom";
+    const labelWidth = Math.ceil(context.measureText(entity.name).width) + 6;
+    context.fillStyle = PALETTES[paletteName].ink;
+    context.fillRect(x - labelWidth / 2, entityY - 13, labelWidth, 10);
+    context.fillStyle = PALETTES[paletteName].highlight;
+    context.fillText(entity.name, x, entityY - 5);
     context.restore();
   }
 

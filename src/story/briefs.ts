@@ -3,6 +3,8 @@ import type { LLMClient } from "../llm/client";
 import type { AreaBriefOutput } from "../llm/shapes";
 import { Priority } from "../llm/types";
 import type { Biome } from "../world/types";
+import { resolveVisualSpec } from "../art/glyphs";
+import type { VisualSpec } from "../art/glyphs";
 import { buildBriefRequest } from "./briefPrompt";
 import { inferIconShape, mapPackBiome, mapPackPalette, paletteForBiome, parseCharacterRecipe, parseIconRecipe, seededCharacterRecipe, seededIconRecipe, toCharacterRecipe, toIconRecipe } from "./recipes";
 import type { LocationSlice } from "./slice";
@@ -29,6 +31,8 @@ export interface BriefObject {
   name: string;
   description: string;
   icon: IconRecipe;
+  visual: VisualSpec;
+  visualInferred: boolean;
   contents: string[];
   required: boolean;
   keyItem: boolean;
@@ -183,6 +187,8 @@ export function mergeBrief(slice: LocationSlice, output: AreaBriefOutput | null,
       name: required.name,
       description: required.kind === "key_item" ? required.description : match?.description ?? required.description,
       icon: semanticShape ? { ...icon, shape: semanticShape } : icon,
+      visual: required.visual ?? resolveVisualSpec(required.name, required.description),
+      visualInferred: required.visualInferred ?? !required.visual,
       contents: [],
       required: true,
       keyItem: required.kind === "key_item",
@@ -198,6 +204,8 @@ export function mergeBrief(slice: LocationSlice, output: AreaBriefOutput | null,
       name: object.name,
       description: object.description,
       icon: toIconRecipe(object.icon_recipe),
+      visual: resolveVisualSpec(object.name, object.description),
+      visualInferred: true,
       contents: [],
       required: false,
       keyItem: false,

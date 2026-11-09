@@ -1,4 +1,5 @@
 import type { CharacterRecipe, IconRecipe, PaletteName } from "../art";
+import type { VisualSpec } from "../art/glyphs";
 
 export type Biome = "meadow" | "forest" | "shore" | "cave" | "building" | "ruins" | "village";
 
@@ -49,6 +50,9 @@ export interface AreaEntity extends EntitySpawnPoint {
   readonly truthId?: string;
   readonly character?: CharacterRecipe;
   readonly icon?: IconRecipe;
+  readonly visual?: VisualSpec;
+  readonly visualInferred?: boolean;
+  readonly opened?: boolean;
 }
 
 export type DoorKind = "edge" | "cave-mouth" | "gate" | "hatch";

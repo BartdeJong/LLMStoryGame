@@ -49,6 +49,7 @@
     "truths": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/truth" } },
     "clues": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/clue" } },
     "items": { "type": "array", "items": { "$ref": "#/$defs/item" } },
+    "visual_requests": { "type": "array", "items": { "$ref": "#/$defs/visualRequest" } },
     "locations": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/location" } },
     "twists": { "type": "array", "items": { "$ref": "#/$defs/twist" } },
     "red_herrings": { "type": "array", "items": { "$ref": "#/$defs/redHerring" } },
@@ -84,6 +85,29 @@
       "properties": {
         "type": { "type": "string", "enum": ["location", "character"] },
         "id": { "$ref": "#/$defs/id" }
+      }
+    },
+    "visual": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["icon"],
+      "properties": {
+        "icon": { "$ref": "#/$defs/id" },
+        "accent": { "$ref": "#/$defs/text" },
+        "states": { "type": "array", "items": { "$ref": "#/$defs/text" } }
+      }
+    },
+    "visualRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "description", "suggested_category"],
+      "properties": {
+        "name": { "$ref": "#/$defs/text" },
+        "description": { "$ref": "#/$defs/text" },
+        "suggested_category": {
+          "type": "string",
+          "enum": ["container", "tool", "paper", "valuable", "clothing", "food", "nature", "furniture", "machine", "danger", "generic"]
+        }
       }
     },
     "goalState": {
@@ -191,6 +215,7 @@
         "name": { "$ref": "#/$defs/text" },
         "description": { "$ref": "#/$defs/text" },
         "icon_recipe": { "$ref": "#/$defs/text" },
+        "visual": { "$ref": "#/$defs/visual" },
         "key": { "type": "boolean" },
         "found_at": { "$ref": "#/$defs/sourceRef" },
         "found_requires": { "$ref": "#/$defs/requirement" },
@@ -219,7 +244,8 @@
             "properties": {
               "id": { "$ref": "#/$defs/id" },
               "name": { "$ref": "#/$defs/text" },
-              "description": { "$ref": "#/$defs/text" }
+              "description": { "$ref": "#/$defs/text" },
+              "visual": { "$ref": "#/$defs/visual" }
             }
           }
         },

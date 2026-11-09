@@ -68,6 +68,16 @@ The on-device story model requires WebGPU. On iPhone and iPad, use Safari on
 iOS/iPadOS 26 or newer. WebGPU requires HTTPS; if opening the dev server from
 another device, its local-network HTTP address is not treated as `localhost`.
 
+## Artwork
+
+The Lantern Tide lighthouse glyph adapts the 16×16 lighthouse from
+[Pixnote Pixels](https://pixnote.net/en/pixels/lighthouse/), available under
+[CC0 1.0](https://creativecommons.org/publicdomain/zero/1.0/). The item glyph
+catalog also uses Pixnote's CC0 sprites as references; source URLs and any
+closest-match substitutions are recorded alongside the adapted glyphs in
+`src/art/glyphs/`. Other entries are original pixel redraws to complete the
+requested catalog.
+
 ## Test offline and install
 
 1. Run `npm run build` and `npm run preview`.

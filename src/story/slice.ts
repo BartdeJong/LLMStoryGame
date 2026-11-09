@@ -1,5 +1,6 @@
 import type { LengthView } from "./loader";
 import type { CastMember, Location, StoryPack } from "./types";
+import type { VisualSpec } from "../art/glyphs";
 
 export const STYLE_EXCERPT_MAX_CHARS = 500;
 
@@ -18,6 +19,8 @@ export interface SliceObject {
   name: string;
   description: string;
   kind: "object" | "key_item";
+  visual?: VisualSpec;
+  visualInferred?: boolean;
 }
 
 export interface SliceClue {
@@ -102,10 +105,16 @@ export function buildLocationSlice(
     }));
 
   const objects: SliceObject[] = [
-    ...location.objects.map((object): SliceObject => ({ id: object.id, name: object.name, description: object.description, kind: "object" })),
+    ...location.objects.map((object): SliceObject => ({
+      id: object.id, name: object.name, description: object.description, kind: "object",
+      visual: object.visual, visualInferred: object.visualInferred,
+    })),
     ...pack.items
       .filter((item) => item.found_at?.type === "location" && item.found_at.id === locationId)
-      .map((item): SliceObject => ({ id: item.id, name: item.name, description: item.description, kind: "key_item" })),
+      .map((item): SliceObject => ({
+        id: item.id, name: item.name, description: item.description, kind: "key_item",
+        visual: item.visual, visualInferred: item.visualInferred,
+      })),
   ];
 
   const clues: SliceClue[] = pack.clues

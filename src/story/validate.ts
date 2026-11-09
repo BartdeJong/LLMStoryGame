@@ -4,6 +4,8 @@ import { narrationIssue } from "../dialogue/lineCleanup";
 import { checkSchema, joinPath } from "./jsonSchema";
 import { missingOf, orderedLocations, requirementEntries, solveLength, type SolveResult } from "./solver";
 import { LENGTH_IDS, type CastMember, type LengthDefinition, type LengthId, type Requirement, type SourceRef, type StoryPack } from "./types";
+import { GLYPH_STATES, getGlyph, resolveVisual, tokenizeVisualText } from "../art/glyphs";
+import { PALETTE_COLOR_SLOTS } from "../art";
 
 export interface Issue {
   severity: "error" | "warning";
@@ -42,6 +44,49 @@ export function validateStoryPack(data: unknown): ValidationReport {
     return finish();
   }
   const pack = data as StoryPack;
+
+  const visuals = [
+    ...pack.items.map((item, index) => ({ name: item.name, description: item.description, visual: item.visual, path: `items[${index}]` })),
+    ...pack.locations.flatMap((location, locationIndex) => location.objects.map((object, objectIndex) => ({
+      name: object.name,
+      description: object.description,
+      visual: object.visual,
+      path: `locations[${locationIndex}].objects[${objectIndex}]`,
+    }))),
+  ];
+  const visualGroups = new Map<string, number>();
+  for (const entry of visuals) {
+    const visual = entry.visual ?? resolveVisual(entry.name, entry.description);
+    if (entry.visual && !getGlyph(entry.visual.icon)) {
+      error("VISUAL_ICON_UNKNOWN", `${entry.path}.visual.icon`, `visual icon "${entry.visual.icon}" is not in the glyph catalog.`);
+    }
+    if (entry.visual?.accent
+      && !PALETTE_COLOR_SLOTS.some((slot) => slot === entry.visual?.accent)
+      && !/^#[0-9A-Fa-f]{6}$/.test(entry.visual.accent)) {
+      error("VISUAL_ACCENT_INVALID", `${entry.path}.visual.accent`, `accent "${entry.visual.accent}" must be a palette color slot or a #RRGGBB color.`);
+    }
+    for (const state of entry.visual?.states ?? []) {
+      if (!GLYPH_STATES.some((knownState) => knownState === state)) {
+        error("VISUAL_STATE_UNKNOWN", `${entry.path}.visual.states`, `unknown visual state "${state}".`);
+      }
+    }
+    const key = JSON.stringify([visual.icon, visual.accent ?? "", [...(visual.states ?? [])].sort()]);
+    visualGroups.set(key, (visualGroups.get(key) ?? 0) + 1);
+    const icon = getGlyph(visual.icon);
+    const itemTokens = tokenizeVisualText(entry.name);
+    const sharesToken = icon
+      ? [...tokenizeVisualText(icon.name), ...icon.tags].some((token) => itemTokens.includes(token))
+      : false;
+    if (!sharesToken || resolveVisual(entry.name, entry.description).confidence < 0.34) {
+      warn("VISUAL_WEAK_MATCH", entry.path, `weak visual match for "${entry.name}" using "${visual.icon}".`);
+    }
+  }
+  for (const [key, count] of visualGroups) {
+    if (count > 3) {
+      const [icon] = JSON.parse(key) as [string];
+      warn("VISUAL_DUPLICATE", "items/locations.objects", `duplicate visuals: ${count} entries use "${icon}" with identical accent and states.`);
+    }
+  }
 
   // ---- ids: uniqueness and references ----
   const ids = {

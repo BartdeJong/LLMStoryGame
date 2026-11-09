@@ -12,10 +12,14 @@ export const SLICE_END = "END LOCATION";
 // The prompt carries only this location's slice, never the rest of the pack.
 export function buildBriefPrompt(slice: LocationSlice): string {
   const { style, ...facts } = slice;
+  const promptFacts = {
+    ...facts,
+    objects: facts.objects.map(({ visual: _visual, visualInferred: _inferred, ...object }) => object),
+  };
   return [
     "Write the flavor for ONE location of a cozy mystery game. The facts below are fixed. Describe them; never change them and never add plot.",
     SLICE_START,
-    JSON.stringify(facts),
+    JSON.stringify(promptFacts),
     SLICE_END,
     `Style guide:\n${style}`,
     "Return JSON with keys: name (exactly the location name), " +

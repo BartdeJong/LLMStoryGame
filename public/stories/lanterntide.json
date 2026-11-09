@@ -4125,7 +4125,12 @@
         {
           "id": "o_thirteenth_light",
           "name": "The Thirteenth Light",
-          "description": "A bright but tired lamp with a small figure beside it."
+          "description": "A bright but tired lamp with a small figure beside it.",
+          "visual": {
+            "icon": "lighthouse",
+            "accent": "water",
+            "states": ["glow"]
+          }
         }
       ],
       "doors": [

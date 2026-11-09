@@ -29,11 +29,11 @@ describe("example pack", () => {
     });
   });
 
-  it("passes the schema and the validator with no warnings", () => {
+  it("passes the schema and validator without non-visual warnings", () => {
     expect(checkSchema(fixture, schema as Record<string, unknown>)).toEqual([]);
     const report = validateStoryPack(fixture);
     expect(report.errors.map(formatIssue)).toEqual([]);
-    expect(report.warnings.map(formatIssue)).toEqual([]);
+    expect(report.warnings.filter((issue) => !issue.code.startsWith("VISUAL_")).map(formatIssue)).toEqual([]);
   });
 
   it("can be solved to its ending", () => {
@@ -145,7 +145,7 @@ describe("validator rejects broken packs", () => {
     pack.items.push({ ...pack.items[2], id: "i_spare" });
     const report = validateStoryPack(pack);
     expect(report.ok).toBe(true);
-    expect(report.warnings.map((w) => w.code).sort()).toEqual(["UNUSED_CAST", "UNUSED_ITEM"]);
+    expect(report.warnings.filter((w) => !w.code.startsWith("VISUAL_")).map((w) => w.code).sort()).toEqual(["UNUSED_CAST", "UNUSED_ITEM"]);
   });
 });
 

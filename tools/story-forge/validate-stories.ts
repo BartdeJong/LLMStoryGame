@@ -5,8 +5,10 @@ import { resolve } from "node:path";
 import { formatIssue, validateStoryPack } from "../../src/story/validate";
 import { parseStoryIndex } from "../../src/story/loader";
 import { LENGTH_IDS } from "../../src/story/types";
+import { writeIconCatalog } from "./icon-catalog-utils";
 
 const storiesDir = resolve(process.argv[2] ?? "public/stories");
+writeIconCatalog(process.cwd());
 
 function readJson(file: string): unknown {
   return JSON.parse(readFileSync(file, "utf8"));
