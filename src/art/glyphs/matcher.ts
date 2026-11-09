@@ -97,12 +97,13 @@ export function resolveVisual(
   let best: GlyphDefinition | undefined;
   let bestScore = 0;
   for (const glyph of catalog) {
+    if (glyph.id.startsWith("generic_")) continue;
     const tokens = glyphTokens(glyph);
     let score = 0;
     for (const token of nameTokens) {
       if (!tokens.has(token)) continue;
-      score += 3;
-      if (token === head) score += 3;
+      score += 4;
+      if (token === head) score += 4;
     }
     let descriptionMatches = 0;
     for (const token of descriptionTokens) {

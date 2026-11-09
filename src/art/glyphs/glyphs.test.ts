@@ -66,6 +66,15 @@ describe("visual matcher", () => {
     expect(resolveVisual("Overdue Book", "", fixture).icon).toBe("book");
   });
 
+  it("prefers the complete object name over description tag overlap", () => {
+    const candidates = [
+      glyph("letter", "Letter", ["letter", "post", "mail"], "paper"),
+      glyph("lamp_post", "Lamp post", ["lamp", "lantern", "post"], "furniture"),
+    ];
+
+    expect(resolveVisual("Lantern post", "A post near the mail room.", candidates).icon).toBe("lamp_post");
+  });
+
   it("uses a generic category glyph with zero confidence for an unknown noun", () => {
     expect(resolveVisual("Unknown Widget", "", fixture)).toMatchObject({ icon: "generic_prop", confidence: 0 });
   });
@@ -81,7 +90,7 @@ describe("glyph lint", () => {
       "key", "potion_bottle", "book", "gem", "leaf", "feather", "lantern", "coin",
       "generic_container", "generic_tool", "generic_paper", "generic_trinket", "generic_prop",
       "chest", "chest_open", "barrel", "crate", "sack", "basket", "jar", "bottle", "flask", "vial",
-      "cup", "mug", "teapot", "urn", "bucket", "cooking_pot", "kettle", "bowl", "jug", "canister",
+      "cup", "mug", "teapot", "urn", "bucket", "cooking_pot", "kettle", "bowl", "jug", "canister", "storage_bin", "letter_box",
       "magnifying_glass", "compass", "telescope", "pocket_watch", "hammer", "wrench", "saw", "scissors",
       "shovel", "rope", "hook", "candle", "torch", "matchbox", "padlock", "crowbar", "pliers",
       "lantern_hand", "spectacles", "bell",
@@ -95,7 +104,8 @@ describe("glyph lint", () => {
       "bed", "stove", "grandfather_clock", "mirror", "painting", "statue", "oil_press", "tap_valve",
       "gears", "crank", "metal_pipe", "lever", "clockwork_box", "cart_wheel",
       "dagger", "revolver", "poison_bottle", "bloodstain", "footprints", "broken_glass", "cut_rope",
-      "cobweb", "skull", "scorched_paper", "handcuffs",
+      "cobweb", "skull", "scorched_paper", "handcuffs", "display_stand", "lamp_stand", "bedside_table",
+      "cooling_table", "council_table", "stool", "receipt",
     ];
     const availableIds = new Set(GLYPH_CATALOG.map((glyph) => glyph.id));
 

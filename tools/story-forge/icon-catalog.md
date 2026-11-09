@@ -26,6 +26,8 @@ Choose a glyph by id. Do not use a wrong icon; add a `visual_requests` entry whe
 - `bowl` — Bowl · stone · bowl, ramen, dish, food, kitchen, emberbowl, washbasin
 - `jug` — Jug · glass · jug, goldfish, bag, water, festival, container
 - `canister` — Canister · metal · canister, ink, writing, bottle, container, duskink, inkshelf
+- `storage_bin` — Storage bin · wood · bin, dough, flour, storage, grain, wood, container
+- `letter_box` — Letter box · metal · box, letter, mailbox, parcel, mail, delivery, container
 - `purse` — Purse · cloth · purse, bag, handbag, money, wallet, leather, coin
 
 ## tool
@@ -69,7 +71,7 @@ Choose a glyph by id. Do not use a wrong icon; add a `visual_requests` entry whe
 - `note` — Note · paper · note, memo, paper, writing, slip, reminder, origami, hudson, recollection, testimony
 - `ticket` — Ticket · paper · ticket, pass, admission, stub, paper, event, entry
 - `photograph` — Photograph · paper · photograph, photo, picture, camera, image, portrait, paper
-- `ledger` — Ledger · paper · ledger, desk, tally, bell, account, register, paper, records, unpaid, voucher, vouchers
+- `ledger` — Ledger · paper · ledger, desk, tally, bell, account, register, paper, record, records, unpaid, voucher, vouchers
 - `diary` — Diary · paper · diary, journal, archive, bookshelf, shelf, hoard, personal, book, ledger
 - `playing_card` — Playing card · paper · playing, card, game, deck, ace, suit, paper
 - `quill_pen` — Quill pen · wood · quill, pen, feather, writing, ink, scribe, paper
@@ -77,11 +79,12 @@ Choose a glyph by id. Do not use a wrong icon; add a `visual_requests` entry whe
 - `stamp` — Stamp · paper · stamp, postage, postal, circle, mark, paper, envelope
 - `wax_seal` — Wax seal · misc · wax, seal, stamp, crest, letter, paper, royal
 - `blueprint` — Blueprint · paper · blueprint, plan, design, schematic, star, chart, paper
+- `receipt` — Receipt · paper · receipt, paper, document, payment, purchase, printed, record
 
 ## valuable
 
 - `gem` — Gem · stone · gem, crystal, cluster, jewel, mineral, treasure
-- `coin` — Coin · metal · coin, money, gold, silver, currency, treasure
+- `coin` — Coin · metal · coin, money, gold, silver, currency, treasure, token
 - `generic_trinket` — Generic trinket · metal · trinket, charm, key, jewelry, pendant, accessory, jewel, gem, coin, token, medallion, valuable
 - `ring` — Ring · metal · ring, jewel, jewelry, band, gold, precious, finger
 - `necklace` — Necklace · metal · necklace, chain, pendant, jewelry, neckwear, ornament
@@ -131,8 +134,8 @@ Choose a glyph by id. Do not use a wrong icon; add a `visual_requests` entry whe
 - `signpost` — Signpost · wood · signpost, direction, wood, marker, wayfinding, entrance, study, door, desk, locket
 - `bench` — Bench · wood · bench, seat, sofa, wood, furniture, peg, rail, hats, aprons, string
 - `table` — Table · wood · table, worktable, sailmakers, thread, needles, canvas, workbench, wood
-- `chair` — Chair · wood · chair, seat, furniture, wood, stool, sitting
-- `lamp_post` — Lamp post · metal · lamp, post, light, street, fixture, ferry, bell, arrival, harbour
+- `chair` — Chair · wood · chair, seat, furniture, wood, sitting
+- `lamp_post` — Lamp post · metal · lamp, lantern, post, light, street, fixture, ferry, bell, arrival, harbour
 - `fountain` — Fountain · stone · fountain, water, stone, basin, tidepool, glowing, amber, pool
 - `well` — Well · stone · well, water, stone, bucket, cistern, spring, shaft
 - `bookshelf` — Bookshelf · wood · bookshelf, shelf, books, library, wood, study, archive
@@ -140,6 +143,12 @@ Choose a glyph by id. Do not use a wrong icon; add a `visual_requests` entry whe
 - `mirror` — Mirror · glass · mirror, glass, reflection, looking, surface, window, windows, tall, attic, gallery, round, harbour, berths, tide, gold
 - `painting` — Painting · cloth · painting, picture, wall, art, frame, founders, banner, stars, torn, stitched
 - `statue` — Statue · stone · statue, sculpture, stone, hero, figure, monument
+- `display_stand` — Display stand · wood · stand, pedestal, spyglass, telescope, display, support, mount
+- `lamp_stand` — Lamp stand · metal · lamp, stand, floor, lighting, shade, fixture
+- `bedside_table` — Bedside table · wood · bedside, nightstand, night, table, drawer, bedroom, lamp
+- `cooling_table` — Cooling table · wood · cooling, bakery, pastry, rack, table, kitchen, worktop
+- `council_table` — Council table · wood · council, meeting, civic, assembly, table, round, conference
+- `stool` — Stool · wood · stool, seat, furniture, wood, footrest, workshop, small
 
 ## machine
 
@@ -155,6 +164,7 @@ Choose a glyph by id. Do not use a wrong icon; add a `visual_requests` entry whe
 - `clockwork_box` — Clockwork box · wood · clockwork, box, music, winding, mechanism, wood, toy
 - `cart_wheel` — Cart wheel · wood · cart, wheel, wagon, wood, transport, axle, tire
 - `lighthouse` — Lighthouse · stone · lighthouse, beacon, tower, light, lamp, sea, thirteenth
+- `stone_lighthouse` — Lighthouse2 · stone · lighthouse, tower, beacon, light, nautical, coast
 
 ## danger
 

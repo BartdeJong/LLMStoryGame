@@ -1,7 +1,10 @@
 import { describe, expect, it } from "vitest";
 import fixture from "./fixtures/example-pack.json";
+import exampleStory from "../../public/stories/example.json";
 import lanternTide from "../../public/stories/lanterntide.json";
+import holmesAshEnvelope from "../../public/stories/holmesashenvelope.json";
 import schema from "../../tools/story-forge/schema/story-pack.schema.json";
+import { resolveVisual } from "../art/glyphs";
 import { loadStoryPack } from "./loader";
 import type { StoryPack } from "./types";
 import { checkSchema } from "./jsonSchema";
@@ -17,6 +20,19 @@ describe("story visuals", () => {
       ?.objects.find((object) => object.id === "o_thirteenth_light");
 
     expect(light?.visual).toEqual({ icon: "lighthouse", accent: "water", states: ["glow"] });
+  });
+
+  it("uses specific glyphs for every current story item and room object", () => {
+    const stories = [exampleStory, lanternTide, holmesAshEnvelope];
+    const genericMatches = stories.flatMap((story) => [
+      ...story.items.map((item) => ({ name: item.name, description: item.description })),
+      ...story.locations.flatMap((location) => location.objects.map((object) => ({
+        name: object.name,
+        description: object.description,
+      }))),
+    ]).filter((entry) => resolveVisual(entry.name, entry.description).icon.startsWith("generic_"));
+
+    expect(genericMatches).toEqual([]);
   });
 
   it("reports weak matches and rejects unknown glyphs and states", () => {
