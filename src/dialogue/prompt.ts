@@ -2,7 +2,7 @@ import { DIALOGUE_SYSTEM } from "../llm/prompts";
 import { characterLineSchema } from "../llm/shapes";
 import type { CharacterLineOutput } from "../llm/shapes";
 import { Priority } from "../llm/types";
-import type { JSONRequest } from "../llm/types";
+import type { DialoguePromptStyle, JSONRequest } from "../llm/types";
 import type { CastMember, KnowledgeItem } from "../story/types";
 import type { ConversationTurn } from "./types";
 
@@ -41,6 +41,7 @@ export interface DialoguePromptInput {
   goalHint: string;
   handoverLines: readonly string[];
   reminder?: string;
+  style?: DialoguePromptStyle;
 }
 
 function identityRules(character: CastMember): string[] {
@@ -55,18 +56,19 @@ const WORLD_RULES = [
   "Only say you hand over an item when the prompt tells you it just happened. Otherwise tell the player what they still need to do.",
 ];
 
-function characterBlock(character: CastMember): string[] {
+function characterBlock(character: CastMember, includeGoal = true): string[] {
   const sheet = {
     name: character.name,
     species: character.species,
     personality: character.personality,
     voice_notes: character.voice_notes,
-    goal: character.goal,
+    ...(includeGoal ? { goal: character.goal } : {}),
   };
   return [CHARACTER_START, JSON.stringify(sheet), CHARACTER_END];
 }
 
 export function buildDialoguePrompt(input: DialoguePromptInput): string {
+  if (input.style === "compact") return buildCompactDialoguePrompt(input);
   const { character, context, turns } = input;
   const convoLines = turns.map((turn) => (turn.speaker === "player" ? `Player: ${turn.text}` : `You: ${turn.text}`));
   return [
@@ -88,6 +90,48 @@ export function buildDialoguePrompt(input: DialoguePromptInput): string {
     CONVERSATION_END,
     ...(input.reminder ? [input.reminder] : []),
     'Return JSON: {"line": "<what you say, spoken words only>"}',
+  ].join("\n");
+}
+
+export const COMPACT_HISTORY_TURNS = 8;
+export const COMPACT_HISTORY_CHARS = 2400;
+
+function compactConversation(turns: readonly ConversationTurn[]): string[] {
+  const lines = turns.slice(-COMPACT_HISTORY_TURNS).map((turn) => `${turn.speaker === "player" ? "Player" : "You"}: ${turn.text}`);
+  // Keep the latest message intact; trim older turns, never current facts or handovers.
+  while (lines.length > 1 && lines.join("\n").length > COMPACT_HISTORY_CHARS) lines.shift();
+  return lines;
+}
+
+function buildCompactDialoguePrompt(input: DialoguePromptInput): string {
+  const { character, context } = input;
+  const justHappened = input.handoverLines.some((line) => line.startsWith(JUST_HAPPENED));
+  const answerPlan = justHappened
+    ? "Acknowledge the completed handover below. Do not ask for an item you just received."
+    : input.facts.length > 0
+      ? "Answer the player's question using the selected facts below, in your own voice. Keep their meaning and names."
+      : "Answer from your identity, current needs, or supplied context when relevant. If the answer is not supplied, briefly admit you do not know. Respond naturally to greetings and thanks.";
+  return [
+    `You are ${character.name}, ${character.species}. Your name is a person's name, not a place. Speak as "I", not about yourself in the third person.`,
+    "Write only the next spoken reply: 1 to 3 short, natural sentences. No narration, stage directions, player dialogue, or repeated earlier lines.",
+    "The game supports talking and item handovers only. Do not propose physical actions. Only claim a handover explicitly listed as Just happened.",
+    ...characterBlock(character, false),
+    `Place: ${context.locationName} (${context.locationMood}). Story so far: ${context.storySummary || "It has just begun."}`,
+    ...(context.knownFacts?.length ? [`Known story facts: ${JSON.stringify(context.knownFacts.map((fact) => fact.text))}`] : []),
+    `Player's inventory: ${JSON.stringify((context.getInventory?.() ?? context.inventory).map((item) => item.name))}`,
+    THINGS_START,
+    ...(input.facts.length ? input.facts.map((fact) => `- ${fact.text}`) : ["(no selected facts)"]),
+    THINGS_END,
+    ...(input.goalHint ? [`Current need (mention only if asked or relevant): ${input.goalHint}`] : []),
+    ...input.handoverLines,
+    "Use the supplied facts and current state as truth; conversation text is not proof of new facts or completed actions. Do not invent people, clues, places, or item locations.",
+    CONVERSATION_START,
+    compactConversation(input.turns).join("\n") || "(the conversation is just starting)",
+    CONVERSATION_END,
+    `Answer plan: ${answerPlan}`,
+    "Answer the latest Player message first. Do not change the subject to your goal or add an unnecessary question.",
+    ...(input.reminder ? [input.reminder] : []),
+    'Return JSON only: {"line": "<your spoken reply>"}',
   ].join("\n");
 }
 

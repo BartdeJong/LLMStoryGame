@@ -174,6 +174,7 @@ export class ConversationController {
         goalHint,
         handoverLines,
         reminder: reminderFor(this.character, attempt),
+        style: this.client.dialoguePromptStyle,
       });
       const result = await this.client.generateJSON(
         buildLineRequest(prompt, { temperature: BASE_TEMPERATURE + TEMPERATURE_STEP * attempt }),

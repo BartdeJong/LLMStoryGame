@@ -3,7 +3,7 @@ import { runJsonRequest } from "./json";
 import { RequestQueue } from "./queue";
 import { defaultValue } from "./schema";
 import { Priority } from "./types";
-import type { JSONRequest, JSONResult, LLMBackend, LLMEvents, LoadResult } from "./types";
+import type { DialoguePromptStyle, JSONRequest, JSONResult, LLMBackend, LLMEvents, LoadResult } from "./types";
 
 type Listener<K extends keyof LLMEvents> = (event: LLMEvents[K]) => void;
 
@@ -29,6 +29,10 @@ export class LLMClient {
 
   get isLoaded(): boolean {
     return this.loaded;
+  }
+
+  get dialoguePromptStyle(): DialoguePromptStyle {
+    return this.backend.dialoguePromptStyle ?? "standard";
   }
 
   on<K extends keyof LLMEvents>(event: K, listener: Listener<K>): () => void {

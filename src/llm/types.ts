@@ -36,9 +36,12 @@ export interface LoadResult {
   fromCache: boolean;
 }
 
+export type DialoguePromptStyle = "standard" | "compact";
+
 // Both the WebLLM backend and the mock implement this.
 export interface LLMBackend {
   readonly name: string;
+  readonly dialoguePromptStyle?: DialoguePromptStyle;
   load(modelId: string, onProgress: (progress: LoadProgress) => void): Promise<LoadResult>;
   generate(params: GenerationParams): Promise<RawResult>;
   unload(): Promise<void>;

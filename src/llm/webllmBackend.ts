@@ -1,6 +1,6 @@
 import { hasModelInCache, WebWorkerMLCEngine } from "@mlc-ai/web-llm";
 import type { ChatCompletionChunk } from "@mlc-ai/web-llm";
-import type { GenerationParams, LLMBackend, LoadProgress, LoadResult, RawResult } from "./types";
+import type { DialoguePromptStyle, GenerationParams, LLMBackend, LoadProgress, LoadResult, RawResult } from "./types";
 
 function abortError(): Error {
   return Object.assign(new Error("Aborted"), { name: "AbortError" });
@@ -11,11 +11,20 @@ export class WebLLMBackend implements LLMBackend {
   readonly name = "webllm";
   private worker: Worker | null = null;
   private engine: WebWorkerMLCEngine | null = null;
+  private modelId: string | null = null;
   private onProgress: (progress: LoadProgress) => void = () => {};
   // Set when the runtime rejects schema-guided output; later calls rely on the prompt alone.
   private guidedOutputBroken = false;
 
+  get dialoguePromptStyle(): DialoguePromptStyle {
+    return this.modelId === "Qwen3.5-9B-q4f16_1-MLC" || this.modelId === "Qwen3.5-9B-q4f32_1-MLC"
+      ? "compact"
+      : "standard";
+  }
+
   async load(modelId: string, onProgress: (progress: LoadProgress) => void): Promise<LoadResult> {
+    this.modelId = null;
+    this.guidedOutputBroken = false;
     const fromCache = await hasModelInCache(modelId).catch(() => false);
     this.onProgress = onProgress;
     if (!this.engine) {
@@ -28,19 +37,23 @@ export class WebLLMBackend implements LLMBackend {
     const startedAt = performance.now();
     // Files already in the cache are skipped, so an interrupted download resumes where it stopped.
     await this.engine.reload(modelId);
+    this.modelId = modelId;
     return { loadTimeMs: performance.now() - startedAt, fromCache };
   }
 
   async generate(params: GenerationParams): Promise<RawResult> {
-    if (!this.engine) throw new Error("Model is not loaded.");
+    if (!this.engine || !this.modelId) throw new Error("Model is not loaded.");
     if (params.signal.aborted) throw abortError();
     const useSchema = params.jsonSchema !== undefined && !this.guidedOutputBroken;
     try {
       return await this.stream(params, useSchema);
     } catch (error) {
       if (params.signal.aborted) throw abortError();
-      if (!useSchema) throw error;
+      // Worker errors arrive as strings, not necessarily Error instances.
+      const message = error instanceof Error ? error.message : String(error);
+      if (!useSchema || !message.includes("Failed to initialize the grammar matcher")) throw error;
       this.guidedOutputBroken = true;
+      console.warn("WebLLM schema-guided output is unavailable; retrying with prompt-only JSON.", error);
       return this.stream(params, false);
     }
   }
@@ -54,13 +67,17 @@ export class WebLLMBackend implements LLMBackend {
     let text = "";
     let chunkCount = 0;
     let usage: ChatCompletionChunk["usage"];
+    const isQwen35 = this.dialoguePromptStyle === "compact";
+    const isQwenDialogue = isQwen35 && params.tag === "dialogue";
     try {
       const stream = await engine.chat.completions.create({
         messages: params.messages,
         stream: true,
         stream_options: { include_usage: true },
-        max_tokens: params.maxTokens,
-        temperature: params.temperature,
+        max_tokens: isQwenDialogue ? Math.max(params.maxTokens, 256) : params.maxTokens,
+        temperature: isQwenDialogue ? 0.7 : params.temperature,
+        ...(isQwen35 ? { extra_body: { enable_thinking: false } } : {}),
+        ...(isQwenDialogue ? { top_p: 0.8, repetition_penalty: 1.0, presence_penalty: 0, frequency_penalty: 0 } : {}),
         ...(useSchema ? { response_format: { type: "json_object" as const, schema: JSON.stringify(params.jsonSchema) } } : {}),
       });
       for await (const chunk of stream) {
@@ -89,6 +106,8 @@ export class WebLLMBackend implements LLMBackend {
   }
 
   async unload(): Promise<void> {
+    this.modelId = null;
+    this.guidedOutputBroken = false;
     await this.engine?.unload();
   }
 }

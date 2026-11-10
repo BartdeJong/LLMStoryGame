@@ -33,6 +33,29 @@ model to check its interface without WebGPU or a model download; use the real
 model for response-quality feedback. The local save endpoint is not included in
 production builds.
 
+### Qwen3.5-9B dialogue
+
+Both Qwen3.5-9B on-device variants automatically use non-thinking mode. Dialogue
+uses temperature 0.7, top-p 0.8, a minimum 256-token output budget, and neutral
+repetition/frequency/presence penalties so important names and facts can recur.
+Repair attempts keep these sampling settings rather than increasing temperature.
+JSON schema guidance remains enabled; a grammar-initialization failure logs a
+warning and uses prompt-only JSON until the next model load. Other runtime errors
+are reported normally.
+
+Qwen3.5-9B conversation prompts prioritize the latest question, selected facts and
+actual handovers over quest reminders. They omit the static character goal in
+favor of current needs and keep at most eight recent transcript entries, trimming
+older entries to fit 2,400 characters. The latest message and current story facts
+are never clipped. This is a history budget, not a guarantee that arbitrary input
+fits WebLLM's 4,096-token context window; unusually long player input or story
+context can still exceed it. The full conversation remains visible in the UI.
+Other models and the Bedrock gateway keep their existing prompts and sampling.
+
+Use the dialogue lab with the real model to assess relevance, character voice,
+repetition and factual accuracy. Unit tests validate requests and game behavior,
+not subjective dialogue quality.
+
 The title screen offers **New game** (choose a save slot) and **Load game**.
 Saved games autosave locally and show save status in the HUD; use **Export JSON**
 in the load screen to keep a backup, or import that file on another device.
