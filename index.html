@@ -6,7 +6,7 @@
     <meta name="theme-color" content="#17251d" />
     <meta name="description" content="A cozy mystery exploration game." />
     <link rel="manifest" href="%BASE_URL%manifest.webmanifest" />
-    <link rel="apple-touch-icon" href="%BASE_URL%icon.svg" />
+    <link rel="apple-touch-icon" sizes="180x180" href="%BASE_URL%icon-180.png" />
     <title>Cozy Mystery</title>
   </head>
   <body>
@@ -14,12 +14,12 @@
       <canvas id="game" width="320" height="180" aria-label="Game world" role="img"></canvas>
       <div class="game-hud">
         <p class="location-label">MEADOW CROSSING</p>
-        <p id="game-message" aria-live="polite">Explore with WASD or the joystick.</p>
+        <p id="game-message" aria-live="polite">Explore the area and look for clues.</p>
         <p id="save-status" class="save-status" role="status" aria-live="polite"></p>
         <details class="controls-guide">
           <summary>Controls &amp; tips</summary>
           <p>Move: WASD or arrow keys. Interact: E or Space. Map: M. Journal: J. Inventory: I. Pause: Escape.</p>
-          <p>On touch screens, drag the joystick and tap A near a person, clue, item, or doorway.</p>
+          <p>On touch screens, tap a person, clue, item, or doorway to walk there, or touch and drag on the left of the screen to steer. A acts on whatever is nearby.</p>
         </details>
         <div class="gamepad-hints" aria-hidden="true">
           <span data-gamepad-action="A">Interact</span>
@@ -29,6 +29,9 @@
         </div>
       </div>
       <p id="interaction-prompt" class="interaction-prompt" role="status" aria-live="polite" hidden></p>
+      <div id="floating-stick" class="floating-stick" aria-hidden="true" hidden>
+        <span class="joystick-thumb"></span>
+      </div>
       <div class="touch-controls" aria-label="Touch controls">
         <button id="joystick" class="joystick" type="button" aria-label="Movement joystick">
           <span class="joystick-thumb"></span>

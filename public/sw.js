@@ -1,5 +1,5 @@
 const CACHE_PREFIX = "cozy-mystery-shell-";
-const CACHE_NAME = `${CACHE_PREFIX}v8`;
+const CACHE_NAME = `${CACHE_PREFIX}v9`;
 const scopeUrl = new URL(self.registration.scope);
 
 self.addEventListener("install", (event) => {
@@ -37,6 +37,10 @@ self.addEventListener("install", (event) => {
     await cache.addAll([
       new URL("manifest.webmanifest", scopeUrl),
       new URL("icon.svg", scopeUrl),
+      new URL("icon-180.png", scopeUrl),
+      new URL("icon-192.png", scopeUrl),
+      new URL("icon-512.png", scopeUrl),
+      new URL("icon-maskable-512.png", scopeUrl),
     ]);
     await self.skipWaiting();
   })());

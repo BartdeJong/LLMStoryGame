@@ -14,6 +14,8 @@ export {
   generateRuins,
   generateVillage,
 } from "./generators";
+export { findPath, tilesWithinRange } from "./pathfinding";
+export type { PathQuery } from "./pathfinding";
 export {
   entitySolidityIsSafe,
   isEntityInNarrowCorridor,

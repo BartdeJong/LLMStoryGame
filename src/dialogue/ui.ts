@@ -4,6 +4,7 @@
 import { activateGamepadFocus } from "../input/focus";
 import { inputMode } from "../input/mode";
 import { isReducedMotion } from "../ui/preferences";
+import { getVisualViewportBottomInset } from "./visualViewport";
 import type { SubjectRef } from "../story/types";
 import type { AskEntry, AskOptions } from "./askAbout";
 
@@ -67,6 +68,9 @@ export function createDialogueBox(container: HTMLElement): DialogueBox {
   const freeInput = el("input", "dialogue-free-input");
   freeInput.type = "text";
   freeInput.maxLength = 120;
+  freeInput.enterKeyHint = "send";
+  freeInput.autocapitalize = "sentences";
+  freeInput.autocomplete = "off";
   freeInput.placeholder = "Say something...";
   const sendButton = el("button", "llm-button dialogue-send");
   sendButton.type = "submit";
@@ -89,6 +93,20 @@ export function createDialogueBox(container: HTMLElement): DialogueBox {
 
   box.append(speaker, thinking, log, skipButton, notice, replySection, controls);
   container.append(box);
+
+  const visualViewport = window.visualViewport;
+  if (visualViewport) {
+    const updateViewportInsets = (): void => {
+      const inset = getVisualViewportBottomInset(container.clientHeight, visualViewport.height, visualViewport.offsetTop);
+      container.style.setProperty("--dialogue-bottom-inset", `${inset}px`);
+      container.style.setProperty("--dialogue-viewport-height", `${visualViewport.height}px`);
+      container.dataset.dialogueViewportCompact = String(visualViewport.height < 360);
+    };
+    visualViewport.addEventListener("resize", updateViewportInsets);
+    visualViewport.addEventListener("scroll", updateViewportInsets);
+    window.addEventListener("resize", updateViewportInsets);
+    updateViewportInsets();
+  }
 
   const picker = el("section", "dialogue-ask-picker");
   picker.hidden = true;
@@ -251,6 +269,7 @@ export function createDialogueBox(container: HTMLElement): DialogueBox {
   });
 
   function renderChoices(handlers: DialogueHandlers): void {
+    freeInput.blur();
     choices.replaceChildren();
     freeForm.hidden = true;
     choices.hidden = false;
@@ -275,13 +294,13 @@ export function createDialogueBox(container: HTMLElement): DialogueBox {
     if (inputMode === "gamepad") choices.querySelector<HTMLButtonElement>("button")?.focus();
   }
 
-  function renderFree(): void {
+  function renderFree(focusInput = false): void {
     choices.hidden = true;
     freeForm.hidden = false;
     replyHeading.textContent = "Your reply";
     switchButton.textContent = "Show quick replies";
     freeInput.value = "";
-    freeInput.focus();
+    if (focusInput) freeInput.focus();
   }
 
   function renderLog(scrollToLatest = true): void {
@@ -355,6 +374,7 @@ export function createDialogueBox(container: HTMLElement): DialogueBox {
       this.showThinking();
     },
     showThinking() {
+      freeInput.blur();
       thinking.textContent = `${activeCharacterName} is thinking`;
       thinking.append(dots);
       thinking.hidden = false;
@@ -376,7 +396,7 @@ export function createDialogueBox(container: HTMLElement): DialogueBox {
       switchButton.onclick = () => {
         currentMode = currentMode === "choices" ? "free" : "choices";
         if (currentMode === "choices") renderChoices(handlers);
-        else renderFree();
+        else renderFree(true);
       };
       switchButton.dataset.padHint = "X";
       leaveButton.dataset.padHint = "B";

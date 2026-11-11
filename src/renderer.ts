@@ -15,9 +15,10 @@ import {
   type TileType,
 } from "./art";
 import { getGlyph, getVisualCanvas } from "./art/glyphs";
+import { REFERENCE_VIEW_HEIGHT, REFERENCE_VIEW_WIDTH, computeViewLayout } from "./viewport";
 
-export const VIEW_WIDTH = 320;
-export const VIEW_HEIGHT = 180;
+// Extra ambient specks keep the density of the original 320x180 view on bigger screens.
+const REFERENCE_VIEW_AREA = REFERENCE_VIEW_WIDTH * REFERENCE_VIEW_HEIGHT;
 
 export interface CharacterRenderState {
   x: number;
@@ -67,6 +68,18 @@ export class Renderer {
   private readonly storyTheme: StoryVisualTheme;
   private label: HTMLElement | null = null;
   private readonly doorSignLabels: { element: HTMLElement; width: number; height: number; scale: number }[] = [];
+  private resizeObserver: ResizeObserver | null = null;
+  private viewWidthPx = REFERENCE_VIEW_WIDTH;
+  private viewHeightPx = REFERENCE_VIEW_HEIGHT;
+
+  // World pixels across and down the canvas; they follow the shape of the screen.
+  get viewWidth(): number {
+    return this.viewWidthPx;
+  }
+
+  get viewHeight(): number {
+    return this.viewHeightPx;
+  }
 
   constructor(private readonly canvas: HTMLCanvasElement, storyId: string) {
     const context = canvas.getContext("2d", { alpha: false });
@@ -74,9 +87,42 @@ export class Renderer {
       throw new Error("This browser could not create a 2D canvas context.");
     }
     this.context = context;
-    this.context.imageSmoothingEnabled = false;
     this.storyTheme = getStoryVisualTheme(storyId);
     canvas.style.filter = this.storyTheme.canvasFilter;
+    this.fitToContainer();
+    const container = canvas.parentElement;
+    if (container && typeof ResizeObserver !== "undefined") {
+      this.resizeObserver = new ResizeObserver(this.fitToContainer);
+      this.resizeObserver.observe(container);
+    }
+    window.addEventListener("resize", this.fitToContainer);
+  }
+
+  // Sizes the canvas to cover its container; see computeViewLayout for the zoom rule.
+  private readonly fitToContainer = (): void => {
+    const container = this.canvas.parentElement;
+    const layout = computeViewLayout(
+      container?.clientWidth ?? window.innerWidth,
+      container?.clientHeight ?? window.innerHeight,
+      window.devicePixelRatio || 1,
+    );
+    if (layout.width !== this.canvas.width || layout.height !== this.canvas.height) {
+      this.canvas.width = layout.width;
+      this.canvas.height = layout.height;
+    }
+    this.viewWidthPx = layout.width;
+    this.viewHeightPx = layout.height;
+    const style = this.canvas.style;
+    style.width = `${layout.cssWidth}px`;
+    style.height = `${layout.cssHeight}px`;
+    style.left = `${layout.cssLeft}px`;
+    style.top = `${layout.cssTop}px`;
+    // Resizing the canvas resets its drawing state.
+    this.context.imageSmoothingEnabled = false;
+  };
+
+  private ambientCount(base: number): number {
+    return Math.max(base, Math.round((base * this.viewWidthPx * this.viewHeightPx) / REFERENCE_VIEW_AREA));
   }
 
   draw(
@@ -90,15 +136,17 @@ export class Renderer {
     presentation?: EntityPresentation,
   ): void {
     const context = this.context;
+    const viewWidth = this.viewWidthPx;
+    const viewHeight = this.viewHeightPx;
     context.fillStyle = "#17251d";
-    context.fillRect(0, 0, VIEW_WIDTH, VIEW_HEIGHT);
+    context.fillRect(0, 0, viewWidth, viewHeight);
 
     const firstColumn = Math.floor(camera.x / TILE_SIZE);
     const firstRow = Math.floor(camera.y / TILE_SIZE);
-    const offsetX = -(camera.x % TILE_SIZE);
-    const offsetY = -(camera.y % TILE_SIZE);
-    const columns = Math.ceil(VIEW_WIDTH / TILE_SIZE) + 1;
-    const rows = Math.ceil(VIEW_HEIGHT / TILE_SIZE) + 1;
+    const offsetX = firstColumn * TILE_SIZE - camera.x;
+    const offsetY = firstRow * TILE_SIZE - camera.y;
+    const columns = Math.ceil(viewWidth / TILE_SIZE) + 1;
+    const rows = Math.ceil(viewHeight / TILE_SIZE) + 1;
     const doors = new Map(world.doors.map((door) => [`${door.x},${door.y}`, door]));
 
     for (let row = 0; row < rows; row += 1) {
@@ -153,7 +201,7 @@ export class Renderer {
     const character = presentation?.characters.get(entity.id);
     const x = Math.round((character?.x ?? entity.x) * TILE_SIZE - camera.x);
     const y = Math.round((character?.y ?? entity.y) * TILE_SIZE - camera.y);
-    if (x < -TILE_SIZE || y < -TILE_SIZE || x > VIEW_WIDTH || y > VIEW_HEIGHT) return;
+    if (x < -TILE_SIZE || y < -TILE_SIZE || x > this.viewWidthPx || y > this.viewHeightPx) return;
     const objectSprite = entity.packId ? getAshenObjectSprite(entity.packId, palette) : null;
     if (!entity.character) this.drawObjectShadow(x, y);
     if (entity.character) {
@@ -204,12 +252,13 @@ export class Renderer {
     const context = this.context;
     const alpha = Math.min(1, opacity);
     context.fillStyle = `rgba(18, 30, 25, ${alpha})`;
-    context.fillRect(0, 0, VIEW_WIDTH, VIEW_HEIGHT);
+    context.fillRect(0, 0, this.viewWidthPx, this.viewHeightPx);
     if (document.documentElement.dataset.reducedMotion === "true") return;
     const time = performance.now() / 1000;
     context.fillStyle = `rgba(205, 220, 212, ${0.12 * alpha})`;
-    for (let index = 0; index < 7; index += 1) {
-      const x = ((index * 83 + time * (8 + (index % 3) * 5)) % (VIEW_WIDTH + 160)) - 80;
+    const banks = Math.max(7, Math.floor(this.viewHeightPx / 24));
+    for (let index = 0; index < banks; index += 1) {
+      const x = ((index * 83 + time * (8 + (index % 3) * 5)) % (this.viewWidthPx + 160)) - 80;
       const y = 14 + index * 24 + Math.sin(time * 0.7 + index) * 6;
       context.beginPath();
       context.ellipse(x, y, 70, 14, 0, 0, Math.PI * 2);
@@ -252,7 +301,7 @@ export class Renderer {
     this.showLabel(entity.name, x, entityY);
   }
 
-  // The label is DOM text so it stays sharp at any display scale; the canvas is only 320x180.
+  // The label is DOM text so it stays sharp at any display scale.
   private showLabel(name: string, anchorX: number, topY: number): void {
     const parent = this.canvas.parentElement;
     if (!parent) return;
@@ -260,27 +309,40 @@ export class Renderer {
     if (label.textContent !== name) label.textContent = name;
     const view = this.viewOnPage(parent);
     if (!view) return;
-    const { scale, originX, originY } = view;
+    const { scale, originX, originY, left: visibleLeft, right: visibleRight, top: visibleTop } = view;
     const width = label.offsetWidth;
     const height = label.offsetHeight;
-    const minX = originX + 4;
-    const maxX = originX + VIEW_WIDTH * scale - width - 4;
+    const minX = visibleLeft + 4;
+    const maxX = visibleRight - width - 4;
     const left = Math.max(minX, Math.min(Math.max(minX, maxX), originX + anchorX * scale - width / 2));
-    const top = Math.max(originY + 2, originY + topY * scale - height - 4 * scale);
+    const top = Math.max(visibleTop + 2, originY + topY * scale - height - 4 * scale);
     label.style.transform = `translate(${Math.round(left)}px, ${Math.round(top)}px)`;
     label.style.visibility = "visible";
   }
 
-  // Where the 320x180 view sits inside the element that holds the DOM labels, and how much it is enlarged.
-  private viewOnPage(parent: HTMLElement): { scale: number; originX: number; originY: number } | null {
+  // Where the view sits inside the element that holds the DOM labels, how much it is enlarged,
+  // and the part of it that is actually visible (the canvas can overhang its container by a fraction of a world pixel).
+  private viewOnPage(parent: HTMLElement): {
+    scale: number;
+    originX: number;
+    originY: number;
+    left: number;
+    right: number;
+    top: number;
+  } | null {
     const canvasRect = this.canvas.getBoundingClientRect();
     const parentRect = parent.getBoundingClientRect();
-    const scale = Math.min(canvasRect.width / VIEW_WIDTH, canvasRect.height / VIEW_HEIGHT);
+    const scale = canvasRect.width / this.viewWidthPx;
     if (!(scale > 0)) return null;
+    const originX = canvasRect.left - parentRect.left;
+    const originY = canvasRect.top - parentRect.top;
     return {
       scale,
-      originX: canvasRect.left - parentRect.left + (canvasRect.width - VIEW_WIDTH * scale) / 2,
-      originY: canvasRect.top - parentRect.top + (canvasRect.height - VIEW_HEIGHT * scale) / 2,
+      originX,
+      originY,
+      left: Math.max(originX, 0),
+      right: Math.min(originX + canvasRect.width, parentRect.width),
+      top: Math.max(originY, 0),
     };
   }
 
@@ -290,11 +352,11 @@ export class Renderer {
     const view = parent && signs.length > 0 ? this.viewOnPage(parent) : null;
     let used = 0;
     if (parent && view) {
-      const { scale, originX, originY } = view;
+      const { scale, originX, originY, left: visibleLeft, right: visibleRight, top: visibleTop } = view;
       for (const sign of signs) {
         const doorX = sign.x * TILE_SIZE - camera.x;
         const doorY = sign.y * TILE_SIZE - camera.y;
-        if (doorX <= -TILE_SIZE || doorY <= -TILE_SIZE || doorX >= VIEW_WIDTH || doorY >= VIEW_HEIGHT) continue;
+        if (doorX <= -TILE_SIZE || doorY <= -TILE_SIZE || doorX >= this.viewWidthPx || doorY >= this.viewHeightPx) continue;
         const label = this.doorSignLabels[used] ?? this.createDoorSign(parent);
         used += 1;
         const text = sign.locked ? `${sign.text} (locked)` : sign.text;
@@ -306,10 +368,10 @@ export class Renderer {
           label.height = label.element.offsetHeight;
           label.scale = scale;
         }
-        const minX = originX + 2;
-        const maxX = originX + VIEW_WIDTH * scale - label.width - 2;
+        const minX = visibleLeft + 2;
+        const maxX = visibleRight - label.width - 2;
         const left = Math.max(minX, Math.min(Math.max(minX, maxX), originX + (doorX + TILE_SIZE / 2) * scale - label.width / 2));
-        const top = Math.max(originY + 2, originY + doorY * scale - label.height - 2 * scale);
+        const top = Math.max(visibleTop + 2, originY + doorY * scale - label.height - 2 * scale);
         label.element.style.transform = `translate(${Math.round(left)}px, ${Math.round(top)}px)`;
         label.element.style.visibility = "visible";
       }
@@ -332,8 +394,11 @@ export class Renderer {
     return label;
   }
 
-  // Takes the DOM labels off the page when the game ends.
+  // Takes the DOM labels off the page and stops following the container when the game ends.
   removeLabels(): void {
+    this.resizeObserver?.disconnect();
+    this.resizeObserver = null;
+    window.removeEventListener("resize", this.fitToContainer);
     this.label?.remove();
     this.label = null;
     for (const { element } of this.doorSignLabels.splice(0)) element.remove();
@@ -358,26 +423,30 @@ export class Renderer {
       : world.biome === "shore"
         ? "rgba(142, 214, 224, 0.09)"
         : "rgba(255, 224, 157, 0.09)";
+    const viewWidth = this.viewWidthPx;
+    const viewHeight = this.viewHeightPx;
+    // Matches the original 320x180 vignette and keeps the same falloff on any shape.
     const vignette = context.createRadialGradient(
-      VIEW_WIDTH / 2,
-      VIEW_HEIGHT / 2,
-      VIEW_HEIGHT * 0.15,
-      VIEW_WIDTH / 2,
-      VIEW_HEIGHT / 2,
-      VIEW_WIDTH * 0.72,
+      viewWidth / 2,
+      viewHeight / 2,
+      Math.min(viewWidth, viewHeight) * 0.15,
+      viewWidth / 2,
+      viewHeight / 2,
+      Math.hypot(viewWidth, viewHeight) * 0.627,
     );
     vignette.addColorStop(0, light);
     vignette.addColorStop(1, "rgba(18, 27, 24, 0.13)");
     context.fillStyle = vignette;
-    context.fillRect(0, 0, VIEW_WIDTH, VIEW_HEIGHT);
+    context.fillRect(0, 0, viewWidth, viewHeight);
 
     if (document.documentElement.dataset.reducedMotion === "true") return;
     if (world.biome === "meadow" || world.biome === "village" || world.biome === "forest") {
       const time = performance.now() / 1000;
       context.fillStyle = PALETTES[world.palette].highlight;
-      for (let index = 0; index < 5; index += 1) {
-        const x = ((index * 67 + time * (4 + index % 3 * 2)) % (VIEW_WIDTH + 12)) - 6;
-        const y = 24 + (index * 37) % (VIEW_HEIGHT - 32) + Math.sin(time + index) * 2;
+      const specks = this.ambientCount(5);
+      for (let index = 0; index < specks; index += 1) {
+        const x = ((index * 67 + time * (4 + index % 3 * 2)) % (viewWidth + 12)) - 6;
+        const y = 24 + (index * 37) % (viewHeight - 32) + Math.sin(time + index) * 2;
         context.globalAlpha = 0.35 + (Math.sin(time * 1.4 + index) + 1) * 0.12;
         context.fillRect(Math.round(x), Math.round(y), 1, 1);
       }
@@ -388,12 +457,15 @@ export class Renderer {
   private drawStoryAtmosphere(context: CanvasRenderingContext2D): void {
     if (document.documentElement.dataset.reducedMotion === "true") return;
     const time = performance.now() / 1000;
+    const viewWidth = this.viewWidthPx;
+    const viewHeight = this.viewHeightPx;
     context.save();
     context.fillStyle = this.storyTheme.particle;
-    for (let index = 0; index < 8; index += 1) {
-      const x = (index * 47 + Math.sin(time * 0.18 + index * 1.7) * 18 + VIEW_WIDTH) % VIEW_WIDTH;
+    const particles = this.ambientCount(8);
+    for (let index = 0; index < particles; index += 1) {
+      const x = (index * 47 + Math.sin(time * 0.18 + index * 1.7) * 18 + viewWidth) % viewWidth;
       const drift = this.storyTheme.atmosphere === "falling-ash" ? time * (4 + index % 4) : time * 2;
-      const y = (index * 29 + drift + Math.sin(time * 0.5 + index) * 4) % VIEW_HEIGHT;
+      const y = (index * 29 + drift + Math.sin(time * 0.5 + index) * 4) % viewHeight;
       const size = this.storyTheme.atmosphere === "tide-glow" && index % 3 === 0 ? 2 : 1;
       context.globalAlpha = this.storyTheme.atmosphere === "falling-ash"
         ? 0.24

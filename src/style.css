@@ -37,10 +37,8 @@ body {
 }
 
 #game {
+  position: absolute;
   display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
   image-rendering: pixelated;
 }
 
@@ -287,6 +285,32 @@ body {
   background: var(--story-active-control, rgb(120 151 100 / 82%));
   transform: translate(var(--stick-x, 0px), var(--stick-y, 0px));
   pointer-events: none;
+}
+
+/* The stick that appears under the thumb; JS sets its size and position. */
+.floating-stick {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 4;
+  display: grid;
+  place-items: center;
+  border: 2px solid var(--story-frame, rgb(245 240 215 / 65%));
+  border-radius: 50%;
+  background: var(--story-control, rgb(23 37 29 / 62%));
+  pointer-events: none;
+}
+
+.floating-stick[hidden] {
+  display: none;
+}
+
+.joystick.joystick-idle {
+  opacity: 0.35;
+}
+
+html[data-input-mode="gamepad"] .floating-stick {
+  display: none;
 }
 
 .action-button {
@@ -1967,4 +1991,123 @@ html[data-reduced-motion="true"] *::after {
   animation-duration: 0.01ms !important;
   animation-iteration-count: 1 !important;
   transition-duration: 0.01ms !important;
+}
+
+.dialogue-box,
+.dialogue-ask-picker {
+  bottom: calc(max(10px, env(safe-area-inset-bottom)) + var(--dialogue-bottom-inset, 0px));
+  max-height: min(78dvh, 680px, calc(var(--dialogue-viewport-height, 100dvh) - 20px));
+}
+
+.dialogue-free-input {
+  font-size: max(16px, 1em);
+}
+
+@media (pointer: coarse) {
+  .game-hud p,
+  .controls-guide,
+  .controls-guide p,
+  .objective-hud p {
+    font-size: 14px !important;
+  }
+
+  .dialogue-bubble-text {
+    font-size: max(16px, 1em);
+  }
+
+  .dialogue-bubble-label,
+  .dialogue-notice,
+  .dialogue-reply-heading,
+  .dialogue-history-button {
+    font-size: 12px;
+  }
+
+  .dialogue-history-button,
+  .dialogue-switch,
+  .dialogue-ask,
+  .dialogue-skip,
+  .dialogue-leave,
+  .dialogue-send {
+    min-height: 44px;
+  }
+
+  .dialogue-switch,
+  .dialogue-ask,
+  .dialogue-skip,
+  .dialogue-leave,
+  .dialogue-ask-tab,
+  .dialogue-ask-back {
+    font-size: 14px;
+  }
+
+  .dialogue-ask-new {
+    font-size: 12px;
+  }
+
+  #game-shell[data-dialogue-viewport-compact="true"] .dialogue-box {
+    padding-block: 6px;
+  }
+
+  #game-shell[data-dialogue-viewport-compact="true"] .dialogue-log {
+    min-height: 0;
+    padding-block: 2px;
+  }
+
+  #game-shell[data-dialogue-viewport-compact="true"] .dialogue-bubble {
+    margin-block: 2px;
+    padding-block: 4px;
+  }
+
+  #game-shell[data-dialogue-viewport-compact="true"] .dialogue-reply-heading,
+  #game-shell[data-dialogue-viewport-compact="true"] .dialogue-free {
+    margin-bottom: 2px;
+  }
+}
+
+@media (pointer: coarse) {
+  html[data-text-size="large"] .game-hud p,
+  html[data-text-size="large"] .controls-guide,
+  html[data-text-size="large"] .controls-guide p,
+  html[data-text-size="large"] .objective-hud p {
+    font-size: 16px !important;
+  }
+
+  html[data-text-size="large"] .dialogue-bubble-label,
+  html[data-text-size="large"] .dialogue-notice,
+  html[data-text-size="large"] .dialogue-reply-heading,
+  html[data-text-size="large"] .dialogue-history-button {
+    font-size: 14px !important;
+  }
+
+  html[data-text-size="large"] .dialogue-switch,
+  html[data-text-size="large"] .dialogue-ask,
+  html[data-text-size="large"] .dialogue-skip,
+  html[data-text-size="large"] .dialogue-leave,
+  html[data-text-size="large"] .dialogue-ask-tab,
+  html[data-text-size="large"] .dialogue-ask-back {
+    font-size: 16px;
+  }
+
+  html[data-text-size="extra-large"] .game-hud p,
+  html[data-text-size="extra-large"] .controls-guide,
+  html[data-text-size="extra-large"] .controls-guide p,
+  html[data-text-size="extra-large"] .objective-hud p {
+    font-size: 18px !important;
+  }
+
+  html[data-text-size="extra-large"] .dialogue-bubble-label,
+  html[data-text-size="extra-large"] .dialogue-notice,
+  html[data-text-size="extra-large"] .dialogue-reply-heading,
+  html[data-text-size="extra-large"] .dialogue-history-button {
+    font-size: 16px !important;
+  }
+
+  html[data-text-size="extra-large"] .dialogue-switch,
+  html[data-text-size="extra-large"] .dialogue-ask,
+  html[data-text-size="extra-large"] .dialogue-skip,
+  html[data-text-size="extra-large"] .dialogue-leave,
+  html[data-text-size="extra-large"] .dialogue-ask-tab,
+  html[data-text-size="extra-large"] .dialogue-ask-back {
+    font-size: 18px;
+  }
 }

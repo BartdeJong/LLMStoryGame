@@ -19,8 +19,9 @@ import { createSeededRandom, type Direction } from "./art";
 import { getStoryVisualTheme } from "./art";
 import { listInventory } from "./items/inventory";
 import { createInventoryUI, type InventoryUI } from "./items/inventoryUi";
-import { Renderer, VIEW_HEIGHT, VIEW_WIDTH } from "./renderer";
+import { Renderer } from "./renderer";
 import type { CharacterRenderState, DoorSign } from "./renderer";
+import { inputMode, type InputMode } from "./input/mode";
 import { mountEndingChoiceScreen, mountEndingScreen } from "./ui/ending";
 import { mountPauseMenu } from "./ui/pause";
 import { createObjectiveHud, type ObjectiveHud } from "./ui/objectiveHud";
@@ -46,10 +47,12 @@ import type { GameSave, PlayerSave } from "./save/types";
 import {
   TILE_SIZE,
   entitySolidityIsSafe,
+  findPath,
   isEntityInNarrowCorridor,
   isSolidAt,
   isWalkable,
   selectSolidEntityIds,
+  tilesWithinRange,
   type Area,
   type AreaDoor,
   type AreaEntity,
@@ -59,7 +62,37 @@ import {
 const PLAYER_SPEED = 58;
 const PLAYER_HALF_SIZE = 5;
 const INTERACT_RANGE = TILE_SIZE * 1.5;
-const TAP_INTERACT_RANGE = TILE_SIZE * 2;
+// A tap picks the nearest character, clue, item or door within this reach of the finger, whichever is larger.
+const TAP_REACH_WORLD = TILE_SIZE;
+const TAP_REACH_CSS = 28;
+// Walking that makes no headway for this long means something got in the way.
+const WALK_STUCK_SECONDS = 0.4;
+const WALK_MAX_REPLANS = 3;
+
+type WalkTarget =
+  | { readonly kind: "ground"; readonly tile: GridPoint }
+  | { readonly kind: "entity"; readonly id: string }
+  | { readonly kind: "door"; readonly id: string };
+
+interface WalkPlan {
+  readonly target: WalkTarget;
+  readonly path: readonly GridPoint[];
+  index: number;
+  stuckFor: number;
+  replans: number;
+}
+
+function exploreHint(mode: InputMode): string {
+  if (mode === "touch") return "Tap the world to walk there, or drag on the left to steer.";
+  if (mode === "gamepad") return "Explore with the left stick.";
+  return "Explore with WASD or the arrow keys.";
+}
+
+function actionPrompt(mode: InputMode, text: string): string {
+  if (mode === "touch") return `Tap A · ${text}`;
+  if (mode === "gamepad") return `A · ${text}`;
+  return `E · ${text}`;
+}
 const CHARACTER_STEPS = [[1, 0], [-1, 0], [0, 1], [0, -1]] as const;
 // The fog never lifts faster than this, so quick arrivals still feel like a transition.
 const MIN_FOG_MS = 150;
@@ -120,6 +153,7 @@ export class Game {
   private saveQueue: Promise<void> = Promise.resolve();
   private autosaveTimer: number | null = null;
   private camera: Position = { x: 0, y: 0 };
+  private walk: WalkPlan | null = null;
   private conversation: ConversationController | null = null;
   private readonly greetings: GreetingPrefetcher;
   private get inDialogue(): boolean {
@@ -175,9 +209,10 @@ export class Game {
     this.objectiveHud = createObjectiveHud(hud);
     this.refreshObjective();
     this.renderer = new Renderer(canvas, this.story.pack.identity.id);
+    const floatingStick = shell.querySelector<HTMLElement>("#floating-stick");
     this.input = new InputController(joystick, actionButton, () => {
       this.interact();
-    });
+    }, floatingStick ? { canvas, stick: floatingStick, onTap: this.handleTap } : undefined);
     this.dialogueBox = createDialogueBox(shell);
     this.inventoryUI = createInventoryUI(shell);
     this.storyJournal = createStoryJournal(shell, (id, answer) => this.answerQuestion(id, answer));
@@ -214,7 +249,6 @@ export class Game {
       }
       if (frame.pressed.a) this.interact();
     });
-    canvas.addEventListener("pointerup", this.handleCanvasTap);
     window.addEventListener("keydown", this.handlePauseKeyDown);
     window.addEventListener("keydown", this.handleMapKeyDown);
     window.addEventListener("keydown", this.handleUtilityKeyDown);
@@ -350,7 +384,6 @@ export class Game {
     this.stopGamepadListener();
     this.mapButton.removeEventListener("click", this.handleMapButtonClick);
     this.pauseButton.removeEventListener("click", this.openPauseMenu);
-    this.canvas.removeEventListener("pointerup", this.handleCanvasTap);
     this.input.destroy();
     this.worldMap.remove();
     this.renderer.removeLabels();
@@ -440,9 +473,10 @@ export class Game {
     this.syncAudio();
     this.frameCount += 1;
     if (this.frameCount % 20 === 0) this.announceUnlockedDoors();
+    if (!this.isInteractive) this.walk = null;
     if (!this.paused) this.update(delta);
     const world = this.story.getArea(this.areaId);
-    this.camera = followCamera(this.player, world, VIEW_WIDTH, VIEW_HEIGHT);
+    this.camera = followCamera(this.player, world, this.renderer.viewWidth, this.renderer.viewHeight);
     const nearbyEntity = this.isInteractive ? this.findNearbyEntity(world) : undefined;
     const nearbyDoor = this.isInteractive ? this.findNearbyDoor(world) : undefined;
     const interactionTarget = this.updateInteractionPrompt(nearbyEntity, nearbyDoor);
@@ -504,8 +538,11 @@ export class Game {
     if (this.transitioning || this.inDialogue || this.worldMap.isOpen) return;
     const world = this.story.getArea(this.areaId);
     this.updateCharacterMotion(world, delta);
-    const movement = this.input.getMovement();
+    const manual = this.input.getMovement();
+    const steering = manual.x !== 0 || manual.y !== 0;
+    if (steering) this.walk = null;
     const speed = PLAYER_SPEED * getMovementSpeed();
+    const movement = this.walk ? this.walkMovement(world, speed * delta) : manual;
     const deltaX = movement.x * speed * delta;
     const deltaY = movement.y * speed * delta;
     const previousX = this.player.x;
@@ -530,8 +567,49 @@ export class Game {
         soundEffects.playFootstep(this.groundUnderPlayer());
         this.lastFootstepAt = performance.now();
       }
-      this.message.textContent = "Explore with WASD, arrows, or the joystick.";
+      if (steering) this.message.textContent = exploreHint(inputMode);
     }
+    if (this.walk) this.watchWalkProgress(delta, movement.x !== 0 || movement.y !== 0 ? this.playerMoving : true);
+  }
+
+  // Steers along the planned route one tile centre at a time, so the player's box never has to cut a corner.
+  private walkMovement(world: Area, stepLength: number): { x: number; y: number } {
+    const plan = this.walk;
+    if (!plan) return { x: 0, y: 0 };
+    while (plan.index < plan.path.length) {
+      const tile = plan.path[plan.index]!;
+      const distance = Math.hypot(
+        tile.x * TILE_SIZE + TILE_SIZE / 2 - this.player.x,
+        tile.y * TILE_SIZE + TILE_SIZE / 2 - this.player.y,
+      );
+      if (distance > 0.5) break;
+      plan.index += 1;
+    }
+    if (plan.index >= plan.path.length) {
+      this.walk = null;
+      this.arrive(world, plan.target, plan.replans);
+      return { x: 0, y: 0 };
+    }
+    if (stepLength <= 0) return { x: 0, y: 0 };
+    const next = plan.path[plan.index]!;
+    const dx = next.x * TILE_SIZE + TILE_SIZE / 2 - this.player.x;
+    const dy = next.y * TILE_SIZE + TILE_SIZE / 2 - this.player.y;
+    const distance = Math.hypot(dx, dy);
+    const share = Math.min(1, distance / stepLength);
+    return { x: (dx / distance) * share, y: (dy / distance) * share };
+  }
+
+  private watchWalkProgress(delta: number, madeHeadway: boolean): void {
+    const plan = this.walk;
+    if (!plan) return;
+    plan.stuckFor = madeHeadway ? 0 : plan.stuckFor + delta;
+    if (plan.stuckFor < WALK_STUCK_SECONDS) return;
+    this.walk = null;
+    if (plan.replans >= WALK_MAX_REPLANS) {
+      this.message.textContent = "Something is in the way.";
+      return;
+    }
+    this.startWalk(plan.target, plan.replans + 1);
   }
 
   private groundUnderPlayer(): Tile | undefined {
@@ -754,37 +832,123 @@ export class Game {
         : entity ? `Examine ${entity.name}` : "";
     const lockMessage = door ? this.story.describeDoorLock(this.areaId, door.id) : null;
     const prompt = useEntity
-      ? `Action / E / A · ${action}`
+      ? actionPrompt(inputMode, action)
       : door
-        ? `Action / E / A · ${lockMessage ? `${door.label} (locked)` : `Enter ${door.label}`}`
+        ? actionPrompt(inputMode, lockMessage ? `${door.label} (locked)` : `Enter ${door.label}`)
         : "";
     if (this.interactionPrompt.textContent !== prompt) this.interactionPrompt.textContent = prompt;
     this.interactionPrompt.hidden = !entity && !door;
     return useEntity ? entity : undefined;
   }
 
-  // Tap a nearby character, object or door directly on the screen to interact with it.
-  private readonly handleCanvasTap = (event: PointerEvent): void => {
-    if (!this.running || this.paused || this.transitioning || this.inDialogue || this.worldMap.isOpen) return;
+  // A tap on a character, clue, item or door walks there and then does what A would do; a tap on open ground just walks.
+  private readonly handleTap = (clientX: number, clientY: number): void => {
+    if (!this.isInteractive) return;
     const rect = this.canvas.getBoundingClientRect();
     if (rect.width === 0 || rect.height === 0) return;
-    const worldX = ((event.clientX - rect.left) * VIEW_WIDTH) / rect.width + this.camera.x;
-    const worldY = ((event.clientY - rect.top) * VIEW_HEIGHT) / rect.height + this.camera.y;
-
+    const scale = rect.width / this.renderer.viewWidth;
+    const worldX = (clientX - rect.left) / scale + this.camera.x;
+    const worldY = (clientY - rect.top) / scale + this.camera.y;
     const world = this.story.getArea(this.areaId);
-    const near = (point: { x: number; y: number }): boolean => {
-      const centerX = point.x * TILE_SIZE + TILE_SIZE / 2;
-      const centerY = point.y * TILE_SIZE + TILE_SIZE / 2;
-      const tappedClose = Math.hypot(worldX - centerX, worldY - centerY) <= TILE_SIZE;
-      const playerClose = Math.hypot(this.player.x - centerX, this.player.y - centerY) <= TAP_INTERACT_RANGE;
-      return tappedClose && playerClose;
+
+    const reach = Math.max(TAP_REACH_WORLD, TAP_REACH_CSS / scale);
+    const candidates: { target: WalkTarget; distance: number }[] = [];
+    const consider = (target: WalkTarget, point: { x: number; y: number }): void => {
+      const distance = Math.hypot(worldX - (point.x * TILE_SIZE + TILE_SIZE / 2), worldY - (point.y * TILE_SIZE + TILE_SIZE / 2));
+      if (distance <= reach) candidates.push({ target, distance });
     };
-    const entity = (world.entities ?? []).find((candidate) => near(this.entityPosition(world, candidate)));
-    if (entity) {
-      this.examine(entity);
-      this.refreshObjective();
-    }
+    for (const entity of world.entities ?? []) consider({ kind: "entity", id: entity.id }, this.entityPosition(world, entity));
+    for (const door of world.doors) consider({ kind: "door", id: door.id }, door);
+    // The sort is stable, so a character standing in a doorway wins over the door.
+    candidates.sort((a, b) => a.distance - b.distance);
+
+    this.startWalk(candidates[0]?.target ?? { kind: "ground", tile: { x: Math.floor(worldX / TILE_SIZE), y: Math.floor(worldY / TILE_SIZE) } });
   };
+
+  private targetPoint(world: Area, target: WalkTarget): { point: { x: number; y: number }; name: string } | null {
+    if (target.kind === "ground") return { point: target.tile, name: "there" };
+    if (target.kind === "entity") {
+      const entity = (world.entities ?? []).find((candidate) => candidate.id === target.id);
+      return entity ? { point: this.entityPosition(world, entity), name: entity.name } : null;
+    }
+    const door = world.doors.find((candidate) => candidate.id === target.id);
+    return door ? { point: door, name: door.label } : null;
+  }
+
+  private startWalk(target: WalkTarget, replans = 0): void {
+    this.walk = null;
+    const world = this.story.getArea(this.areaId);
+    const located = this.targetPoint(world, target);
+    if (!located) return;
+    const tile = { x: Math.floor(located.point.x), y: Math.floor(located.point.y) };
+    const playerTile = {
+      x: Math.floor(this.player.x / TILE_SIZE),
+      y: Math.floor(this.player.y / TILE_SIZE),
+    };
+    if (target.kind !== "ground" && this.withinReach(located.point)) {
+      this.arrive(world, target, replans);
+      return;
+    }
+    if (target.kind === "ground" && tile.x === playerTile.x && tile.y === playerTile.y) return;
+
+    const blocked = this.blockedTiles(world);
+    const isPassable = (x: number, y: number): boolean => isWalkable(world, x, y) && !blocked.has(`${x},${y}`);
+    const goals = (target.kind === "ground" ? [tile] : tilesWithinRange(tile, INTERACT_RANGE / TILE_SIZE, world.width, world.height))
+      .filter((goal) => isPassable(goal.x, goal.y));
+    const path = findPath({ width: world.width, height: world.height, start: playerTile, goals, isPassable });
+    if (!path) {
+      this.message.textContent = target.kind === "ground"
+        ? "There is no way to walk there."
+        : `There is no way to reach ${located.name}.`;
+      return;
+    }
+    this.walk = { target, path, index: 0, stuckFor: 0, replans };
+  }
+
+  // Tiles the player's box cannot enter because a solid entity stands there or is stepping onto them.
+  private blockedTiles(world: Area): Set<string> {
+    const solidIds = this.ensureAreaSolidity(world);
+    const blocked = new Set<string>();
+    for (const entity of world.entities ?? []) {
+      if (!solidIds.has(entity.id)) continue;
+      const position = this.entityPosition(world, entity);
+      blocked.add(`${Math.floor(position.x)},${Math.floor(position.y)}`);
+      if (entity.character) {
+        const target = this.characterState(world, entity).target;
+        if (target) blocked.add(`${target.x},${target.y}`);
+      }
+    }
+    return blocked;
+  }
+
+  private withinReach(point: { x: number; y: number }): boolean {
+    return Math.hypot(
+      this.player.x - (point.x * TILE_SIZE + TILE_SIZE / 2),
+      this.player.y - (point.y * TILE_SIZE + TILE_SIZE / 2),
+    ) <= INTERACT_RANGE;
+  }
+
+  // The same thing pressing A would do, aimed at what was tapped.
+  private arrive(world: Area, target: WalkTarget, replans: number): void {
+    if (target.kind === "ground") return;
+    const located = this.targetPoint(world, target);
+    if (!located) return;
+    // A character may have wandered off while the player walked over.
+    if (!this.withinReach(located.point)) {
+      if (replans < WALK_MAX_REPLANS) this.startWalk(target, replans + 1);
+      else this.message.textContent = `${located.name} moved out of reach.`;
+      return;
+    }
+    if (target.kind === "door") {
+      const door = world.doors.find((candidate) => candidate.id === target.id);
+      if (door) this.enterDoorIfUnlocked(door);
+      return;
+    }
+    const entity = (world.entities ?? []).find((candidate) => candidate.id === target.id);
+    if (!entity) return;
+    this.examine(entity);
+    this.refreshObjective();
+  }
 
   private enterDoorIfUnlocked(door: AreaDoor): void {
     const lockMessage = this.story.describeDoorLock(this.areaId, door.id);

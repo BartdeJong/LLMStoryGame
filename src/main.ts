@@ -3,6 +3,7 @@ import { soundEffects } from "./audio/soundEffects";
 import { mountArtDebugScreen } from "./art/debug";
 import { mountWorldDebugScreen } from "./world/debug";
 import { applySavedTextSize } from "./ui/preferences";
+import { keepScreenAwake } from "./ui/screenWakeLock";
 import { gamepadInput } from "./input/gamepad";
 import { trackInputMode } from "./input/mode";
 
@@ -87,6 +88,7 @@ if (debugMode === "icons") {
     });
   });
 } else {
+  keepScreenAwake();
   const shell = document.querySelector<HTMLElement>("#game-shell");
   if (!shell) throw new Error("The game page is missing its shell.");
   const useMock = new URLSearchParams(window.location.search).get("mock") === "1";
