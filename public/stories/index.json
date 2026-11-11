@@ -20,6 +20,13 @@
       "logline": "A riverside clerk is found dead beside a blackened envelope; help Holmes learn where he died, who silenced him, and what the missing relief money concealed.",
       "lengths": ["short", "medium", "long"],
       "estimated_minutes": { "short": 15, "medium": 35, "long": 65 }
+    },
+    {
+      "id": "paddingtonhat",
+      "title": "Paddington and the Missing Hat",
+      "logline": "Paddington's hat is gone. The marmalade is gone too. And everyone is acting strange! Help Paddington find out why.",
+      "lengths": ["medium"],
+      "estimated_minutes": { "medium": 40 }
     }
   ]
 }

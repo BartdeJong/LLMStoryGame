@@ -1,0 +1,773 @@
+{
+  "schema_version": 2,
+  "identity": {
+    "id": "paddingtonhat",
+    "version": 1,
+    "title": "Paddington and the Missing Hat",
+    "logline": "Paddington's hat is gone. The marmalade is gone too. And everyone is acting strange! Help Paddington find out why.",
+    "setting": "Windsor Gardens in London, on a warm and sunny summer Saturday. Paddington Bear lives at number 32 with the Brown family.",
+    "tone": "Happy, bright and funny. Every secret is a kind one.",
+    "themes": ["friendship", "kindness", "happy surprises"],
+    "content_notes": ["No danger, no crime and no sad moments.", "Simple English with short sentences."]
+  },
+  "style_guide": {
+    "narrator_voice": "A happy, friendly storyteller. Use very short sentences and simple, common words. The player is Paddington Bear.",
+    "use": ["short sentences of 5 to 12 words", "common, everyday words", "bright colours, sunshine and nice smells", "gentle jokes"],
+    "avoid": ["long sentences", "rare or hard words", "idioms and slang", "anything scary, sad or mean"],
+    "naming_conventions": "Simple English names. Grown-ups use Mr or Mrs before their name.",
+    "examples": [
+      { "cast_id": "c_mrs_bird", "lines": ["Out of my kitchen, young bear. I am very busy today."] },
+      { "cast_id": "c_mr_gruber", "lines": ["Ah, Paddington, my friend! Shall we have some cocoa?"] }
+    ]
+  },
+  "cast": [
+    {
+      "id": "c_mrs_brown",
+      "name": "Mrs Brown",
+      "species": "human",
+      "personality": "Warm, kind and cheerful. She loves Paddington very much.",
+      "goal": "Get some bright flowers for the party table.",
+      "secret": "Aunt Lucy sent a birthday postcard for Paddington. Mrs Brown is keeping it for the party.",
+      "motivations": ["make Paddington happy", "a lovely party"],
+      "relationships": [
+        { "cast_id": "c_mr_brown", "relation": "her husband" },
+        { "cast_id": "c_judy", "relation": "her daughter" },
+        { "cast_id": "c_jonathan", "relation": "her son" }
+      ],
+      "reactions": [
+        { "id": "r_mrs_brown_flowers", "about": { "type": "item", "id": "i_flowers" }, "text": "Oh, what lovely flowers! Are they for me, Paddington? Thank you!" }
+      ],
+      "sprite_recipe": "kind woman with brown hair, a blue summer dress and a yellow cardigan",
+      "home_location": "l_hall",
+      "knows_truths": ["t_marmalade_gone", "t_birthday"],
+      "goal_states": [
+        {
+          "id": "gs_mrs_brown_flowers",
+          "description": "Paddington gives Mrs Brown a bunch of flowers for the table.",
+          "requires": { "items": ["i_flowers"] },
+          "reveals": "Mrs Brown shows Paddington the postcard from Aunt Lucy."
+        }
+      ],
+      "voice_notes": "Talks to Paddington. Warm and gentle. Uses short, simple sentences and calls him dear.",
+      "greetings": [
+        "Good morning, Paddington! Did you sleep well?",
+        "Oh, hello, dear. What a lovely sunny day it is!",
+        "Hello again, Paddington. Are you still looking for your hat?"
+      ],
+      "knowledge": [
+        { "id": "k_mrs_brown_marmalade", "topic": "The marmalade", "ask": "Is there any marmalade for breakfast?", "text": "Mrs Bird says the marmalade has all run out. That never happens in this house!", "keywords": ["marmalade", "breakfast", "jar", "run out", "kitchen"], "clue_id": "cl_mrs_brown_marmalade", "truth_id": "t_marmalade_gone" },
+        { "id": "k_mrs_brown_hat", "topic": "My hat", "ask": "Have you seen my hat?", "text": "Your hat? Oh dear, I have not seen it today. Perhaps ask the others.", "keywords": ["hat", "peg", "seen", "lost"] },
+        { "id": "k_mrs_brown_window", "topic": "Open window", "ask": "Why is the hall window open?", "text": "Mrs Bird opened it early this morning. She said the house was too warm.", "keywords": ["window", "open", "wind", "air"] },
+        { "id": "k_mrs_brown_flowers", "topic": "Flowers", "ask": "What do you need flowers for?", "text": "Oh, just for the table. Something bright and happy. Barnaby at the market has lovely flowers.", "keywords": ["flowers", "table", "market", "barnaby"] },
+        { "id": "k_mrs_brown_postcard", "topic": "Aunt Lucy's postcard", "ask": "Is that a postcard from Aunt Lucy?", "text": "Yes, it came today. Aunt Lucy says happy summer birthday, Paddington! It is your birthday today!", "keywords": ["postcard", "aunt lucy", "birthday", "peru", "card"], "clue_id": "cl_lucy_postcard", "truth_id": "t_birthday" },
+        { "id": "k_mrs_brown_family", "topic": "The family", "ask": "Where is everyone today?", "text": "Everyone is busy today. Mr Brown is in the shed, Jonathan is in the garden, and Judy is upstairs.", "keywords": ["family", "everyone", "where", "busy"] }
+      ],
+      "goal_hints": {
+        "unmet": ["I would love some bright flowers for the table today.", "Barnaby at the market sells lovely flowers. Could you get me some, Paddington?"],
+        "in_progress": ["Some flowers would make the table so pretty.", "Did you find any flowers yet, dear?"],
+        "resolved": ["Thank you for the lovely flowers, Paddington!", "The flowers look so happy on the table. Just like you, dear."]
+      },
+      "deflections": [
+        "Oh, I am not sure, dear.",
+        "Hmm, I do not know about that.",
+        "You could ask the others, Paddington.",
+        "Goodness, there is so much to do today!",
+        "I really cannot say, dear. Sorry."
+      ]
+    },
+    {
+      "id": "c_mrs_bird",
+      "name": "Mrs Bird",
+      "species": "human",
+      "personality": "The housekeeper. Firm on the outside, very soft on the inside.",
+      "goal": "Finish a secret job in the kitchen before three o'clock.",
+      "secret": "She used all the marmalade to bake a giant marmalade cake for Paddington's birthday.",
+      "motivations": ["a perfect cake", "keeping the surprise"],
+      "relationships": [
+        { "cast_id": "c_mrs_brown", "relation": "looks after the house with her" },
+        { "cast_id": "c_jonathan", "relation": "always shoos him away from her spoons" }
+      ],
+      "reactions": [
+        { "id": "r_mrs_bird_oven", "about": { "type": "clue", "id": "cl_oven_smell" }, "text": "There is nothing in that oven for you, young bear. Not yet, anyway." }
+      ],
+      "sprite_recipe": "tall woman with grey hair in a bun, a white apron and a wooden spoon",
+      "home_location": "l_kitchen",
+      "knows_truths": ["t_marmalade_gone", "t_marmalade_cake", "t_birthday"],
+      "goal_states": [],
+      "voice_notes": "Talks to Paddington. Short and firm, but kind. Calls him young bear. Uses simple words.",
+      "greetings": [
+        "Good morning, Paddington. Do not come too far into my kitchen today.",
+        "Hello, young bear. Wipe your paws, please.",
+        "Oh, it is you again. Stay by the door, please."
+      ],
+      "knowledge": [
+        { "id": "k_bird_marmalade", "topic": "Missing marmalade", "ask": "Where is all the marmalade?", "text": "The marmalade? Well, it is gone. I needed it for something. That is all I will say.", "keywords": ["marmalade", "jar", "gone", "missing", "shelf"] },
+        { "id": "k_bird_oven", "topic": "The oven", "ask": "Why is the oven so warm?", "text": "Ovens are warm when they are busy, young bear. Now please stop looking at my oven.", "keywords": ["oven", "warm", "hot", "baking"] },
+        { "id": "k_bird_window", "topic": "Open window", "ask": "Did you open the hall window?", "text": "Yes, I did. The house smelled of... of cleaning. I wanted some fresh air.", "keywords": ["window", "open", "hall", "air"] },
+        { "id": "k_bird_hat", "topic": "My hat", "ask": "Did you see my hat this morning?", "text": "I did not take your hat. I was in this kitchen from six o'clock. Very busy.", "keywords": ["hat", "peg", "morning", "take"] },
+        { "id": "k_bird_jonathan", "topic": "Jonathan", "ask": "Why are Jonathan's fingers so sticky?", "text": "That boy licks every spoon he can find. Do not ask me which spoon.", "keywords": ["jonathan", "sticky", "fingers", "spoon"] },
+        { "id": "k_bird_shopping", "topic": "Shopping", "ask": "Did you go shopping yesterday?", "text": "I went to the market and bought what I needed. Ask Barnaby if you must know.", "keywords": ["shopping", "market", "barnaby", "oranges", "bought"] }
+      ],
+      "goal_hints": {
+        "unmet": ["I have a big job to finish before three o'clock.", "Please let me work, young bear."],
+        "in_progress": ["My job is going well. Off you go now.", "Not long now. Please go and play."],
+        "resolved": ["I have a big job to finish before three o'clock. Off you go, young bear.", "Everything in this kitchen is fine. Go and play outside, Paddington."]
+      },
+      "deflections": [
+        "That is not my business, young bear.",
+        "I could not say. I am busy.",
+        "Ask someone else, please.",
+        "Hmm. No questions in my kitchen today.",
+        "I have no time for that right now."
+      ]
+    },
+    {
+      "id": "c_jonathan",
+      "name": "Jonathan",
+      "species": "human",
+      "personality": "Cheerful boy who loves football. He is very bad at keeping secrets.",
+      "goal": "Blow up twenty balloons before two o'clock.",
+      "secret": "He is in charge of the balloons for Paddington's surprise party.",
+      "motivations": ["fun", "not spoiling the surprise"],
+      "relationships": [
+        { "cast_id": "c_judy", "relation": "his sister" },
+        { "cast_id": "c_mr_curry", "relation": "his football often lands in Mr Curry's garden" }
+      ],
+      "reactions": [
+        { "id": "r_jonathan_list", "about": { "type": "clue", "id": "cl_jonathan_list" }, "text": "Oh no, you found my list! I dropped it at the bus stop. Please forget you saw it!" }
+      ],
+      "sprite_recipe": "boy with messy brown hair, a striped T-shirt and sticky orange fingers",
+      "home_location": "l_back_garden",
+      "knows_truths": ["t_hat_missing", "t_party_in_park", "t_birthday"],
+      "goal_states": [],
+      "voice_notes": "Talks to Paddington. Fast and friendly, a bit nervous about secrets. Uses simple words.",
+      "greetings": [
+        "Hi, Paddington! Nice day, is it not?",
+        "Oh! Paddington! I was not doing anything. Honest!",
+        "Hello again! Do you want to play football later?"
+      ],
+      "knowledge": [
+        { "id": "k_jon_peg", "topic": "My hat", "ask": "Have you seen my hat?", "text": "Your hat was not on the peg when I came down for breakfast. I noticed, because it is always there.", "keywords": ["hat", "peg", "breakfast", "seen"], "clue_id": "cl_jonathan_peg", "truth_id": "t_hat_missing" },
+        { "id": "k_jon_sticky", "topic": "Sticky fingers", "ask": "Why are your fingers sticky and orange?", "text": "Sticky? Oh. I licked a spoon. A very nice spoon. Please do not tell Mrs Bird!", "keywords": ["sticky", "fingers", "orange", "spoon", "marmalade"], "clue_id": "cl_sticky_fingers" },
+        { "id": "k_jon_balloons", "topic": "Balloons", "ask": "Why do you have so many balloons?", "text": "Balloons? They are for a school project. A very big school project. With twenty balloons.", "keywords": ["balloons", "balloon", "twenty", "pump"] },
+        { "id": "k_jon_curry", "topic": "Mr Curry", "ask": "Is Mr Curry cross today?", "text": "Mr Curry is always cross! He lost his newspaper this morning. I think the wind took it to the bus stop.", "keywords": ["curry", "newspaper", "cross", "neighbour", "bus stop"] },
+        { "id": "k_jon_judy", "topic": "Judy", "ask": "Where did Judy go this morning?", "text": "Judy went out very early with a bag. She came back with no bag. Funny!", "keywords": ["judy", "early", "morning", "bag", "out"] },
+        { "id": "k_jon_football", "topic": "Football", "ask": "Can we play football?", "text": "Later, okay? I have a big job to do first. A balloon job. I mean, a football job!", "keywords": ["football", "play", "ball", "game"] }
+      ],
+      "goal_hints": {
+        "unmet": ["I have twenty balloons to blow up. Phew!", "My cheeks hurt from all this blowing."],
+        "in_progress": ["Only ten more balloons to go!", "Almost done with my, um, school project."],
+        "resolved": ["I have so many balloons to blow up today! For school. Yes, for school.", "Phew, balloons are hard work, Paddington!"]
+      },
+      "deflections": [
+        "I do not know! Honest!",
+        "Ask Judy. She knows everything.",
+        "Hmm, no idea, Paddington.",
+        "That is a secret. I mean, I do not know!",
+        "Sorry, I am too busy to think."
+      ]
+    },
+    {
+      "id": "c_mr_brown",
+      "name": "Mr Brown",
+      "species": "human",
+      "personality": "Busy and a little fussy. Very proud of his painting.",
+      "goal": "Finish painting the big banner before two o'clock.",
+      "secret": "He is painting a banner that says HAPPY BIRTHDAY, PADDINGTON.",
+      "motivations": ["a perfect banner", "keeping the surprise"],
+      "relationships": [
+        { "cast_id": "c_mrs_brown", "relation": "his wife" },
+        { "cast_id": "c_mrs_penny", "relation": "asked her to keep the bandstand free" }
+      ],
+      "sprite_recipe": "man with a small moustache, rolled-up shirt sleeves and red paint on his nose",
+      "home_location": "l_shed",
+      "knows_truths": ["t_party_in_park", "t_birthday"],
+      "goal_states": [],
+      "voice_notes": "Talks to Paddington. Calls him old chap. A bit flustered. Uses short, simple sentences.",
+      "greetings": [
+        "Ah, Paddington! Please stay by the door. Wet paint!",
+        "Hello, old chap. I am very busy in here today.",
+        "Paddington! Hello again. Nothing to see here. Nothing at all."
+      ],
+      "knowledge": [
+        { "id": "k_brown_sheet", "topic": "The big sheet", "ask": "What is under that big sheet?", "text": "Under the sheet? Oh, nothing. Just some old wood. Very boring wood. Please do not look.", "keywords": ["sheet", "under", "cover", "big", "hiding"] },
+        { "id": "k_brown_paint", "topic": "Painting", "ask": "What are you painting?", "text": "I am painting the shed. Yes, the shed. Red and yellow. It is a very modern shed.", "keywords": ["paint", "painting", "red", "yellow", "brush"] },
+        { "id": "k_brown_hat", "topic": "My hat", "ask": "Do you know where my hat is?", "text": "I am sure you will find it soon, Paddington. Why not ask Judy?", "keywords": ["hat", "peg", "lost", "where"] },
+        { "id": "k_brown_park", "topic": "The park", "ask": "Are you going to the park today?", "text": "The park? Who said anything about the park? Not me. I am staying right here.", "keywords": ["park", "bandstand", "three", "today"] },
+        { "id": "k_brown_curry", "topic": "Mr Curry", "ask": "What do you think of Mr Curry?", "text": "Mr Curry is grumpy, but he is not a bad man. I think he just needs a friend.", "keywords": ["curry", "neighbour", "grumpy", "friend"] },
+        { "id": "k_brown_day", "topic": "Today", "ask": "What day is it today?", "text": "It is Saturday, of course. A very special... I mean, a very normal Saturday.", "keywords": ["day", "today", "saturday", "special", "date"] }
+      ],
+      "goal_hints": {
+        "unmet": ["I must finish this painting before two o'clock.", "So much paint, so little time!"],
+        "in_progress": ["Nearly done. Just one more letter.", "Almost finished, old chap."],
+        "resolved": ["I must finish my painting before two o'clock, old chap.", "Run along now, Paddington. I have paint everywhere!"]
+      },
+      "deflections": [
+        "No idea, old chap.",
+        "Hmm, you could ask Mrs Brown.",
+        "I am far too busy to think about that.",
+        "Sorry, Paddington. I do not know.",
+        "Ask me later, old chap. Wet paint!"
+      ]
+    },
+    {
+      "id": "c_judy",
+      "name": "Judy",
+      "species": "human",
+      "personality": "Clever and kind. She smiles a lot and loves to plan things.",
+      "goal": "Keep the hat present a secret until the party.",
+      "secret": "She took Paddington's hat to Mr Gruber early this morning, so he can mend it as a present.",
+      "motivations": ["a perfect present", "keeping the surprise"],
+      "relationships": [
+        { "cast_id": "c_jonathan", "relation": "her brother" },
+        { "cast_id": "c_mr_gruber", "relation": "asked him to mend the hat" }
+      ],
+      "reactions": [
+        { "id": "r_judy_ticket", "about": { "type": "clue", "id": "cl_judy_ticket" }, "text": "Oh! My bus ticket. I just went for a little ride. That is all, Paddington!" }
+      ],
+      "sprite_recipe": "girl with long brown hair in a red hair band, a green dress and a notebook",
+      "home_location": "l_judy_room",
+      "knows_truths": ["t_judy_took_hat", "t_hat_at_gruber", "t_hat_mended", "t_birthday"],
+      "goal_states": [],
+      "voice_notes": "Talks to Paddington. Friendly and quick, giggles when she hides something. Uses simple words.",
+      "greetings": [
+        "Hello, Paddington! You look very busy today.",
+        "Oh, hi, Paddington. Come in. Mind the books on the floor.",
+        "Hello again, Detective Paddington!"
+      ],
+      "knowledge": [
+        { "id": "k_judy_secrets", "topic": "Secrets", "ask": "Is everyone keeping a secret from me?", "text": "Secrets? No secrets here! None at all! Why would anyone keep a secret today?", "keywords": ["secret", "secrets", "hiding", "strange", "everyone"], "clue_id": "cl_judy_no_secrets", "truth_id": "t_secret" },
+        { "id": "k_judy_morning", "topic": "This morning", "ask": "Where did you go this morning?", "text": "I just went for a little walk. And a little bus ride. It was very boring.", "keywords": ["morning", "early", "walk", "bus", "went"] },
+        { "id": "k_judy_hat", "topic": "My hat", "ask": "Did you take my hat?", "text": "Your hat? Well, it might be somewhere safe. Somewhere very safe. That is all I will say.", "keywords": ["hat", "take", "took", "safe"] },
+        { "id": "k_judy_gruber", "topic": "Mr Gruber", "ask": "Is Mr Gruber good at mending things?", "text": "Mr Gruber is very clever with a needle and thread. He can mend almost anything.", "keywords": ["gruber", "needle", "mend", "shop", "sew"] },
+        { "id": "k_judy_drawing", "topic": "Your drawing", "ask": "What are you drawing?", "text": "Just a hat. A brown hat with a red ribbon. It is nobody's hat. Really!", "keywords": ["drawing", "draw", "notebook", "ribbon"] },
+        { "id": "k_judy_curry", "topic": "Mr Curry", "ask": "Did Mr Curry see you this morning?", "text": "Mr Curry was in his garden very early. He was looking for his newspaper, I think.", "keywords": ["curry", "garden", "neighbour", "newspaper"] }
+      ],
+      "goal_hints": {
+        "unmet": ["Some things are a secret today, Paddington.", "Just wait and see!"],
+        "in_progress": ["Not long now, Paddington.", "You will see soon. I promise!"],
+        "resolved": ["Some things are a secret today, Paddington. Just wait and see!", "You will find out soon. I promise!"]
+      },
+      "deflections": [
+        "Hmm, I do not know, Paddington.",
+        "That is a good question! Ask someone else.",
+        "I am not telling. I mean, I do not know!",
+        "No idea. Sorry, Paddington.",
+        "You are a very good detective. But I cannot help with that."
+      ]
+    },
+    {
+      "id": "c_mr_curry",
+      "name": "Mr Curry",
+      "species": "human",
+      "personality": "The grumpy neighbour. He shouts Bear! a lot, but he is not really bad.",
+      "goal": "Get his lost newspaper back.",
+      "secret": "He secretly likes parties, but he would never say so.",
+      "motivations": ["peace and quiet", "his newspaper"],
+      "relationships": [
+        { "cast_id": "c_mr_brown", "relation": "his next-door neighbour" }
+      ],
+      "reactions": [
+        { "id": "r_curry_paper", "about": { "type": "item", "id": "i_newspaper" }, "text": "My newspaper! Where did you find it, bear? Well. Hmph. Thank you." }
+      ],
+      "sprite_recipe": "grumpy old man with bushy grey eyebrows, a brown cardigan and a brown gardening hat",
+      "home_location": "l_curry_garden",
+      "knows_truths": ["t_judy_took_hat"],
+      "goal_states": [
+        {
+          "id": "gs_curry_paper",
+          "description": "Paddington gives Mr Curry his lost newspaper.",
+          "requires": { "items": ["i_newspaper"] },
+          "reveals": "Mr Curry is pleased and tells Paddington what he saw this morning."
+        }
+      ],
+      "voice_notes": "Talks to Paddington. Grumpy and short. Calls him bear. Uses simple words. Softer after he gets his newspaper.",
+      "greetings": [
+        "Bear! What do you want? I am very busy.",
+        "Oh, it is you again. Keep off my flowers, bear.",
+        "Hmph. Hello, bear. Make it quick."
+      ],
+      "knowledge": [
+        { "id": "k_curry_saw", "topic": "This morning", "ask": "Did you see anyone with my hat this morning?", "text": "Yes. At eight o'clock Judy walked past with your old hat in her bag. She took the bus.", "keywords": ["saw", "seen", "morning", "judy", "hat", "eight"], "clue_id": "cl_curry_saw", "truth_id": "t_judy_took_hat" },
+        { "id": "k_curry_newspaper", "topic": "His newspaper", "ask": "What did you lose?", "text": "My newspaper! The wind took it this morning. I have not read one word of it.", "keywords": ["newspaper", "paper", "lost", "wind", "news"] },
+        { "id": "k_curry_hat", "topic": "His hat", "ask": "Is that my hat on your fence?", "text": "Your hat? Certainly not! That is my gardening hat. I have had it for twenty years.", "keywords": ["hat", "fence", "brown", "gardening", "mine"] },
+        { "id": "k_curry_noise", "topic": "The noise", "ask": "Why are you cross today?", "text": "Balloons, banging and whispering! What is going on next door today?", "keywords": ["cross", "noise", "balloons", "next door", "banging"] },
+        { "id": "k_curry_flowers", "topic": "His flowers", "ask": "Are these your flowers?", "text": "Yes, and they are the best flowers in the street. Do not step on them.", "keywords": ["flowers", "garden", "roses", "best"] },
+        { "id": "k_curry_bears", "topic": "Bears", "ask": "Do you like bears?", "text": "Bears are messy and sticky. But you are not the worst bear, I suppose.", "keywords": ["bear", "bears", "like", "messy"] }
+      ],
+      "goal_hints": {
+        "unmet": ["My newspaper is gone, and I cannot find it anywhere.", "If you find my newspaper, bear, I might be a bit nicer."],
+        "in_progress": ["Still no newspaper, bear?", "That newspaper must be somewhere."],
+        "resolved": ["Hmph. Thank you for my newspaper, bear. That was kind.", "Now I can read my newspaper in peace. Thank you, bear."]
+      },
+      "deflections": [
+        "How should I know, bear?",
+        "Not my business. Go away.",
+        "Hmph. Ask someone else.",
+        "I have no time for silly questions.",
+        "Bear! I do not know, and I do not care."
+      ]
+    },
+    {
+      "id": "c_barnaby",
+      "name": "Barnaby",
+      "species": "human",
+      "personality": "Jolly fruit seller with a big laugh. He knows everyone on Portobello Road.",
+      "goal": "Get some breakfast. He missed it this morning.",
+      "secret": "He sold Mrs Bird lots of oranges for a giant cake.",
+      "motivations": ["happy customers", "a good breakfast"],
+      "relationships": [
+        { "cast_id": "c_mr_gruber", "relation": "his friend from across the street" },
+        { "cast_id": "c_mrs_bird", "relation": "she buys his oranges" }
+      ],
+      "reactions": [
+        { "id": "r_barnaby_sandwich", "about": { "type": "item", "id": "i_sandwich" }, "text": "A marmalade sandwich? For me? Oh, you kind bear! I am so hungry." }
+      ],
+      "sprite_recipe": "round, smiling man with a flat cap, a green apron and an orange in his hand",
+      "home_location": "l_market",
+      "knows_truths": ["t_hat_at_gruber", "t_marmalade_cake"],
+      "goal_states": [
+        {
+          "id": "gs_barnaby_breakfast",
+          "description": "Paddington gives Barnaby his marmalade sandwich for breakfast.",
+          "requires": { "items": ["i_sandwich"] },
+          "gives_items": ["i_currant_buns", "i_flowers"],
+          "reveals": "Barnaby gives Paddington a bag of currant buns and a bunch of flowers."
+        }
+      ],
+      "voice_notes": "Talks to Paddington. Loud, happy and friendly. Uses short, simple sentences.",
+      "greetings": [
+        "Good morning, young bear! Fresh fruit, fresh flowers!",
+        "Hello there, Paddington! Lovely day for the market!",
+        "Back again, Paddington? Always happy to see you!"
+      ],
+      "knowledge": [
+        { "id": "k_barnaby_judy", "topic": "Judy this morning", "ask": "Did you see Judy this morning?", "text": "Yes! Judy came by early with a brown hat in her bag. She went right into Mr Gruber's shop.", "keywords": ["judy", "hat", "morning", "gruber", "shop"], "clue_id": "cl_barnaby_saw", "truth_id": "t_hat_at_gruber" },
+        { "id": "k_barnaby_oranges", "topic": "Mrs Bird's shopping", "ask": "Did Mrs Bird buy anything from you?", "text": "Mrs Bird bought my biggest bag of oranges and lots of sugar yesterday. For a giant cake, she said!", "keywords": ["oranges", "mrs bird", "sugar", "cake", "bought"], "clue_id": "cl_barnaby_oranges", "truth_id": "t_marmalade_cake" },
+        { "id": "k_barnaby_breakfast", "topic": "Breakfast", "ask": "Are you hungry?", "text": "Very hungry! I came here so early that I missed my breakfast. I would love a sandwich.", "keywords": ["hungry", "breakfast", "sandwich", "food"] },
+        { "id": "k_barnaby_flowers", "topic": "Flowers", "ask": "Do you sell flowers?", "text": "Yes, the brightest flowers on Portobello Road! Yellow, red and blue.", "keywords": ["flowers", "sell", "bunch", "bright"] },
+        { "id": "k_barnaby_buns", "topic": "Currant buns", "ask": "Do you have any buns?", "text": "I have a bag of currant buns from the baker. Mr Gruber loves them with his cocoa.", "keywords": ["buns", "currant", "bun", "cocoa", "gruber"] },
+        { "id": "k_barnaby_market", "topic": "The market", "ask": "What can I find at the market?", "text": "Everything! Fruit, flowers, old clocks, hats and books. It is the best market in London.", "keywords": ["market", "portobello", "busy", "stalls"] }
+      ],
+      "goal_hints": {
+        "unmet": ["I missed my breakfast. A sandwich would make me so happy!", "My tummy is rumbling, Paddington. Do you have any food?"],
+        "in_progress": ["Still a bit hungry, young bear.", "Any food for a hungry fruit seller?"],
+        "resolved": ["That was the best sandwich ever. Thank you, Paddington!", "My tummy is happy now. Enjoy the buns and flowers!"]
+      },
+      "deflections": [
+        "Ha! No idea, young bear.",
+        "You have got me there, Paddington.",
+        "I only know about fruit and flowers.",
+        "Hmm, ask Mr Gruber. He knows lots of things.",
+        "Sorry, Paddington. I do not know."
+      ]
+    },
+    {
+      "id": "c_mr_gruber",
+      "name": "Mr Gruber",
+      "species": "human",
+      "personality": "Gentle, wise old shop owner. Paddington's very good friend.",
+      "goal": "Have cocoa and buns at eleven o'clock with Paddington.",
+      "secret": "He is mending Paddington's hat and adding a new red ribbon. It is a birthday present.",
+      "motivations": ["friendship", "making old things like new"],
+      "relationships": [
+        { "cast_id": "c_judy", "relation": "she brought him the hat to mend" },
+        { "cast_id": "c_barnaby", "relation": "buys buns from him" }
+      ],
+      "reactions": [
+        { "id": "r_gruber_buns", "about": { "type": "item", "id": "i_currant_buns" }, "text": "Currant buns! Wonderful, Paddington. I will make the cocoa right away." }
+      ],
+      "sprite_recipe": "small old man with white hair, round glasses and a brown waistcoat",
+      "home_location": "l_gruber_shop",
+      "knows_truths": ["t_hat_at_gruber", "t_hat_mended"],
+      "goal_states": [
+        {
+          "id": "gs_gruber_cocoa",
+          "description": "Paddington brings currant buns, and he and Mr Gruber have cocoa together.",
+          "requires": { "items": ["i_currant_buns"] },
+          "reveals": "Mr Gruber opens the door to his back room."
+        }
+      ],
+      "voice_notes": "Talks to Paddington. Calm, slow and kind. Calls him my friend. Uses simple words.",
+      "greetings": [
+        "Ah, Paddington, my friend! Good morning!",
+        "Hello, Paddington. Come in, come in.",
+        "Welcome back, my young friend."
+      ],
+      "knowledge": [
+        { "id": "k_gruber_cocoa", "topic": "Cocoa at eleven", "ask": "Shall we have cocoa together?", "text": "Oh yes, I would love that! But I have no buns today. Cocoa is not the same without buns.", "keywords": ["cocoa", "eleven", "buns", "snack", "drink"] },
+        { "id": "k_gruber_hat", "topic": "My hat", "ask": "Is my hat here?", "text": "Yes, Judy brought it this morning. I am sewing up the little hole and adding a new red ribbon. It is a present!", "keywords": ["hat", "here", "mend", "ribbon", "judy"], "clue_id": "cl_gruber_explains", "truth_id": "t_hat_mended" },
+        { "id": "k_gruber_backroom", "topic": "The back room", "ask": "What is in your back room?", "text": "Just my workbench and my sewing things. You may go in after we have cocoa and buns.", "keywords": ["back room", "door", "workbench", "sewing"] },
+        { "id": "k_gruber_clock", "topic": "The old clock", "ask": "Is that clock very old?", "text": "Yes, it is older than me! It still tells good time. Look, it is almost eleven.", "keywords": ["clock", "old", "time"] },
+        { "id": "k_gruber_shop", "topic": "His shop", "ask": "What do you sell in your shop?", "text": "Old and lovely things. Clocks, books, maps and teapots. Every old thing has a story.", "keywords": ["shop", "sell", "antiques", "old things"] },
+        { "id": "k_gruber_lucy", "topic": "Aunt Lucy", "ask": "Do you know Aunt Lucy?", "text": "Only from your stories, Paddington. She must be a very wise bear.", "keywords": ["aunt lucy", "peru", "aunt", "lucy"] }
+      ],
+      "goal_hints": {
+        "unmet": ["It is almost eleven. Time for cocoa, but I have no buns.", "Cocoa is so much nicer with a currant bun, my friend."],
+        "in_progress": ["The cocoa is nearly ready, my friend.", "Sit down, Paddington. Just a moment."],
+        "resolved": ["Thank you for the buns, my friend. That was a lovely cocoa.", "You may look in my back room now, Paddington."]
+      },
+      "deflections": [
+        "Hmm, I do not know, my friend.",
+        "That is a good question. I am not sure.",
+        "Perhaps ask someone at the market.",
+        "I am an old man. I do not know everything!",
+        "Sorry, Paddington. I cannot help with that."
+      ]
+    },
+    {
+      "id": "c_mrs_penny",
+      "name": "Mrs Penny",
+      "species": "human",
+      "personality": "Friendly park keeper. She loves ducks and tidy paths.",
+      "goal": "Keep the park clean and tidy for everyone.",
+      "secret": "Mr Brown asked her to keep the bandstand free for a party at three o'clock.",
+      "motivations": ["a tidy park", "happy visitors"],
+      "relationships": [
+        { "cast_id": "c_mr_brown", "relation": "he asked her to keep the bandstand free" }
+      ],
+      "sprite_recipe": "cheerful woman in a green park uniform and cap, holding a broom",
+      "home_location": "l_park_gate",
+      "knows_truths": ["t_party_in_park"],
+      "goal_states": [],
+      "voice_notes": "Talks to Paddington. Happy and chatty, but she is bad at secrets. Uses simple words.",
+      "greetings": [
+        "Good morning! Welcome to the park, young bear.",
+        "Hello, Paddington! Please keep the paths tidy.",
+        "Back again? The ducks are very happy today."
+      ],
+      "knowledge": [
+        { "id": "k_penny_bandstand", "topic": "The bandstand", "ask": "What is happening at the bandstand today?", "text": "Mr Brown asked me to keep the bandstand free at three o'clock. For a party, he said! Oh. Was that a secret?", "keywords": ["bandstand", "three", "party", "today", "happening"], "clue_id": "cl_penny_bandstand", "truth_id": "t_party_in_park" },
+        { "id": "k_penny_ducks", "topic": "The ducks", "ask": "How are the ducks?", "text": "The ducks are very well. They love bread, but peas are better for them.", "keywords": ["ducks", "duck", "pond", "bread"] },
+        { "id": "k_penny_job", "topic": "Her job", "ask": "What is your job?", "text": "I am the park keeper. I keep the paths clean and the flowers happy.", "keywords": ["job", "keeper", "park", "tidy"] },
+        { "id": "k_penny_balloons", "topic": "Balloons", "ask": "Have you seen any balloons?", "text": "Not yet. But a boy asked me if balloons are allowed in the park. I said yes, of course!", "keywords": ["balloons", "boy", "allowed"] },
+        { "id": "k_penny_weather", "topic": "The weather", "ask": "Will it stay sunny?", "text": "Sunny all day! A perfect day for a picnic. Or a party.", "keywords": ["weather", "sunny", "sun", "rain"] }
+      ],
+      "goal_hints": {
+        "unmet": ["Please put any rubbish in the bin, young bear.", "A tidy park is a happy park!"],
+        "in_progress": ["Nearly everything is tidy now.", "Just a few more leaves to sweep."],
+        "resolved": ["A tidy park is a happy park, Paddington!", "Please put any rubbish in the bin. Thank you, young bear."]
+      },
+      "deflections": [
+        "Oh, I do not know about that.",
+        "Hmm, ask the ducks! Just joking.",
+        "Sorry, Paddington. No idea.",
+        "I only know about the park, I am afraid.",
+        "That is a good question. I am not sure."
+      ]
+    }
+  ],
+  "truths": [
+    { "id": "t_hat_missing", "text": "Paddington's old hat is not on its peg in the hall.", "depends_on": [], "importance": "core", "revealed_by": ["cl_empty_peg", "cl_jonathan_peg"] },
+    { "id": "t_marmalade_gone", "text": "All the marmalade is gone from the kitchen.", "depends_on": [], "importance": "core", "revealed_by": ["cl_empty_shelf", "cl_mrs_brown_marmalade"] },
+    { "id": "t_secret", "text": "Everyone at home is hiding something from Paddington.", "depends_on": [], "importance": "core", "revealed_by": ["cl_shed_sheet", "cl_judy_no_secrets"] },
+    {
+      "id": "t_judy_took_hat", "text": "Judy took the hat early this morning.", "depends_on": ["t_hat_missing"], "importance": "core", "revealed_by": ["cl_judy_ticket", "cl_curry_saw"],
+      "deduction": {
+        "question": "Who took Paddington's hat?",
+        "answer": "Judy took the hat early this morning.",
+        "wrong_answers": ["Mr Curry took the hat.", "The wind blew the hat away.", "Jonathan hid the hat."],
+        "rules_out": ["rh_curry_hat", "rh_open_window"]
+      }
+    },
+    {
+      "id": "t_hat_at_gruber", "text": "The hat is at Mr Gruber's shop.", "depends_on": ["t_judy_took_hat"], "importance": "core", "revealed_by": ["cl_barnaby_saw", "cl_gruber_tag"],
+      "deduction": {
+        "question": "Where is the hat now?",
+        "answer": "The hat is at Mr Gruber's shop.",
+        "wrong_answers": ["The hat is in Mr Curry's garden.", "The hat is at the bus stop.", "The hat is up a tree in the park."]
+      }
+    },
+    {
+      "id": "t_hat_mended", "text": "Mr Gruber is mending the hat and adding a new red ribbon. It is a present.", "depends_on": ["t_hat_at_gruber"], "importance": "core", "revealed_by": ["cl_workbench_hat", "cl_judy_sketch", "cl_gruber_explains"],
+      "deduction": {
+        "question": "Why did Judy take the hat to Mr Gruber?",
+        "answer": "So Mr Gruber can mend it and add a new red ribbon, as a present.",
+        "wrong_answers": ["So Mr Gruber can sell it in his shop.", "Because the hat is too small for Paddington.", "So Mr Gruber can wear it."]
+      }
+    },
+    {
+      "id": "t_marmalade_cake", "text": "Mrs Bird used all the marmalade to bake a giant marmalade cake.", "depends_on": ["t_marmalade_gone"], "importance": "core", "revealed_by": ["cl_oven_smell", "cl_barnaby_oranges"],
+      "deduction": {
+        "question": "Where did all the marmalade go?",
+        "answer": "Mrs Bird used it to bake a giant marmalade cake.",
+        "wrong_answers": ["Jonathan ate it all for breakfast.", "Mr Curry took it.", "Paddington ate it in his sleep."],
+        "rules_out": ["rh_sticky_jonathan"]
+      }
+    },
+    { "id": "t_party_in_park", "text": "A party is being set up at the park bandstand at three o'clock.", "depends_on": ["t_secret"], "importance": "core", "revealed_by": ["cl_penny_bandstand", "cl_jonathan_list"] },
+    {
+      "id": "t_birthday", "text": "Today is Paddington's summer birthday. The party is a surprise for him.", "depends_on": ["t_party_in_park"], "importance": "core", "revealed_by": ["cl_shed_banner", "cl_lucy_postcard"],
+      "deduction": {
+        "question": "Why is everyone keeping secrets today?",
+        "answer": "It is Paddington's summer birthday, and they are planning a surprise party.",
+        "wrong_answers": ["They are cross with Paddington.", "They are going on holiday without Paddington.", "They are hiding from Mr Curry."]
+      }
+    }
+  ],
+  "clues": [
+    { "id": "cl_empty_peg", "truth_id": "t_hat_missing", "kind": "object", "where": { "type": "location", "id": "l_hall" }, "alternatives": [], "requirements": {}, "text": "The hat peg in the hall is empty. Paddington's old hat is not there." },
+    { "id": "cl_jonathan_peg", "truth_id": "t_hat_missing", "kind": "spoken", "where": { "type": "character", "id": "c_jonathan" }, "alternatives": [], "requirements": {}, "text": "Jonathan says the hat was not on the peg at breakfast." },
+    { "id": "cl_empty_shelf", "truth_id": "t_marmalade_gone", "kind": "object", "where": { "type": "location", "id": "l_kitchen" }, "alternatives": [], "requirements": {}, "text": "The marmalade shelf is empty. Even the big jar is gone." },
+    { "id": "cl_mrs_brown_marmalade", "truth_id": "t_marmalade_gone", "kind": "spoken", "where": { "type": "character", "id": "c_mrs_brown" }, "alternatives": [], "requirements": {}, "text": "Mrs Brown says all the marmalade has run out." },
+    { "id": "cl_shed_sheet", "truth_id": "t_secret", "kind": "object", "where": { "type": "location", "id": "l_shed" }, "alternatives": [], "requirements": {}, "text": "Something big is hidden under a sheet. Mr Brown stands in front of it." },
+    { "id": "cl_judy_no_secrets", "truth_id": "t_secret", "kind": "spoken", "where": { "type": "character", "id": "c_judy" }, "alternatives": [], "requirements": {}, "text": "Judy says there are no secrets here. She says it much too fast." },
+    { "id": "cl_judy_ticket", "truth_id": "t_judy_took_hat", "kind": "object", "where": { "type": "location", "id": "l_judy_room" }, "alternatives": [], "requirements": {}, "text": "A bus ticket on Judy's desk: Portobello Road, eight o'clock this morning. Next to it is a little brown thread from a hat." },
+    { "id": "cl_curry_saw", "truth_id": "t_judy_took_hat", "kind": "spoken", "where": { "type": "character", "id": "c_mr_curry" }, "alternatives": [], "requirements": { "goal_states": ["gs_curry_paper"] }, "text": "Mr Curry saw Judy carry the hat to the bus at eight o'clock." },
+    { "id": "cl_barnaby_saw", "truth_id": "t_hat_at_gruber", "kind": "spoken", "where": { "type": "character", "id": "c_barnaby" }, "alternatives": [], "requirements": {}, "text": "Barnaby saw Judy take a brown hat into Mr Gruber's shop." },
+    { "id": "cl_gruber_tag", "truth_id": "t_hat_at_gruber", "kind": "object", "where": { "type": "location", "id": "l_gruber_shop" }, "alternatives": [], "requirements": {}, "text": "A paper tag on the counter says: Paddington's hat. Ready by two o'clock." },
+    { "id": "cl_workbench_hat", "truth_id": "t_hat_mended", "kind": "object", "where": { "type": "location", "id": "l_gruber_backroom" }, "alternatives": [], "requirements": {}, "text": "Paddington's hat sits on the workbench. The hole is sewn up, and a bright new red ribbon goes round it." },
+    { "id": "cl_judy_sketch", "truth_id": "t_hat_mended", "kind": "object", "where": { "type": "location", "id": "l_judy_room" }, "alternatives": [], "requirements": { "truths": ["t_hat_at_gruber"] }, "text": "Judy's drawing book has a picture of the hat with a red ribbon. It says: Present for P. Mr Gruber will mend the hole." },
+    { "id": "cl_gruber_explains", "truth_id": "t_hat_mended", "kind": "spoken", "where": { "type": "character", "id": "c_mr_gruber" }, "alternatives": [], "requirements": { "truths": ["t_hat_at_gruber"] }, "text": "Mr Gruber is mending the hat and adding a new red ribbon, as a present." },
+    { "id": "cl_oven_smell", "truth_id": "t_marmalade_cake", "kind": "place", "where": { "type": "location", "id": "l_kitchen" }, "alternatives": [], "requirements": {}, "text": "The oven is warm. It smells of hot oranges and sugar. The bin is full of orange peel." },
+    { "id": "cl_barnaby_oranges", "truth_id": "t_marmalade_cake", "kind": "spoken", "where": { "type": "character", "id": "c_barnaby" }, "alternatives": [], "requirements": {}, "text": "Barnaby sold Mrs Bird lots of oranges and sugar for a giant cake." },
+    { "id": "cl_penny_bandstand", "truth_id": "t_party_in_park", "kind": "spoken", "where": { "type": "character", "id": "c_mrs_penny" }, "alternatives": [], "requirements": {}, "text": "Mrs Penny must keep the bandstand free at three o'clock for a party." },
+    { "id": "cl_jonathan_list", "truth_id": "t_party_in_park", "kind": "object", "where": { "type": "location", "id": "l_bus_stop" }, "alternatives": [], "requirements": {}, "text": "A list on the bench, in Jonathan's writing: Twenty balloons. Take them to the park bandstand at two. Do NOT tell P!" },
+    { "id": "cl_shed_banner", "truth_id": "t_birthday", "kind": "object", "where": { "type": "location", "id": "l_shed" }, "alternatives": [], "requirements": { "truths": ["t_party_in_park"] }, "text": "Under the sheet is a long banner. In big red and yellow letters it says: HAPPY BIRTHDAY, PADDINGTON!" },
+    { "id": "cl_lucy_postcard", "truth_id": "t_birthday", "kind": "spoken", "where": { "type": "character", "id": "c_mrs_brown" }, "alternatives": [], "requirements": { "goal_states": ["gs_mrs_brown_flowers"] }, "text": "Mrs Brown shows a postcard from Aunt Lucy in Peru: Happy summer birthday, dear Paddington!" },
+    { "id": "cl_open_window", "kind": "place", "where": { "type": "location", "id": "l_hall" }, "alternatives": [], "requirements": {}, "text": "The hall window is wide open. A few leaves have blown in. Did the wind take the hat?" },
+    { "id": "cl_curry_hat_fence", "kind": "object", "where": { "type": "location", "id": "l_curry_garden" }, "alternatives": [], "requirements": {}, "text": "A brown hat hangs on Mr Curry's fence. It looks a bit like Paddington's hat." },
+    { "id": "cl_sticky_fingers", "kind": "spoken", "where": { "type": "character", "id": "c_jonathan" }, "alternatives": [], "requirements": {}, "text": "Jonathan has sticky orange fingers. Did he eat the marmalade?" }
+  ],
+  "items": [
+    { "id": "i_sandwich", "name": "Marmalade bread sandwich", "description": "Paddington's emergency marmalade sandwich. He always keeps one for a hungry moment.", "icon_recipe": "two slices of bread with bright orange marmalade inside", "visual": { "icon": "bread", "accent": "#F08C1E" }, "key": false, "found_at": { "type": "location", "id": "l_bedroom" }, "purpose": "Give it to Barnaby, who missed his breakfast." },
+    { "id": "i_newspaper", "name": "Mr Curry's newspaper", "description": "Today's newspaper. The wind blew it to the bus stop.", "icon_recipe": "folded grey newspaper", "visual": { "icon": "newspaper" }, "key": false, "found_at": { "type": "location", "id": "l_bus_stop" }, "purpose": "Give it back to Mr Curry." },
+    { "id": "i_currant_buns", "name": "Bag of currant buns", "description": "A paper bag of soft, sweet currant buns.", "icon_recipe": "paper bag with three round buns", "visual": { "icon": "bread" }, "key": true, "purpose": "Share them with Mr Gruber at eleven o'clock." },
+    { "id": "i_flowers", "name": "Bunch of flowers", "description": "Bright yellow, red and blue flowers from the market.", "icon_recipe": "small bunch of colourful flowers", "visual": { "icon": "flower" }, "key": false, "purpose": "Give them to Mrs Brown for the table." }
+  ],
+  "visual_requests": [
+    { "name": "Marmalade bread sandwich", "description": "Two slices of bread with orange marmalade inside, cut in half.", "suggested_category": "food" }
+  ],
+  "locations": [
+    {
+      "id": "l_bedroom", "name": "Paddington's Room", "biome": "house interior", "mood": "sunny, cosy and a little messy", "palette": "warm yellow and soft blue", "role": "Start. Paddington wakes up here and finds his emergency sandwich.", "hub": false,
+      "required_characters": [],
+      "objects": [
+        { "id": "o_bed", "name": "Paddington's bed", "description": "A small bed with a blue blanket.", "visual": { "icon": "bed" } },
+        { "id": "o_bedside_table", "name": "Bedside table", "description": "A little table with a drawer. Paddington keeps his sandwich here.", "visual": { "icon": "bedside_table" } },
+        { "id": "o_magnifying_glass", "name": "Magnifying glass", "description": "Paddington's detective magnifying glass.", "visual": { "icon": "magnifying_glass" } }
+      ],
+      "doors": [{ "id": "d_bedroom_hall", "to": "l_hall" }]
+    },
+    {
+      "id": "l_hall", "name": "The Hall", "biome": "house interior", "mood": "bright and busy", "palette": "cream walls and a red carpet", "role": "Home hub. The empty hat peg and the open window.", "hub": true,
+      "required_characters": ["c_mrs_brown"],
+      "objects": [
+        { "id": "o_hat_peg", "name": "Empty hat peg", "description": "A wooden peg by the door. Paddington's hat always hangs here.", "visual": { "icon": "bench" } },
+        { "id": "o_hall_window", "name": "Open window", "description": "A tall window, wide open to the sunny street.", "visual": { "icon": "mirror" } },
+        { "id": "o_letter_box", "name": "Letter box", "description": "The letter box in the front door.", "visual": { "icon": "letter_box" } }
+      ],
+      "doors": [
+        { "id": "d_hall_kitchen", "to": "l_kitchen" },
+        { "id": "d_hall_judy", "to": "l_judy_room" },
+        { "id": "d_hall_street", "to": "l_windsor_gardens" }
+      ]
+    },
+    {
+      "id": "l_kitchen", "name": "The Kitchen", "biome": "house interior", "mood": "warm and sweet-smelling", "palette": "orange and white tiles", "role": "Mrs Bird works here. The marmalade is gone and the oven is warm.", "hub": false,
+      "required_characters": ["c_mrs_bird"],
+      "objects": [
+        { "id": "o_marmalade_shelf", "name": "Empty marmalade jar shelf", "description": "A shelf where the marmalade jars stand. Today it is empty.", "visual": { "icon": "jar" } },
+        { "id": "o_oven", "name": "Warm cooking stove", "description": "The oven is warm. Something sweet is baking.", "visual": { "icon": "stove" } },
+        { "id": "o_peel_bin", "name": "Peel storage bin", "description": "A bin full of orange peel.", "visual": { "icon": "storage_bin" } }
+      ],
+      "doors": [{ "id": "d_kitchen_garden", "to": "l_back_garden" }]
+    },
+    {
+      "id": "l_back_garden", "name": "The Back Garden", "biome": "garden", "mood": "green, sunny and full of birdsong", "palette": "grass green and sky blue", "role": "Jonathan blows up balloons here.", "hub": false,
+      "required_characters": ["c_jonathan"],
+      "objects": [
+        { "id": "o_garden_table", "name": "Garden table", "description": "A wooden table with a balloon pump on it.", "visual": { "icon": "table" } },
+        { "id": "o_flowerbed", "name": "Flowerbed", "description": "Rows of bright red and yellow flowers.", "visual": { "icon": "flower" } }
+      ],
+      "doors": [{ "id": "d_garden_shed", "to": "l_shed" }]
+    },
+    {
+      "id": "l_shed", "name": "The Shed", "biome": "garden shed", "mood": "dusty, busy and smelling of paint", "palette": "brown wood and bright paint", "role": "Mr Brown hides a big banner under a sheet.", "hub": false,
+      "required_characters": ["c_mr_brown"],
+      "objects": [
+        { "id": "o_covered_banner", "name": "Covered banner", "description": "Something long and big, hidden under an old sheet.", "visual": { "icon": "painting" } },
+        { "id": "o_paint_bucket", "name": "Paint bucket", "description": "A bucket of bright red paint.", "visual": { "icon": "bucket", "accent": "#D83A2E" } }
+      ],
+      "doors": []
+    },
+    {
+      "id": "l_judy_room", "name": "Judy's Room", "biome": "house interior", "mood": "neat, bright and full of books", "palette": "pink and pale green", "role": "Judy's room. A bus ticket and a drawing give her away.", "hub": false,
+      "required_characters": ["c_judy"],
+      "objects": [
+        { "id": "o_bus_ticket", "name": "Bus ticket", "description": "A small bus ticket on Judy's desk.", "visual": { "icon": "ticket" } },
+        { "id": "o_judy_notebook", "name": "Judy's drawing book", "description": "A book full of drawings.", "visual": { "icon": "book" } },
+        { "id": "o_bookshelf", "name": "Bookshelf", "description": "A shelf full of story books.", "visual": { "icon": "bookshelf" } }
+      ],
+      "doors": []
+    },
+    {
+      "id": "l_windsor_gardens", "name": "Windsor Gardens", "biome": "london street", "mood": "sunny and peaceful", "palette": "white houses and green trees", "role": "The street outside number 32. It leads to the bus stop, the park and Mr Curry's garden.", "hub": true,
+      "required_characters": [],
+      "objects": [
+        { "id": "o_lamp_post", "name": "Lamp post", "description": "A black street lamp post.", "visual": { "icon": "lamp_post" } },
+        { "id": "o_street_sign", "name": "Street sign", "description": "A sign that says Windsor Gardens.", "visual": { "icon": "sign" } }
+      ],
+      "doors": [
+        { "id": "d_street_curry", "to": "l_curry_garden" },
+        { "id": "d_street_bus", "to": "l_bus_stop" },
+        { "id": "d_street_park", "to": "l_park_gate" }
+      ]
+    },
+    {
+      "id": "l_curry_garden", "name": "Mr Curry's Garden", "biome": "front garden", "mood": "very neat and a bit grumpy", "palette": "dark green hedge and red roses", "role": "Mr Curry looks for his newspaper. A brown hat hangs on his fence.", "hub": false,
+      "required_characters": ["c_mr_curry"],
+      "objects": [
+        { "id": "o_curry_hat", "name": "Brown gardening hat", "description": "An old brown hat on the fence.", "visual": { "icon": "hat", "accent": "#7A5230" } },
+        { "id": "o_curry_roses", "name": "Rose flowers", "description": "Neat rows of red roses.", "visual": { "icon": "flower", "accent": "#D83A2E" } }
+      ],
+      "doors": []
+    },
+    {
+      "id": "l_bus_stop", "name": "The Bus Stop", "biome": "london street", "mood": "breezy and bright", "palette": "red bus colours and grey stone", "role": "Mr Curry's newspaper and Jonathan's list blew or fell here.", "hub": false,
+      "required_characters": [],
+      "objects": [
+        { "id": "o_bus_sign", "name": "Bus stop sign", "description": "A red sign. The bus to Portobello Road stops here.", "visual": { "icon": "sign", "accent": "#D83A2E" } },
+        { "id": "o_bus_bench", "name": "Bench", "description": "A wooden bench to wait for the bus.", "visual": { "icon": "bench" } }
+      ],
+      "doors": [{ "id": "d_bus_market", "to": "l_market" }]
+    },
+    {
+      "id": "l_market", "name": "Portobello Market", "biome": "street market", "mood": "busy, loud and happy", "palette": "bright fruit colours and striped awnings", "role": "Barnaby sells fruit and flowers here.", "hub": false,
+      "required_characters": ["c_barnaby"],
+      "objects": [
+        { "id": "o_fruit_basket", "name": "Fruit basket", "description": "A big basket of oranges and apples.", "visual": { "icon": "basket" } },
+        { "id": "o_flower_bucket", "name": "Flower bucket", "description": "A bucket full of bright flowers.", "visual": { "icon": "flower", "accent": "#F2C230" } }
+      ],
+      "doors": [{ "id": "d_market_gruber", "to": "l_gruber_shop" }]
+    },
+    {
+      "id": "l_gruber_shop", "name": "Mr Gruber's Shop", "biome": "antique shop", "mood": "quiet, cosy and full of old things", "palette": "dark wood and golden light", "role": "Mr Gruber's antique shop. A tag on the counter shows the hat is here.", "hub": false,
+      "required_characters": ["c_mr_gruber"],
+      "objects": [
+        { "id": "o_counter_tag", "name": "Paper tag note", "description": "A paper tag on the counter with writing on it.", "visual": { "icon": "note" } },
+        { "id": "o_old_clock", "name": "Grandfather clock", "description": "A very old, tall clock. It is almost eleven.", "visual": { "icon": "grandfather_clock" } },
+        { "id": "o_teapot", "name": "Old teapot", "description": "A pretty old teapot for sale.", "visual": { "icon": "teapot" } }
+      ],
+      "doors": [{ "id": "d_gruber_backroom", "to": "l_gruber_backroom", "lock": { "goal_states": ["gs_gruber_cocoa"] } }]
+    },
+    {
+      "id": "l_gruber_backroom", "name": "Mr Gruber's Back Room", "biome": "workshop", "mood": "small, warm and tidy", "palette": "brown wood and red thread", "role": "Mr Gruber mends Paddington's hat here.", "hub": false,
+      "required_characters": [],
+      "objects": [
+        { "id": "o_workbench", "name": "Workbench table", "description": "A wooden workbench with Paddington's hat on it.", "visual": { "icon": "table", "accent": "#7A5230" } },
+        { "id": "o_sewing_basket", "name": "Sewing basket", "description": "A basket with needles, thread and red ribbon.", "visual": { "icon": "basket", "accent": "#D83A2E" } }
+      ],
+      "doors": []
+    },
+    {
+      "id": "l_park_gate", "name": "The Park Gate", "biome": "park", "mood": "green, sunny and full of ducks", "palette": "bright green grass and blue pond", "role": "Mrs Penny the park keeper knows about the bandstand.", "hub": false,
+      "required_characters": ["c_mrs_penny"],
+      "objects": [
+        { "id": "o_park_sign", "name": "Park sign", "description": "A sign at the gate: Please keep the park tidy.", "visual": { "icon": "sign", "accent": "#3A8A3A" } },
+        { "id": "o_duck_pond", "name": "Duck pond fountain", "description": "A little pond with a fountain and happy ducks.", "visual": { "icon": "fountain" } }
+      ],
+      "doors": [{ "id": "d_park_bandstand", "to": "l_bandstand" }]
+    },
+    {
+      "id": "l_bandstand", "name": "The Bandstand", "biome": "park", "mood": "bright, happy and full of balloons", "palette": "white bandstand, red balloons and yellow bunting", "role": "Finale. The surprise birthday party.", "hub": false,
+      "required_characters": [],
+      "objects": [
+        { "id": "o_party_table", "name": "Party table", "description": "A long table with a giant marmalade cake.", "visual": { "icon": "table", "accent": "#F2C230" } },
+        { "id": "o_birthday_banner", "name": "Birthday banner", "description": "A big banner: HAPPY BIRTHDAY, PADDINGTON!", "visual": { "icon": "painting", "accent": "#D83A2E" } }
+      ],
+      "doors": []
+    }
+  ],
+  "twists": [
+    { "id": "tw_hat_present", "description": "Your hat was never lost! Judy took it to Mr Gruber, so he can make it like new. It is a birthday present.", "setup_clues": ["cl_judy_ticket"], "payoff_trigger": { "truths": ["t_hat_mended"] } },
+    { "id": "tw_surprise_party", "description": "All the secrets are for one happy surprise. Today is your summer birthday, and everyone is planning a party for you!", "setup_clues": ["cl_shed_sheet", "cl_judy_no_secrets"], "payoff_trigger": { "truths": ["t_birthday"] } }
+  ],
+  "red_herrings": [
+    { "id": "rh_curry_hat", "description": "Mr Curry has a brown hat, just like Paddington's.", "setup_clues": ["cl_curry_hat_fence"], "resolution": "It is Mr Curry's own old gardening hat. He has had it for twenty years." },
+    { "id": "rh_open_window", "description": "The hall window is open. Maybe the wind blew the hat away.", "setup_clues": ["cl_open_window"], "resolution": "Mrs Bird opened the window to let the cake smell out. The wind did not take the hat." },
+    { "id": "rh_sticky_jonathan", "description": "Jonathan has sticky orange fingers. Maybe he ate the marmalade.", "setup_clues": ["cl_sticky_fingers"], "resolution": "Jonathan only licked the spoon from Mrs Bird's cake bowl." }
+  ],
+  "endings": [
+    {
+      "id": "e_happy_surprise",
+      "conditions": { "truths": ["t_judy_took_hat", "t_hat_mended", "t_marmalade_cake", "t_birthday"], "goal_states": [], "choices": ["choice_act_surprised"] },
+      "summation": [
+        { "question": "Who took Paddington's hat?", "truth_id": "t_judy_took_hat" },
+        { "question": "Why is the hat at Mr Gruber's shop?", "truth_id": "t_hat_mended" },
+        { "question": "Where did the marmalade go?", "truth_id": "t_marmalade_cake" },
+        { "question": "What is the big secret?", "truth_id": "t_birthday" }
+      ],
+      "scene_outline": "Paddington walks to the bandstand. Everyone jumps out and shouts Surprise! Paddington acts very surprised, and he is very happy. Judy gives him his hat with its new red ribbon. Mrs Bird brings out the giant marmalade cake.",
+      "tone": "Happy, bright and full of love.",
+      "epilogue_notes": "Everyone eats marmalade cake in the sun. Mrs Brown reads Aunt Lucy's postcard out loud. Paddington says it is the best birthday ever."
+    },
+    {
+      "id": "e_party_for_everyone",
+      "conditions": { "truths": ["t_judy_took_hat", "t_hat_mended", "t_marmalade_cake", "t_birthday"], "goal_states": ["gs_curry_paper"], "choices": ["choice_act_surprised"] },
+      "summation": [
+        { "question": "Who took Paddington's hat?", "truth_id": "t_judy_took_hat" },
+        { "question": "Why is the hat at Mr Gruber's shop?", "truth_id": "t_hat_mended" },
+        { "question": "Where did the marmalade go?", "truth_id": "t_marmalade_cake" },
+        { "question": "What is the big secret?", "truth_id": "t_birthday" }
+      ],
+      "scene_outline": "Paddington walks to the bandstand. Everyone shouts Surprise! Paddington acts very surprised and is very happy. Judy gives him his hat with its new red ribbon. Then Mr Curry walks up with his newspaper. Because Paddington was kind to him, he came to the party too.",
+      "tone": "Happy, bright and a little funny.",
+      "epilogue_notes": "Mr Curry eats two big slices of marmalade cake and almost smiles. Everyone sings Happy Birthday. Paddington says it is the best birthday ever."
+    },
+    {
+      "id": "e_detective_bear",
+      "conditions": { "truths": ["t_judy_took_hat", "t_hat_mended", "t_marmalade_cake", "t_birthday"], "goal_states": [], "choices": ["choice_tell_them_you_knew"] },
+      "summation": [
+        { "question": "Who took Paddington's hat?", "truth_id": "t_judy_took_hat" },
+        { "question": "Why is the hat at Mr Gruber's shop?", "truth_id": "t_hat_mended" },
+        { "question": "Where did the marmalade go?", "truth_id": "t_marmalade_cake" },
+        { "question": "What is the big secret?", "truth_id": "t_birthday" }
+      ],
+      "scene_outline": "Everyone shouts Surprise! Paddington smiles and says he solved the whole mystery. He tells them about the hat, the cake and the banner. Everyone laughs and cheers for Detective Paddington. Judy puts the mended hat on his head.",
+      "tone": "Proud, happy and funny.",
+      "epilogue_notes": "Jonathan gives Paddington a toy detective badge. Everyone eats marmalade cake in the sun. Paddington keeps his magnifying glass close, just in case."
+    }
+  ],
+  "lengths": {
+    "medium": {
+      "target_minutes": 40,
+      "start_location": "l_bedroom",
+      "opening": {
+        "context": "You are Paddington Bear. It is a sunny Saturday at 32 Windsor Gardens. You go down to the hall, but your old hat is not on its peg! The marmalade is gone too. And everyone is acting strange. Time to be a detective!"
+      },
+      "cast": ["c_mrs_brown", "c_mrs_bird", "c_jonathan", "c_mr_brown", "c_judy", "c_mr_curry", "c_barnaby", "c_mr_gruber", "c_mrs_penny"],
+      "core_truths": ["t_hat_missing", "t_marmalade_gone", "t_secret", "t_judy_took_hat", "t_hat_at_gruber", "t_hat_mended", "t_marmalade_cake", "t_party_in_park", "t_birthday"],
+      "side_truths": [],
+      "subplots": [
+        { "id": "sp_grumpy_neighbour", "title": "The Grumpy Neighbour", "description": "Paddington finds Mr Curry's lost newspaper. Mr Curry is pleased, but he tries not to show it.", "cast": ["c_mr_curry"], "truths": [] }
+      ],
+      "twists": ["tw_hat_present", "tw_surprise_party"],
+      "red_herrings": ["rh_curry_hat", "rh_open_window", "rh_sticky_jonathan"],
+      "endings": ["e_happy_surprise", "e_party_for_everyone", "e_detective_bear"],
+      "beats": [
+        {
+          "id": "b_home", "title": "At Home",
+          "objective": "Find out what is missing, and why everyone is acting so strange.",
+          "guidance": "Look at the hat peg in the hall. Then talk to everyone at home. Do not forget your sandwich!",
+          "locations": ["l_bedroom", "l_hall", "l_kitchen", "l_back_garden", "l_shed", "l_judy_room"],
+          "must_find": { "truths": ["t_hat_missing", "t_secret"] }
+        },
+        {
+          "id": "b_out", "title": "Out and About",
+          "objective": "Find your hat, find the marmalade, and find out the big secret.",
+          "guidance": "Go out to Windsor Gardens. Visit Mr Curry, the bus stop, the market, Mr Gruber's shop and the park.",
+          "locations": ["l_windsor_gardens", "l_curry_garden", "l_bus_stop", "l_market", "l_gruber_shop", "l_gruber_backroom", "l_park_gate"],
+          "must_find": { "truths": ["t_judy_took_hat", "t_hat_at_gruber", "t_hat_mended", "t_marmalade_cake", "t_party_in_park", "t_birthday"] }
+        },
+        {
+          "id": "b_party", "title": "The Party",
+          "objective": "Go to the bandstand and tell everyone what you found out.",
+          "guidance": "Walk through the Park Gate to the Bandstand.",
+          "locations": ["l_bandstand"],
+          "must_find": {}
+        }
+      ]
+    }
+  }
+}
