@@ -2,7 +2,7 @@
   "schema_version": 2,
   "identity": {
     "id": "holmesashenvelope",
-    "version": 1,
+    "version": 3,
     "title": "The Ashen Envelope",
     "logline": "A riverside clerk is found dead beside a blackened envelope; help Holmes learn where he died, who silenced him, and what the missing relief money concealed.",
     "setting": "Soot-dark Victorian London, from 221B Baker Street and Scotland Yard to Blackfriars, a fever ward, Fleet Street, and the Thames.",
@@ -204,6 +204,12 @@
         "I have no useful comment on gossip about my methods.",
         "I decline to discuss a private matter unrelated to Wren.",
         "I cannot tell you what the evidence has not yet told me."
+      ],
+      "reactions": [
+        { "id": "r_holmes_envelope", "about": { "type": "item", "id": "i_charred_envelope" }, "text": "Burned at the corners yet quite legible. Fire that wishes to be seen is rarely fire that wished to destroy." },
+        { "id": "r_holmes_token", "about": { "type": "item", "id": "i_ferry_token" }, "text": "A brass token, conveniently dropped. Evidence that arrives so neatly deserves the closest suspicion." },
+        { "id": "r_holmes_vale", "about": { "type": "cast", "id": "c_vale" }, "text": "Mr Vale is courteous, which is not a crime, and precise, which is not innocence." },
+        { "id": "r_holmes_docket", "about": { "type": "item", "id": "i_wren_docket" }, "text": "A clerk's docket: a habit of recording what troubled him. Habit is a witness that cannot be bribed." }
       ]
     },
     {
@@ -339,6 +345,13 @@
         "I have no appetite for rumors about the ward.",
         "I cannot repeat a confidence entrusted to me.",
         "I shall leave the legal conclusion to Lestrade."
+      ],
+      "reactions": [
+        { "id": "r_watson_docket", "about": { "type": "item", "id": "i_wren_docket" }, "text": "That docket bears out what I recall of the inquest: Wren meant to report the accounts, not flee with them.", "clue_id": "cl_watson_inquest" },
+        { "id": "r_watson_fibres", "about": { "type": "clue", "id": "cl_mortuary_fibres" }, "text": "The fibres and the blood pattern do not agree with a death at the river. I shall say so plainly." },
+        { "id": "r_watson_envelope", "about": { "type": "item", "id": "i_charred_envelope" }, "text": "Burnt paper, but the char is shallow. A man truly hiding a secret would have burned it through." },
+        { "id": "r_watson_ada", "about": { "type": "cast", "id": "c_ada" }, "text": "Miss Wren has borne her loss with great dignity. We owe her the truth, accurately told." },
+        { "id": "r_watson_holmes", "about": { "type": "cast", "id": "c_holmes" }, "text": "Holmes is impatient with loose inference, and rightly so. I try to keep him patient with the dead." }
       ]
     },
     {
@@ -473,6 +486,12 @@
         "I have no patience for unkind talk about a grieving sister.",
         "I shall not pretend a good deed makes a murder harmless.",
         "I cannot answer for a man who is not in this room."
+      ],
+      "reactions": [
+        { "id": "r_hudson_receipt", "about": { "type": "item", "id": "i_ward_receipt" }, "text": "A ward receipt... the ward wrote to me for help after Mr Vale's promised grant failed. I remember it well, dear.", "clue_id": "cl_ward_appeal" },
+        { "id": "r_hudson_ada", "about": { "type": "cast", "id": "c_ada" }, "text": "Ada Wren is a good girl. I found her honest work once, and I'll not have her name dragged, dear." },
+        { "id": "r_hudson_vale", "about": { "type": "cast", "id": "c_vale" }, "text": "Mr Vale has pleasant manners, dear, but I've known pleasant manners to hide a great deal." },
+        { "id": "r_hudson_envelope", "about": { "type": "item", "id": "i_charred_envelope" }, "text": "Burnt paper in my grate would earn a scolding. At a murder it earns a closer look, dear." }
       ]
     },
     {
@@ -608,6 +627,13 @@
         "I have no comment on Holmes's manners.",
         "I shall not repeat dockside rumor as testimony.",
         "I cannot promise a verdict; I can promise a fair inquiry."
+      ],
+      "reactions": [
+        { "id": "r_lestrade_register", "about": { "type": "clue", "id": "cl_duplicate_key" }, "text": "That register puts Vale at the countinghouse after hours. My key record says the same, and I want it in writing.", "clue_id": "cl_lestrade_keylog" },
+        { "id": "r_lestrade_vale", "about": { "type": "cast", "id": "c_vale" }, "text": "Vale gave me his timetable and I accepted it. I shall weigh it against the records now." },
+        { "id": "r_lestrade_envelope", "about": { "type": "item", "id": "i_charred_envelope" }, "text": "Burnt paper proves nothing in court unless we know what it held. I want facts, not smoke." },
+        { "id": "r_lestrade_silas", "about": { "type": "cast", "id": "c_silas" }, "text": "Silas Ward had grease on his hands. That is a rumour until proven, and I deal in proof." },
+        { "id": "r_lestrade_token", "about": { "type": "item", "id": "i_ferry_token" }, "text": "A ferry token will not hold up without a register behind it. Bring me the register." }
       ]
     },
     {
@@ -750,6 +776,13 @@
         "I cannot discuss Ada's private correspondence.",
         "I have nothing to say about a printer's habits.",
         "I will speak to the Inspector when he presents a formal charge."
+      ],
+      "reactions": [
+        { "id": "r_vale_key", "about": { "type": "clue", "id": "cl_duplicate_key" }, "text": "Yes, I held a treasurer's key. Any treasurer would. It proves nothing about that night.", "clue_id": "cl_vale_key_admission" },
+        { "id": "r_vale_docket", "about": { "type": "item", "id": "i_wren_docket" }, "text": "A pocket docket proves a clerk's worry, Mr Holmes, not a treasurer's fault." },
+        { "id": "r_vale_ledger", "about": { "type": "item", "id": "i_duplicate_ledger" }, "text": "A duplicate? I know of no duplicate. The Fund's books are kept in one place, and I keep them." },
+        { "id": "r_vale_ada", "about": { "type": "cast", "id": "c_ada" }, "text": "Miss Wren has my deepest sympathy. Her brother was a careful man, and a troubled one." },
+        { "id": "r_vale_receipt", "about": { "type": "item", "id": "i_ward_receipt" }, "text": "The committee never asked for those receipts. I would ask what you hope to prove with them." }
       ]
     },
     {
@@ -883,6 +916,12 @@
         "I have no answer to idle questions about my grief.",
         "I will not accuse a man without evidence.",
         "I cannot confirm Vale's journey from what I did not see."
+      ],
+      "reactions": [
+        { "id": "r_ada_docket", "about": { "type": "item", "id": "i_wren_docket" }, "text": "That is Elias's hand. He wrote down everything. He would never steal; he would only record." },
+        { "id": "r_ada_ledger", "about": { "type": "item", "id": "i_duplicate_ledger" }, "text": "Elias sealed a parcel and begged me to carry it safely. I did. I will say no more here." },
+        { "id": "r_ada_vale", "about": { "type": "cast", "id": "c_vale" }, "text": "Mr Vale called with condolences. I did not like how carefully he asked about Elias's papers." },
+        { "id": "r_ada_hudson", "about": { "type": "cast", "id": "c_hudson" }, "text": "Mrs Hudson has been kinder to me than I deserve. I will not forget it." }
       ]
     },
     {
@@ -1018,6 +1057,12 @@
         "I cannot tell you what happened inside the countinghouse.",
         "I do not discuss my wages with strangers.",
         "I will not pretend I saw a crossing I did not see."
+      ],
+      "reactions": [
+        { "id": "r_silas_rag", "about": { "type": "clue", "id": "cl_river_drag" }, "text": "That rag is mine only by the grease. I mended the ferry pump. I did not wrap a dead man in anything.", "clue_id": "cl_silas_pump_grease" },
+        { "id": "r_silas_token", "about": { "type": "item", "id": "i_ferry_token" }, "text": "A ferry token? Not mine. I watch the docks. I don't ride the ferry at night." },
+        { "id": "r_silas_vale", "about": { "type": "cast", "id": "c_vale" }, "text": "Vale pays the Fund's men and talks soft. I trust a soft talker less than a loud one." },
+        { "id": "r_silas_nora", "about": { "type": "cast", "id": "c_nora" }, "text": "Nora Finch keeps good times. She'll tell you I was at the pump." }
       ]
     },
     {
@@ -1153,6 +1198,12 @@
         "I have no authority to excuse an altered account.",
         "I will not call a crime charity because the ward benefited.",
         "I cannot speculate about the place of Wren's death."
+      ],
+      "reactions": [
+        { "id": "r_shaw_receipt", "about": { "type": "item", "id": "i_ward_receipt" }, "text": "Those are my dated receipts. Each delivery matches a transfer. I kept them when I was asked to burn them.", "clue_id": "cl_ward_receipts" },
+        { "id": "r_shaw_vale", "about": { "type": "cast", "id": "c_vale" }, "text": "Mr Vale asked for obsolete papers to be destroyed. I did not consider them obsolete." },
+        { "id": "r_shaw_crane", "about": { "type": "cast", "id": "c_crane" }, "text": "Matron Crane tracks every shilling. We share a stubbornness, and the same patients." },
+        { "id": "r_shaw_vouchers", "about": { "type": "clue", "id": "cl_unpaid_vouchers" }, "text": "Unpaid vouchers, yes. A fever ward cannot wait on a committee's conscience." }
       ]
     },
     {
@@ -1287,6 +1338,12 @@
         "I have no evidence about what happened inside the countinghouse.",
         "I cannot read a passenger's private correspondence to you.",
         "I will not let a faulty clock become a witness."
+      ],
+      "reactions": [
+        { "id": "r_nora_token", "about": { "type": "item", "id": "i_ferry_token" }, "text": "That token fits the ferry's brass but not the hour. I noted the corrected time myself." },
+        { "id": "r_nora_register", "about": { "type": "clue", "id": "cl_token_register" }, "text": "The register's corrected entry stands. A wrong clock is not a witness, and I will not let it be one." },
+        { "id": "r_nora_silas", "about": { "type": "cast", "id": "c_silas" }, "text": "Silas keeps a steady watch. When he says he was at the pump, I believe the log." },
+        { "id": "r_nora_kit", "about": { "type": "cast", "id": "c_kit" }, "text": "Kit Marlow runs a clean press, but he talks faster than a telegraph key." }
       ]
     },
     {
@@ -1420,6 +1477,12 @@
         "I cannot tell you what the charred paper once contained beyond my own proof.",
         "I will not disclose a client's private address.",
         "I have nothing amusing to say about a dead man."
+      ],
+      "reactions": [
+        { "id": "r_kit_proof", "about": { "type": "item", "id": "i_press_proof" }, "text": "That's my proof: clean type, harmless notice. The print date's in the corner, if you've an eye." },
+        { "id": "r_kit_envelope", "about": { "type": "item", "id": "i_charred_envelope" }, "text": "Singed or not, that paper is one of mine. I'd know my own ink anywhere." },
+        { "id": "r_kit_archive", "about": { "type": "clue", "id": "cl_press_archive" }, "text": "The archive date puts the proof before the murder. Printers love a date, and so do honest men." },
+        { "id": "r_kit_nora", "about": { "type": "cast", "id": "c_nora" }, "text": "Nora Finch times everything. Ask her how long the typesetting took and she'll tell you exactly." }
       ]
     },
     {
@@ -1555,6 +1618,12 @@
         "I have no comment on Vale's character outside the record.",
         "I will not permit a private paper to be mistaken for public proof.",
         "I cannot promise what a court will decide."
+      ],
+      "reactions": [
+        { "id": "r_pembroke_ledger", "about": { "type": "item", "id": "i_duplicate_ledger" }, "text": "That is the duplicate Wren left with me before his death. It will be produced for a lawful inquiry.", "clue_id": "cl_pembroke_copy" },
+        { "id": "r_pembroke_ada", "about": { "type": "cast", "id": "c_ada" }, "text": "Miss Wren delivered the parcel in good order. I hold her receipt, and I keep my own counsel." },
+        { "id": "r_pembroke_vale", "about": { "type": "cast", "id": "c_vale" }, "text": "I know Mr Vale professionally. I shall not speculate about him outside a courtroom." },
+        { "id": "r_pembroke_docket", "about": { "type": "item", "id": "i_wren_docket" }, "text": "A pocket docket is helpful, but a duplicate ledger is evidence. I prefer evidence in the order received." }
       ]
     },
     {
@@ -1688,6 +1757,12 @@
         "I have no authority to speak for the committee.",
         "I will not discuss a patient's illness as evidence.",
         "I cannot make a promise about funding I do not control."
+      ],
+      "reactions": [
+        { "id": "r_crane_receipt", "about": { "type": "item", "id": "i_ward_receipt" }, "text": "Those receipts are our lifeline, sir. Every shilling accounted for, down to the last bandage." },
+        { "id": "r_crane_shaw", "about": { "type": "cast", "id": "c_shaw" }, "text": "Dr Shaw is stubborn as a nail, and I would not trade her for ten committees." },
+        { "id": "r_crane_vale", "about": { "type": "cast", "id": "c_vale" }, "text": "Mr Vale promised us a grant. When it failed, supplies came another way. I counted them, not the cost." },
+        { "id": "r_crane_vouchers", "about": { "type": "clue", "id": "cl_unpaid_vouchers" }, "text": "Those vouchers are our unpaid bills. Wren knew. He came and counted our beds himself." }
       ]
     }
   ],
@@ -1700,7 +1775,15 @@
       "revealed_by": [
         "cl_wren_docket",
         "cl_watson_inquest"
-      ]
+      ],
+      "deduction": {
+        "question": "What did Wren find in the Relief Fund accounts, and what did he mean to do?",
+        "answer": "Elias Wren discovered irregular Relief Fund payments and meant to report them.",
+        "wrong_answers": [
+          "He had borrowed from the Fund himself and planned to flee London.",
+          "He meant to sell the Fund's accounts to Kit's newspaper."
+        ]
+      }
     },
     {
       "id": "t_scene_staged",
@@ -1710,7 +1793,15 @@
       "revealed_by": [
         "cl_mortuary_fibres",
         "cl_river_drag"
-      ]
+      ],
+      "deduction": {
+        "question": "Where did Wren die, and how did he reach the river?",
+        "answer": "Wren died in the countinghouse; his body was moved to the river stairs.",
+        "wrong_answers": [
+          "He was struck at the river stairs by a dockworker and died where he lay.",
+          "He fell from the ferry landing and drowned; the injury came from the water."
+        ]
+      }
     },
     {
       "id": "t_fane_killed_wren",
@@ -1722,7 +1813,15 @@
       "revealed_by": [
         "cl_wax_initials",
         "cl_lestrade_keylog"
-      ]
+      ],
+      "deduction": {
+        "question": "Who killed Wren, and where?",
+        "answer": "Gideon Vale killed Wren in the countinghouse and staged the riverside discovery.",
+        "wrong_answers": [
+          "Silas killed him on the dockside, where the grease was found.",
+          "Kit killed him in the pressroom, where the ink was found."
+        ]
+      }
     },
     {
       "id": "t_diversion_for_ward",
@@ -1734,7 +1833,15 @@
       "revealed_by": [
         "cl_ward_appeal",
         "cl_unpaid_vouchers"
-      ]
+      ],
+      "deduction": {
+        "question": "Why did Vale divert Relief Fund money?",
+        "answer": "Vale diverted subscriptions to keep the fever ward supplied after his promised grant failed.",
+        "wrong_answers": [
+          "To cover his personal gambling debts.",
+          "He did not; the committee itself moved the money."
+        ]
+      }
     },
     {
       "id": "t_fane_alibi_false",
@@ -1746,7 +1853,18 @@
       "revealed_by": [
         "cl_token_register",
         "cl_cab_entry"
-      ]
+      ],
+      "deduction": {
+        "question": "What does the evidence show about Vale's claimed ferry crossing?",
+        "answer": "Vale's claimed ferry departure before Wren's death was false.",
+        "wrong_answers": [
+          "It stands: the brass token shows he crossed before Wren died.",
+          "It stands, but the ferryman cannot name the hour, so it proves nothing."
+        ],
+        "rules_out": [
+          "rh_false_ferry"
+        ]
+      }
     },
     {
       "id": "t_fane_access",
@@ -1758,7 +1876,15 @@
       "revealed_by": [
         "cl_vale_key_admission",
         "cl_duplicate_key"
-      ]
+      ],
+      "deduction": {
+        "question": "How did Vale enter the countinghouse after hours?",
+        "answer": "Vale used his treasurer's key to enter the countinghouse after hours.",
+        "wrong_answers": [
+          "Silas let him in with a pump-room key.",
+          "Wren admitted him himself that evening."
+        ]
+      }
     },
     {
       "id": "t_fane_diverted",
@@ -1770,7 +1896,15 @@
       "revealed_by": [
         "cl_relief_columns",
         "cl_ward_receipts"
-      ]
+      ],
+      "deduction": {
+        "question": "What did Vale do in the Relief Fund accounts?",
+        "answer": "Vale concealed unauthorized transfers in the Relief Fund accounts.",
+        "wrong_answers": [
+          "Nothing; the odd columns were Wren's unfinished corrections.",
+          "He ordered Wren to correct them, and the committee approved every transfer."
+        ]
+      }
     },
     {
       "id": "t_envelope_decoy",
@@ -1782,7 +1916,19 @@
       "revealed_by": [
         "cl_envelope_proof",
         "cl_press_archive"
-      ]
+      ],
+      "deduction": {
+        "question": "What did the charred envelope's paper hold?",
+        "answer": "The charred envelope was a decoy; its paper held no incriminating account.",
+        "wrong_answers": [
+          "Wren's account of the diverted payments, partly burned.",
+          "Printer's notes from Kit showing he handled Wren's secrets.",
+          "Ada's private letter, burned to hide her brother's guilt."
+        ],
+        "rules_out": [
+          "rh_kit_ink"
+        ]
+      }
     },
     {
       "id": "t_duplicate_ledger",
@@ -1794,7 +1940,18 @@
       "revealed_by": [
         "cl_pembroke_copy",
         "cl_ada_receipt"
-      ]
+      ],
+      "deduction": {
+        "question": "What became of Wren's true record of the accounts?",
+        "answer": "Wren left a true duplicate ledger with Pembroke before his death.",
+        "wrong_answers": [
+          "It burned with the envelope, so no true copy survives.",
+          "Ada kept it at home, afraid to show it."
+        ],
+        "rules_out": [
+          "rh_ada_letter"
+        ]
+      }
     },
     {
       "id": "t_silas_framed",
@@ -1806,7 +1963,18 @@
       "revealed_by": [
         "cl_silas_pump_grease",
         "cl_planting_trace"
-      ]
+      ],
+      "deduction": {
+        "question": "Where did the oily rag by the body come from?",
+        "answer": "Vale planted dock grease to implicate Silas, whose grease came from ordinary pump work.",
+        "wrong_answers": [
+          "Silas used it in the attack on the dockside.",
+          "It is ordinary dock litter, unconnected to anyone."
+        ],
+        "rules_out": [
+          "rh_silas_grease"
+        ]
+      }
     }
   ],
   "clues": [
@@ -2958,6 +3126,20 @@
         ],
         "choices": []
       },
+      "summation": [
+        {
+          "question": "Why does the river scene not show where Wren died?",
+          "truth_id": "t_scene_staged"
+        },
+        {
+          "question": "Whom does Holmes name before Lestrade?",
+          "truth_id": "t_fane_killed_wren"
+        },
+        {
+          "question": "What explains Vale's motive?",
+          "truth_id": "t_diversion_for_ward"
+        }
+      ],
       "scene_outline": "Lestrade proceeds with a compact, defensible case. Holmes explains the moved body and Vale's motive; the ward's need is acknowledged without excusing the killing.",
       "tone": "Grave and clarifying.",
       "epilogue_notes": "Ada's brother is not branded a thief, and the ward's future remains uncertain but public."
@@ -2976,6 +3158,20 @@
         ],
         "choices": []
       },
+      "summation": [
+        {
+          "question": "Whom does the inquest name?",
+          "truth_id": "t_fane_killed_wren"
+        },
+        {
+          "question": "What was hidden in the accounts?",
+          "truth_id": "t_fane_diverted"
+        },
+        {
+          "question": "Where did the diverted money go?",
+          "truth_id": "t_diversion_for_ward"
+        }
+      ],
       "scene_outline": "The inquest names Vale and the diversion plainly, rejects the dockside rumor, and asks the committee to support the ward lawfully.",
       "tone": "Sober, humane, and firm.",
       "epilogue_notes": "The patients are not made a spectacle, and no act of charity erases Wren's murder."
@@ -2995,6 +3191,20 @@
         ],
         "choices": []
       },
+      "summation": [
+        {
+          "question": "Whom does the public trial charge?",
+          "truth_id": "t_fane_killed_wren"
+        },
+        {
+          "question": "What true record supports the case?",
+          "truth_id": "t_duplicate_ledger"
+        },
+        {
+          "question": "Why is Silas cleared?",
+          "truth_id": "t_silas_framed"
+        }
+      ],
       "scene_outline": "The duplicate ledger and planted evidence support a public trial; Silas is cleared and the Relief Fund committee must answer for its failures.",
       "tone": "Forceful, public, and unsentimental.",
       "epilogue_notes": "Ada sees her brother's name restored, though the ward still needs lawful support."
@@ -3013,6 +3223,20 @@
         ],
         "choices": []
       },
+      "summation": [
+        {
+          "question": "Whom is charged?",
+          "truth_id": "t_fane_killed_wren"
+        },
+        {
+          "question": "What does Pembroke protect?",
+          "truth_id": "t_duplicate_ledger"
+        },
+        {
+          "question": "What was the charred envelope?",
+          "truth_id": "t_envelope_decoy"
+        }
+      ],
       "scene_outline": "Pembroke protects Wren's copy and Ada's privacy; Vale is charged, with the evidence brought to court without turning the ward's patients into spectacle.",
       "tone": "Bittersweet and restrained.",
       "epilogue_notes": "Justice begins, but neither an inquest nor a ledger can restore Elias Wren."

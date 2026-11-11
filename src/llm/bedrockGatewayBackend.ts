@@ -12,6 +12,7 @@ interface GatewayResponse {
 
 export class BedrockGatewayBackend implements LLMBackend {
   readonly name = "bedrock-gateway";
+  readonly supportsSpeculation = false;
 
   constructor(private readonly settings: BedrockGatewaySettings) {}
 

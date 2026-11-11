@@ -1,9 +1,11 @@
 import type { LLMClient } from "../llm/client";
 import type { CharacterLineOutput } from "../llm/shapes";
 import type { JSONResult } from "../llm/types";
-import { rememberKnowledge, rememberNeed } from "../story/state";
+import { rememberAskedAbout, rememberKnowledge, rememberNeed, recordVisit } from "../story/state";
 import type { StoryState } from "../story/state";
-import type { CastMember, KnowledgeItem, StoryPack } from "../story/types";
+import type { CastMember, KnowledgeItem, StoryPack, SubjectRef } from "../story/types";
+import { askOptions, isAskable, resolveAsk, returnVisitFor } from "./askAbout";
+import type { AskOptions } from "./askAbout";
 import {
   NO_EFFECTS,
   giveItemToCharacter,
@@ -14,12 +16,15 @@ import {
   revealClueFromTalk,
 } from "./effects";
 import type { AppliedEffects, GiveOption, Handover } from "./effects";
-import { availableKnowledge, buildQuickReplies, goalHintLine, retrieveKnowledge } from "./knowledge";
+import { availableKnowledge, buildQuickReplies, goalHintLine, QUICK_GOODBYE, QUICK_NEED, retrieveKnowledge } from "./knowledge";
 import type { RetrievedFact } from "./knowledge";
 import { cleanCharacterLine } from "./lineCleanup";
-import { buildDialoguePrompt, buildGreetingPrompt, buildLineRequest } from "./prompt";
+import { buildDialoguePrompt, buildLineRequest } from "./prompt";
 import type { DialogueContext } from "./prompt";
 import { isUsableCharacterLine, pickDeflection, repeatsCharacterLine } from "./quality";
+import { BASE_TEMPERATURE, generateGreeting } from "./speculation";
+import type { GreetingPrefetcher, GreetingResult, LineJob } from "./speculation";
+import { Priority } from "../llm/types";
 import type { ConversationTurn } from "./types";
 
 export interface DialogueTurn {
@@ -39,11 +44,46 @@ export interface PlayerReply {
 
 export interface ControllerOptions {
   random?: () => number;
+  // Pre-generate likely replies while the player reads. Off unless asked for (the dialogue lab keeps it off).
+  speculate?: boolean;
+  greetings?: GreetingPrefetcher;
 }
 
 export const MAX_RESAMPLES = 2;
+export const SPECULATED_TOPICS = 2;
 const TEMPERATURE_STEP = 0.1;
-const BASE_TEMPERATURE = 0.8;
+
+// Everything a reply needs, computed without touching state, so it can be generated ahead of time.
+interface LineInput {
+  facts: readonly RetrievedFact[];
+  requestedItems: readonly string[];
+  goalHint: string;
+  handoverLines: ReturnType<typeof handoverPromptLines>;
+  turns: readonly ConversationTurn[];
+  ask?: AskedAbout;
+  key: string;
+}
+
+// The subject of an "Ask about..." turn, kept so the commit step can record it and reveal a reaction's clue.
+interface AskedAbout {
+  subject: SubjectRef;
+  label: string;
+  reactionClueId?: string;
+}
+
+interface GeneratedLine {
+  line: string;
+  quality: DialogueTurn["quality"];
+  notice?: string;
+  cancelled: boolean;
+}
+
+interface Speculation {
+  key: string;
+  job: LineJob;
+  abort: AbortController;
+  promise: Promise<GeneratedLine | null>;
+}
 
 function asksWhatIsNeeded(text: string): boolean {
   const normalized = text.toLowerCase().replace(/[^\p{L}\p{N}\s]/gu, "").replace(/\s+/g, " ").trim();
@@ -64,8 +104,8 @@ function failureNotice(result: JSONResult<CharacterLineOutput>, what: string): s
   return undefined;
 }
 
-// Runs one conversation with one character. Turns live only in this instance: nothing about a
-// conversation is written back to the character or persisted once the player walks away.
+// Runs one conversation with one character. Turns live only in this instance and are never persisted;
+// only ids (visits and subjects asked about) go into the story state as the character's memory.
 export class ConversationController {
   private readonly turns: ConversationTurn[] = [];
   private readonly discussed = new Set<string>();
@@ -73,6 +113,11 @@ export class ConversationController {
   private lastDeflection: string | undefined;
   private hintTurn = 0;
   private readonly random: () => number;
+  private readonly speculationEnabled: boolean;
+  private readonly greetings: GreetingPrefetcher | undefined;
+  private readonly speculations = new Map<string, Speculation>();
+  private speculationCounter = 0;
+  private closed = false;
 
   constructor(
     private readonly client: LLMClient,
@@ -83,13 +128,22 @@ export class ConversationController {
     options: ControllerOptions = {},
   ) {
     this.random = options.random ?? Math.random;
+    this.speculationEnabled = options.speculate === true && client.supportsSpeculation;
+    this.greetings = options.greetings;
   }
 
   getTurns(): readonly ConversationTurn[] {
     return this.turns;
   }
 
+  // Ends the conversation: nothing speculative may keep running or start afterwards.
+  close(): void {
+    this.closed = true;
+    this.cancelSpeculation();
+  }
+
   fallbackTurn(): DialogueTurn {
+    this.cancelSpeculation();
     const line = this.deflection();
     this.turns.push({ speaker: "character", text: line });
     return this.makeTurn(line, "fallback", NO_EFFECTS, "The model could not produce a reliable reply; this is an authored fallback.");
@@ -97,37 +151,174 @@ export class ConversationController {
 
   async start(): Promise<DialogueTurn> {
     const effects = this.applyReadyGoal(NO_EFFECTS);
-    const greetings = this.character.greetings;
-    const greeting = greetings[Math.floor(this.random() * greetings.length)] ?? "";
-    const result = await this.client.generateJSON(
-      buildLineRequest(buildGreetingPrompt(this.character, this.context, greeting), { temperature: BASE_TEMPERATURE }),
-    );
-    const rephrased = cleanCharacterLine(result.value.line, this.character.name);
-    const usable = result.status !== "failed" && result.status !== "cancelled" && isUsableCharacterLine(rephrased, this.character.name);
-    const line = usable ? rephrased : greeting;
+    // Read the memory before this visit is counted, so a first visit is greeted as a stranger.
+    const context: DialogueContext = { ...this.context, returnVisit: returnVisitFor(this.pack, this.state, this.character) };
+    recordVisit(this.state, this.character.id);
+    const prefetched = this.greetings?.take(this.character, context);
+    let result: GreetingResult | null = prefetched ? await prefetched : null;
+    if (!result) {
+      const greetings = this.character.greetings;
+      const greeting = greetings[Math.floor(this.random() * greetings.length)] ?? "";
+      result = await generateGreeting(
+        this.client,
+        this.character,
+        context,
+        greeting,
+        { priority: Priority.Dialogue, jobId: "" },
+        `greet-${this.character.id}-live`,
+      );
+    }
+    const usable = result?.line != null;
+    const line = result?.line ?? result?.greeting ?? "";
     this.turns.push({ speaker: "character", text: line });
-    return this.makeTurn(line, usable ? "generated" : "fallback", effects, failureNotice(result, "Dialogue generation"));
+    const notice = result === null
+      ? "Dialogue generation was cancelled."
+      : result.status === "failed" ? `Dialogue generation failed: ${result.error}` : undefined;
+    return this.commitTurn(this.makeTurn(line, usable ? "generated" : "fallback", effects, notice));
   }
 
   reply(reply: string | PlayerReply): Promise<DialogueTurn> {
     const text = typeof reply === "string" ? reply : reply.text;
+    const input = this.buildReplyInput(text);
+    const adopted = this.adoptSpeculation(text, input.key);
+    this.cancelSpeculation();
     this.turns.push({ speaker: "player", text });
-    const facts = retrieveKnowledge(availableKnowledge(this.pack, this.state, this.character), text);
-    const requestedItems = asksWhatIsNeeded(text)
-      ? (this.character.goal_states.find((goal) => !this.state.resolvedGoalStates.includes(goal.id))?.requires.items ?? [])
-        .filter((itemId) => !this.state.itemsHeld.includes(itemId))
-      : [];
-    return this.advance(facts, NO_EFFECTS, requestedItems);
+    return this.advance(input, NO_EFFECTS, adopted);
   }
 
   // The player hands over an item. Code applies the pack's goal transition before the model speaks.
   give(itemId: string): Promise<DialogueTurn> {
     const handover = giveItemToCharacter(this.pack, this.state, this.character, itemId);
     if (!handover) throw new Error("The character has no use for that item right now.");
+    this.cancelSpeculation();
     const name = this.pack.items.find((item) => item.id === itemId)?.name ?? itemId;
-    this.turns.push({ speaker: "player", text: `Here, take the ${name}.` });
+    const playerTurn: ConversationTurn = { speaker: "player", text: `Here, take the ${name}.` };
     this.pendingHandovers.push(handover);
-    return this.advance([], handoverEffects(handover));
+    const input = this.buildInput([], [], [...this.turns, playerTurn]);
+    this.turns.push(playerTurn);
+    return this.advance(input, handoverEffects(handover));
+  }
+
+  // The player asks about a person, an item or a clue. Code picks what may be said (askAbout.ts);
+  // a deflection is answered without calling the model.
+  askAbout(subject: SubjectRef): Promise<DialogueTurn> {
+    if (!isAskable(this.pack, this.state, subject)) throw new Error("The player cannot ask about that.");
+    this.cancelSpeculation();
+    const resolution = resolveAsk(this.pack, this.state, this.character, subject);
+    const playerTurn: ConversationTurn = { speaker: "player", text: `What can you tell me about ${resolution.label}?` };
+    if (resolution.source === "deflection") {
+      this.turns.push(playerTurn);
+      rememberAskedAbout(this.state, this.character.id, subject);
+      this.hintTurn += 1;
+      const line = this.deflection();
+      this.turns.push({ speaker: "character", text: line });
+      return Promise.resolve(this.commitTurn(this.makeTurn(line, "fallback", NO_EFFECTS)));
+    }
+    const input = this.buildInput(resolution.facts, resolution.requestedItems, [...this.turns, playerTurn], {
+      subject,
+      label: resolution.label,
+      ...(resolution.reactionClueId ? { reactionClueId: resolution.reactionClueId } : {}),
+    });
+    this.turns.push(playerTurn);
+    return this.advance(input, NO_EFFECTS);
+  }
+
+  askOptions(): AskOptions {
+    return askOptions(this.pack, this.state, this.character);
+  }
+
+  private buildReplyInput(text: string): LineInput {
+    const facts = retrieveKnowledge(availableKnowledge(this.pack, this.state, this.character), text);
+    const requestedItems = asksWhatIsNeeded(text)
+      ? (this.character.goal_states.find((goal) => !this.state.resolvedGoalStates.includes(goal.id))?.requires.items ?? [])
+        .filter((itemId) => !this.state.itemsHeld.includes(itemId))
+      : [];
+    return this.buildInput(facts, requestedItems, [...this.turns, { speaker: "player", text }]);
+  }
+
+  // Reads state but never changes it.
+  private buildInput(
+    facts: readonly RetrievedFact[],
+    requestedItems: readonly string[],
+    turns: readonly ConversationTurn[],
+    ask?: AskedAbout,
+  ): LineInput {
+    const goalHint = requestedItems.length > 0
+      ? `The player asked what you need. Tell them you need ${requestedItems
+        .map((itemId) => this.pack.items.find((item) => item.id === itemId)?.name ?? itemId)
+        .join(" and ")}. Do not invent where to find it.`
+      : goalHintLine(this.character, this.state, this.hintTurn);
+    const handoverLines = handoverPromptLines(this.pack, this.state, this.character, this.pendingHandovers);
+    const key = JSON.stringify({ facts: facts.map((fact) => fact.item.id), requestedItems, goalHint, handoverLines, turns, ask: ask?.label });
+    return { facts, requestedItems, goalHint, handoverLines, turns, ...(ask ? { ask } : {}), key };
+  }
+
+  // Generates and validates a line for the given input. Changes no conversation or story state.
+  private async generateLine(input: LineInput, job: LineJob, idPrefix: string): Promise<GeneratedLine> {
+    const promptFacts: KnowledgeItem[] = input.facts.map((fact) => fact.item);
+    const previousLines = input.turns.filter((turn) => turn.speaker === "character").map((turn) => turn.text);
+    let notice: string | undefined;
+    for (let attempt = 0; attempt <= MAX_RESAMPLES; attempt += 1) {
+      const prompt = buildDialoguePrompt({
+        character: this.character,
+        context: this.context,
+        turns: input.turns,
+        facts: promptFacts,
+        goalHint: input.goalHint,
+        handoverLines: input.handoverLines,
+        askedAbout: input.ask?.label,
+        reminder: reminderFor(this.character, attempt),
+        style: this.client.dialoguePromptStyle,
+      });
+      job.jobId = `${idPrefix}-${attempt}`;
+      const result = await this.client.generateJSON({
+        ...buildLineRequest(prompt, { temperature: BASE_TEMPERATURE + TEMPERATURE_STEP * attempt, priority: job.priority, signal: job.signal }),
+        id: job.jobId,
+      });
+      notice ??= failureNotice(result, "Dialogue generation");
+      if (result.status === "cancelled") return { line: "", quality: "fallback", notice, cancelled: true };
+      if (result.status === "failed") break;
+      const candidate = cleanCharacterLine(result.value.line, this.character.name);
+      if (isUsableCharacterLine(candidate, this.character.name) && !repeatsCharacterLine(candidate, previousLines)) {
+        return { line: candidate, quality: attempt === 0 ? "generated" : "repaired", cancelled: false };
+      }
+    }
+    return { line: "", quality: "fallback", notice, cancelled: false };
+  }
+
+  private adoptSpeculation(text: string, key: string): Promise<GeneratedLine | null> | undefined {
+    const speculation = this.speculations.get(text);
+    if (!speculation || speculation.key !== key) return undefined;
+    this.speculations.delete(text);
+    speculation.job.priority = Priority.Dialogue;
+    this.client.promote(speculation.job.jobId, Priority.Dialogue);
+    return speculation.promise;
+  }
+
+  private cancelSpeculation(): void {
+    for (const speculation of this.speculations.values()) speculation.abort.abort();
+    this.speculations.clear();
+  }
+
+  // Starts generating the replies the player is most likely to pick next.
+  private speculate(choices: readonly string[]): void {
+    if (!this.speculationEnabled || this.closed) return;
+    const topics = choices.filter((choice) => choice !== QUICK_NEED && choice !== QUICK_GOODBYE).slice(0, SPECULATED_TOPICS);
+    for (const text of [...topics, QUICK_NEED]) {
+      if (this.speculations.has(text)) continue;
+      const input = this.buildReplyInput(text);
+      const abort = new AbortController();
+      const job: LineJob = { priority: Priority.Speculative, jobId: "", signal: abort.signal };
+      const promise = this.generateLine(input, job, `spec-${++this.speculationCounter}`)
+        .then((generated) => (generated.cancelled || generated.quality === "fallback" ? null : generated))
+        .catch(() => null);
+      this.speculations.set(text, { key: input.key, job, abort, promise });
+    }
+  }
+
+  private commitTurn(turn: DialogueTurn): DialogueTurn {
+    this.speculate(turn.choices);
+    return turn;
   }
 
   private deflection(): string {
@@ -147,66 +338,47 @@ export class ConversationController {
     };
   }
 
+  // Commit step: waits for the line (stored, in flight or fresh), then applies every effect.
   private async advance(
-    facts: readonly RetrievedFact[],
+    input: LineInput,
     earlyEffects: AppliedEffects,
-    requestedItems: readonly string[] = [],
+    speculated?: Promise<GeneratedLine | null>,
   ): Promise<DialogueTurn> {
-    const promptFacts: KnowledgeItem[] = facts.map((fact) => fact.item);
-    const goalHint = requestedItems.length > 0
-      ? `The player asked what you need. Tell them you need ${requestedItems
-        .map((itemId) => this.pack.items.find((item) => item.id === itemId)?.name ?? itemId)
-        .join(" and ")}. Do not invent where to find it.`
-      : goalHintLine(this.character, this.state, this.hintTurn);
+    let generated = speculated ? await speculated : null;
+    generated ??= await this.generateLine(input, { priority: Priority.Dialogue, jobId: "" }, "dialogue");
+    return this.commit(generated, input, earlyEffects);
+  }
+
+  private commit(generated: GeneratedLine, input: LineInput, earlyEffects: AppliedEffects): DialogueTurn {
     this.hintTurn += 1;
-    const handoverLines = handoverPromptLines(this.pack, this.state, this.character, this.pendingHandovers);
-    const previousLines = this.turns.filter((turn) => turn.speaker === "character").map((turn) => turn.text);
-
-    let line = "";
-    let quality: DialogueTurn["quality"] = "fallback";
-    let notice: string | undefined;
-    for (let attempt = 0; attempt <= MAX_RESAMPLES; attempt += 1) {
-      const prompt = buildDialoguePrompt({
-        character: this.character,
-        context: this.context,
-        turns: this.turns,
-        facts: promptFacts,
-        goalHint,
-        handoverLines,
-        reminder: reminderFor(this.character, attempt),
-        style: this.client.dialoguePromptStyle,
-      });
-      const result = await this.client.generateJSON(
-        buildLineRequest(prompt, { temperature: BASE_TEMPERATURE + TEMPERATURE_STEP * attempt }),
-      );
-      notice ??= failureNotice(result, "Dialogue generation");
-      if (result.status === "failed" || result.status === "cancelled") break;
-      const candidate = cleanCharacterLine(result.value.line, this.character.name);
-      if (isUsableCharacterLine(candidate, this.character.name) && !repeatsCharacterLine(candidate, previousLines)) {
-        line = candidate;
-        quality = attempt === 0 ? "generated" : "repaired";
-        break;
-      }
-    }
-
+    let line = generated.line;
+    const quality = generated.quality;
+    let notice = generated.notice;
     let effects = earlyEffects;
     if (quality === "fallback") {
       line = this.deflection();
       notice ??= "The model could not produce a reliable reply; this is an authored fallback.";
     } else {
       this.pendingHandovers = [];
-      for (const fact of facts) this.discussed.add(fact.item.id);
-      for (const fact of facts) {
+      for (const fact of input.facts) this.discussed.add(fact.item.id);
+      for (const fact of input.facts) {
         if (fact.explicit) rememberKnowledge(this.state, this.character.id, fact.item.id);
         if (!fact.explicit || !fact.item.clue_id) continue;
         const revealed = revealClueFromTalk(this.pack, this.state, this.character, fact.item.clue_id);
         if (revealed) effects = { ...effects, revealedClue: revealed };
       }
-      for (const itemId of requestedItems) rememberNeed(this.state, this.character.id, itemId);
+      for (const itemId of input.requestedItems) rememberNeed(this.state, this.character.id, itemId);
+      if (input.ask) {
+        rememberAskedAbout(this.state, this.character.id, input.ask.subject);
+        if (input.ask.reactionClueId) {
+          const revealed = revealClueFromTalk(this.pack, this.state, this.character, input.ask.reactionClueId);
+          if (revealed) effects = { ...effects, revealedClue: revealed };
+        }
+      }
     }
     effects = this.applyReadyGoal(effects);
     this.turns.push({ speaker: "character", text: line });
-    return this.makeTurn(line, quality, effects, notice);
+    return this.commitTurn(this.makeTurn(line, quality, effects, notice));
   }
 
   private knownText(): string {

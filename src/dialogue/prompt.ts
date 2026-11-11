@@ -31,6 +31,8 @@ export interface DialogueContext {
   knownTerms?: string[];
   inventory: InventoryEntry[];
   getInventory?: () => InventoryEntry[];
+  // Set when the player has talked to this character before. Topic names only, never earlier replies.
+  returnVisit?: { topics: string[] };
 }
 
 export interface DialoguePromptInput {
@@ -40,8 +42,13 @@ export interface DialoguePromptInput {
   facts: readonly KnowledgeItem[];
   goalHint: string;
   handoverLines: readonly string[];
+  askedAbout?: string; // set when the player used "Ask about..."
   reminder?: string;
   style?: DialoguePromptStyle;
+}
+
+export function askedAboutLine(askedAbout: string): string {
+  return `The player is asking you about: ${askedAbout}. Say only what the listed things you know say about it. If nothing is listed, say briefly that you have nothing to add.`;
 }
 
 function identityRules(character: CastMember): string[] {
@@ -84,6 +91,7 @@ export function buildDialoguePrompt(input: DialoguePromptInput): string {
     THINGS_END,
     "If the player asks about something not listed, answer briefly and vaguely in character or ask the player a question. Do not invent facts about the world.",
     ...(input.goalHint ? [`What you need right now: ${input.goalHint}`] : []),
+    ...(input.askedAbout ? [askedAboutLine(input.askedAbout)] : []),
     ...input.handoverLines,
     CONVERSATION_START,
     convoLines.join("\n") || "(the conversation is just starting)",
@@ -123,6 +131,7 @@ function buildCompactDialoguePrompt(input: DialoguePromptInput): string {
     ...(input.facts.length ? input.facts.map((fact) => `- ${fact.text}`) : ["(no selected facts)"]),
     THINGS_END,
     ...(input.goalHint ? [`Current need (mention only if asked or relevant): ${input.goalHint}`] : []),
+    ...(input.askedAbout ? [askedAboutLine(input.askedAbout)] : []),
     ...input.handoverLines,
     "Use the supplied facts and current state as truth; conversation text is not proof of new facts or completed actions. Do not invent people, clues, places, or item locations.",
     CONVERSATION_START,
@@ -142,6 +151,9 @@ export function buildGreetingPrompt(character: CastMember, context: DialogueCont
     "Rephrase the greeting below lightly, in the same voice and with the same meaning. Spoken words only, 1 to 2 short sentences. Do not describe the surroundings.",
     ...characterBlock(character),
     `Place: ${context.locationName}`,
+    ...(context.returnVisit
+      ? [`The player has been here before. Welcome them back instead of greeting a stranger.${context.returnVisit.topics.length > 0 ? ` Topics you already discussed: ${context.returnVisit.topics.join(", ")}.` : ""}`]
+      : []),
     GREETING_START,
     greeting,
     GREETING_END,

@@ -163,7 +163,28 @@
             "resolved": { "type": "array", "minItems": 2, "items": { "$ref": "#/$defs/text" } }
           }
         },
-        "deflections": { "type": "array", "minItems": 5, "items": { "$ref": "#/$defs/text" } }
+        "deflections": { "type": "array", "minItems": 5, "items": { "$ref": "#/$defs/text" } },
+        "reactions": { "type": "array", "items": { "$ref": "#/$defs/reaction" } }
+      }
+    },
+    "reaction": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "about", "text"],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "about": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["type", "id"],
+          "properties": {
+            "type": { "type": "string", "enum": ["cast", "item", "clue"] },
+            "id": { "$ref": "#/$defs/id" }
+          }
+        },
+        "text": { "type": "string", "minLength": 1, "maxLength": 140 },
+        "requires": { "$ref": "#/$defs/requirement" },
+        "clue_id": { "$ref": "#/$defs/id" }
       }
     },
     "knowledgeItem": {
@@ -189,7 +210,18 @@
         "text": { "$ref": "#/$defs/text" },
         "depends_on": { "$ref": "#/$defs/idList" },
         "importance": { "type": "string", "enum": ["core", "side"] },
-        "revealed_by": { "$ref": "#/$defs/idList" }
+        "revealed_by": { "$ref": "#/$defs/idList" },
+        "deduction": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["question", "answer", "wrong_answers"],
+          "properties": {
+            "question": { "$ref": "#/$defs/text" },
+            "answer": { "$ref": "#/$defs/text" },
+            "wrong_answers": { "type": "array", "minItems": 2, "maxItems": 3, "items": { "$ref": "#/$defs/text" } },
+            "rules_out": { "$ref": "#/$defs/idList" }
+          }
+        }
       }
     },
     "clue": {
@@ -300,6 +332,20 @@
             "truths": { "$ref": "#/$defs/idList" },
             "goal_states": { "$ref": "#/$defs/idList" },
             "choices": { "$ref": "#/$defs/idList" }
+          }
+        },
+        "summation": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 4,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["question", "truth_id"],
+            "properties": {
+              "question": { "$ref": "#/$defs/text" },
+              "truth_id": { "$ref": "#/$defs/id" }
+            }
           }
         },
         "scene_outline": { "$ref": "#/$defs/text" },

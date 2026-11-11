@@ -7,9 +7,9 @@ npm install
 npm run dev
 ```
 
-Move with **WASD** or the **arrow keys**. Walk onto a path, cave opening, gate, or door to travel; you can also stand nearby and press **A**, **E**, or **Space**. Press **M** for the map, **J** for the journal, **I** for inventory, and **Escape** to close a panel or pause. On a touch screen, drag the joystick; press **A** near an exit.
+Move with **WASD** or the **arrow keys**. Walk onto a path, cave opening, gate, or door to travel; you can also stand nearby and press **A**, **E**, or **Space**. Every exit that is in view carries a small sign: the name of the place behind it once you have been there, the exit's own label before that, and "(locked)" while you cannot use it. Exits face the place they lead to, so leaving by the east side of one area brings you in on the west side of the next. Press **M** for the map, **J** for the journal, **I** for inventory, and **Escape** to close a panel or pause. On a touch screen, drag the joystick; press **A** near an exit.
 
-The **Map** button arranges explored areas by the direction of their connecting paths (north is up), highlights your current area, and can center the view on it. Open **Journal** to search and filter discovered story facts, evidence, and character requests. A request only shows a finding place after a character has told you where to look. The inventory can also be searched.
+The **Map** button shows every explored area as a card, placed where the area lies in the world (north is up), and each area keeps its place as you explore. A card lists the area's exits: the arrow in front of an exit tells you which side of the area that exit is on, and the name after it is the area it leads to. Exits you have not used yet are marked as unexplored, and locked exits say what is still needed. Lines join the two ends of each path, with the paths from your current area in gold. A **Lead** tag marks the places, and the exits to unexplored places, that belong to your current lead, and a card names the people you have already talked to there. Choose a card to see the way there: the exits to take are numbered and stay marked until you arrive or choose the card again. The map highlights your current area and can center the view on it. Open **Journal** to search and filter discovered story facts, evidence, and character requests. A request only shows a finding place after a character has told you where to look. The inventory can also be searched.
 
 Run `npm run build` to type-check and create the static site in `dist/`.
 Run `npm run preview` after building to test the production bundle locally.
@@ -33,24 +33,25 @@ model to check its interface without WebGPU or a model download; use the real
 model for response-quality feedback. The local save endpoint is not included in
 production builds.
 
-### Qwen3.5-9B dialogue
+### Local dialogue profile
 
-Both Qwen3.5-9B on-device variants automatically use non-thinking mode. Dialogue
-uses temperature 0.7, top-p 0.8, a minimum 256-token output budget, and neutral
-repetition/frequency/presence penalties so important names and facts can recur.
-Repair attempts keep these sampling settings rather than increasing temperature.
+All on-device WebLLM models use compact conversation prompts and the same dialogue
+sampling profile: temperature 0.7, top-p 0.8, a minimum 256-token output budget,
+and neutral repetition/frequency/presence penalties so important names and facts
+can recur. Repair attempts keep these sampling settings rather than increasing
+temperature. Qwen3.5-9B variants additionally use non-thinking mode.
 JSON schema guidance remains enabled; a grammar-initialization failure logs a
 warning and uses prompt-only JSON until the next model load. Other runtime errors
 are reported normally.
 
-Qwen3.5-9B conversation prompts prioritize the latest question, selected facts and
+On-device conversation prompts prioritize the latest question, selected facts and
 actual handovers over quest reminders. They omit the static character goal in
 favor of current needs and keep at most eight recent transcript entries, trimming
 older entries to fit 2,400 characters. The latest message and current story facts
 are never clipped. This is a history budget, not a guarantee that arbitrary input
 fits WebLLM's 4,096-token context window; unusually long player input or story
 context can still exceed it. The full conversation remains visible in the UI.
-Other models and the Bedrock gateway keep their existing prompts and sampling.
+The Bedrock gateway keeps its existing prompts and sampling.
 
 Use the dialogue lab with the real model to assess relevance, character voice,
 repetition and factual accuracy. Unit tests validate requests and game behavior,

@@ -18,6 +18,10 @@ interface Job<T> {
 export interface RequestQueueOptions {
   maxQueuedPrefetch?: number;
   prefetchPriority?: Priority;
+  maxQueuedSpeculative?: number;
+  speculativePriority?: Priority;
+  // A running job at speculativePriority is aborted when a request at this priority or more urgent is queued.
+  preemptSpeculativeAt?: Priority;
   onNotice?: (id: string, priority: Priority, notice: QueueNotice) => void;
 }
 
@@ -43,9 +47,19 @@ export class RequestQueue<T = unknown> {
       const job: Job<T> = { id, priority, seq: this.seq++, task, resolve, controller: null, cancelled: false, requeue: false };
       this.waiting.push(job);
       this.notice(job, "queued");
-      this.trimPrefetch();
+      this.trimLevel(this.options.prefetchPriority, this.options.maxQueuedPrefetch);
+      this.trimLevel(this.options.speculativePriority, this.options.maxQueuedSpeculative);
+      this.preemptSpeculative(priority);
       void this.pump();
     });
+  }
+
+  // Lets a speculative job that the player now needs jump the queue.
+  setPriority(id: string, priority: Priority): boolean {
+    const job = this.waiting.find((candidate) => candidate.id === id) ?? (this.running?.id === id ? this.running : undefined);
+    if (!job) return false;
+    job.priority = priority;
+    return true;
   }
 
   cancel(id: string): boolean {
@@ -81,13 +95,22 @@ export class RequestQueue<T = unknown> {
     if (!paused) void this.pump();
   }
 
-  private trimPrefetch(): void {
-    const limit = this.options.maxQueuedPrefetch;
-    const level = this.options.prefetchPriority;
+  private preemptSpeculative(incoming: Priority): void {
+    const level = this.options.speculativePriority;
+    const threshold = this.options.preemptSpeculativeAt;
+    const running = this.running;
+    if (level === undefined || threshold === undefined || !running) return;
+    if (running.priority === level && incoming <= threshold) {
+      running.cancelled = true;
+      running.controller?.abort();
+    }
+  }
+
+  private trimLevel(level: Priority | undefined, limit: number | undefined): void {
     if (limit === undefined || level === undefined) return;
-    const prefetch = this.waiting.filter((job) => job.priority === level);
-    // Drop the oldest extras so prefetching cannot grow without bound.
-    for (const job of prefetch.slice(0, Math.max(0, prefetch.length - limit))) this.cancel(job.id);
+    const extras = this.waiting.filter((job) => job.priority === level);
+    // Drop the oldest extras so background work cannot grow without bound.
+    for (const job of extras.slice(0, Math.max(0, extras.length - limit))) this.cancel(job.id);
   }
 
   private takeNext(): Job<T> | undefined {

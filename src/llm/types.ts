@@ -1,6 +1,6 @@
 import type { TypedSchema } from "./schema";
 
-export const Priority = { Dialogue: 0, Area: 1, Prefetch: 2, Low: 3 } as const;
+export const Priority = { Dialogue: 0, Area: 1, Prefetch: 2, Low: 3, Speculative: 4 } as const;
 export type Priority = (typeof Priority)[keyof typeof Priority];
 
 export interface ChatMessage {
@@ -42,6 +42,8 @@ export type DialoguePromptStyle = "standard" | "compact";
 export interface LLMBackend {
   readonly name: string;
   readonly dialoguePromptStyle?: DialoguePromptStyle;
+  // False when each request costs money, so replies must not be generated before they are needed.
+  readonly supportsSpeculation: boolean;
   load(modelId: string, onProgress: (progress: LoadProgress) => void): Promise<LoadResult>;
   generate(params: GenerationParams): Promise<RawResult>;
   unload(): Promise<void>;

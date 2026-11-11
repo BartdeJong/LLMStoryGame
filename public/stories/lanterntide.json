@@ -2,7 +2,7 @@
   "schema_version": 2,
   "identity": {
     "id": "lanterntide",
-    "version": 1,
+    "version": 3,
     "title": "Lantern Tide",
     "logline": "In a village of drifting lighthouses, an apprentice keeper with a lost year follows the missing oil to a thirteenth light that nobody remembers.",
     "setting": "Hearthdrift, twelve lighthouses on linked islets that drift along the warm Lantern Tide, where lamps burn oil pressed from freely given memories.",
@@ -251,6 +251,13 @@
         "Oh, my memory fades just when I need it.",
         "You'd best ask someone sharper than I, oh dear.",
         "I wish I knew, truly I do."
+      ],
+      "reactions": [
+        { "id": "r_hester_berths", "about": { "type": "clue", "id": "cl_berth_empty" }, "text": "Oh dear, you've seen the empty lamp-stand too! A berth too many for our lights, and I can't think why.", "clue_id": "cl_hester_berths" },
+        { "id": "r_hester_ember", "about": { "type": "item", "id": "i_mothlight_ember" }, "text": "Oh, the Ember! Keep it close, love. It's the Mothlight's own warmth, and it will light your way." },
+        { "id": "r_hester_key", "about": { "type": "item", "id": "i_tallow_key" }, "text": "A Tallow Key... oh, that name nags at me, love. Berth Thirteen, was it? Oh dear, I can't quite hold it." },
+        { "id": "r_hester_hobb", "about": { "type": "cast", "id": "c_hobb" }, "text": "Hobb and I go back years, oh dear. He's carrying something heavy, and he won't set it down." },
+        { "id": "r_hester_wick", "about": { "type": "item", "id": "i_wick" }, "text": "A lamp-wick! Do keep it dry, love. It's the little things that keep a light steady, oh dear." }
       ]
     },
     {
@@ -428,6 +435,13 @@
         "Hm. No.",
         "Ask the archivist. I have no answer.",
         "Some questions are better left unspoken."
+      ],
+      "reactions": [
+        { "id": "r_hobb_locket", "about": { "type": "clue", "id": "cl_hobb_locket" }, "text": "That locket was my granddaughter's. Her name was Wren. I remember her. I always did.", "clue_id": "cl_hobb_speaks" },
+        { "id": "r_hobb_letters", "about": { "type": "clue", "id": "cl_hobb_letters" }, "text": "Those letters were never sent. A grandfather's courage is a poor, late thing." },
+        { "id": "r_hobb_key", "about": { "type": "item", "id": "i_tallow_key" }, "text": "A Tallow Key. Put it away, child. Some doors are best opened with care." },
+        { "id": "r_hobb_pell", "about": { "type": "cast", "id": "c_pell" }, "text": "The magpie gathers what others lose. I do not trust him. I do not entirely blame him." },
+        { "id": "r_hobb_flask", "about": { "type": "item", "id": "i_empty_flask" }, "text": "A flask for memories, I think. The founders wrote of such things. Be careful what you pour." }
       ]
     },
     {
@@ -578,6 +592,13 @@
         "Hmm, that's not on my shelves.",
         "Finders keepers, but that I never found.",
         "Ask me something I can trade on, friend."
+      ],
+      "reactions": [
+        { "id": "r_pell_spyglass", "about": { "type": "item", "id": "i_brass_spyglass" }, "text": "Ah, the spyglass! It belonged to the thirteenth keeper, friend. Finders keepers, but I knew it wasn't really mine.", "clue_id": "cl_pell_spyglass" },
+        { "id": "r_pell_key", "about": { "type": "item", "id": "i_tallow_key" }, "text": "That brass key, friend! I've hunted its lock for ages. It belongs to something, I just know it." },
+        { "id": "r_pell_ember", "about": { "type": "item", "id": "i_mothlight_ember" }, "text": "A Mothlight Ember! Shiny, warm, worth more than my whole shed. Fancy a trade, friend?" },
+        { "id": "r_pell_rook", "about": { "type": "cast", "id": "c_rook" }, "text": "That crow thinks he's the better finder. Ha! I find things, friend. He just rows about at night." },
+        { "id": "r_pell_bramwell", "about": { "type": "cast", "id": "c_bramwell" }, "text": "Bramwell? Oil goes missing, folk talk, I listen. I never said he did it, friend. Much." }
       ]
     },
     {
@@ -742,6 +763,13 @@
         "Irrelevant to pressure.",
         "No reading on that.",
         "Ask someone who counts less and guesses more."
+      ],
+      "reactions": [
+        { "id": "r_dorrin_count", "about": { "type": "clue", "id": "cl_berth_empty" }, "text": "Twelve lights from the Rock. Thirteen berths. The empty one is no error. I counted it as a chick.", "clue_id": "cl_dorrin_count" },
+        { "id": "r_dorrin_ink", "about": { "type": "item", "id": "i_dusk_ink" }, "text": "Dusk Ink. Good for a barometer scale. One drop, steady hand. Pressure's falling. Be quick." },
+        { "id": "r_dorrin_log", "about": { "type": "clue", "id": "cl_pilchard_log" }, "text": "Seven years ago the Hush came. My barometer logged it. Pressure fell, and the village drifted.", "clue_id": "cl_dorrin_barometer" },
+        { "id": "r_dorrin_nim", "about": { "type": "cast", "id": "c_nim" }, "text": "The otter pup. Loud, quick, wet. Keeps asking about fog. Marginally useful." },
+        { "id": "r_dorrin_spyglass", "about": { "type": "item", "id": "i_brass_spyglass" }, "text": "Brass spyglass. Fine glass. Useless in fog. Count the lights with it anyway." }
       ]
     },
     {
@@ -897,6 +925,13 @@
         "Nobody tells me anything!",
         "Hmm, ask someone grown up?",
         "I wish I knew, I really do!"
+      ],
+      "reactions": [
+        { "id": "r_nim_threads", "about": { "type": "clue", "id": "cl_kelp_threads" }, "text": "Amber threads! Like the tide! It runs warm and amber down the steps and nobody notices but me!", "clue_id": "cl_nim_tide" },
+        { "id": "r_nim_glow", "about": { "type": "clue", "id": "cl_drowned_lamp_glow" }, "text": "A glow with a girl beside it! I wave to her every night and she waves back, honest!", "clue_id": "cl_nim_wave" },
+        { "id": "r_nim_granny", "about": { "type": "cast", "id": "c_granny" }, "text": "Granny's buns are the best! Warm ones, soft ones, thirteen ones, I ate three!" },
+        { "id": "r_nim_rook", "about": { "type": "cast", "id": "c_rook" }, "text": "Rook! I follow him sometimes, he rows out at night and mutters, I think he's sad!" },
+        { "id": "r_nim_bun", "about": { "type": "item", "id": "i_warm_bun" }, "text": "A warm bun! Is it for me? Granny made it, I can smell the thirteen spices!" }
       ]
     },
     {
@@ -1048,6 +1083,12 @@
         "Slow minds, slow ovens. Ask someone quicker.",
         "Hm, I don't think I ever knew.",
         "Eat a bun and ask me later, dear."
+      ],
+      "reactions": [
+        { "id": "r_granny_bun", "about": { "type": "item", "id": "i_warm_bun" }, "text": "That's the thirteen-spice bun, dear. A young keeper's favourite, soft as a sleepy tortoise.", "clue_id": "cl_granny_favourite" },
+        { "id": "r_granny_nim", "about": { "type": "cast", "id": "c_nim" }, "text": "Little Nim eats like a hungry tide, dear. I always bake an extra bun just for her." },
+        { "id": "r_granny_yarrow", "about": { "type": "cast", "id": "c_yarrow" }, "text": "Yarrow next door is sweet as honey and forgetful as a sieve, dear. We're a pair." },
+        { "id": "r_granny_flask", "about": { "type": "item", "id": "i_empty_flask" }, "text": "Oh, a flask, dear. It smells of nothing at all, like a pot after the last spoonful." }
       ]
     },
     {
@@ -1198,6 +1239,13 @@
         "A fine question, with no fine answer.",
         "Ask me after the regatta.",
         "I'd tell you, but the tale would spoil."
+      ],
+      "reactions": [
+        { "id": "r_quay_log", "about": { "type": "clue", "id": "cl_pilchard_log" }, "text": "The Pilchard's log! I was aboard when the Hush swallowed our lamp. Seven years ago, and I'll never forget it.", "clue_id": "cl_quay_hush" },
+        { "id": "r_quay_rook", "about": { "type": "clue", "id": "cl_rook_small_light" }, "text": "Rook heard it too? Then it's true, friend: a small light, singing, led my ship out of the fog.", "clue_id": "cl_quay_singing_light" },
+        { "id": "r_quay_spyglass", "about": { "type": "item", "id": "i_brass_spyglass" }, "text": "Ha! A spyglass! I could spot the regatta winner with that, and it's always me, of course." },
+        { "id": "r_quay_deckhand", "about": { "type": "cast", "id": "c_rook" }, "text": "My deckhand Rook! Best oar on the quay after me, though he mumbles like a wet sail." },
+        { "id": "r_quay_wick", "about": { "type": "item", "id": "i_wick" }, "text": "A lamp-wick! Without one, even the best captain on the quay is just a fox in the dark." }
       ]
     },
     {
@@ -1358,6 +1406,12 @@
         "The archive is silent on the matter.",
         "I would rather not speculate.",
         "See footnote: unknown."
+      ],
+      "reactions": [
+        { "id": "r_tamsin_ledger", "about": { "type": "clue", "id": "cl_ledger_entry" }, "text": "Berth Thirteen, Keeper W. Tallow. Technically, names fade in the order the lamps were lit. Do note that.", "clue_id": "cl_tamsin_fade" },
+        { "id": "r_tamsin_ink", "about": { "type": "item", "id": "i_dusk_ink" }, "text": "Dusk Ink! Technically it restores faded lines. I'd like it back once the ledger is mended." },
+        { "id": "r_tamsin_hobb", "about": { "type": "cast", "id": "c_hobb" }, "text": "Elder Hobb. I assist him, technically, and he never once explains why he stares at that empty berth." },
+        { "id": "r_tamsin_bramwell", "about": { "type": "cast", "id": "c_bramwell" }, "text": "Bramwell. Technically the oil is vanishing, and technically he is the obvious suspect. Obvious is not proof." }
       ]
     },
     {
@@ -1511,6 +1565,13 @@
         "Mm... no idea.",
         "Can't say. Mm.",
         "Ask someone else, mm."
+      ],
+      "reactions": [
+        { "id": "r_bramwell_tally", "about": { "type": "clue", "id": "cl_oil_tally_flow" }, "text": "Mm. That tally. Oil is pressed from memories freely given. Givers fade. Mm.", "clue_id": "cl_bramwell_oil" },
+        { "id": "r_bramwell_flask", "about": { "type": "item", "id": "i_empty_flask" }, "text": "Mm. My old flask. Empty now. Keep it. Might hold something worth more than oil." },
+        { "id": "r_bramwell_pell", "about": { "type": "cast", "id": "c_pell" }, "text": "Mm. Pell talks. Folk listen. I only press oil. Mm." },
+        { "id": "r_bramwell_tamsin", "about": { "type": "cast", "id": "c_tamsin" }, "text": "Mm. The archivist. She counts my tally. Fair enough, mm." },
+        { "id": "r_bramwell_bun", "about": { "type": "item", "id": "i_warm_bun" }, "text": "Mm. A bun. Tastes of a song I half know. Mm." }
       ]
     },
     {
@@ -1643,6 +1704,13 @@
         "Glow, glow. Don't know.",
         "Hm? Tinkle.",
         "No, no. Tink."
+      ],
+      "reactions": [
+        { "id": "r_lumi_cot", "about": { "type": "clue", "id": "cl_attic_cot" }, "text": "Tink! Spark! Spark, Spark!", "clue_id": "cl_lumi_spark" },
+        { "id": "r_lumi_ember", "about": { "type": "item", "id": "i_mothlight_ember" }, "text": "Tink! Warm, warm. Light." },
+        { "id": "r_lumi_wren", "about": { "type": "cast", "id": "c_wren" }, "text": "Tink-tink! Friend. Old friend. Wren." },
+        { "id": "r_lumi_wick", "about": { "type": "item", "id": "i_wick" }, "text": "Tink. Wick. Light, light. Thirteen." },
+        { "id": "r_lumi_key", "about": { "type": "item", "id": "i_tallow_key" }, "text": "Tink! Key. Thirteen. Go, go." }
       ]
     },
     {
@@ -1791,6 +1859,12 @@
         "Mm, no idea, dear.",
         "Hmm, ask someone steadier.",
         "La-la, I wasn't listening, sorry."
+      ],
+      "reactions": [
+        { "id": "r_yarrow_banner", "about": { "type": "clue", "id": "cl_banner_stars" }, "text": "Mm-hm, the banner... a thirteenth star, in a hand I don't know. La-la, how odd.", "clue_id": "cl_yarrow_star" },
+        { "id": "r_yarrow_key", "about": { "type": "item", "id": "i_tallow_key" }, "text": "Mm-mm, a key like that was sewn in the hem, I think. Hum-hum. Wasn't it?" },
+        { "id": "r_yarrow_granny", "about": { "type": "cast", "id": "c_granny" }, "text": "Granny Fennick's buns smell like home, mm-hm, even when I can't remember whose." },
+        { "id": "r_yarrow_ismay", "about": { "type": "cast", "id": "c_ismay" }, "text": "Sister Ismay rings thirteen, I stitch thirteen, la-la. We're a puzzled pair." }
       ]
     },
     {
@@ -1933,6 +2007,12 @@
         "That is beyond my bell, dear.",
         "Yawn... ask another.",
         "Mmm, I wish I knew."
+      ],
+      "reactions": [
+        { "id": "r_ismay_ledger", "about": { "type": "clue", "id": "cl_bell_ledger" }, "text": "Mmm, that ledger. The thirteenth bell, rung once. I ring it every year and cannot say why." },
+        { "id": "r_ismay_hester", "about": { "type": "cast", "id": "c_hester" }, "text": "Mmm, Hester Wick. Dear friend. Anxious as a moth, kind as a candle." },
+        { "id": "r_ismay_bun", "about": { "type": "item", "id": "i_warm_bun" }, "text": "Mmm, a warm bun. It might keep me awake until the anniversary bell. Forgive the yawn." },
+        { "id": "r_ismay_ember", "about": { "type": "item", "id": "i_mothlight_ember" }, "text": "Mmm, the Ember. Its warmth is... stately. I could sleep beside it for a year." }
       ]
     },
     {
@@ -2104,6 +2184,13 @@
         "Don't know. Aye.",
         "Not mine to tell.",
         "Ask Sorrel. Aye."
+      ],
+      "reactions": [
+        { "id": "r_rook_initials", "about": { "type": "clue", "id": "cl_attic_initials" }, "text": "W.T. Aye. Mended a coat like that once. Whose? Aye... can't say.", "clue_id": "cl_rook_coat" },
+        { "id": "r_rook_wick", "about": { "type": "item", "id": "i_wick" }, "text": "Aye. Wick. Row it to Berth Thirteen each year. Don't ask why. Aye.", "clue_id": "cl_rook_wick" },
+        { "id": "r_rook_quay", "about": { "type": "cast", "id": "c_quay" }, "text": "Sorrel. Aye. Captain. I row his boat. Want his respect. Aye." },
+        { "id": "r_rook_pell", "about": { "type": "cast", "id": "c_pell" }, "text": "That magpie. Aye. Takes things. Rival." },
+        { "id": "r_rook_key", "about": { "type": "item", "id": "i_tallow_key" }, "text": "Aye. Key. Berth Thirteen stair. Aye." }
       ]
     },
     {
@@ -2282,6 +2369,12 @@
         "Ask me something kinder, sing-song.",
         "That one's fading, I'm afraid.",
         "I'd tell you if I knew, truly."
+      ],
+      "reactions": [
+        { "id": "r_wren_flask", "about": { "type": "item", "id": "i_empty_flask" }, "text": "That flask carries memories, you see, but they only come home when the village tells them together!", "clue_id": "cl_wren_chorus" },
+        { "id": "r_wren_ember", "about": { "type": "item", "id": "i_mothlight_ember" }, "text": "Oh, the Ember! Hester's warmth, and you carried it all this way, didn't you? Bless you." },
+        { "id": "r_wren_hobb", "about": { "type": "cast", "id": "c_hobb" }, "text": "Grandfather! Is he well? He always said lamp-lit evenings were best. Hello, hello!" },
+        { "id": "r_wren_lumi", "about": { "type": "cast", "id": "c_lumi" }, "text": "Little Lumi! Still circling you, bless it. It never forgot me, nor you." }
       ]
     }
   ],
@@ -2296,7 +2389,15 @@
         "cl_dorrin_count",
         "cl_banner_stars",
         "cl_hester_berths"
-      ]
+      ],
+      "deduction": {
+        "question": "How do the harbour's berths compare with its lights?",
+        "answer": "There are thirteen berths in the harbour but only twelve lights.",
+        "wrong_answers": [
+          "There are twelve berths, and a thirteenth light was added without one.",
+          "There are thirteen lights but only twelve berths."
+        ]
+      }
     },
     {
       "id": "t_wren_keeper",
@@ -2309,7 +2410,15 @@
         "cl_ledger_entry",
         "cl_attic_initials",
         "cl_rook_coat"
-      ]
+      ],
+      "deduction": {
+        "question": "Whose name is fading from the records of Berth Thirteen, and what was her post?",
+        "answer": "The Keeper of Berth Thirteen was Wren Tallow, and her name is fading from the records.",
+        "wrong_answers": [
+          "Pell kept Berth Thirteen until he turned to collecting lost things.",
+          "Nobody kept it; the ledger line is only a clerk's slip."
+        ]
+      }
     },
     {
       "id": "t_oil_from_memories",
@@ -2321,7 +2430,15 @@
         "cl_founders_recipe",
         "cl_archive_recipe_copy",
         "cl_cistern_plaque"
-      ]
+      ],
+      "deduction": {
+        "question": "What is remembrance oil pressed from, and what does burning it cost?",
+        "answer": "Remembrance oil is made from freely given memories. Burning it makes the giver fade from others' memories.",
+        "wrong_answers": [
+          "It is pressed from glow-moths, and burning it only dims the Mothlight.",
+          "It is pressed from sea kelp, and it runs low only when thieves like Pell skim it."
+        ]
+      }
     },
     {
       "id": "t_hush_seven_years",
@@ -2334,7 +2451,18 @@
         "cl_quay_hush",
         "cl_oil_tally_cold",
         "cl_hester_dark"
-      ]
+      ],
+      "deduction": {
+        "question": "What was the Hush, and when did it reach Hearthdrift?",
+        "answer": "Seven years ago the village drifted into the Hush, a fog that smothers lights.",
+        "wrong_answers": [
+          "A ghost-lit fog from the Whisper Fog Edge that has hung about for as long as anyone remembers.",
+          "A storm that wrecked the Pilchard long ago and left its bad-luck lamp to curse the lights."
+        ],
+        "rules_out": [
+          "rh_ghost_light"
+        ]
+      }
     },
     {
       "id": "t_wren_lit_lamp",
@@ -2350,7 +2478,16 @@
         "cl_bell_ledger",
         "cl_rook_small_light",
         "cl_archive_bell_copy"
-      ]
+      ],
+      "deduction": {
+        "question": "Who lit the Thirteenth Light, and how?",
+        "answer": "Wren lit the Thirteenth Light with her own memories to guide the village out of the Hush.",
+        "wrong_answers": [
+          "Captain Quay lit it to guide his ship out of the fog.",
+          "The founders lit it long ago, and it burns on its own.",
+          "Wren lit it with oil from the founders' old stores, taking nothing from anyone."
+        ]
+      }
     },
     {
       "id": "t_village_forgot",
@@ -2364,7 +2501,15 @@
         "cl_tamsin_fade",
         "cl_granny_buns",
         "cl_lamp_room_flicker"
-      ]
+      ],
+      "deduction": {
+        "question": "Why does nobody in Hearthdrift remember Wren?",
+        "answer": "The village forgot Wren because her burnt memories erased her from everyone else's.",
+        "wrong_answers": [
+          "She drifted away on the tide and the village gradually stopped speaking of her.",
+          "The fog dulled everyone's memory of the thirteenth berth, but not of her."
+        ]
+      }
     },
     {
       "id": "t_oil_flows_to_deep",
@@ -2379,7 +2524,18 @@
         "cl_kelp_threads",
         "cl_nim_tide",
         "cl_gallery_threads"
-      ]
+      ],
+      "deduction": {
+        "question": "Where is the missing oil going, and what of the Thirteenth Light?",
+        "answer": "The missing oil flows down the tide to the Lantern Deep. The Thirteenth Light still burns and is running low.",
+        "wrong_answers": [
+          "Pell carries it off to sell, and the Thirteenth Light went out years ago.",
+          "It leaks into the Whisper Fog Edge to feed the ghost lights, and the Thirteenth Light is long extinguished."
+        ],
+        "rules_out": [
+          "rh_pell_oil"
+        ]
+      }
     },
     {
       "id": "t_wren_alive",
@@ -2393,7 +2549,16 @@
         "cl_spyglass_glow",
         "cl_drowned_lamp_glow",
         "cl_wren_alive"
-      ]
+      ],
+      "deduction": {
+        "question": "What became of Wren?",
+        "answer": "Wren is alive below the tide, keeping the Drowned Lamp.",
+        "wrong_answers": [
+          "She was lost to the fog and drowned, and only her lamp remains.",
+          "She left on a ferry and lives on a distant island.",
+          "She vanished into the Whisper Fog Edge and became the ghost light."
+        ]
+      }
     },
     {
       "id": "t_player_was_spark",
@@ -2408,7 +2573,15 @@
         "cl_base_hook",
         "cl_wren_spark",
         "cl_rook_spark"
-      ]
+      ],
+      "deduction": {
+        "question": "Who are you, and what is your lost year?",
+        "answer": "The player was Wren's apprentice, Spark, and gave a year of memories to the lamp.",
+        "wrong_answers": [
+          "A ferry passenger who lost a year to the fog, with no tie to Hearthdrift's lights.",
+          "A new keeper sent by the founders' guild, with no past in Hearthdrift."
+        ]
+      }
     },
     {
       "id": "t_hobb_remembers",
@@ -2421,7 +2594,19 @@
         "cl_hobb_locket",
         "cl_hobb_letters",
         "cl_hobb_speaks"
-      ]
+      ],
+      "deduction": {
+        "question": "Why is Elder Hobb's study locked and why does he stay silent?",
+        "answer": "Elder Hobb remembers Wren and kept silent, fearing that speaking her name would put out the lamp.",
+        "wrong_answers": [
+          "He guards the oil ledgers because he suspects Pell.",
+          "He is the one draining the press and hides the proof.",
+          "He is too old to recall anything from before the fog."
+        ],
+        "rules_out": [
+          "rh_locked_study"
+        ]
+      }
     },
     {
       "id": "t_told_aloud",
@@ -2435,7 +2620,15 @@
         "cl_chorus_rite",
         "cl_flask_cistern",
         "cl_wren_chorus"
-      ]
+      ],
+      "deduction": {
+        "question": "How can burnt memories be returned?",
+        "answer": "Burnt memories return when they are remembered together and told aloud at the lamp.",
+        "wrong_answers": [
+          "By pressing fresh oil from new memories and pouring it back on the lamp.",
+          "By relighting all twelve lamps together at dawn."
+        ]
+      }
     },
     {
       "id": "t_side_bun",
@@ -4275,6 +4468,20 @@
           "choice_bring_her_home"
         ]
       },
+      "summation": [
+        {
+          "question": "Whose name does the village tell at Berth Thirteen?",
+          "truth_id": "t_wren_keeper"
+        },
+        {
+          "question": "Why does the lamp burn above the tide?",
+          "truth_id": "t_wren_lit_lamp"
+        },
+        {
+          "question": "Who are you to Wren, and why do you regain a year?",
+          "truth_id": "t_player_was_spark"
+        }
+      ],
       "scene_outline": "The village gathers at Berth Thirteen and each tells Wren's name and a memory. The lamp is relit above the tide, Wren returns, and the player regains their lost year. In the Short length the choice is saying her name at the berth.",
       "tone": "Joyful and warm.",
       "epilogue_notes": "Vary the epilogue with the goals the player resolved. Shared conditions are the core truths common to every length."
@@ -4300,6 +4507,20 @@
           "choice_keep_light_together"
         ]
       },
+      "summation": [
+        {
+          "question": "Why had the village forgotten Wren?",
+          "truth_id": "t_village_forgot"
+        },
+        {
+          "question": "Where does Wren keep the lamp?",
+          "truth_id": "t_wren_alive"
+        },
+        {
+          "question": "How are the burnt memories returned?",
+          "truth_id": "t_told_aloud"
+        }
+      ],
       "scene_outline": "Wren stays as the lamp's keeper. The village remembers her and the Thirteenth Light shines beside the others. The player visits often.",
       "tone": "Bittersweet and warm.",
       "epilogue_notes": "Hobb and Wren share the harbour at dusk. The player keeps their year."
@@ -4347,6 +4568,20 @@
           "choice_bring_her_home"
         ]
       },
+      "summation": [
+        {
+          "question": "Why did no one speak her name for so long?",
+          "truth_id": "t_hobb_remembers"
+        },
+        {
+          "question": "What made the village's memories return?",
+          "truth_id": "t_told_aloud"
+        },
+        {
+          "question": "Where did the missing oil go?",
+          "truth_id": "t_oil_flows_to_deep"
+        }
+      ],
       "scene_outline": "Every villager brings a lantern, the banner flies with thirteen stars, and the Hush never comes back.",
       "tone": "Triumphant and joyful. A secret bonus ending.",
       "epilogue_notes": "Mention each resolved subplot by name."

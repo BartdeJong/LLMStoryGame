@@ -8,6 +8,13 @@ record the route ids consistently in both the truth and clue entries. Every
 item needs a reachable source, and key items must not be missable. Requirements
 must be achievable before they are needed.
 
+For the key truths, add a `deduction`: `question`, the correct `answer`
+(normally the truth's own text), 2-3 plausible `wrong_answers`, and optionally
+`rules_out` listing red herring ids the answer settles. Leave minor truths
+without one; they are confirmed as soon as a clue is found. Twist
+`description` text is shown to the player once as a reveal, so write it for
+the player after the payoff.
+
 For every item, include `visual: { "icon": "<catalog-id>" }` selected by name
 from `icon-catalog.md`; optional `accent` may be a palette color slot or a `#RRGGBB` color and optional
 `states` must use known state names. If no glyph fits, do not choose a near

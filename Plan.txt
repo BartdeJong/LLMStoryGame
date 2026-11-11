@@ -179,7 +179,7 @@ Rules for the writing agent: follow the schema; every core truth must be discove
   - Buildings and ruins: rooms and corridors or a simple BSP.
   - Village: lots, paths and small building footprints.
 - Guarantee: all key points (player entry, doors, characters, chests, clue spots) are reachable. Validate with a flood fill and regenerate or fix on failure.
-- Doors: placed by code on edges or as objects (cave mouth, gate, hatch, trapdoor). The LLM supplies the labels and hints. A door leads to an area that is generated only when first entered. Afterward it is stored and never changes. Doors always connect back to where the player came from.
+- Doors: placed by code on edges or as objects (cave mouth, gate, hatch, trapdoor). The LLM supplies the labels and hints. A door leads to an area that is generated only when first entered. Afterward it is stored and never changes. Doors always connect back to where the player came from. Code gives every location of a story length a fixed cell on a compass grid, and each door sits on the side of its area that faces its destination, so leaving east arrives west and the map can show areas where they really are.
 - Prefetch: while the player explores an area, queue generation of the briefs for areas behind its doors. If the area is not ready when the player arrives, show a short, atmospheric transition (for example drifting fog) until it is.
 - Entities placed by code at valid tiles using the brief: characters, objects and clue spots.
 

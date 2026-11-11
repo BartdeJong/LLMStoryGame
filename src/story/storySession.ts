@@ -7,13 +7,17 @@ import type { LengthView } from "./loader";
 import { BriefService } from "./prefetch";
 import { findDoorLock, isRequirementMet, missingRequirementNames } from "./requirements";
 import { endingChoiceLabel, writeEnding } from "./ending";
+import { pickSummation, type SummationQuestion } from "./deduction";
 import type { EndingChoice, EndingScene } from "./ending";
 import { createStoryState, giveItem, grantTruthsFromFoundClues, markClueFound, markCollected, markVisited, summaryDue } from "./state";
 import type { StoryState } from "./state";
 import { refreshSummary } from "./summary";
 import { parseCharacterRecipe } from "./recipes";
+import { layoutStoryWorld, storyDoorPoints, type LocationCell, type StoryWorldLayout } from "./worldLayout";
 import type { Beat, CastMember, Ending, Item, StoryPack } from "./types";
 import type { GameSave, SavedArea } from "../save/types";
+
+const PREFETCH_DELAY_MS = 3000;
 
 export interface CollectResult {
   item: Item;
@@ -33,7 +37,9 @@ export class StorySession {
   readonly briefs: BriefService;
   private readonly areas = new Map<string, Area>();
   private readonly briefsByArea = new Map<string, StoryAreaBrief>();
+  private readonly worldLayout: StoryWorldLayout;
   private summaryRunning = false;
+  private prefetchTimer: ReturnType<typeof setTimeout> | undefined;
 
   constructor(
     readonly pack: StoryPack,
@@ -44,10 +50,39 @@ export class StorySession {
   ) {
     this.state = createStoryState(view);
     this.briefs = new BriefService(client, pack, view, this.state, prefetchCap);
+    this.worldLayout = layoutStoryWorld(pack, view);
   }
 
   get startLocationId(): string {
     return this.view.startLocation;
+  }
+
+  // Where a location lies on the compass grid of this story's world.
+  getMapCell(locationId: string): LocationCell | undefined {
+    return this.worldLayout.get(locationId);
+  }
+
+  // Names of the cast members in a visited area that the player has already talked to.
+  getPeopleMet(areaId: string): string[] {
+    return (this.areas.get(areaId)?.entities ?? [])
+      .filter((entity) => entity.kind === "character" && entity.packId !== undefined
+        && (this.state.characterMemory[entity.packId]?.visits ?? 0) > 0)
+      .map((entity) => entity.name);
+  }
+
+  // True for the places that belong to the lead the player is following right now and still hold
+  // evidence or facts (clues and what the characters there can tell) that the player has not found.
+  isLeadLocation(locationId: string): boolean {
+    if (!this.currentBeat.locations.includes(locationId)) return false;
+    const area = this.areas.get(locationId);
+    if (!area || !this.state.visitedAreas.includes(locationId)) return true;
+    return (area.entities ?? []).some((entity) => {
+      if (entity.kind === "clue") return entity.packId !== undefined && !this.state.cluesFound.includes(entity.packId);
+      if (entity.kind === "key") return !this.state.collectedEntities.includes(entity.id);
+      if (entity.kind !== "character" || !entity.packId) return false;
+      const character = this.pack.cast.find((member) => member.id === entity.packId);
+      return character?.knowledge.some((item) => !this.state.knowledgeTold.includes(`${character.id}:${item.id}`)) ?? false;
+    });
   }
 
   get currentBeat(): Beat {
@@ -127,6 +162,21 @@ export class StorySession {
     return [...options.values()];
   }
 
+  // Questions the player must answer before the ending, or null when the ending has no summation.
+  getSummation(locationId: string): SummationQuestion[] | null {
+    if (this.getEndingChoices(locationId).length === 0) return null;
+    return pickSummation(this.view.endings.filter((ending) => this.endingFactsMet(ending)));
+  }
+
+  // True when the open beat waits only on truths and at least one of them is an open casebook question.
+  currentBeatWaitsOnDeduction(): boolean {
+    const need = this.currentBeat.must_find;
+    if (!need || isRequirementMet(need, this.state)) return false;
+    const itemsAndGoalsMet = isRequirementMet({ items: need.items, goal_states: need.goal_states }, this.state);
+    const missing = (need.truths ?? []).filter((id) => !this.state.truthsFound.includes(id));
+    return itemsAndGoalsMet && missing.some((id) => this.state.truthsReady.includes(id));
+  }
+
   async finishEnding(choices: readonly string[], finaleLocationId: string): Promise<EndingScene> {
     const selected = [...new Set(choices)].sort();
     const option = this.getEndingChoices(finaleLocationId).find((candidate) =>
@@ -172,6 +222,7 @@ export class StorySession {
     if (this.isDoorLocked(fromAreaId, doorId)) {
       throw new Error(this.describeDoorLock(fromAreaId, doorId) ?? "That path is not open yet.");
     }
+    clearTimeout(this.prefetchTimer);
     const wasReady = this.isReady(door.targetAreaId);
     const area = await this.ensureArea(door.targetAreaId);
     const returnDoor = area.doors.find((candidate) => candidate.targetAreaId === fromAreaId);
@@ -238,12 +289,32 @@ export class StorySession {
     return missing.length > 0 ? `It's locked. You need: ${missing.join(", ")}.` : "It's locked.";
   }
 
+  // The same reason in a few words, for places with little room such as the map. Null when the door is open.
+  describeDoorLockBriefly(areaId: string, doorId: string): string | null {
+    const door = this.getArea(areaId).doors.find((candidate) => candidate.id === doorId);
+    if (!door?.targetAreaId) return null;
+    if (!this.isLocationOpen(door.targetAreaId)) return "Opens later in the story";
+    const lock = findDoorLock(this.pack, areaId, door.targetAreaId);
+    if (isRequirementMet(lock, this.state)) return null;
+    const missing = [...new Set(missingRequirementNames(this.pack, lock, this.state))];
+    return missing.length > 0 ? `Needs ${missing.join(", ")}` : "Locked";
+  }
+
+  // What a sign on a door says: the name of the place behind it once the player has been there, otherwise the
+  // door's own label, which is all the player has been told so far.
+  describeDoorDestination(areaId: string, doorId: string): string | null {
+    const door = this.getArea(areaId).doors.find((candidate) => candidate.id === doorId);
+    if (!door?.targetAreaId) return null;
+    return this.areas.get(door.targetAreaId)?.name ?? door.label;
+  }
+
   private async ensureArea(locationId: string): Promise<Area> {
     if (!this.isLocationOpen(locationId)) throw new Error(`Location "${locationId}" is not open yet.`);
     const existing = this.areas.get(locationId);
     if (existing) return existing;
     const brief = await this.briefs.request(locationId);
-    const area = buildStoryArea(brief, this.worldSeed);
+    const doorPoints = storyDoorPoints(this.worldLayout, locationId, brief.doors.map((door) => door.to));
+    const area = buildStoryArea(brief, this.worldSeed, doorPoints);
     this.areas.set(locationId, area);
     this.briefsByArea.set(locationId, brief);
     return area;
@@ -252,7 +323,11 @@ export class StorySession {
   private onEntered(area: Area): void {
     markVisited(this.state, area.id);
     const neighbours = area.doors.map((door) => door.targetAreaId).filter((id): id is string => id !== undefined);
-    this.briefs.prefetch(neighbours.filter((id) => this.isLocationOpen(id) && !this.areas.has(id)));
+    // Neighbour briefs start generating after the arrival settles, so the model does not compete with the first frames.
+    clearTimeout(this.prefetchTimer);
+    this.prefetchTimer = setTimeout(() => {
+      this.briefs.prefetch(neighbours.filter((id) => this.isLocationOpen(id) && !this.areas.has(id)));
+    }, PREFETCH_DELAY_MS);
     if (summaryDue(this.state) && !this.summaryRunning) {
       this.summaryRunning = true;
       void refreshSummary(this.client, this.pack, this.view, this.state).finally(() => { this.summaryRunning = false; });

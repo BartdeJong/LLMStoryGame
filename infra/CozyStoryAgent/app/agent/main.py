@@ -5,7 +5,7 @@ import boto3
 from bedrock_agentcore.runtime import BedrockAgentCoreApp
 
 app = BedrockAgentCoreApp()
-MODEL_ID = os.environ.get("BEDROCK_MODEL_ID", "openai.gpt-oss-120b-1:0")
+MODEL_ID = os.environ.get("BEDROCK_MODEL_ID", "openai.gpt-oss-20b-1:0")
 REASONING_EFFORT = "low"
 MAX_OUTPUT_TOKENS = 2048
 bedrock = boto3.client("bedrock-runtime")

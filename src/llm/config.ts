@@ -23,6 +23,7 @@ export const LLM_CONFIG = {
   approxDownloadMB: { min: 1000, max: 2000 },
   maxRetries: 2,
   maxQueuedPrefetch: 4,
+  maxQueuedSpeculative: 3,
   loadedModelStorageKey: "llm.loadedModelId",
   selectedModelStorageKey: "llm.selectedModelId",
 } as const;

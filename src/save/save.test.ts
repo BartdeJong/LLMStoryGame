@@ -20,18 +20,22 @@ function makeSave(): GameSave {
     length: "short",
     visitedAreas: ["start"],
     truthsFound: ["truth"],
+    truthsReady: ["ready"],
+    herringsRuledOut: ["herring"],
+    twistsSeen: ["twist"],
     cluesFound: ["clue"],
     resolvedGoalStates: ["goal"],
     choicesMade: ["choice"],
     itemsHeld: ["key"],
     needsRecorded: [{ characterId: "c_oswin", itemId: "i_overdue_book" }],
     knowledgeTold: ["c_oswin:k_oswin_log"],
+    characterMemory: {},
     collectedEntities: ["item:key"],
     summary: "A saved story.",
     areasSinceSummary: 1,
   };
   return {
-    formatVersion: 3,
+    formatVersion: 5,
     slotId: "slot-test",
     metadata: {
       storyTitle: "Test story",
@@ -162,7 +166,7 @@ describe("save persistence", () => {
 
     const migrated = normalizeSave(legacy);
 
-    expect(migrated.formatVersion).toBe(3);
+    expect(migrated.formatVersion).toBe(5);
     expect(migrated.metadata.timePlayedMs).toBe(0);
   });
 
@@ -177,9 +181,50 @@ describe("save persistence", () => {
 
     const migrated = normalizeSave(legacy);
 
-    expect(migrated.formatVersion).toBe(3);
+    expect(migrated.formatVersion).toBe(5);
     expect(migrated.storyState.needsRecorded).toEqual([]);
     expect(migrated.storyState.knowledgeTold).toEqual([]);
+  });
+
+  it("migrates version 3 saves with empty deduction history", () => {
+    const legacy = JSON.parse(JSON.stringify(makeSave())) as {
+      formatVersion: number;
+      storyState: Record<string, unknown>;
+    };
+    legacy.formatVersion = 3;
+    delete legacy.storyState.truthsReady;
+    delete legacy.storyState.herringsRuledOut;
+    delete legacy.storyState.twistsSeen;
+
+    const migrated = normalizeSave(legacy);
+
+    expect(migrated.formatVersion).toBe(5);
+    expect(migrated.storyState.truthsFound).toEqual(["truth"]);
+    expect(migrated.storyState.truthsReady).toEqual([]);
+    expect(migrated.storyState.herringsRuledOut).toEqual([]);
+    expect(migrated.storyState.twistsSeen).toEqual([]);
+  });
+
+  it("migrates version 4 saves, treating characters already talked to as met", () => {
+    const legacy = JSON.parse(JSON.stringify(makeSave())) as {
+      formatVersion: number;
+      storyState: Record<string, unknown>;
+    };
+    legacy.formatVersion = 4;
+    delete legacy.storyState.characterMemory;
+
+    const migrated = normalizeSave(legacy);
+
+    expect(migrated.formatVersion).toBe(5);
+    expect(migrated.storyState.characterMemory).toEqual({ c_oswin: { visits: 1, askedAbout: [] } });
+  });
+
+  it("keeps character memory through a save and load round trip", () => {
+    const save = makeSave();
+    save.storyState.characterMemory = { c_oswin: { visits: 2, askedAbout: ["cast:c_hollis", "item:i_overdue_book"] } };
+    const loaded = normalizeSave(JSON.parse(JSON.stringify(save)));
+    expect(loaded.storyState.characterMemory).toEqual(save.storyState.characterMemory);
+    expect(() => normalizeSave({ ...save, storyState: { ...save.storyState, characterMemory: { c_oswin: { visits: "x" } } } })).toThrow();
   });
 
   it("rejects invalid imported files before storing them", async () => {

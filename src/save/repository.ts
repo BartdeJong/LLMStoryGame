@@ -76,6 +76,10 @@ function isArea(value: unknown): value is JsonRecord & { id: string } {
       && Number.isFinite(entity.x) && Number.isFinite(entity.y));
 }
 
+function isCharacterMemory(value: unknown): boolean {
+  return isRecord(value) && Number.isInteger(value.visits) && Number(value.visits) >= 0 && isStringArray(value.askedAbout);
+}
+
 function isStoryState(value: unknown): value is JsonRecord & {
   packId: string;
   packVersion: number;
@@ -85,6 +89,7 @@ function isStoryState(value: unknown): value is JsonRecord & {
   const arrays = [
     value.visitedAreas, value.truthsFound, value.cluesFound, value.resolvedGoalStates,
     value.choicesMade, value.itemsHeld, value.knowledgeTold, value.collectedEntities,
+    value.truthsReady, value.herringsRuledOut, value.twistsSeen,
   ];
   return typeof value.packId === "string" && Number.isInteger(value.packVersion)
     && LENGTH_IDS.includes(value.length as (typeof LENGTH_IDS)[number])
@@ -93,6 +98,8 @@ function isStoryState(value: unknown): value is JsonRecord & {
     && value.needsRecorded.every((need) => isRecord(need)
       && typeof need.characterId === "string" && typeof need.itemId === "string")
     && typeof value.summary === "string"
+    && isRecord(value.characterMemory)
+    && Object.values(value.characterMemory).every(isCharacterMemory)
     && Number.isInteger(value.areasSinceSummary);
 }
 
@@ -160,14 +167,51 @@ function migrateV2(value: JsonRecord): JsonRecord {
   };
 }
 
+function migrateV3(value: JsonRecord): JsonRecord {
+  const storyState = isRecord(value.storyState) ? value.storyState : {};
+  return {
+    ...value,
+    formatVersion: 4,
+    storyState: {
+      ...storyState,
+      truthsReady: isStringArray(storyState.truthsReady) ? storyState.truthsReady : [],
+      herringsRuledOut: isStringArray(storyState.herringsRuledOut) ? storyState.herringsRuledOut : [],
+      twistsSeen: isStringArray(storyState.twistsSeen) ? storyState.twistsSeen : [],
+    },
+  };
+}
+
+function migrateV4(value: JsonRecord): JsonRecord {
+  const storyState = isRecord(value.storyState) ? value.storyState : {};
+  // Characters the player already talked to count as met, with one visit and no topics.
+  const memory: Record<string, unknown> = {};
+  const told = isStringArray(storyState.knowledgeTold) ? storyState.knowledgeTold.map((key) => key.split(":")[0] ?? "") : [];
+  const needs = Array.isArray(storyState.needsRecorded)
+    ? storyState.needsRecorded.flatMap((need) => (isRecord(need) && typeof need.characterId === "string" ? [need.characterId] : []))
+    : [];
+  for (const characterId of [...told, ...needs]) {
+    if (characterId) memory[characterId] = { visits: 1, askedAbout: [] };
+  }
+  return {
+    ...value,
+    formatVersion: 5,
+    storyState: {
+      ...storyState,
+      characterMemory: isRecord(storyState.characterMemory) ? storyState.characterMemory : memory,
+    },
+  };
+}
+
 export function normalizeSave(value: unknown): GameSave {
   if (!isRecord(value) || !Number.isInteger(value.formatVersion)) {
     throw new Error("This file is not a valid game save.");
   }
   let migrated: JsonRecord = value;
-  if (value.formatVersion === 1) migrated = migrateV1(value);
+  if (migrated.formatVersion === 1) migrated = migrateV1(migrated);
   if (migrated.formatVersion === 2) migrated = migrateV2(migrated);
-  else if (migrated.formatVersion !== SAVE_FORMAT_VERSION) {
+  if (migrated.formatVersion === 3) migrated = migrateV3(migrated);
+  if (migrated.formatVersion === 4) migrated = migrateV4(migrated);
+  if (migrated.formatVersion !== SAVE_FORMAT_VERSION) {
     throw new Error(`Save format version ${String(value.formatVersion)} is not supported.`);
   }
   if (!isValidSave(migrated)) throw new Error("This file is not a valid game save or is missing required game data.");

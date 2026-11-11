@@ -78,6 +78,7 @@ function sleep(ms: number, signal: AbortSignal): Promise<void> {
 
 export class MockBackend implements LLMBackend {
   readonly name = "mock";
+  readonly supportsSpeculation = true;
   calls = 0;
   private readonly random;
 

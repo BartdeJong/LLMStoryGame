@@ -1,47 +1,77 @@
 import { followCamera, type Position } from "./camera";
 import { soundEffects } from "./audio/soundEffects";
+import { ambienceRecipe } from "./audio/ambienceRecipes";
+import type { BodyShape } from "./art/sprites";
+import type { Tile } from "./world/types";
 import type { DialogueTurn } from "./dialogue/controller";
 import { ConversationController } from "./dialogue/controller";
 import type { AppliedEffects } from "./dialogue/effects";
+import { returnVisitFor, subjectLabel } from "./dialogue/askAbout";
 import type { DialogueContext } from "./dialogue/prompt";
+import { giveOptions } from "./dialogue/effects";
+import { GreetingPrefetcher } from "./dialogue/speculation";
 import { QUICK_GOODBYE } from "./dialogue/knowledge";
 import type { DialogueHandlers } from "./dialogue/ui";
 import { createDialogueBox, type DialogueBox } from "./dialogue/ui";
 import { InputController } from "./input";
 import { gamepadInput } from "./input/gamepad";
-import type { Direction } from "./art";
+import { createSeededRandom, type Direction } from "./art";
 import { getStoryVisualTheme } from "./art";
 import { listInventory } from "./items/inventory";
 import { createInventoryUI, type InventoryUI } from "./items/inventoryUi";
-import { createExamineUI, type ExamineUI } from "./items/examineUi";
-import { resolveVisualSpec } from "./art/glyphs";
 import { Renderer, VIEW_HEIGHT, VIEW_WIDTH } from "./renderer";
+import type { CharacterRenderState, DoorSign } from "./renderer";
 import { mountEndingChoiceScreen, mountEndingScreen } from "./ui/ending";
 import { mountPauseMenu } from "./ui/pause";
 import { createObjectiveHud, type ObjectiveHud } from "./ui/objectiveHud";
-import { createStoryJournal, type JournalFact, type JournalRequest, type StoryJournal } from "./ui/storyJournal";
+import { createStoryJournal, type JournalFact, type JournalQuestion, type JournalRequest, type StoryJournal } from "./ui/storyJournal";
+import { createCaseOverlay, type CaseOverlay } from "./ui/caseOverlay";
+import {
+  answerDeduction,
+  collectTwistReveals,
+  deductionOptions,
+  evidenceFor,
+  openDeductions,
+  ruledOutHerrings,
+  summationOptions,
+} from "./story/deduction";
 import { createWorldMap, type WorldMap } from "./ui/worldMap";
-import { getMovementSpeed } from "./ui/preferences";
+import { getMovementSpeed, getPrepareRepliesInAdvance } from "./ui/preferences";
 import type { EndingChoice } from "./story/ending";
 import type { StorySession } from "./story/storySession";
-import type { CastMember } from "./story/types";
+import type { CastMember, SubjectRef } from "./story/types";
 import type { SaveRepository } from "./save/repository";
 import { SAVE_FORMAT_VERSION } from "./save/types";
 import type { GameSave, PlayerSave } from "./save/types";
 import {
   TILE_SIZE,
+  entitySolidityIsSafe,
+  isEntityInNarrowCorridor,
   isSolidAt,
+  isWalkable,
+  selectSolidEntityIds,
   type Area,
   type AreaDoor,
   type AreaEntity,
+  type GridPoint,
 } from "./world";
 
 const PLAYER_SPEED = 58;
 const PLAYER_HALF_SIZE = 5;
 const INTERACT_RANGE = TILE_SIZE * 1.5;
 const TAP_INTERACT_RANGE = TILE_SIZE * 2;
+const CHARACTER_STEPS = [[1, 0], [-1, 0], [0, 1], [0, -1]] as const;
 // The fog never lifts faster than this, so quick arrivals still feel like a transition.
 const MIN_FOG_MS = 150;
+const SPECULATION_DELAY_MS = 3000;
+
+interface CharacterMotionState extends CharacterRenderState {
+  homeX: number;
+  homeY: number;
+  target: GridPoint | null;
+  nextStepAt: number;
+  random: () => number;
+}
 
 export interface GamePersistence {
   repository: SaveRepository;
@@ -61,8 +91,14 @@ export class Game {
   private readonly interactionPrompt: HTMLElement;
   private readonly dialogueBox: DialogueBox;
   private readonly inventoryUI: InventoryUI;
-  private readonly examineUI: ExamineUI;
   private readonly storyJournal: StoryJournal;
+  private readonly caseOverlay: CaseOverlay;
+  private readonly deductionMisses = new Map<string, number>();
+  private readonly lockedDoors = new Set<string>();
+  private frameCount = 0;
+  private greetingTimer = 0;
+  private caseOffered = false;
+  private casePresented = false;
   private readonly objectiveHud: ObjectiveHud;
   private readonly worldMap: WorldMap;
   private transitioning = false;
@@ -70,10 +106,14 @@ export class Game {
   private ending = false;
   private transitionOpacity = 0;
   private previousFrame = 0;
+  private readonly solidEntities = new Map<string, ReadonlySet<string>>();
+  private readonly characterMotion = new Map<string, CharacterMotionState>();
   private animationFrame: number | null = null;
   private paused = false;
   private pauseOverlay: HTMLElement | null = null;
   private lastFootstepAt = 0;
+  private ambienceAreaId: string | null = null;
+  private speaker: { castId: string; body: BodyShape | undefined } | null = null;
   private playerDirection: Direction = "down";
   private playerMoving = false;
   private readonly startedAt = Date.now();
@@ -81,8 +121,9 @@ export class Game {
   private autosaveTimer: number | null = null;
   private camera: Position = { x: 0, y: 0 };
   private conversation: ConversationController | null = null;
+  private readonly greetings: GreetingPrefetcher;
   private get inDialogue(): boolean {
-    return this.dialogueBox.isOpen;
+    return this.dialogueBox.isOpen || this.caseOverlay.isOpen;
   }
 
   constructor(
@@ -102,10 +143,15 @@ export class Game {
     private readonly onLoadSave: (save: GameSave) => Promise<void>,
   ) {
     this.areaId = startArea.id;
+    this.greetings = new GreetingPrefetcher(this.story.client);
     this.player = {
       x: persistence.player?.x ?? startArea.entry.x * TILE_SIZE + TILE_SIZE / 2,
       y: persistence.player?.y ?? startArea.entry.y * TILE_SIZE + TILE_SIZE / 2,
     };
+    this.ensureAreaSolidity(startArea, [{
+      x: Math.floor(this.player.x / TILE_SIZE),
+      y: Math.floor(this.player.y / TILE_SIZE),
+    }]);
     this.locationLabel = document.querySelector<HTMLElement>(".location-label");
     if (this.locationLabel) this.locationLabel.textContent = startArea.name.toLocaleUpperCase();
     this.message.textContent = this.story.getBrief(startArea.id)?.description ?? "";
@@ -134,12 +180,18 @@ export class Game {
     });
     this.dialogueBox = createDialogueBox(shell);
     this.inventoryUI = createInventoryUI(shell);
-    this.examineUI = createExamineUI(shell);
-    this.storyJournal = createStoryJournal(shell);
+    this.storyJournal = createStoryJournal(shell, (id, answer) => this.answerQuestion(id, answer));
+    this.caseOverlay = createCaseOverlay(shell, () => this.presentCaseFromButton());
     this.worldMap = createWorldMap(
       shell,
       () => this.story.getSavedAreas().map(({ area }) => area),
       () => this.areaId,
+      {
+        getCell: (areaId) => this.story.getMapCell(areaId),
+        getExitLock: (areaId, doorId) => this.story.describeDoorLockBriefly(areaId, doorId),
+        getPeopleMet: (areaId) => this.story.getPeopleMet(areaId),
+        isLead: (areaId) => this.story.isLeadLocation(areaId),
+      },
     );
     this.refreshInventory();
     this.refreshJournal();
@@ -157,7 +209,7 @@ export class Game {
       }
       if (frame.pressed.x && this.isInteractive) {
         this.inventoryUI.close();
-        this.storyJournal.toggle();
+        this.toggleJournal();
         return;
       }
       if (frame.pressed.a) this.interact();
@@ -177,6 +229,7 @@ export class Game {
     document.addEventListener("visibilitychange", this.saveWhenHidden);
     window.addEventListener("pagehide", this.saveOnPageHide);
     this.animationFrame = requestAnimationFrame(this.frame);
+    this.prefetchGreetings();
   }
 
   private readonly handlePauseKeyDown = (event: KeyboardEvent): void => {
@@ -210,7 +263,7 @@ export class Game {
     } else if (key === "j") {
       event.preventDefault();
       this.inventoryUI.close();
-      this.storyJournal.toggle();
+      this.toggleJournal();
     }
   };
 
@@ -222,14 +275,14 @@ export class Game {
     event.preventDefault();
     this.inventoryUI.close();
     this.storyJournal.close();
-    this.worldMap.toggle();
+    this.toggleMap();
   };
 
   private readonly handleMapButtonClick = (): void => {
     if (!this.running || this.paused || this.transitioning || this.inDialogue) return;
     this.inventoryUI.close();
     this.storyJournal.close();
-    this.worldMap.toggle();
+    this.toggleMap();
   };
 
   private readonly openPauseMenu = (): void => {
@@ -283,6 +336,11 @@ export class Game {
 
   private stop(): void {
     this.running = false;
+    soundEffects.setAmbience(null);
+    soundEffects.setDucked(false);
+    soundEffects.setPaused(false);
+    this.conversation?.close();
+    this.greetings.cancelAll();
     if (this.animationFrame !== null) cancelAnimationFrame(this.animationFrame);
     this.animationFrame = null;
     this.stopAutosave();
@@ -295,9 +353,12 @@ export class Game {
     this.canvas.removeEventListener("pointerup", this.handleCanvasTap);
     this.input.destroy();
     this.worldMap.remove();
+    this.renderer.removeLabels();
     this.dialogueBox.element.remove();
     for (const element of this.inventoryUI.elements) element.remove();
     for (const element of this.storyJournal.elements) element.remove();
+    this.caseOverlay.close();
+    for (const element of this.caseOverlay.elements) element.remove();
     this.objectiveHud.element.remove();
     this.pauseOverlay?.remove();
     this.pauseOverlay = null;
@@ -313,6 +374,7 @@ export class Game {
 
   private stopAutosave(): void {
     if (this.autosaveTimer !== null) window.clearInterval(this.autosaveTimer);
+    window.clearTimeout(this.greetingTimer);
     this.autosaveTimer = null;
     document.removeEventListener("visibilitychange", this.saveWhenHidden);
     window.removeEventListener("pagehide", this.saveOnPageHide);
@@ -349,18 +411,42 @@ export class Game {
     return this.saveQueue.then(() => succeeded);
   }
 
+  private syncAudio(): void {
+    soundEffects.setPaused(this.paused);
+    soundEffects.setDucked(this.inDialogue);
+    if (this.ambienceAreaId === this.areaId) return;
+    this.ambienceAreaId = this.areaId;
+    const area = this.story.getArea(this.areaId);
+    const atmosphere = getStoryVisualTheme(this.story.pack.identity.id).atmosphere;
+    soundEffects.setAmbience(ambienceRecipe(area.biome, this.story.getBrief(this.areaId)?.mood ?? area.mood, atmosphere));
+  }
+
+  private toggleJournal(): void {
+    soundEffects.play("journal");
+    this.storyJournal.toggle();
+  }
+
+  private toggleMap(): void {
+    soundEffects.play("map");
+    this.worldMap.toggle();
+  }
+
   private readonly frame = (timestamp: number): void => {
     if (!this.running) return;
     const delta = this.previousFrame === 0 ? 0 : Math.min((timestamp - this.previousFrame) / 1000, 0.05);
     this.previousFrame = timestamp;
 
     this.playerMoving = false;
+    this.syncAudio();
+    this.frameCount += 1;
+    if (this.frameCount % 20 === 0) this.announceUnlockedDoors();
     if (!this.paused) this.update(delta);
     const world = this.story.getArea(this.areaId);
     this.camera = followCamera(this.player, world, VIEW_WIDTH, VIEW_HEIGHT);
     const nearbyEntity = this.isInteractive ? this.findNearbyEntity(world) : undefined;
     const nearbyDoor = this.isInteractive ? this.findNearbyDoor(world) : undefined;
     const interactionTarget = this.updateInteractionPrompt(nearbyEntity, nearbyDoor);
+    const reducedMotion = document.documentElement.dataset.reducedMotion === "true";
     this.renderer.draw(
       world,
       this.player,
@@ -369,12 +455,55 @@ export class Game {
       interactionTarget,
       this.playerDirection,
       this.playerMoving,
+      {
+        characters: this.characterRenderStates(world),
+        talkMarkerIds: this.talkMarkerIds(world),
+        animateCharacters: !reducedMotion && !this.paused && !this.transitioning && !this.inDialogue && !this.worldMap.isOpen,
+        doorSigns: this.doorSigns(world),
+      },
     );
     this.animationFrame = requestAnimationFrame(this.frame);
   };
 
+  // Tells the player when something they did opened a door that was locked before.
+  private announceUnlockedDoors(): void {
+    if (this.transitioning) return;
+    const opened: string[] = [];
+    const newAreas: string[] = [];
+    for (const { area } of this.story.getSavedAreas()) {
+      for (const door of area.doors) {
+        if (!door.targetAreaId) continue;
+        const key = `${area.id}>${door.id}`;
+        if (this.story.isDoorLocked(area.id, door.id)) {
+          this.lockedDoors.add(key);
+          continue;
+        }
+        if (!this.lockedDoors.delete(key)) continue;
+        const destination = this.story.describeDoorDestination(area.id, door.id) ?? door.label;
+        opened.push(`${door.label} in ${area.name}`);
+        if (!this.story.state.visitedAreas.includes(door.targetAreaId)) newAreas.push(destination);
+      }
+    }
+    if (opened.length === 0) return;
+    soundEffects.play("door");
+    let text = `Unlocked: ${opened.join("; ")}.`;
+    if (newAreas.length > 0) text += ` Newly available: ${[...new Set(newAreas)].join(", ")}.`;
+    if (this.dialogueBox.isOpen) this.dialogueBox.showNotice(text);
+    else this.message.textContent = text;
+    this.storyJournal.announce(text);
+  }
+
+  private doorSigns(area: Area): DoorSign[] {
+    return area.doors.flatMap((door) => {
+      const text = this.story.describeDoorDestination(area.id, door.id);
+      return text === null ? [] : [{ x: door.x, y: door.y, text, locked: this.story.isDoorLocked(area.id, door.id) }];
+    });
+  }
+
   private update(delta: number): void {
     if (this.transitioning || this.inDialogue || this.worldMap.isOpen) return;
+    const world = this.story.getArea(this.areaId);
+    this.updateCharacterMotion(world, delta);
     const movement = this.input.getMovement();
     const speed = PLAYER_SPEED * getMovementSpeed();
     const deltaX = movement.x * speed * delta;
@@ -398,10 +527,171 @@ export class Game {
       }
       if ((this.player.x !== previousX || this.player.y !== previousY)
         && performance.now() - this.lastFootstepAt >= 300) {
-        soundEffects.play("footstep");
+        soundEffects.playFootstep(this.groundUnderPlayer());
         this.lastFootstepAt = performance.now();
       }
       this.message.textContent = "Explore with WASD, arrows, or the joystick.";
+    }
+  }
+
+  private groundUnderPlayer(): Tile | undefined {
+    const area = this.story.getArea(this.areaId);
+    return area.layers.ground[Math.floor(this.player.y / TILE_SIZE)]?.[Math.floor(this.player.x / TILE_SIZE)];
+  }
+
+  private ensureAreaSolidity(area: Area, protectedPoints: readonly GridPoint[] = []): ReadonlySet<string> {
+    let solidIds = this.solidEntities.get(area.id);
+    if (!solidIds) {
+      solidIds = selectSolidEntityIds(area, protectedPoints);
+      this.solidEntities.set(area.id, solidIds);
+    }
+    return solidIds;
+  }
+
+  private characterState(area: Area, entity: AreaEntity): CharacterMotionState {
+    const key = `${area.id}\u0000${entity.id}`;
+    let state = this.characterMotion.get(key);
+    if (!state) {
+      const random = createSeededRandom(`${this.story.worldSeed}:${area.id}:${entity.id}:motion`);
+      state = {
+        x: entity.x,
+        y: entity.y,
+        homeX: entity.x,
+        homeY: entity.y,
+        direction: "down",
+        moving: false,
+        target: null,
+        nextStepAt: performance.now() + 1800 + random() * 4200,
+        random,
+      };
+      this.characterMotion.set(key, state);
+    }
+    return state;
+  }
+
+  private entityPosition(area: Area, entity: AreaEntity): GridPoint {
+    return entity.character ? this.characterState(area, entity) : { x: entity.x, y: entity.y };
+  }
+
+  private characterRenderStates(area: Area): Map<string, CharacterRenderState> {
+    const states = new Map<string, CharacterRenderState>();
+    for (const entity of area.entities ?? []) {
+      if (entity.character) states.set(entity.id, this.characterState(area, entity));
+    }
+    return states;
+  }
+
+  private talkMarkerIds(area: Area): Set<string> {
+    const markers = new Set<string>();
+    for (const entity of area.entities ?? []) {
+      if (entity.kind !== "character" || !entity.packId) continue;
+      const character = this.story.pack.cast.find((candidate) => candidate.id === entity.packId);
+      if (!character) continue;
+      if (this.story.getAvailableCharacterClues(entity.packId).length > 0
+        || giveOptions(this.story.pack, this.story.state, character).length > 0) {
+        markers.add(entity.id);
+      }
+    }
+    return markers;
+  }
+
+  private runtimeEntityPositions(
+    area: Area,
+    movingEntityId?: string,
+    destination?: GridPoint,
+  ): Map<string, GridPoint> {
+    const positions = new Map<string, GridPoint>();
+    for (const entity of area.entities ?? []) {
+      if (entity.id === movingEntityId && destination) {
+        positions.set(entity.id, destination);
+        continue;
+      }
+      const position = this.entityPosition(area, entity);
+      positions.set(entity.id, { x: Math.floor(position.x), y: Math.floor(position.y) });
+    }
+    return positions;
+  }
+
+  private playerOccupiesTile(point: GridPoint): boolean {
+    return Math.floor(this.player.x / TILE_SIZE) === point.x && Math.floor(this.player.y / TILE_SIZE) === point.y;
+  }
+
+  private nearDoor(area: Area, point: GridPoint): boolean {
+    return area.doors.some((door) => Math.max(Math.abs(door.x - point.x), Math.abs(door.y - point.y)) <= 1);
+  }
+
+  private entityOccupiesTile(area: Area, point: GridPoint, exceptId: string): boolean {
+    return (area.entities ?? []).some((entity) => {
+      if (entity.id === exceptId) return false;
+      const position = this.entityPosition(area, entity);
+      if (Math.floor(position.x) === point.x && Math.floor(position.y) === point.y) return true;
+      const target = entity.character ? this.characterState(area, entity).target : null;
+      return target?.x === point.x && target.y === point.y;
+    });
+  }
+
+  private updateCharacterMotion(area: Area, delta: number): void {
+    const characters = (area.entities ?? []).filter((entity) => entity.character);
+    const states = characters.map((entity) => ({ entity, state: this.characterState(area, entity) }));
+    for (const { state } of states) {
+      const dx = this.player.x - (state.x * TILE_SIZE + TILE_SIZE / 2);
+      const dy = this.player.y - (state.y * TILE_SIZE + TILE_SIZE / 2);
+      if (Math.hypot(dx, dy) <= TILE_SIZE * 3) {
+        state.direction = Math.abs(dx) >= Math.abs(dy)
+          ? dx < 0 ? "left" : "right"
+          : dy < 0 ? "up" : "down";
+      }
+    }
+    if (document.documentElement.dataset.reducedMotion === "true") return;
+
+    const now = performance.now();
+    const solidIds = this.ensureAreaSolidity(area);
+    for (const { entity, state } of states) {
+      if (state.target) {
+        if (this.playerOccupiesTile(state.target) || this.entityOccupiesTile(area, state.target, entity.id)) {
+          state.target = null;
+          state.moving = false;
+          state.nextStepAt = now + 1200 + state.random() * 1800;
+          continue;
+        }
+        const dx = state.target.x - state.x;
+        const dy = state.target.y - state.y;
+        const distance = Math.hypot(dx, dy);
+        const step = 2.8 * delta;
+        if (distance <= step) {
+          state.x = state.target.x;
+          state.y = state.target.y;
+          state.target = null;
+          state.moving = false;
+          state.nextStepAt = now + 2500 + state.random() * 4500;
+        } else {
+          state.x += (dx / distance) * step;
+          state.y += (dy / distance) * step;
+        }
+        continue;
+      }
+      if (now < state.nextStepAt) continue;
+      state.nextStepAt = now + 2500 + state.random() * 4500;
+
+      const directions = [...CHARACTER_STEPS];
+      for (let index = directions.length - 1; index > 0; index -= 1) {
+        const swap = Math.floor(state.random() * (index + 1));
+        [directions[index], directions[swap]] = [directions[swap]!, directions[index]!];
+      }
+      for (const [dx, dy] of directions) {
+        const point = { x: Math.round(state.x) + dx, y: Math.round(state.y) + dy };
+        if (Math.hypot(point.x - state.homeX, point.y - state.homeY) > 2
+          || !isWalkable(area, point.x, point.y)
+          || isEntityInNarrowCorridor(area, point.x, point.y)
+          || this.nearDoor(area, point)
+          || this.playerOccupiesTile(point)
+          || this.entityOccupiesTile(area, point, entity.id)) continue;
+        const positions = this.runtimeEntityPositions(area, entity.id, point);
+        if (!entitySolidityIsSafe(area, solidIds, positions)) continue;
+        state.target = point;
+        state.moving = true;
+        break;
+      }
     }
   }
 
@@ -409,12 +699,12 @@ export class Game {
     if (!this.running || this.paused || this.transitioning || this.inDialogue || this.worldMap.isOpen) return;
     const world = this.story.getArea(this.areaId);
     const entity = this.findNearbyEntity(world);
-    const distance = (point: { x: number; y: number }): number => Math.hypot(
+    const distance = (point: GridPoint): number => Math.hypot(
       this.player.x - (point.x * TILE_SIZE + TILE_SIZE / 2),
       this.player.y - (point.y * TILE_SIZE + TILE_SIZE / 2),
     );
     const nearby = this.findNearbyDoor(world);
-    if (entity && (!nearby || distance(entity) < distance(nearby))) {
+    if (entity && (!nearby || distance(this.entityPosition(world, entity)) < distance(nearby))) {
       this.examine(entity);
       this.refreshObjective();
     } else if (nearby) {
@@ -429,10 +719,13 @@ export class Game {
   }
 
   private findNearbyEntity(world: Area): AreaEntity | undefined {
-    const distance = (entity: AreaEntity): number => Math.hypot(
-      this.player.x - (entity.x * TILE_SIZE + TILE_SIZE / 2),
-      this.player.y - (entity.y * TILE_SIZE + TILE_SIZE / 2),
-    );
+    const distance = (entity: AreaEntity): number => {
+      const point = this.entityPosition(world, entity);
+      return Math.hypot(
+        this.player.x - (point.x * TILE_SIZE + TILE_SIZE / 2),
+        this.player.y - (point.y * TILE_SIZE + TILE_SIZE / 2),
+      );
+    };
     return (world.entities ?? [])
       .filter((entity) => distance(entity) <= INTERACT_RANGE)
       .sort((a, b) => distance(a) - distance(b))[0];
@@ -486,7 +779,7 @@ export class Game {
       const playerClose = Math.hypot(this.player.x - centerX, this.player.y - centerY) <= TAP_INTERACT_RANGE;
       return tappedClose && playerClose;
     };
-    const entity = (world.entities ?? []).find(near);
+    const entity = (world.entities ?? []).find((candidate) => near(this.entityPosition(world, candidate)));
     if (entity) {
       this.examine(entity);
       this.refreshObjective();
@@ -496,6 +789,7 @@ export class Game {
   private enterDoorIfUnlocked(door: AreaDoor): void {
     const lockMessage = this.story.describeDoorLock(this.areaId, door.id);
     if (lockMessage) {
+      soundEffects.play("locked");
       this.message.textContent = lockMessage;
       return;
     }
@@ -504,21 +798,9 @@ export class Game {
   }
 
   private examine(entity: AreaEntity): void {
-    if (entity.kind === "character") {
-      this.examineUI.hide();
-    } else {
-      const area = this.story.getArea(this.areaId);
-      this.examineUI.show(
-        entity.name,
-        entity.description,
-        entity.visual ?? resolveVisualSpec(entity.name, entity.description),
-        area.palette,
-        entity.icon,
-        entity.visualInferred ?? !entity.visual,
-      );
-    }
     const clue = this.story.examineClue(entity);
     if (clue !== null) {
+      soundEffects.play("clue");
       this.message.textContent = `Clue: ${clue}`;
       this.refreshJournal();
       void this.saveProgress();
@@ -528,7 +810,7 @@ export class Game {
     if (entity.kind === "character") {
       const character = this.story.getCharacter(entity);
       if (character) {
-        void this.openConversation(entity.name, character);
+        void this.openConversation(entity.name, character, entity.character?.body);
       } else {
         // A minor LLM-invented extra has no pack core, so it has no dialogue, only flavor text.
         this.message.textContent = `${entity.name}: ${entity.description}`;
@@ -606,19 +888,123 @@ export class Game {
           : sourceName,
       }];
     });
-    this.storyJournal.render(facts, evidence, requests);
+    const pack = this.story.pack;
+    const questions: JournalQuestion[] = openDeductions(pack, this.story.state).flatMap((truth) => {
+      const deduction = truth.deduction;
+      if (!deduction) return [];
+      let options = deductionOptions(truth);
+      if ((this.deductionMisses.get(truth.id) ?? 0) >= 2) {
+        const removed = options.find((option) => option !== deduction.answer);
+        options = options.filter((option) => option !== removed);
+      }
+      return [{
+        id: truth.id,
+        question: deduction.question,
+        evidence: evidenceFor(pack, this.story.state, truth.id),
+        options,
+      }];
+    });
+    const ruledOut = ruledOutHerrings(pack, this.story.state)
+      .map((herring) => ({ description: herring.description, resolution: herring.resolution }));
+    this.storyJournal.render(facts, evidence, requests, { questions, ruledOut });
   }
 
   private refreshObjective(): void {
-    this.objectiveHud.update(this.story.currentBeat);
+    this.objectiveHud.update(this.story.currentBeat, this.story.currentBeatWaitsOnDeduction());
   }
 
-  private async openConversation(name: string, character: CastMember): Promise<void> {
+  private answerQuestion(truthId: string, answer: string): void {
+    const truth = this.story.pack.truths.find((candidate) => candidate.id === truthId);
+    const result = answerDeduction(this.story.pack, this.story.state, truthId, answer);
+    if (!result.correct) {
+      soundEffects.play("wrong");
+      const misses = (this.deductionMisses.get(truthId) ?? 0) + 1;
+      this.deductionMisses.set(truthId, misses);
+      this.storyJournal.setQuestionFeedback(
+        truthId,
+        misses === 2
+          ? "Not quite. One of the wrong answers has been set aside to help."
+          : "Not quite. Take another look at the evidence and try again.",
+      );
+      this.refreshJournal();
+      return;
+    }
+    this.deductionMisses.delete(truthId);
+    soundEffects.play("deduction");
+    this.refreshObjective();
+    this.refreshJournal();
+    const ruled = result.ruledOut.map((herring) => `Ruled out: ${herring.resolution}`).join(" ");
+    const note = `Confirmed: ${truth?.text ?? "your deduction was right."}${ruled ? ` ${ruled}` : ""}`;
+    this.storyJournal.announce(note);
+    this.message.textContent = note;
+    void this.saveProgress();
+    void this.maybeFinish();
+  }
+
+  // Shows each newly triggered twist once as a card. Returns true while a card is on screen.
+  private showTwistReveals(): boolean {
+    if (this.caseOverlay.isOpen) return true;
+    if (this.dialogueBox.isOpen) return false;
+    const [twist] = collectTwistReveals(this.story.pack, this.story.view, this.story.state);
+    if (!twist) return false;
+    void this.saveProgress();
+    this.caseOverlay.showReveal(twist.description, () => { void this.maybeFinish(); });
+    return true;
+  }
+
+  private presentCaseFromButton(): void {
+    if (!this.running || this.paused || this.transitioning || this.dialogueBox.isOpen || this.caseOverlay.isOpen) return;
+    this.startPresentation();
+  }
+
+  private startPresentation(): void {
+    const questions = this.story.getSummation(this.areaId);
+    if (!questions) return;
+    this.storyJournal.close();
+    this.inventoryUI.close();
+    this.caseOverlay.presentCase(questions, summationOptions(this.story.pack, this.story.state), () => {
+      this.casePresented = true;
+      this.caseOverlay.setCaseButtonVisible(false);
+      void this.maybeFinish();
+    });
+  }
+
+  private async openConversation(name: string, character: CastMember, body?: BodyShape): Promise<void> {
+    this.speaker = { castId: character.id, body };
+    const context = this.buildDialogueContext(character);
+    this.conversation = new ConversationController(this.story.client, this.story.pack, this.story.state, character, context, {
+      speculate: getPrepareRepliesInAdvance(),
+      greetings: this.greetings,
+    });
+    this.dialogueBox.open(name, this.dialogueHandlers());
+    this.dialogueBox.setBusy(true);
+    await this.runDialogueTurn(this.conversation.start());
+  }
+
+  // Pre-generates greetings for the pack characters standing in the current area. The work starts a little
+  // after arrival so model inference does not compete with the fade and first frames for the GPU.
+  private prefetchGreetings(): void {
+    this.greetings.cancelAll();
+    window.clearTimeout(this.greetingTimer);
+    if (!getPrepareRepliesInAdvance()) return;
+    const areaId = this.areaId;
+    this.greetingTimer = window.setTimeout(() => {
+      if (!this.running || this.areaId !== areaId) return;
+      for (const entity of this.story.getArea(areaId).entities ?? []) {
+        if (entity.kind !== "character") continue;
+        const character = this.story.getCharacter(entity);
+        if (character) this.greetings.prefetch(character, this.buildDialogueContext(character));
+      }
+    }, SPECULATION_DELAY_MS);
+  }
+
+  private buildDialogueContext(character: CastMember): DialogueContext {
     const brief = this.story.getBrief(this.areaId);
     const area = this.story.getArea(this.areaId);
-    const context: DialogueContext = {
+    return {
       locationName: brief?.name ?? area.name,
       locationMood: brief?.mood ?? area.mood,
+      returnVisit: returnVisitFor(this.story.pack, this.story.state, character),
       storySummary: this.story.state.summary,
       knownFacts: character.knows_truths
         .filter((truthId) => this.story.state.truthsFound.includes(truthId))
@@ -641,10 +1027,6 @@ export class Game {
       inventory: listInventory(this.story.pack, this.story.state).map((item) => ({ id: item.id, name: item.name })),
       getInventory: () => listInventory(this.story.pack, this.story.state).map((item) => ({ id: item.id, name: item.name })),
     };
-    this.conversation = new ConversationController(this.story.client, this.story.pack, this.story.state, character, context);
-    this.dialogueBox.open(name, this.dialogueHandlers());
-    this.dialogueBox.setBusy(true);
-    await this.runDialogueTurn(this.conversation.start());
   }
 
   private async runDialogueTurn(pending: Promise<DialogueTurn>): Promise<void> {
@@ -666,7 +1048,7 @@ export class Game {
       errorNotice = `A reply could not be generated: ${error instanceof Error ? error.message : String(error)}`;
     }
     this.dialogueBox.setBusy(false);
-    soundEffects.play("dialogue");
+    if (!soundEffects.voicesEnabled) soundEffects.play("dialogue");
     this.announceEffects(turn.effects);
     this.refreshObjective();
     this.refreshJournal();
@@ -693,19 +1075,43 @@ export class Game {
         this.dialogueBox.showPlayerReply(`Here, take the ${name}.`);
         void this.runDialogueTurn(this.conversation.give(itemId));
       },
+      getAskOptions: () => this.conversation?.askOptions() ?? { people: [], items: [], evidence: [] },
+      onAsk: (subject: SubjectRef) => {
+        if (!this.conversation) return;
+        const label = subjectLabel(this.story.pack, subject) ?? subject.id;
+        this.dialogueBox.showPlayerReply(`What can you tell me about ${label}?`);
+        void this.runDialogueTurn(this.conversation.askAbout(subject));
+      },
       onLeave: () => this.leaveConversation(),
+      onReveal: (from: number, to: number, text: string) => {
+        const speaker = this.speaker;
+        if (!speaker) return;
+        // One blip per second letter; the voice engine spaces them so they follow the typewriter.
+        let delay = 0;
+        for (let index = from; index < to; index += 1) {
+          if (index % 2 !== 0 || !/[\p{L}\p{N}]/u.test(text.charAt(index))) continue;
+          soundEffects.voiceBlip(speaker.castId, speaker.body, index, delay);
+          delay += 0.001;
+        }
+      },
     };
   }
 
   private leaveConversation(): void {
+    this.conversation?.close();
     this.dialogueBox.close();
     this.conversation = null;
     void this.saveProgress();
+    void this.maybeFinish();
   }
 
   private announceEffects(effects: AppliedEffects): void {
     const notices: string[] = [];
-    if (effects.resolvedGoal) notices.push("Goal completed.");
+    if (effects.resolvedGoal) {
+      soundEffects.play("goal");
+      notices.push("Goal completed.");
+    }
+    if (effects.revealedClue) soundEffects.play("clue");
     if (effects.givenItem) {
       soundEffects.play("item");
       const item = this.story.pack.items.find((candidate) => candidate.id === effects.givenItem);
@@ -718,7 +1124,6 @@ export class Game {
 
   private async travel(door: AreaDoor): Promise<void> {
     if (!this.running) return;
-    this.examineUI.hide();
     this.transitioning = true;
     try {
       for (let step = 1; step <= 6; step += 1) {
@@ -726,10 +1131,13 @@ export class Game {
         await pause(25);
       }
       // The fog stays up until the brief and map are ready.
+      this.greetings.cancelAll();
       const [transition] = await Promise.all([this.story.enterDoor(this.areaId, door.id), pause(MIN_FOG_MS)]);
       this.areaId = transition.area.id;
+      this.prefetchGreetings();
       this.player.x = transition.spawn.x * TILE_SIZE + TILE_SIZE / 2;
       this.player.y = transition.spawn.y * TILE_SIZE + TILE_SIZE / 2;
+      this.ensureAreaSolidity(transition.area, [transition.spawn]);
       this.refreshObjective();
       const description = this.story.getBrief(transition.area.id)?.description;
       this.message.textContent = description ?? `You arrive at ${transition.area.name}.`;
@@ -751,13 +1159,28 @@ export class Game {
 
   private async maybeFinish(): Promise<boolean> {
     if (!this.running || this.ending) return this.ending;
+    if (this.showTwistReveals()) return false;
     const choices = this.story.getEndingChoices(this.areaId);
-    if (choices.length === 0) return false;
+    if (choices.length === 0) {
+      this.caseOverlay.setCaseButtonVisible(false);
+      return false;
+    }
+    if (this.story.getSummation(this.areaId) && !this.casePresented) {
+      // An open conversation is never interrupted; the case is offered once the dialogue box closes.
+      this.caseOverlay.setCaseButtonVisible(!this.dialogueBox.isOpen);
+      if (!this.dialogueBox.isOpen && !this.caseOffered) {
+        this.caseOffered = true;
+        this.caseOverlay.offerCase(() => this.startPresentation());
+      }
+      return false;
+    }
     this.ending = true;
     this.running = false;
     this.stopAutosave();
+    this.conversation?.close();
     this.dialogueBox.close();
     this.conversation = null;
+    this.greetings.cancelAll();
     const leaveEnding = (): void => {
       this.stop();
       this.onBackToTitle();
@@ -804,10 +1227,20 @@ export class Game {
     const top = centerY - PLAYER_HALF_SIZE;
     const bottom = centerY + PLAYER_HALF_SIZE;
 
-    return isSolidAt(world, left, top)
-      || isSolidAt(world, right, top)
-      || isSolidAt(world, left, bottom)
-      || isSolidAt(world, right, bottom);
+    const blockedByEntity = (pixelX: number, pixelY: number): boolean => {
+      const x = Math.floor(pixelX / TILE_SIZE);
+      const y = Math.floor(pixelY / TILE_SIZE);
+      const solidIds = this.ensureAreaSolidity(world);
+      return (world.entities ?? []).some((entity) => {
+        if (!solidIds.has(entity.id)) return false;
+        const point = this.entityPosition(world, entity);
+        return Math.floor(point.x) === x && Math.floor(point.y) === y;
+      });
+    };
+    return isSolidAt(world, left, top) || blockedByEntity(left, top)
+      || isSolidAt(world, right, top) || blockedByEntity(right, top)
+      || isSolidAt(world, left, bottom) || blockedByEntity(left, bottom)
+      || isSolidAt(world, right, bottom) || blockedByEntity(right, bottom);
   }
 }
 

@@ -9,6 +9,8 @@ export interface AreaBrief {
   readonly mood: string;
   readonly palette: PaletteName;
   readonly doorLabels: readonly string[];
+  // Where each door goes, in the order of `doorLabels`. Without it the doors take the default spots in turn.
+  readonly doorPoints?: readonly GridPoint[];
 }
 
 export enum Tile {

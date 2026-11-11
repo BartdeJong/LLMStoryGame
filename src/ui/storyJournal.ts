@@ -11,10 +11,35 @@ export interface JournalRequest {
   readonly location?: string;
 }
 
+export interface JournalQuestion {
+  readonly id: string;
+  readonly question: string;
+  readonly evidence: readonly string[];
+  readonly options: readonly string[];
+}
+
+export interface JournalRuledOut {
+  readonly description: string;
+  readonly resolution: string;
+}
+
+export interface JournalExtras {
+  readonly questions: readonly JournalQuestion[];
+  readonly ruledOut: readonly JournalRuledOut[];
+}
+
 export interface StoryJournal {
   readonly elements: readonly HTMLElement[];
   readonly isOpen: boolean;
-  render(facts: readonly JournalFact[], evidence: readonly string[], requests: readonly JournalRequest[]): void;
+  render(
+    facts: readonly JournalFact[],
+    evidence: readonly string[],
+    requests: readonly JournalRequest[],
+    extras?: JournalExtras,
+  ): void;
+  // Shows a short message under one open question (for example a gentle nudge after a wrong answer).
+  setQuestionFeedback(questionId: string, message: string): void;
+  announce(message: string): void;
   toggle(): void;
   close(): void;
 }
@@ -25,10 +50,19 @@ function el<K extends keyof HTMLElementTagNameMap>(tag: K, className: string): H
   return node;
 }
 
-export function createStoryJournal(container: HTMLElement): StoryJournal {
+export function createStoryJournal(
+  container: HTMLElement,
+  onAnswer: (questionId: string, answer: string) => void = () => undefined,
+): StoryJournal {
+  const feedback = new Map<string, string>();
+  let focusQuestion: string | null = null;
   const toggleButton = el("button", "journal-button");
   toggleButton.type = "button";
   toggleButton.textContent = "Journal · 0";
+  const badge = el("span", "journal-badge");
+  badge.hidden = true;
+  badge.setAttribute("aria-hidden", "true");
+  toggleButton.append(badge);
   toggleButton.setAttribute("aria-label", "Story journal");
   toggleButton.dataset.padHint = "J";
 
@@ -48,8 +82,10 @@ export function createStoryJournal(container: HTMLElement): StoryJournal {
   filter.setAttribute("aria-label", "Filter journal entries");
   for (const [value, label] of [
     ["all", "All notes"],
+    ["questions", "Open questions"],
     ["facts", "Story facts"],
     ["evidence", "Evidence"],
+    ["ruled", "Ruled out"],
     ["requests", "Character requests"],
   ] as const) {
     const option = document.createElement("option");
@@ -59,6 +95,18 @@ export function createStoryJournal(container: HTMLElement): StoryJournal {
   }
   const status = el("p", "journal-status");
   status.setAttribute("aria-live", "polite");
+
+  const questionsHeading = el("p", "journal-heading");
+  questionsHeading.textContent = "Open questions";
+  const questionsList = el("div", "journal-list");
+  const questionsEmpty = el("p", "inventory-empty");
+  questionsEmpty.textContent = "No open questions right now.";
+
+  const ruledHeading = el("p", "journal-heading");
+  ruledHeading.textContent = "Ruled out";
+  const ruledList = el("div", "journal-list");
+  const ruledEmpty = el("p", "inventory-empty");
+  ruledEmpty.textContent = "Nothing ruled out yet.";
 
   const factsHeading = el("p", "journal-heading");
   factsHeading.textContent = "Story facts";
@@ -78,13 +126,17 @@ export function createStoryJournal(container: HTMLElement): StoryJournal {
   const requestsEmpty = el("p", "inventory-empty");
   requestsEmpty.textContent = "No one has asked you to find anything yet.";
   panel.append(title, search, filter, status,
+    questionsHeading, questionsList, questionsEmpty,
     factsHeading, factsList, factsEmpty,
     evidenceHeading, evidenceList, evidenceEmpty,
+    ruledHeading, ruledList, ruledEmpty,
     requestsHeading, requestsList, requestsEmpty);
 
   const sections = [
+    { key: "questions", heading: questionsHeading, list: questionsList, empty: questionsEmpty },
     { key: "facts", heading: factsHeading, list: factsList, empty: factsEmpty },
     { key: "evidence", heading: evidenceHeading, list: evidenceList, empty: evidenceEmpty },
+    { key: "ruled", heading: ruledHeading, list: ruledList, empty: ruledEmpty },
     { key: "requests", heading: requestsHeading, list: requestsList, empty: requestsEmpty },
   ] as const;
   const updateFilter = (): void => {
@@ -135,7 +187,67 @@ export function createStoryJournal(container: HTMLElement): StoryJournal {
     close() {
       if (!panel.hidden) togglePanel();
     },
-    render(facts, evidence, requests) {
+    setQuestionFeedback(questionId, message) {
+      feedback.set(questionId, message);
+    },
+    announce(message) {
+      status.textContent = message;
+    },
+    render(facts, evidence, requests, extras = { questions: [], ruledOut: [] }) {
+      questionsList.replaceChildren();
+      questionsEmpty.hidden = extras.questions.length > 0;
+      for (const question of extras.questions) {
+        const row = el("article", "journal-entry journal-question");
+        const prompt = el("p", "journal-entry-text");
+        prompt.textContent = question.question;
+        row.append(prompt);
+        if (question.evidence.length > 0) {
+          const label = el("p", "journal-entry-label");
+          label.textContent = "Evidence so far";
+          row.append(label);
+          for (const text of question.evidence) {
+            const line = el("p", "journal-entry-location");
+            line.textContent = text;
+            row.append(line);
+          }
+        }
+        const answers = el("div", "journal-answers");
+        for (const option of question.options) {
+          const button = el("button", "dialogue-choice journal-answer");
+          button.type = "button";
+          button.textContent = option;
+          button.dataset.questionId = question.id;
+          button.addEventListener("click", () => {
+            focusQuestion = question.id;
+            onAnswer(question.id, option);
+          });
+          answers.append(button);
+        }
+        row.append(answers);
+        const note = feedback.get(question.id);
+        if (note) {
+          const message = el("p", "journal-entry-location journal-feedback");
+          message.setAttribute("role", "status");
+          message.textContent = note;
+          row.append(message);
+        }
+        row.dataset.search = `${question.question} ${question.evidence.join(" ")}`.toLocaleLowerCase();
+        questionsList.append(row);
+      }
+
+      ruledList.replaceChildren();
+      ruledEmpty.hidden = extras.ruledOut.length > 0;
+      for (const herring of extras.ruledOut) {
+        const row = el("article", "journal-entry");
+        const label = el("p", "journal-entry-label");
+        label.textContent = herring.description;
+        const text = el("p", "journal-entry-text");
+        text.textContent = herring.resolution;
+        row.append(label, text);
+        row.dataset.search = `${herring.description} ${herring.resolution}`.toLocaleLowerCase();
+        ruledList.append(row);
+      }
+
       factsList.replaceChildren();
       factsEmpty.hidden = facts.length > 0;
       for (const fact of facts) {
@@ -177,12 +289,22 @@ export function createStoryJournal(container: HTMLElement): StoryJournal {
         row.dataset.search = searchable.toLocaleLowerCase();
         requestsList.append(row);
       }
-      toggleButton.textContent = `Journal · ${facts.length + evidence.length + requests.length}`;
+      const entryCount = facts.length + evidence.length + requests.length;
+      toggleButton.replaceChildren(`Journal · ${entryCount}`, badge);
+      badge.hidden = extras.questions.length === 0;
+      badge.textContent = String(extras.questions.length);
       toggleButton.setAttribute(
         "aria-label",
-        `Story journal, ${facts.length + evidence.length + requests.length} entries`,
+        `Story journal, ${entryCount} entries${extras.questions.length > 0
+          ? `, ${extras.questions.length} open ${extras.questions.length === 1 ? "question" : "questions"}`
+          : ""}`,
       );
       updateFilter();
+      if (focusQuestion !== null) {
+        const target = questionsList.querySelector<HTMLElement>(`button[data-question-id="${focusQuestion}"]`);
+        focusQuestion = null;
+        target?.focus();
+      }
     },
   };
 }

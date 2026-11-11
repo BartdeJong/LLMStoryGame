@@ -56,39 +56,242 @@
 }
 
 .world-map-diagram {
-  display: block;
-  max-width: none;
+  position: relative;
 }
 
-.world-map-path {
+.world-map-paths {
+  position: absolute;
+  inset: 0;
+  display: block;
+}
+
+.world-map-path path {
   fill: none;
   stroke: #8d9c76;
-  stroke-width: 5;
-  stroke-linecap: round;
-  opacity: 0.9;
-}
-
-.world-map-node rect {
-  fill: #263b2d;
-  stroke: #71815d;
-  stroke-width: 2;
-}
-
-.world-map-node-current rect {
-  fill: #4a5836;
-  stroke: #e7cd84;
   stroke-width: 3;
+  stroke-linecap: round;
+  opacity: 0.85;
 }
 
-.world-map-node-name {
-  fill: #f5f0d7;
-  font: 700 14px system-ui, sans-serif;
+.world-map-path circle {
+  fill: #8d9c76;
 }
 
-.world-map-node-biome {
-  fill: #c1cba9;
-  font: 11px system-ui, sans-serif;
+.world-map-path-current path,
+.world-map-path-way path {
+  stroke: #e7cd84;
+  stroke-width: 4;
+  opacity: 1;
+}
+
+.world-map-path-current circle,
+.world-map-path-way circle {
+  fill: #e7cd84;
+}
+
+.world-map-path-way path {
+  stroke-width: 5;
+}
+
+.world-map-card {
+  position: absolute;
+  box-sizing: border-box;
+  overflow: hidden;
+  border-radius: 8px;
+  background: #263b2d;
+  box-shadow: inset 0 0 0 2px #71815d;
+}
+
+.world-map-card-current {
+  background: #4a5836;
+  box-shadow: inset 0 0 0 3px #e7cd84;
+}
+
+.world-map-card-destination {
+  box-shadow: inset 0 0 0 3px #f5f0d7;
+}
+
+.world-map-card-header {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  box-sizing: border-box;
+  width: 100%;
+  margin: 0;
+  padding: 0 12px;
+  border: 0;
+  border-bottom: 1px solid rgb(113 129 93 / 70%);
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.world-map-card-header:hover,
+.world-map-card-header:focus-visible {
+  background: rgb(245 240 215 / 10%);
+}
+
+.world-map-card-header:focus-visible {
+  outline: 2px solid #f5f0d7;
+  outline-offset: -4px;
+}
+
+/* The gamepad hint would not fit beside every name, so only the focused card shows it. */
+html[data-input-mode="gamepad"] .world-map-card-header[data-pad-hint]::after {
+  position: absolute;
+  top: 50%;
+  right: 8px;
+  transform: translateY(-50%);
+}
+
+html[data-input-mode="gamepad"] .world-map-card-header[data-pad-hint]:not(:focus)::after {
+  display: none;
+}
+
+.world-map-card-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.world-map-card-name {
+  flex: 0 1 auto;
+  overflow: hidden;
+  min-width: 0;
+  color: #f5f0d7;
+  font: 700 14px/18px system-ui, sans-serif;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.world-map-card-biome {
+  overflow: hidden;
+  color: #c1cba9;
+  font: 11px/14px system-ui, sans-serif;
+  text-overflow: ellipsis;
   text-transform: capitalize;
+  white-space: nowrap;
+}
+
+.world-map-tag {
+  flex: 0 0 auto;
+  color: #c1cba9;
+  font: 10px/14px system-ui, sans-serif;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.world-map-tag-lead {
+  padding: 0 5px;
+  border-radius: 7px;
+  background: #e7cd84;
+  color: #17251d;
+  font-weight: 700;
+}
+
+.world-map-tag-locked {
+  padding: 0 5px;
+  border: 1px solid #c1cba9;
+  border-radius: 7px;
+  line-height: 12px;
+}
+
+.world-map-exits {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.world-map-exit {
+  color: #f5f0d7;
+  font: 12px/16px system-ui, sans-serif;
+}
+
+.world-map-exit-line {
+  display: flex;
+  align-items: center;
+  box-sizing: border-box;
+  gap: 8px;
+  padding: 0 10px;
+}
+
+.world-map-exit-way {
+  background: rgb(231 205 132 / 22%);
+}
+
+.world-map-exit-step {
+  flex: 0 0 18px;
+  height: 18px;
+  border-radius: 9px;
+  background: #e7cd84;
+  color: #17251d;
+  font: 700 11px/18px system-ui, sans-serif;
+  text-align: center;
+}
+
+.world-map-exit-side {
+  flex: 0 0 18px;
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
+  background: rgb(15 26 20 / 70%);
+}
+
+.world-map-exit-side path {
+  fill: none;
+  stroke: #e7cd84;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.world-map-exit-target {
+  flex: 1 1 auto;
+  overflow: hidden;
+  min-width: 0;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.world-map-exit-unexplored .world-map-exit-target {
+  color: #c1cba9;
+  font-style: italic;
+}
+
+.world-map-exit-lock {
+  overflow: hidden;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0 10px 0 36px;
+  color: #c1cba9;
+  font: 11px/14px system-ui, sans-serif;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.world-map-card-people {
+  overflow: hidden;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0 12px;
+  border-top: 1px solid rgb(113 129 93 / 70%);
+  color: #c1cba9;
+  font: 11px/21px system-ui, sans-serif;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+html[data-high-contrast="true"] .world-map-card-biome,
+html[data-high-contrast="true"] .world-map-exit-unexplored .world-map-exit-target,
+html[data-high-contrast="true"] .world-map-exit-lock,
+html[data-high-contrast="true"] .world-map-card-people,
+html[data-high-contrast="true"] .world-map-tag-note,
+html[data-high-contrast="true"] .world-map-tag-locked {
+  color: #fff;
 }
 
 .world-map-hint {

@@ -79,6 +79,27 @@ pack; the example currently has only `short`.
   limits. Keep all three lengths coherent; every core truth needs two
   independent clue routes, and key items cannot be missable.
 - Keep the tone cozy, avoid graphic violence, and write English only.
+- Make the player solve the mystery. Give key truths an optional
+  `deduction` (`question`, `answer`, 2-3 `wrong_answers`, and optional
+  `rules_out` red herring ids). Such a truth becomes an open question in the
+  casebook once a clue for it is found and its `depends_on` truths are
+  confirmed, and is confirmed only when the player picks the right answer.
+  Wrong answers must be plausible but clearly wrong given the clues, and all
+  options must differ. Truths without a `deduction` are confirmed as soon as a
+  clue is found. Answering correctly also settles the red herrings in
+  `rules_out`, showing their `resolution` text.
+- Give an ending an optional `summation`: 2-4 `{ question, truth_id }` entries,
+  each `truth_id` taken from that ending's `conditions.truths`. At the finale
+  the player presents the case by matching each question to a confirmed truth.
+  Endings without a `summation` play as soon as their conditions are met. The
+  solver assumes a player who answers every deduction correctly, so these
+  fields never make an ending unreachable.
+- Optionally give a cast member `reactions` so the player can use "Ask about..."
+  on a person, item or found clue. A reaction with a `clue_id` marks that clue
+  found, so it must be a clue that character tells; gate it with `requires` when
+  the clue has requirements. Reactions are optional and keep `schema_version` 2.
+- Twists are shown once as a reveal card when their `payoff_trigger` first
+  becomes true; write `description` as a player-facing reveal.
 - Do not require a character to solve the mystery if that character's goal can
   be blocked.
 - The validator's complexity thresholds are in `src/story/config.ts`; do not

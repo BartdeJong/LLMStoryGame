@@ -12,6 +12,7 @@ import { findDoorLock, isRequirementMet } from "./requirements";
 import { solveLength } from "./solver";
 import { writeEnding } from "./ending";
 import { StorySession } from "./storySession";
+import { answerDeduction, openDeductions } from "./deduction";
 import { parseCharacterRecipe } from "./recipes";
 import type { LengthId, StoryPack } from "./types";
 import { validateStoryPack } from "./validate";
@@ -99,7 +100,17 @@ async function simulate(pack: StoryPack, lengthId: LengthId): Promise<void> {
     if (clueId) expect(story.state.cluesFound, `found ${clueId}`).toContain(clueId);
   };
 
+  // A solving player answers every open casebook question as soon as it appears.
+  const confirmOpenDeductions = (): void => {
+    for (let guard = 0; guard < 20; guard += 1) {
+      const [open] = openDeductions(pack, story.state);
+      if (!open) return;
+      expect(answerDeduction(pack, story.state, open.id, open.deduction!.answer).correct).toBe(true);
+    }
+  };
+
   for (const step of expected.steps) {
+    confirmOpenDeductions();
     const enter = /^Enter (\S+) from /.exec(step);
     if (enter) {
       await moveTo(enter[1]!);
@@ -155,6 +166,7 @@ async function simulate(pack: StoryPack, lengthId: LengthId): Promise<void> {
     }
   }
 
+  confirmOpenDeductions();
   expect([...expected.truths].every((id) => story.state.truthsFound.includes(id))).toBe(true);
   expect([...expected.goalStates].every((id) => story.state.resolvedGoalStates.includes(id))).toBe(true);
   expect([...expected.items].every((id) => story.state.itemsHeld.includes(id))).toBe(true);

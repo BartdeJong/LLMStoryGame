@@ -20,6 +20,9 @@ export class LLMClient {
     this.queue = new RequestQueue({
       maxQueuedPrefetch: LLM_CONFIG.maxQueuedPrefetch,
       prefetchPriority: Priority.Prefetch,
+      maxQueuedSpeculative: LLM_CONFIG.maxQueuedSpeculative,
+      speculativePriority: Priority.Speculative,
+      preemptSpeculativeAt: Priority.Area,
       onNotice: (id, priority, notice) => this.emit("job", { id, priority, state: notice }),
     });
     if (options.pauseWhenHidden !== false && typeof document !== "undefined") {
@@ -29,6 +32,10 @@ export class LLMClient {
 
   get isLoaded(): boolean {
     return this.loaded;
+  }
+
+  get supportsSpeculation(): boolean {
+    return this.backend.supportsSpeculation === true;
   }
 
   get dialoguePromptStyle(): DialoguePromptStyle {
@@ -79,7 +86,11 @@ export class LLMClient {
     return this.queue.cancel(id);
   }
 
-  cancelAll(maxPriority: Priority = Priority.Low): number {
+  promote(id: string, priority: Priority): boolean {
+    return this.queue.setPriority(id, priority);
+  }
+
+  cancelAll(maxPriority: Priority = Priority.Speculative): number {
     return this.queue.cancelWhere((job) => job.priority <= maxPriority);
   }
 

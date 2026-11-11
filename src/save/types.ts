@@ -3,7 +3,7 @@ import type { LengthId } from "../story/types";
 import type { StoryState } from "../story/state";
 import type { Area } from "../world/types";
 
-export const SAVE_FORMAT_VERSION = 3;
+export const SAVE_FORMAT_VERSION = 5;
 
 export interface SaveMetadata {
   storyTitle: string;

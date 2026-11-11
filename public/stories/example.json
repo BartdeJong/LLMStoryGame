@@ -2,7 +2,7 @@
   "schema_version": 2,
   "identity": {
     "id": "example",
-    "version": 1,
+    "version": 3,
     "title": "The Missing Moon Lantern",
     "logline": "The village's Moon Lantern vanished the night before the festival. Find out who took it, and why.",
     "setting": "Pebblebrook, a tiny hillside village that lights one big paper lantern every full moon.",
@@ -29,7 +29,7 @@
       "goal": "Make sure the festival goes ahead.",
       "secret": "She saw a light in the clock tower but thought nothing of it.",
       "motivations": ["keep the village happy"],
-      "relationships": [{ "cast_id": "c_hollis", "relation": "old friend" }],
+      "relationships": [{ "cast_id": "c_hollis", "relation": "old friend" }], "reactions": [{ "id": "r_mira_book", "about": { "type": "item", "id": "i_overdue_book" }, "text": "That book turned up under my flour sacks. Do take it back to Oswin, dear." }],
       "sprite_recipe": "round woman, flour-white apron, brown bun hair",
       "home_location": "l_bakery",
       "knows_truths": ["t_missing"],
@@ -69,7 +69,7 @@
       "goal": "Get his overdue book back.",
       "secret": "He keeps a spare tower key and a log of who borrows it.",
       "motivations": ["order", "being thanked"],
-      "relationships": [{ "cast_id": "c_hollis", "relation": "lends him the tower key" }],
+      "relationships": [{ "cast_id": "c_hollis", "relation": "lends him the tower key" }], "reactions": [{ "id": "r_oswin_book", "about": { "type": "item", "id": "i_overdue_book" }, "text": "My overdue book! Hand it over and the key log is yours to read." }],
       "sprite_recipe": "small brown owl with round glasses",
       "home_location": "l_library",
       "knows_truths": ["t_night", "t_taker"],
@@ -157,7 +157,7 @@
       "goal": "Fix the lantern before anyone notices it was cracked.",
       "secret": "He borrowed the Moon Lantern to mend a crack and could not finish in time.",
       "motivations": ["pride", "fear of letting people down"],
-      "relationships": [{ "cast_id": "c_oswin", "relation": "borrows his books" }],
+      "relationships": [{ "cast_id": "c_oswin", "relation": "borrows his books" }], "reactions": [{ "id": "r_hollis_shard", "about": { "type": "clue", "id": "cl_shard_match" }, "text": "That shard is from the lantern. I took it to mend the crack, and I should have said so.", "requires": { "truths": ["t_taker"] }, "clue_id": "cl_hollis_confess" }],
       "sprite_recipe": "tall thin man, grey cardigan, thick spectacles",
       "home_location": "l_clocktower",
       "knows_truths": ["t_taker", "t_motive"],
@@ -199,9 +199,9 @@
   ],
   "truths": [
     { "id": "t_missing", "text": "The Moon Lantern vanished the night before the festival.", "depends_on": [], "importance": "core", "revealed_by": ["cl_mira_talk", "cl_notice_board"] },
-    { "id": "t_night", "text": "Someone climbed the clock tower stairs that night.", "depends_on": ["t_missing"], "importance": "core", "revealed_by": ["cl_pip_saw", "cl_library_log"] },
-    { "id": "t_taker", "text": "Hollis the clock keeper took the lantern.", "depends_on": ["t_night"], "importance": "core", "revealed_by": ["cl_oswin_ledger", "cl_shard_match"] },
-    { "id": "t_motive", "text": "Hollis only wanted to mend a crack in it and was too ashamed to say so.", "depends_on": ["t_taker"], "importance": "core", "revealed_by": ["cl_hollis_confess", "cl_workbench"] }
+    { "id": "t_night", "text": "Someone climbed the clock tower stairs that night.", "depends_on": ["t_missing"], "importance": "core", "revealed_by": ["cl_pip_saw", "cl_library_log"], "deduction": { "question": "What do Pip's sighting and the key log tell you about that night?", "answer": "Someone climbed the clock tower stairs that night.", "wrong_answers": ["Someone sneaked into the bakery that night.", "The lantern simply blew away in the wind."] } },
+    { "id": "t_taker", "text": "Hollis the clock keeper took the lantern.", "depends_on": ["t_night"], "importance": "core", "revealed_by": ["cl_oswin_ledger", "cl_shard_match"], "deduction": { "question": "Who took the Moon Lantern?", "answer": "Hollis the clock keeper took the lantern.", "wrong_answers": ["Mira the baker took the lantern.", "Pip the gardener took the lantern."], "rules_out": ["rh_flour_prints"] } },
+    { "id": "t_motive", "text": "Hollis only wanted to mend a crack in it and was too ashamed to say so.", "depends_on": ["t_taker"], "importance": "core", "revealed_by": ["cl_hollis_confess", "cl_workbench"], "deduction": { "question": "Why did Hollis take the lantern?", "answer": "Hollis only wanted to mend a crack in it and was too ashamed to say so.", "wrong_answers": ["Hollis wanted to keep the lantern for himself.", "Hollis wanted to spoil the festival."] } }
   ],
   "clues": [
     { "id": "cl_mira_talk", "truth_id": "t_missing", "kind": "spoken", "where": { "type": "character", "id": "c_mira" }, "alternatives": [], "requirements": {}, "text": "Mira says the lantern's hook on the square is empty this morning." },
@@ -243,7 +243,12 @@
   "endings": [
     {
       "id": "e_lantern_returns",
-      "conditions": { "truths": ["t_motive"], "goal_states": ["gs_hollis_forgiven"], "choices": [] },
+      "conditions": { "truths": ["t_night", "t_taker", "t_motive"], "goal_states": ["gs_hollis_forgiven"], "choices": [] },
+      "summation": [
+        { "question": "What happened on the night the lantern vanished?", "truth_id": "t_night" },
+        { "question": "Who took the Moon Lantern?", "truth_id": "t_taker" },
+        { "question": "Why did they take it?", "truth_id": "t_motive" }
+      ],
       "scene_outline": "Hollis carries the mended lantern to the square and the village lights it together.",
       "tone": "Warm and relieved.",
       "epilogue_notes": "Mira shares buns. Pip is named Chief Detective."

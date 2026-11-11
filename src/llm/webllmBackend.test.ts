@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { hasModelInCache } from "@mlc-ai/web-llm";
 import type { ChatCompletionChunk, ChatCompletionRequest } from "@mlc-ai/web-llm";
 import { LLMClient } from "./client";
+import { LLM_CONFIG } from "./config";
 import { parseJsonLoose } from "./json";
 import { WebLLMBackend } from "./webllmBackend";
 import type { GenerationParams } from "./types";
@@ -24,7 +25,6 @@ vi.mock("@mlc-ai/web-llm", () => ({
 }));
 
 const QWEN = "Qwen3.5-9B-q4f16_1-MLC";
-const OTHER = "Qwen2.5-1.5B-Instruct-q4f16_1-MLC";
 
 function params(overrides: Partial<GenerationParams> = {}): GenerationParams {
   return {
@@ -95,16 +95,25 @@ describe("WebLLM Qwen3.5 dialogue profile", () => {
     }
   });
 
-  it("preserves other models' sampling and prompt style, including after a switch", async () => {
+  it.each(LLM_CONFIG.candidates)("uses the shared local dialogue profile for %s", async (modelId) => {
     const backend = await load();
-    await backend.load(OTHER, () => {});
-    expect(new LLMClient(backend).dialoguePromptStyle).toBe("standard");
+    await backend.load(modelId, () => {});
+    expect(new LLMClient(backend).dialoguePromptStyle).toBe("compact");
     await backend.generate(params({ temperature: 0.9 }));
     const sent = engine.create.mock.calls[0]![0];
-    expect(sent).toMatchObject({ temperature: 0.9, max_tokens: 160 });
-    expect(sent).not.toHaveProperty("extra_body");
-    expect(sent).not.toHaveProperty("top_p");
-    expect(sent).not.toHaveProperty("presence_penalty");
+    expect(sent).toMatchObject({
+      temperature: 0.7,
+      top_p: 0.8,
+      repetition_penalty: 1,
+      presence_penalty: 0,
+      frequency_penalty: 0,
+      max_tokens: 256,
+    });
+    if (modelId.startsWith("Qwen3.5-9B-")) {
+      expect(sent).toHaveProperty("extra_body", { enable_thinking: false });
+    } else {
+      expect(sent).not.toHaveProperty("extra_body");
+    }
   });
 
   it("disables Qwen thinking for other JSON tasks without changing their budgets or sampling", async () => {

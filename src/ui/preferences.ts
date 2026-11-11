@@ -1,14 +1,30 @@
 import { soundEffects } from "../audio/soundEffects";
+import { setAssistedDeductions } from "../story/assist";
 
 export type TextSize = "standard" | "large" | "extra-large";
 
+const ASSISTED_DEDUCTIONS_KEY = "cozy-mystery.assisted-deductions";
 const TEXT_SIZE_KEY = "cozy-mystery.text-size";
 const REDUCED_MOTION_KEY = "cozy-mystery.reduced-motion";
 const HIGH_CONTRAST_KEY = "cozy-mystery.high-contrast";
 const LARGE_CONTROLS_KEY = "cozy-mystery.large-controls";
 const CONTROL_HINTS_KEY = "cozy-mystery.control-hints";
 const MOVEMENT_SPEED_KEY = "cozy-mystery.movement-speed";
+const PREPARE_REPLIES_KEY = "cozy-mystery.prepare-replies";
 type MovementSpeed = "relaxed" | "standard" | "brisk";
+
+// On unless the player turned it off.
+export function getPrepareRepliesInAdvance(): boolean {
+  return localStorage.getItem(PREPARE_REPLIES_KEY) !== "false";
+}
+
+export function setPrepareRepliesInAdvance(enabled: boolean): void {
+  localStorage.setItem(PREPARE_REPLIES_KEY, String(enabled));
+}
+
+export function isReducedMotion(): boolean {
+  return document.documentElement.dataset.reducedMotion === "true";
+}
 
 function readMovementSpeed(): MovementSpeed {
   const saved = localStorage.getItem(MOVEMENT_SPEED_KEY);
@@ -36,8 +52,13 @@ export function setMovementSpeed(speed: MovementSpeed): void {
   localStorage.setItem(MOVEMENT_SPEED_KEY, speed);
 }
 
+export function getAssistedDeductions(): boolean {
+  return localStorage.getItem(ASSISTED_DEDUCTIONS_KEY) === "true";
+}
+
 export function applySavedTextSize(): void {
   movementSpeed = readMovementSpeed();
+  setAssistedDeductions(getAssistedDeductions());
   setTextSize(getTextSize());
   document.documentElement.dataset.reducedMotion = String(localStorage.getItem(REDUCED_MOTION_KEY) === "true");
   document.documentElement.dataset.highContrast = String(localStorage.getItem(HIGH_CONTRAST_KEY) === "true");
@@ -101,6 +122,32 @@ export function createPreferenceControls(): HTMLElement {
   });
   volumeLabel.append(volume, volumeOutput);
 
+  const ambienceLabel = document.createElement("label");
+  ambienceLabel.className = "range-setting";
+  ambienceLabel.append("Ambience volume ");
+  const ambience = document.createElement("input");
+  ambience.type = "range";
+  ambience.min = "0";
+  ambience.max = "100";
+  ambience.step = "5";
+  ambience.value = String(Math.round(soundEffects.ambienceVolume * 100));
+  ambience.setAttribute("aria-label", "Ambience volume");
+  const ambienceOutput = document.createElement("output");
+  ambienceOutput.textContent = `${ambience.value}%`;
+  ambience.addEventListener("input", () => {
+    soundEffects.setAmbienceVolume(Number(ambience.value) / 100);
+    ambienceOutput.textContent = `${ambience.value}%`;
+  });
+  ambienceLabel.append(ambience, ambienceOutput);
+
+  const voices = document.createElement("label");
+  voices.className = "check-setting";
+  const voicesBox = document.createElement("input");
+  voicesBox.type = "checkbox";
+  voicesBox.checked = soundEffects.voicesEnabled;
+  voicesBox.addEventListener("change", () => soundEffects.setVoicesEnabled(voicesBox.checked));
+  voices.append(voicesBox, "Character voices");
+
   const speedLabel = document.createElement("label");
   speedLabel.className = "text-size-setting";
   speedLabel.append("Walk speed ");
@@ -133,15 +180,38 @@ export function createPreferenceControls(): HTMLElement {
     return wrapper;
   };
 
+  const assisted = document.createElement("label");
+  assisted.className = "check-setting";
+  const assistedBox = document.createElement("input");
+  assistedBox.type = "checkbox";
+  assistedBox.checked = getAssistedDeductions();
+  assistedBox.addEventListener("change", () => {
+    localStorage.setItem(ASSISTED_DEDUCTIONS_KEY, String(assistedBox.checked));
+    setAssistedDeductions(assistedBox.checked);
+  });
+  assisted.append(assistedBox, "Assisted deductions");
+
+  const prepare = document.createElement("label");
+  prepare.className = "check-setting";
+  const prepareBox = document.createElement("input");
+  prepareBox.type = "checkbox";
+  prepareBox.checked = getPrepareRepliesInAdvance();
+  prepareBox.addEventListener("change", () => setPrepareRepliesInAdvance(prepareBox.checked));
+  prepare.append(prepareBox, "Prepare replies in advance");
+
   controls.append(
     mute,
     sizeLabel,
     volumeLabel,
+    ambienceLabel,
+    voices,
     speedLabel,
     setting(REDUCED_MOTION_KEY, "Reduce motion", "reducedMotion"),
     setting(HIGH_CONTRAST_KEY, "High contrast", "highContrast"),
     setting(LARGE_CONTROLS_KEY, "Larger touch controls", "largeControls"),
     setting(CONTROL_HINTS_KEY, "Always show control hints", "controlHints"),
+    assisted,
+    prepare,
   );
   return controls;
 }

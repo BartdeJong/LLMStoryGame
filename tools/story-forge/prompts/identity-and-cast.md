@@ -22,6 +22,14 @@ rejects the pack without them):
   short first-person lines about what the character needs or what happens next.
 - `deflections`: at least 5 in-character lines for questions the character
   cannot or will not answer.
+- `reactions` (optional): `{ id, about: { type: "cast" | "item" | "clue", id },
+  text (max 140 characters), requires?, clue_id? }`. What the character says when
+  the player picks "Ask about..." for that person, item or found clue. `requires`
+  uses the same shape as a goal state's `requires` and hides the reaction until
+  it holds. A `clue_id` must be a clue this character tells (clue `where` or
+  `alternatives`); saying the reaction marks it found. Never put a secret in a
+  reaction unless `requires` gates it. Without a reaction code falls back to a
+  matching knowledge item, a relationship, a needed item, and finally a deflection.
 Characters only talk and hand over items: do not invite physical actions.
 
 Approved bible:

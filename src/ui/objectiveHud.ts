@@ -2,7 +2,7 @@ import type { Beat } from "../story/types";
 
 export interface ObjectiveHud {
   readonly element: HTMLElement;
-  update(beat: Beat): void;
+  update(beat: Beat, openQuestion?: boolean): void;
 }
 
 export function createObjectiveHud(parent: HTMLElement): ObjectiveHud {
@@ -37,9 +37,11 @@ export function createObjectiveHud(parent: HTMLElement): ObjectiveHud {
 
   return {
     element,
-    update(beat) {
+    update(beat, openQuestion = false) {
       title.textContent = beat.title;
-      objective.textContent = beat.objective ?? beat.title;
+      objective.textContent = openQuestion
+        ? "Your casebook has an open question. Open the journal to answer it."
+        : beat.objective ?? beat.title;
       guidance.textContent = beat.guidance ?? "";
       guidanceToggle.hidden = !beat.guidance;
       if (!beat.guidance) {

@@ -1,5 +1,5 @@
 const CACHE_PREFIX = "cozy-mystery-shell-";
-const CACHE_NAME = `${CACHE_PREFIX}v4`;
+const CACHE_NAME = `${CACHE_PREFIX}v8`;
 const scopeUrl = new URL(self.registration.scope);
 
 self.addEventListener("install", (event) => {

@@ -26,7 +26,7 @@ export class AgentCoreStack extends Stack {
     this.application = new AgentCoreApplication(this, 'Application', props.application);
 
     const agent = this.application.runtime('agent');
-    const modelId = 'openai.gpt-oss-120b-1:0';
+    const modelId = 'openai.gpt-oss-20b-1:0';
     agent.addEnvironmentVariable('BEDROCK_MODEL_ID', modelId);
     agent.addToPolicy(new iam.PolicyStatement({
       actions: ['bedrock:InvokeModel'],

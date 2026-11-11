@@ -1,7 +1,9 @@
 import { getLengthView, loadStoryIndex, loadStoryPack } from "../story/loader";
-import type { LengthId, StoryPack } from "../story/types";
+import type { LengthId, StoryPack, SubjectRef } from "../story/types";
 import { LENGTH_IDS } from "../story/types";
-import { addTruth, giveItem } from "../story/state";
+import { addTruth, giveItem, markClueFound } from "../story/state";
+import type { StoryState } from "../story/state";
+import { subjectLabel } from "./askAbout";
 import { StorySession } from "../story/storySession";
 import { LLMClient } from "../llm/client";
 import { LLM_CONFIG } from "../llm/config";
@@ -137,6 +139,12 @@ export async function mountDialogueDebugScreen(): Promise<void> {
   feedbackActions.append(saveFeedbackButton, skipFeedbackButton);
   feedbackPanel.append(feedbackInput, feedbackTags, feedbackActions);
 
+  const askControls = el("div", "dialogue-debug-controls");
+  const askSelect = el("select", "dialogue-debug-select");
+  askSelect.setAttribute("aria-label", "Subject to ask about");
+  const askButton = el("button", "llm-button", "Ask about subject");
+  askButton.type = "button";
+  askControls.append(askSelect, askButton);
   const quickReplies = el("div", "dialogue-debug-quick-replies");
   const playerForm = el("form", "dialogue-debug-player-form");
   const playerInput = el("input", "dialogue-debug-player-input");
@@ -149,13 +157,14 @@ export async function mountDialogueDebugScreen(): Promise<void> {
   const retrySaveButton = el("button", "llm-button", "Retry saving");
   retrySaveButton.type = "button";
   retrySaveButton.hidden = true;
-  chatPanel.append(transcript, feedbackPanel, quickReplies, playerForm, retrySaveButton);
+  chatPanel.append(transcript, feedbackPanel, askControls, quickReplies, playerForm, retrySaveButton);
   shell.append(header, setupPanel, chatPanel);
   root.append(shell);
 
   let pack: StoryPack | null = null;
   let client: LLMClient | null = null;
   let controller: ConversationController | null = null;
+  let labState: StoryState | null = null;
   let session: DialogueFeedbackSession | null = null;
   let pendingFeedbackId: string | null = null;
   let pendingReply: PlayerReply | null = null;
@@ -213,6 +222,10 @@ export async function mountDialogueDebugScreen(): Promise<void> {
     const view = getLengthView(pack, lengthSelect.value as LengthId);
     characterSelect.replaceChildren();
     for (const character of view.cast) option(characterSelect, character.id, character.name);
+    askSelect.replaceChildren();
+    for (const member of pack.cast) option(askSelect, `cast:${member.id}`, `Person: ${member.name}`);
+    for (const item of pack.items) option(askSelect, `item:${item.id}`, `Item: ${item.name}`);
+    for (const clue of pack.clues) option(askSelect, `clue:${clue.id}`, `Evidence: ${clue.text.slice(0, 60)}`);
     stateOptions.replaceChildren();
     truthChecks = [];
     itemChecks = [];
@@ -267,6 +280,8 @@ export async function mountDialogueDebugScreen(): Promise<void> {
     playerInput.disabled = value || !controller || Boolean(pendingFeedbackId) || unsaved;
     sendButton.disabled = playerInput.disabled;
     for (const button of quickReplies.querySelectorAll<HTMLButtonElement>("button")) button.disabled = value || Boolean(pendingFeedbackId) || unsaved;
+    askSelect.disabled = value || !controller || Boolean(pendingFeedbackId) || unsaved;
+    askButton.disabled = askSelect.disabled;
     startButton.disabled = value || !client || !pack || Boolean(session);
     endButton.disabled = value || unsaved || Boolean(pendingFeedbackId);
     retrySaveButton.disabled = value;
@@ -384,6 +399,24 @@ export async function mountDialogueDebugScreen(): Promise<void> {
     else setBusy(false);
   }
 
+  async function submitAsk(): Promise<void> {
+    if (!session || !controller || !pack || !labState || busy || pendingFeedbackId || unsaved) return;
+    const separator = askSelect.value.indexOf(":");
+    const subject = { type: askSelect.value.slice(0, separator), id: askSelect.value.slice(separator + 1) } as SubjectRef;
+    // The lab is a sandbox: picking an item or clue makes the player hold or have found it.
+    if (subject.type === "item") giveItem(labState, subject.id);
+    if (subject.type === "clue") markClueFound(labState, subject.id);
+    const label = subjectLabel(pack, subject) ?? subject.id;
+    session.turns.push({ id: id(), speaker: "player", text: `What can you tell me about ${label}?`, createdAt: timestamp() });
+    renderTranscript();
+    quickReplies.replaceChildren();
+    setBusy(true);
+    if (await persistSession()) await generateCharacterTurn(controller.askAbout(subject));
+    else setBusy(false);
+  }
+
+  askButton.addEventListener("click", () => void submitAsk());
+
   async function submitPlayerTurn(reply: PlayerReply): Promise<void> {
     if (!session || !controller || busy || pendingFeedbackId || unsaved || !reply.text.trim()) return;
     const text = reply.text.trim();
@@ -438,7 +471,8 @@ export async function mountDialogueDebugScreen(): Promise<void> {
           return item ? [{ id: item.id, name: item.name }] : [];
         }),
       };
-      controller = new ConversationController(client, selectedPack, story.state, character, context);
+      labState = story.state;
+      controller = new ConversationController(client, selectedPack, story.state, character, context, { speculate: false });
       const started = timestamp();
       session = {
         schemaVersion: 1,
@@ -539,6 +573,7 @@ export async function mountDialogueDebugScreen(): Promise<void> {
   function endConversation(): void {
     session = null;
     controller = null;
+    labState = null;
     pendingFeedbackId = null;
     pendingReply = null;
     pendingOpening = false;

@@ -146,6 +146,12 @@ export function validateStoryPack(data: unknown): ValidationReport {
     ref("location", c.home_location, `${p}.home_location`, owner);
     c.relationships.forEach((r, j) => ref("cast", r.cast_id, `${p}.relationships[${j}].cast_id`, owner));
     refs("truth", c.knows_truths, `${p}.knows_truths`, owner);
+    (c.reactions ?? []).forEach((r, j) => {
+      const at = `${p}.reactions[${j}]`;
+      ref(r.about.type, r.about.id, `${at}.about.id`, `reaction "${r.id}"`);
+      refReq(r.requires, `${at}.requires`, `reaction "${r.id}"`);
+      if (r.clue_id !== undefined) ref("clue", r.clue_id, `${at}.clue_id`, `reaction "${r.id}"`);
+    });
     c.goal_states.forEach((g, j) => {
       refReq(g.requires, `${p}.goal_states[${j}].requires`, `goal state "${g.id}"`);
       refs("item", g.gives_items, `${p}.goal_states[${j}].gives_items`, `goal state "${g.id}"`);
@@ -156,6 +162,16 @@ export function validateStoryPack(data: unknown): ValidationReport {
     const owner = `truth "${t.id}"`;
     refs("truth", t.depends_on, `truths[${i}].depends_on`, owner);
     refs("clue", t.revealed_by, `truths[${i}].revealed_by`, owner);
+    if (t.deduction) {
+      refs("red_herring", t.deduction.rules_out, `truths[${i}].deduction.rules_out`, owner);
+      const options = [t.deduction.answer, ...t.deduction.wrong_answers].map((text) => text.trim().toLocaleLowerCase());
+      if (new Set(options).size !== options.length) {
+        error("DEDUCTION_DUPLICATE_ANSWER", `truths[${i}].deduction`, `${owner} has a deduction whose answer and wrong_answers are not all different.`);
+      }
+      if (new Set(t.deduction.rules_out ?? []).size !== (t.deduction.rules_out ?? []).length) {
+        error("DEDUCTION_DUPLICATE_RULES_OUT", `truths[${i}].deduction.rules_out`, `${owner} lists the same red herring more than once in rules_out.`);
+      }
+    }
     t.revealed_by.forEach((clueId, j) => {
       const clue = pack.clues.find((c) => c.id === clueId);
       if (clue && clue.truth_id !== t.id) {
@@ -201,6 +217,18 @@ export function validateStoryPack(data: unknown): ValidationReport {
   pack.endings.forEach((e, i) => {
     refs("truth", e.conditions.truths, `endings[${i}].conditions.truths`, `ending "${e.id}"`);
     refs("goal_state", e.conditions.goal_states, `endings[${i}].conditions.goal_states`, `ending "${e.id}"`);
+    const summed = new Set<string>();
+    (e.summation ?? []).forEach((entry, j) => {
+      const path = `endings[${i}].summation[${j}].truth_id`;
+      ref("truth", entry.truth_id, path, `ending "${e.id}"`);
+      if (ids.truth.has(entry.truth_id) && !e.conditions.truths.includes(entry.truth_id)) {
+        error("SUMMATION_TRUTH_NOT_IN_ENDING", path, `ending "${e.id}" asks about truth "${entry.truth_id}", which is not in its conditions.truths.`);
+      }
+      if (summed.has(entry.truth_id)) {
+        error("SUMMATION_DUPLICATE_TRUTH", path, `ending "${e.id}" asks about truth "${entry.truth_id}" more than once.`);
+      }
+      summed.add(entry.truth_id);
+    });
   });
 
   const definedLengths = LENGTH_IDS.filter((id) => pack.lengths[id]);
@@ -329,6 +357,22 @@ function checkDialogueContent(pack: StoryPack, c: CastMember, p: string, error: 
     }
     if (k.truth_id !== undefined && !pack.truths.some((t) => t.id === k.truth_id)) {
       error("REF_UNKNOWN", `${at}.truth_id`, `knowledge "${k.id}" references unknown truth id "${k.truth_id}".`);
+    }
+  });
+
+  const reactionIds = new Set<string>();
+  (c.reactions ?? []).forEach((r, j) => {
+    const at = `${p}.reactions[${j}]`;
+    if (reactionIds.has(r.id)) error("ID_DUPLICATE", `${at}.id`, `${owner} has duplicate reaction id "${r.id}".`);
+    reactionIds.add(r.id);
+    if (r.text.length > DIALOGUE_LIMITS.lineChars) error("DIALOGUE_TOO_LONG", `${at}.text`, `${owner} reaction has ${r.text.length} characters but at most ${DIALOGUE_LIMITS.lineChars} are allowed.`);
+    const issue = narrationIssue(r.text, c.name);
+    if (issue) error("DIALOGUE_NARRATION", `${at}.text`, `${owner}: reaction "${r.text}" ${issue}.`);
+    if (r.clue_id !== undefined) {
+      const clue = pack.clues.find((candidate) => candidate.id === r.clue_id);
+      if (clue && ![clue.where, ...clue.alternatives].some((source) => source.type === "character" && source.id === c.id)) {
+        error("REACTION_CLUE_ELSEWHERE", `${at}.clue_id`, `reaction "${r.id}" gives clue "${clue.id}", but that clue is not found with ${owner}.`);
+      }
     }
   });
 

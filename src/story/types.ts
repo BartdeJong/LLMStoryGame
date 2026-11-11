@@ -67,6 +67,21 @@ export interface KnowledgeItem {
   truth_id?: string;
 }
 
+export type SubjectType = "cast" | "item" | "clue";
+export interface SubjectRef {
+  type: SubjectType;
+  id: string;
+}
+
+// An authored answer to "ask about <subject>". Optional; a clue_id marks that clue found when it is said.
+export interface Reaction {
+  id: string;
+  about: SubjectRef;
+  text: string;
+  requires?: Requirement;
+  clue_id?: string;
+}
+
 export interface GoalHints {
   unmet: string[];
   in_progress: string[];
@@ -91,15 +106,25 @@ export interface CastMember {
   knowledge: KnowledgeItem[];
   goal_hints: GoalHints;
   deflections: string[];
+  reactions?: Reaction[];
 }
 
 export type Importance = "core" | "side";
+// A truth with a deduction is confirmed by the player choosing the right answer, not by finding a clue.
+export interface Deduction {
+  question: string;
+  answer: string;
+  wrong_answers: string[]; // 2-3 plausible but wrong options
+  rules_out?: string[]; // red herring ids settled when the player answers correctly
+}
+
 export interface Truth {
   id: string;
   text: string;
   depends_on: string[];
   importance: Importance;
   revealed_by: string[];
+  deduction?: Deduction;
 }
 
 export type ClueKind = "spoken" | "object" | "place" | "item_combination";
@@ -179,9 +204,16 @@ export interface EndingConditions {
   choices: string[]; // key choices the player is free to make
 }
 
+export interface SummationEntry {
+  question: string;
+  truth_id: string; // must be one of the ending's condition truths
+}
+
 export interface Ending {
   id: string;
   conditions: EndingConditions;
+  summation?: SummationEntry[]; // 2-4 questions the player answers from confirmed truths before this ending
+
   scene_outline: string;
   tone: string;
   epilogue_notes: string;

@@ -49,7 +49,7 @@ function populatePoints(area: Area, brief: AreaBrief, random: () => number): Are
     { x: area.width - 3, y: area.height - 4 },
   ];
   const doors: AreaDoor[] = brief.doorLabels.map((label, index) => {
-    const point = doorCandidates[index % doorCandidates.length]!;
+    const point = brief.doorPoints?.[index] ?? doorCandidates[index % doorCandidates.length]!;
     return { id: `door-${index}`, label, kind: doorKind, ...point };
   });
   const mutable = area as { spawnPoints: readonly EntitySpawnPoint[]; doors: readonly AreaDoor[] };

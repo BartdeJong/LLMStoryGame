@@ -9,6 +9,7 @@ function abortError(): Error {
 // WebLLM engine proxy. The engine itself lives in ./worker.ts, so the main thread only posts messages.
 export class WebLLMBackend implements LLMBackend {
   readonly name = "webllm";
+  readonly supportsSpeculation = true;
   private worker: Worker | null = null;
   private engine: WebWorkerMLCEngine | null = null;
   private modelId: string | null = null;
@@ -17,9 +18,7 @@ export class WebLLMBackend implements LLMBackend {
   private guidedOutputBroken = false;
 
   get dialoguePromptStyle(): DialoguePromptStyle {
-    return this.modelId === "Qwen3.5-9B-q4f16_1-MLC" || this.modelId === "Qwen3.5-9B-q4f32_1-MLC"
-      ? "compact"
-      : "standard";
+    return this.modelId ? "compact" : "standard";
   }
 
   async load(modelId: string, onProgress: (progress: LoadProgress) => void): Promise<LoadResult> {
@@ -67,17 +66,17 @@ export class WebLLMBackend implements LLMBackend {
     let text = "";
     let chunkCount = 0;
     let usage: ChatCompletionChunk["usage"];
-    const isQwen35 = this.dialoguePromptStyle === "compact";
-    const isQwenDialogue = isQwen35 && params.tag === "dialogue";
+    const isQwen35 = this.modelId === "Qwen3.5-9B-q4f16_1-MLC" || this.modelId === "Qwen3.5-9B-q4f32_1-MLC";
+    const isDialogue = params.tag === "dialogue";
     try {
       const stream = await engine.chat.completions.create({
         messages: params.messages,
         stream: true,
         stream_options: { include_usage: true },
-        max_tokens: isQwenDialogue ? Math.max(params.maxTokens, 256) : params.maxTokens,
-        temperature: isQwenDialogue ? 0.7 : params.temperature,
+        max_tokens: isDialogue ? Math.max(params.maxTokens, 256) : params.maxTokens,
+        temperature: isDialogue ? 0.7 : params.temperature,
         ...(isQwen35 ? { extra_body: { enable_thinking: false } } : {}),
-        ...(isQwenDialogue ? { top_p: 0.8, repetition_penalty: 1.0, presence_penalty: 0, frequency_penalty: 0 } : {}),
+        ...(isDialogue ? { top_p: 0.8, repetition_penalty: 1.0, presence_penalty: 0, frequency_penalty: 0 } : {}),
         ...(useSchema ? { response_format: { type: "json_object" as const, schema: JSON.stringify(params.jsonSchema) } } : {}),
       });
       for await (const chunk of stream) {

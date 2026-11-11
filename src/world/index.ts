@@ -14,6 +14,12 @@ export {
   generateRuins,
   generateVillage,
 } from "./generators";
+export {
+  entitySolidityIsSafe,
+  isEntityInNarrowCorridor,
+  reachableTilesWithSolidEntities,
+  selectSolidEntityIds,
+} from "./solidity";
 export { WorldSession } from "./session";
 export type { AreaTransition } from "./session";
 export { Tile } from "./types";
