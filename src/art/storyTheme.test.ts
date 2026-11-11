@@ -16,4 +16,13 @@ describe("story visual themes", () => {
       getStoryVisualTheme("another-story").canvasFilter,
     );
   });
+
+  it("gives Paddington a warm orange theme instead of the generated hue", () => {
+    const theme = getStoryVisualTheme("paddingtonhat");
+
+    expect(theme.canvasFilter).toContain("sepia(0.48)");
+    expect(theme.canvasFilter).not.toContain("hue-rotate(144deg)");
+    expect(theme.frame).toBe("#dc8b35");
+    expect(theme.accent).toBe("#ffb347");
+  });
 });

@@ -52,6 +52,18 @@ const STORY_THEMES: Readonly<Record<string, StoryVisualTheme>> = {
     atmosphere: "falling-ash",
     particle: "#b8b2a8",
   },
+  paddingtonhat: {
+    canvasFilter: "sepia(0.48) saturate(1.28) hue-rotate(-8deg) brightness(1.04)",
+    frame: "#dc8b35",
+    panel: "rgb(53 34 19 / 90%)",
+    accent: "#ffb347",
+    text: "#fff2d6",
+    muted: "#e6c49c",
+    control: "rgb(53 34 19 / 76%)",
+    activeControl: "rgb(131 75 28 / 90%)",
+    atmosphere: "motes",
+    particle: "#ffd27a",
+  },
 };
 
 export function getStoryVisualTheme(storyId: string): StoryVisualTheme {
