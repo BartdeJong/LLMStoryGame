@@ -83,20 +83,6 @@ export function flood(
   return seen;
 }
 
-export function walkableCount(grid: Grid, decor?: ReadonlySet<string>): number {
-  let count = 0;
-  for (let y = 0; y < grid.length; y += 1) {
-    for (let x = 0; x < grid[0]!.length; x += 1) {
-      if (walkableAt(grid, x, y, decor) && !isDoorChar(grid[y]![x]!)) count += 1;
-    }
-  }
-  return count;
-}
-
-export function neighbours4(grid: Grid, p: Pt): Pt[] {
-  return DIRS4.map(([dx, dy]) => ({ x: p.x + dx, y: p.y + dy })).filter((q) => inside(grid, q.x, q.y));
-}
-
 export function chebyshev(a: Pt, b: Pt): number {
   return Math.max(Math.abs(a.x - b.x), Math.abs(a.y - b.y));
 }

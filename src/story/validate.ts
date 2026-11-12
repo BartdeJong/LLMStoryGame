@@ -3,7 +3,7 @@ import { MIN_SPRITE_DIFFERENCES, spriteDifferences, validateSpriteSpec, type Spr
 import { COMPLEXITY, DEFAULT_TEXT_LIMIT, DIALOGUE_LIMITS, TEXT_LIMITS, type Range } from "./config";
 import { narrationIssue } from "../dialogue/lineCleanup";
 import { checkSchema, joinPath } from "./jsonSchema";
-import { missingOf, orderedLocations, requirementEntries, solveLength, type SolveResult } from "./solver";
+import { heldEvidence, isSatisfied, missingOf, orderedLocations, requirementEntries, solveLength, type SolveResult } from "./solver";
 import { LENGTH_IDS, type CastMember, type LengthDefinition, type LengthId, type Location, type Requirement, type SourceRef, type StoryPack } from "./types";
 import { placedObjects } from "./slice";
 import { GLYPH_STATES, getGlyph, resolveVisual, tokenizeVisualText } from "../art/glyphs";
@@ -105,6 +105,7 @@ export function validateStoryPack(data: unknown): ValidationReport {
     ending: new Set<string>(),
     goal_state: new Set<string>(),
     door: new Set<string>(),
+    statement: new Set<string>(),
   };
   type Kind = keyof typeof ids;
 
@@ -115,6 +116,7 @@ export function validateStoryPack(data: unknown): ValidationReport {
   pack.cast.forEach((c, i) => {
     register("cast", c.id, `cast[${i}].id`);
     c.goal_states.forEach((g, j) => register("goal_state", g.id, `cast[${i}].goal_states[${j}].id`));
+    (c.statements ?? []).forEach((st, j) => register("statement", st.id, `cast[${i}].statements[${j}].id`));
   });
   pack.truths.forEach((t, i) => register("truth", t.id, `truths[${i}].id`));
   pack.clues.forEach((c, i) => register("clue", c.id, `clues[${i}].id`));
@@ -156,6 +158,14 @@ export function validateStoryPack(data: unknown): ValidationReport {
       ref(r.about.type, r.about.id, `${at}.about.id`, `reaction "${r.id}"`);
       refReq(r.requires, `${at}.requires`, `reaction "${r.id}"`);
       if (r.clue_id !== undefined) ref("clue", r.clue_id, `${at}.clue_id`, `reaction "${r.id}"`);
+    });
+    (c.statements ?? []).forEach((st, j) => {
+      const at = `${p}.statements[${j}]`;
+      const who = `statement "${st.id}"`;
+      refReq(st.requires, `${at}.requires`, who);
+      refs("item", st.broken_by.items, `${at}.broken_by.items`, who);
+      refs("clue", st.broken_by.clues, `${at}.broken_by.clues`, who);
+      if (st.clue_id !== undefined) ref("clue", st.clue_id, `${at}.clue_id`, who);
     });
     c.goal_states.forEach((g, j) => {
       refReq(g.requires, `${p}.goal_states[${j}].requires`, `goal state "${g.id}"`);
@@ -259,7 +269,10 @@ export function validateStoryPack(data: unknown): ValidationReport {
   });
 
   const definedLengths = LENGTH_IDS.filter((id) => pack.lengths[id]);
-  if (definedLengths.length === 0) error("NO_LENGTHS", "lengths", "the pack defines no lengths (short, medium or long).");
+  if (definedLengths.length === 0) error("NO_LENGTHS", "lengths", "the pack defines no length (short, medium or long).");
+  if (definedLengths.length > 1) {
+    error("MULTIPLE_LENGTHS", "lengths", `the pack defines ${definedLengths.length} lengths (${definedLengths.join(", ")}) but a story has exactly one. Keep only the longest version.`);
+  }
   for (const lengthId of definedLengths) {
     const len = pack.lengths[lengthId] as LengthDefinition;
     const p = `lengths.${lengthId}`;
@@ -315,6 +328,7 @@ export function validateStoryPack(data: unknown): ValidationReport {
   pack.items.forEach((x) => markUsed(x.found_requires));
   pack.locations.forEach((l) => l.doors.forEach((d) => markUsed(d.lock)));
   pack.twists.forEach((t) => markUsed(t.payoff_trigger));
+  pack.cast.forEach((c) => (c.statements ?? []).forEach((st) => (st.broken_by.items ?? []).forEach((id) => usedItems.add(id))));
   for (const lengthId of definedLengths) (pack.lengths[lengthId] as LengthDefinition).beats.forEach((b) => markUsed(b.must_find));
 
   for (const lengthId of definedLengths) {
@@ -426,12 +440,58 @@ function checkDialogueContent(pack: StoryPack, c: CastMember, p: string, error: 
     }
   });
 
-  // Code, not the model, reveals clues, so a clue told by a character needs a knowledge item.
-  const covered = new Set(c.knowledge.map((k) => k.clue_id));
+  checkStatements(pack, c, p, error);
+
+  // Code, not the model, reveals clues, so a clue told by a character needs a knowledge item or a statement.
+  const covered = new Set([...c.knowledge.map((k) => k.clue_id), ...(c.statements ?? []).map((st) => st.clue_id)]);
   pack.clues.forEach((clue, j) => {
     const talksHere = [clue.where, ...clue.alternatives].some((source) => source.type === "character" && source.id === c.id);
     if (talksHere && !covered.has(clue.id)) {
-      error("CLUE_NOT_TALKABLE", `clues[${j}]`, `clue "${clue.id}" is told by ${owner}, but none of their knowledge items has clue_id "${clue.id}".`);
+      error("CLUE_NOT_TALKABLE", `clues[${j}]`, `clue "${clue.id}" is told by ${owner}, but none of their knowledge items or statements has clue_id "${clue.id}".`);
+    }
+  });
+}
+
+// Statements: spoken like any other line, breakable by evidence, and the only way this character gives their clue.
+function checkStatements(pack: StoryPack, c: CastMember, p: string, error: Report): void {
+  const owner = `cast member "${c.id}"`;
+  (c.statements ?? []).forEach((st, j) => {
+    const at = `${p}.statements[${j}]`;
+    const who = `statement "${st.id}"`;
+    if (st.topic.trim().split(/\s+/).length > DIALOGUE_LIMITS.topicWords) {
+      error("KNOWLEDGE_TOPIC", `${at}.topic`, `topic "${st.topic}" has more than ${DIALOGUE_LIMITS.topicWords} words.`);
+    }
+    const askIssue = narrationIssue(st.ask, c.name);
+    if (askIssue) error("DIALOGUE_NARRATION", `${at}.ask`, `${owner}: ask "${st.ask}" ${askIssue}. It must be something the player says.`);
+    if (st.keywords.some((word) => !word.trim())) error("KNOWLEDGE_KEYWORDS", `${at}.keywords`, "keywords must not be blank.");
+    for (const [field, line] of [["text", st.text], ["admission", st.admission], ["rebuff", st.rebuff]] as const) {
+      if (line === undefined) continue;
+      if (line.length > DIALOGUE_LIMITS.lineChars) error("DIALOGUE_TOO_LONG", `${at}.${field}`, `${who} ${field} has ${line.length} characters but at most ${DIALOGUE_LIMITS.lineChars} are allowed.`);
+      const issue = narrationIssue(line, c.name);
+      if (issue) error("DIALOGUE_NARRATION", `${at}.${field}`, `${owner}: ${field} "${line}" ${issue}. Write spoken words in the character's own voice.`);
+    }
+    const evidence = [...(st.broken_by.items ?? []), ...(st.broken_by.clues ?? [])];
+    if (evidence.length === 0) error("STATEMENT_NO_EVIDENCE", `${at}.broken_by`, `${who} lists no item or clue that breaks it.`);
+    if (st.clue_id === undefined) return;
+    if ((st.broken_by.clues ?? []).includes(st.clue_id)) {
+      error("STATEMENT_SELF_EVIDENCE", `${at}.broken_by.clues`, `${who} is broken by its own clue "${st.clue_id}".`);
+    }
+    const clue = pack.clues.find((candidate) => candidate.id === st.clue_id);
+    if (!clue) return;
+    if (![clue.where, ...clue.alternatives].some((source) => source.type === "character" && source.id === c.id)) {
+      error("STATEMENT_CLUE_ELSEWHERE", `${at}.clue_id`, `${who} reveals clue "${clue.id}", but that clue is not found with ${owner}. Add the character to the clue's where or alternatives.`);
+    }
+    c.knowledge.forEach((k, n) => {
+      if (k.clue_id === clue.id) error("STATEMENT_CLUE_GIVEN_FREELY", `${p}.knowledge[${n}].clue_id`, `knowledge "${k.id}" gives clue "${clue.id}" freely, but ${who} of the same character hides it. Remove the clue_id (and the fact) from the knowledge item.`);
+    });
+    (c.reactions ?? []).forEach((r, n) => {
+      if (r.clue_id === clue.id) error("STATEMENT_CLUE_GIVEN_FREELY", `${p}.reactions[${n}].clue_id`, `reaction "${r.id}" gives clue "${clue.id}" freely, but ${who} of the same character hides it. Remove the clue_id from the reaction.`);
+    });
+    const needed = requirementEntries(clue.requirements);
+    const heardWith = new Set(requirementEntries(st.requires));
+    const uncovered = needed.filter((entry) => !heardWith.has(entry));
+    if (uncovered.length > 0) {
+      error("STATEMENT_CLUE_REQUIREMENTS", `${at}.requires`, `${who} reveals clue "${clue.id}", which requires ${uncovered.join(", ")}; the statement's requires must include them so the admission never gives a clue early.`);
     }
   });
 }
@@ -681,14 +741,27 @@ function checkRange(value: number, range: Range, what: string, lengthId: string,
   }
 }
 
-function independentRoutes(pack: StoryPack, clueIds: string[]): string[] {
+// Routes are independent when they share no place, requirement or evidence. A clue that only comes out of a
+// broken statement also depends on the statement's evidence when exactly one piece of it can be obtained.
+function independentRoutes(pack: StoryPack, clueIds: string[], solved: SolveResult): string[] {
   const chosen: { id: string; keys: Set<string> }[] = [];
   for (const id of clueIds) {
     const clue = pack.clues.find((c) => c.id === id);
     if (!clue) continue;
+    const sources = [clue.where, ...clue.alternatives];
+    const gates = sources.map((w) => (w.type === "character"
+      ? pack.cast.find((m) => m.id === w.id)?.statements?.filter((st) => st.clue_id === clue.id) ?? []
+      : []));
+    const evidenceKeys: string[] = [];
+    if (gates.every((list) => list.length > 0)) {
+      const pieces = new Set(gates.flat().flatMap((st) => heldEvidence(st, solved)));
+      if (pieces.size === 1) evidenceKeys.push(...pieces);
+    }
     const keys = new Set([
-      ...[clue.where, ...clue.alternatives].map((w) => `${w.type}:${w.id}`),
+      `clue:${clue.id}`,
+      ...sources.map((w) => `${w.type}:${w.id}`),
       ...requirementEntries(clue.requirements),
+      ...evidenceKeys,
     ]);
     if (chosen.every((c) => [...keys].every((k) => !c.keys.has(k)))) chosen.push({ id, keys });
   }
@@ -813,11 +886,21 @@ function checkLength(pack: StoryPack, lengthId: LengthId, len: LengthDefinition,
 
   for (const truthId of len.core_truths) {
     const reachable = pack.clues.filter((cl) => cl.truth_id === truthId && solved.clues.has(cl.id)).map((cl) => cl.id);
-    const routes = independentRoutes(pack, reachable);
+    const routes = independentRoutes(pack, reachable, solved);
     if (routes.length < c.routesPerCoreTruth) {
       error("CORE_TRUTH_ROUTES", `${p}.core_truths`, `core truth "${truthId}" has ${routes.length} independent clue route(s) in the ${lengthId} length but needs ${c.routesPerCoreTruth}. Obtainable clues: ${reachable.join(", ") || "(none)"}. Routes are independent when their clues are found in different places and share no required items, goal states or truths.`);
     }
   }
+
+  // Every statement that can be heard in this length must be breakable in it.
+  pack.cast.forEach((m, i) => {
+    if (!solved.cast.has(m.id)) return;
+    (m.statements ?? []).forEach((st, j) => {
+      if (!isSatisfied(st.requires, solved) || solved.statements.has(st.id)) return;
+      const evidence = [...(st.broken_by.items ?? []), ...(st.broken_by.clues ?? [])];
+      error("STATEMENT_UNBREAKABLE", `cast[${i}].statements[${j}].broken_by`, `statement "${st.id}" can be heard in the ${lengthId} length, but none of its evidence (${evidence.join(", ") || "none"}) can be obtained there. Add evidence from this length or gate the statement with requires.`);
+    });
+  });
 
   for (const t of pack.twists.filter((t) => len.twists.includes(t.id))) {
     for (const clueId of t.setup_clues) if (!solved.clues.has(clueId)) error("SETUP_CLUE_UNREACHABLE", `twists`, `setup clue "${clueId}" of twist "${t.id}" cannot be found in the ${lengthId} length.`);

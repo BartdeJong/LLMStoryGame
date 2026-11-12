@@ -54,8 +54,8 @@ for (const entry of index.stories) {
     const pack = report.pack;
     if (pack.identity.id !== entry.id) fail(`${name}: ERROR [INDEX_MISMATCH] identity.id: is "${pack.identity.id}" but index.json lists "${entry.id}".`);
     const defined = LENGTH_IDS.filter((id) => pack.lengths[id]);
-    if (defined.join() !== [...entry.lengths].sort((a, b) => LENGTH_IDS.indexOf(a) - LENGTH_IDS.indexOf(b)).join()) {
-      fail(`${name}: ERROR [INDEX_MISMATCH] index.json lengths: lists [${entry.lengths.join(", ")}] but the pack defines [${defined.join(", ")}].`);
+    if (defined.join() !== entry.length) {
+      fail(`${name}: ERROR [INDEX_MISMATCH] index.json length: lists "${entry.length}" but the pack defines [${defined.join(", ")}].`);
     }
   }
   console.log(`${report.ok ? "OK  " : "FAIL"} ${name} (${report.errors.length} error(s), ${report.warnings.length} warning(s))`);

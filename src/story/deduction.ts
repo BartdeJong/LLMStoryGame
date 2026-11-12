@@ -1,6 +1,6 @@
 import type { LengthView } from "./loader";
 import { isRequirementMet } from "./requirements";
-import { confirmTruth, grantTruthsFromFoundClues } from "./state";
+import { caseRecordOf, confirmTruth, grantTruthsFromFoundClues } from "./state";
 import type { StoryState } from "./state";
 import type { Ending, RedHerring, StoryPack, Truth, Twist } from "./types";
 
@@ -11,23 +11,27 @@ export function openDeductions(pack: StoryPack, state: StoryState): Truth[] {
 }
 
 export interface DeductionAnswer {
+  accepted: boolean; // false when the question was not open (nothing changed)
   correct: boolean;
+  truth?: Truth; // what really happened; confirmed either way so the story goes on
   ruledOut: RedHerring[]; // red herrings newly settled by this answer
 }
 
-// Code decides the outcome. A wrong answer changes nothing; a right one confirms the truth.
+// Code decides the outcome, and the answer is final. Right or wrong, the truth is confirmed so later truths,
+// beats, doors and dialogue keep working; the answer is recorded in the case record.
 export function answerDeduction(pack: StoryPack, state: StoryState, truthId: string, answer: string): DeductionAnswer {
   const truth = pack.truths.find((candidate) => candidate.id === truthId);
   if (!truth?.deduction || !state.truthsReady.includes(truthId) || state.truthsFound.includes(truthId)) {
-    return { correct: false, ruledOut: [] };
+    return { accepted: false, correct: false, ruledOut: [] };
   }
-  if (answer !== truth.deduction.answer) return { correct: false, ruledOut: [] };
+  const correct = answer === truth.deduction.answer;
+  caseRecordOf(state).deductions.push({ truthId, answer, correct });
   const before = new Set(state.herringsRuledOut);
   confirmTruth(state, truth);
   grantTruthsFromFoundClues(pack, state);
   const ruledOut = pack.red_herrings.filter((herring) =>
     state.herringsRuledOut.includes(herring.id) && !before.has(herring.id));
-  return { correct: true, ruledOut };
+  return { accepted: true, correct, truth, ruledOut };
 }
 
 export function ruledOutHerrings(pack: StoryPack, state: StoryState): RedHerring[] {

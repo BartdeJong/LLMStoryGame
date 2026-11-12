@@ -19,6 +19,42 @@ export interface ProgressEntry {
   at: number; // epoch milliseconds
 }
 
+// How the player solved the case: every final answer and every challenge. Kept for the ending's result and recap.
+export interface DeductionRecord {
+  truthId: string;
+  answer: string;
+  correct: boolean;
+}
+
+export interface SummationRecord {
+  truthId: string; // the truth the question asks for
+  answerId: string; // the truth the player chose
+  correct: boolean;
+}
+
+export interface ChallengeRecord {
+  statementId: string;
+  evidence: { type: "item" | "clue"; id: string };
+  fits: boolean; // true: the statement broke
+}
+
+export interface CaseRecord {
+  deductions: DeductionRecord[];
+  summation: SummationRecord[];
+  challenges: ChallengeRecord[];
+  assisted: boolean; // assisted deductions confirmed at least one truth, so the case had no stakes
+}
+
+export function emptyCaseRecord(): CaseRecord {
+  return { deductions: [], summation: [], challenges: [], assisted: false };
+}
+
+// The record, created on first use so hand-made states and old data never lack one.
+export function caseRecordOf(state: StoryState): CaseRecord {
+  state.caseRecord ??= emptyCaseRecord();
+  return state.caseRecord;
+}
+
 export interface StoryState {
   packId: string;
   packVersion: number;
@@ -41,6 +77,8 @@ export interface StoryState {
   summary: string;
   areasSinceSummary: number;
   progressLog?: ProgressEntry[]; // clues, truths and items in the order they were found
+  statementsHeard?: string[]; // statement ids the player has heard (save format 7)
+  caseRecord?: CaseRecord; // answers and challenges (save format 7)
 }
 
 export function progressLogOf(state: StoryState): readonly ProgressEntry[] {
@@ -73,6 +111,8 @@ export function createStoryState(view: LengthView): StoryState {
     collectedEntities: [],
     summary: "",
     areasSinceSummary: 0,
+    statementsHeard: [],
+    caseRecord: emptyCaseRecord(),
   };
 }
 
@@ -173,6 +213,7 @@ export function grantTruthsFromFoundClues(pack: StoryPack, state: StoryState): v
       const truth = pack.truths.find((candidate) => candidate.id === clue.truth_id);
       if (!truth || !truth.depends_on.every((id) => state.truthsFound.includes(id))) continue;
       if (!truth.deduction || isAssistedDeductions()) {
+        if (truth.deduction) caseRecordOf(state).assisted = true;
         confirmTruth(state, truth);
         changed = true;
       } else if (!state.truthsReady.includes(truth.id)) {

@@ -422,3 +422,21 @@ Nothing falls below the table. Short and Medium sit at the floor or ceiling on m
 10. **Inconsistencies already in the bible:** Hester is listed as knowing CT1 (A), but route A for CT1 is the Berth place. Quay is listed as knowing CT4, while the route table gives an object (Pilchard log) for it. Lumi is "not essential" but the only spoken CT9 route in Long is Lumi. Ending E3 says "leaving before CT11", which does not apply in lengths without CT11.
 11. **Revisits:** CT5 depends on CT2, CT3 and CT4 but has a clue in an earlier act (Quay), so the player must come back.
 12. **Estimated minutes** are not set yet for any length.
+
+## 11. Statements (characters who hide things) and flawed endings
+
+Pack version 4 adds statements. A character says something false or incomplete; the player hears it, finds evidence against it and challenges it. If the evidence fits, the character admits the truth with relief, and the admission is the only way that character gives the clue. Nobody's secret changes the solution, the truths or the endings. Each lie comes from the character's secret, motivations or relationships.
+
+| Statement | Who | The cover story | Why they hide it | Broken by (any one) | Admission reveals | Lengths |
+|---|---|---|---|---|---|---|
+| `st_bramwell_oil` | Bramwell | The oil is just tallow and kelp. | Afraid folk will think he takes from them (suspected of theft). | `cl_oil_tally_cold`, `cl_oil_tally_flow` (his own tally) | `cl_bramwell_oil` (CT3, core) | S, M, L |
+| `st_hester_dark` | Hester | The Mothlight has never gone dark. | Ashamed it went dark on her watch. | `cl_oil_tally_cold`, `cl_rook_small_light` | `cl_hester_dark` (CT4, core) | S, M, L |
+| `st_rook_rowing` | Rook | He never rows at night. | Embarrassed by a ritual he cannot explain; loyal to the berth. Points at `rh_midnight_rowing`. | `cl_rook_midnight`, `cl_berth_empty` | `cl_rook_wick` (ST8, side) | S, M, L |
+| `st_tamsin_fade` | Tamsin | The fading is just old ink, with no pattern. | An archivist afraid of an unproven theory and of her archive failing. | `cl_ledger_entry`, `cl_granny_buns` | `cl_tamsin_fade` (CT6) | S, M, L |
+| `st_quay_fog` | Captain Quay | Pure seamanship got his ship out of the Hush. | Pride, and wanting his deckhand's respect. | `cl_rook_small_light`, `cl_archive_bell_copy` | `cl_quay_singing_light` (CT5, core) | M, L |
+| `st_hobb_wren` | Elder Hobb | He knows no Wren Tallow (heard once CT2 is known). | Fear that saying her name puts out her lamp. | `cl_hobb_locket`, `cl_hobb_letters`, `cl_ledger_entry` | `cl_hobb_speaks` (CT10, core) | L |
+| `st_nim_girl` | Nim | There is nobody in the water. | A promise to keep the girl a secret. | `cl_spyglass_glow`, `cl_kelp_threads`, `cl_drowned_lamp_glow` | `cl_nim_wave` (CT8, core) | L |
+
+Short has four statements, Medium five and Long seven. In Short, Bramwell's admission is the only beat-one route to CT3, so the beat guidance tells the player to challenge him with the press tally. Every core truth keeps a second route that needs no challenge. The knowledge and reactions that used to give these clues freely were removed or rewritten so they no longer give the truth away.
+
+Every ending also has a flawed variant. It plays when the player's case record is flawed (too many wrong final answers or failed challenges). The plot facts stay the same: the lamp is relit or holds, and Wren is found. But some memories stay muddled or some thanks go to the wrong person, and a villager (Hester and Tamsin, Hobb, or Granny and Yarrow) has to set it right afterwards.

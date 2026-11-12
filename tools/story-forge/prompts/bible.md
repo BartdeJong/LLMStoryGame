@@ -13,6 +13,13 @@ Cover:
 - For key truths, the deduction question the player answers, the right answer,
   2-3 plausible wrong answers, and which red herrings the answer rules out.
 - For each ending, the 2-4 summation questions and the truth each one needs.
+- Statements (optional): for some characters, something they say that is false
+  or incomplete, why they hide it (from their secret or motivations), the
+  evidence that breaks it, what they admit and which clue that reveals. Aim for
+  at least 6, spread over different characters, with at least one on a route to
+  a core truth.
+- For each ending, a flawed variant: the same facts, but something is left
+  unsettled or someone else has to put it right.
 - Ending outlines and the conditions needed to reach them.
 
 Keep the story cozy, in English, and free of graphic violence. Every core truth

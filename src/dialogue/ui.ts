@@ -9,6 +9,9 @@ import { getSpriteCanvas } from "../art/characterSprites";
 import type { SpriteSpec } from "../art/spriteSpec";
 import type { SubjectRef } from "../story/types";
 import type { AskEntry, AskOptions } from "./askAbout";
+import type { ChallengeOptions } from "./controller";
+import type { EvidenceRef } from "../story/statements";
+import { el } from "../ui/dom";
 
 const REVEAL_CHARS_PER_SECOND = 40;
 
@@ -20,6 +23,9 @@ export interface DialogueHandlers {
   onGive?(itemId: string): void;
   onAsk?(subject: SubjectRef): void;
   getAskOptions?(): AskOptions;
+  // Challenge: hold a piece of evidence against something the character said.
+  getChallengeOptions?(): ChallengeOptions;
+  onChallenge?(statementId: string, evidence: EvidenceRef): void;
 }
 
 // Sprites shown beside the speaker's name and on the player's lines.
@@ -51,12 +57,6 @@ export interface DialogueBox {
   showNotice(text: string): void;
   setBusy(busy: boolean): void;
   readonly isOpen: boolean;
-}
-
-function el<K extends keyof HTMLElementTagNameMap>(tag: K, className: string): HTMLElementTagNameMap[K] {
-  const node = document.createElement(tag);
-  node.className = className;
-  return node;
 }
 
 export function createDialogueBox(container: HTMLElement): DialogueBox {
@@ -110,10 +110,14 @@ export function createDialogueBox(container: HTMLElement): DialogueBox {
   askButton.type = "button";
   askButton.textContent = "Ask about…";
   askButton.hidden = true;
+  const challengeButton = el("button", "dialogue-ask dialogue-challenge");
+  challengeButton.type = "button";
+  challengeButton.textContent = "Challenge…";
+  challengeButton.hidden = true;
   const leaveButton = el("button", "dialogue-leave");
   leaveButton.type = "button";
   leaveButton.textContent = "Leave";
-  controls.append(askButton, switchButton, leaveButton);
+  controls.append(askButton, challengeButton, switchButton, leaveButton);
 
   const headerText = el("div", "dialogue-header-text");
   headerText.append(speaker, thinking);
@@ -170,6 +174,111 @@ export function createDialogueBox(container: HTMLElement): DialogueBox {
     return button;
   });
 
+  // Challenge picker: first one of the character's heard statements, then the evidence to hold against it.
+  const challengePicker = el("section", "dialogue-ask-picker dialogue-challenge-picker");
+  challengePicker.hidden = true;
+  challengePicker.setAttribute("role", "dialog");
+  challengePicker.setAttribute("aria-label", "Challenge a statement");
+  const challengeHeading = el("p", "dialogue-challenge-heading");
+  const challengeNote = el("p", "dialogue-challenge-note");
+  const challengeList = el("div", "dialogue-ask-list");
+  const challengeBack = el("button", "dialogue-ask-back");
+  challengeBack.type = "button";
+  challengeBack.textContent = "Back";
+  challengeBack.dataset.padHint = "B";
+  challengePicker.append(challengeHeading, challengeNote, challengeList, challengeBack);
+  container.append(challengePicker);
+  let challengeOpen = false;
+  let challengeStatement: { id: string; topic: string; text: string } | null = null;
+  let challengeOptions: ChallengeOptions = { statements: [], evidence: [], locked: false };
+
+  function renderChallenge(): void {
+    challengeList.replaceChildren();
+    if (!challengeStatement) {
+      challengeHeading.textContent = "Which of their words do you doubt?";
+      challengeNote.textContent = "Then show one item or clue that proves it wrong. If it does not fit, they will hear no more challenges this time.";
+      for (const statement of challengeOptions.statements) {
+        const button = el("button", "dialogue-choice dialogue-ask-entry");
+        button.type = "button";
+        button.dataset.padHint = "A";
+        button.textContent = `${statement.topic}: “${statement.text}”`;
+        button.addEventListener("click", () => {
+          challengeStatement = statement;
+          renderChallenge();
+        });
+        challengeList.append(button);
+      }
+    } else {
+      const chosen = challengeStatement;
+      challengeHeading.textContent = `What contradicts “${chosen.text}”?`;
+      challengeNote.textContent = "Choose one item or clue. If it does not fit, they will hear no more challenges this time.";
+      if (challengeOptions.evidence.length === 0) {
+        const empty = el("p", "dialogue-ask-empty");
+        empty.textContent = "You have no items or clues to show yet.";
+        challengeList.append(empty);
+      }
+      for (const entry of challengeOptions.evidence) {
+        const button = el("button", "dialogue-choice dialogue-ask-entry");
+        button.type = "button";
+        button.dataset.padHint = "A";
+        button.textContent = `${entry.subject.type === "item" ? "◆" : "?"} ${entry.label}`;
+        button.addEventListener("click", () => {
+          closeChallenge(false);
+          currentHandlers?.onChallenge?.(chosen.id, entry.subject);
+        });
+        challengeList.append(button);
+      }
+    }
+    challengeList.querySelector<HTMLButtonElement>("button")?.focus() ?? challengeBack.focus();
+  }
+
+  function openChallenge(): void {
+    if (!open || !currentHandlers?.getChallengeOptions) return;
+    challengeOptions = currentHandlers.getChallengeOptions();
+    if (challengeOptions.locked || challengeOptions.statements.length === 0) return;
+    closePicker(false);
+    challengeStatement = challengeOptions.statements.length === 1 ? challengeOptions.statements[0] ?? null : null;
+    challengeOpen = true;
+    challengePicker.hidden = false;
+    renderChallenge();
+  }
+
+  function closeChallenge(restoreFocus = true): void {
+    if (!challengeOpen) return;
+    challengeOpen = false;
+    challengePicker.hidden = true;
+    challengeStatement = null;
+    if (restoreFocus && !challengeButton.hidden) challengeButton.focus();
+  }
+
+  // Back steps from the evidence list to the statements (when there is a choice), then closes.
+  function challengeBackStep(): void {
+    if (challengeStatement && challengeOptions.statements.length > 1) {
+      challengeStatement = null;
+      renderChallenge();
+    } else {
+      closeChallenge();
+    }
+  }
+
+  challengeButton.addEventListener("click", openChallenge);
+  challengeBack.addEventListener("click", challengeBackStep);
+  challengePicker.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") {
+      event.preventDefault();
+      event.stopPropagation();
+      challengeBackStep();
+    }
+  });
+
+  function refreshChallengeButton(): void {
+    const options = currentHandlers?.getChallengeOptions?.();
+    challengeButton.hidden = !options || options.statements.length === 0;
+    challengeButton.disabled = options?.locked ?? false;
+    challengeButton.title = options?.locked ? "They will not hear another challenge in this conversation." : "";
+    challengeButton.textContent = options?.locked ? "Challenge (not now)" : "Challenge…";
+  }
+
   let revealTimer: ReturnType<typeof setInterval> | null = null;
   let finishReveal: (() => void) | null = null;
 
@@ -216,6 +325,10 @@ export function createDialogueBox(container: HTMLElement): DialogueBox {
     },
     onX: () => switchButton.click(),
     onY: () => { if (!askButton.hidden && !askButton.disabled) askButton.click(); },
+  });
+  activateGamepadFocus(challengePicker, {
+    isActive: () => challengeOpen,
+    onBack: () => { challengeBackStep(); },
   });
 
   let pickerOpen = false;
@@ -391,7 +504,9 @@ export function createDialogueBox(container: HTMLElement): DialogueBox {
     },
     close() {
       closePicker(false);
+      closeChallenge(false);
       askButton.hidden = true;
+      challengeButton.hidden = true;
       stopReveal();
       open = false;
       box.hidden = true;
@@ -417,7 +532,9 @@ export function createDialogueBox(container: HTMLElement): DialogueBox {
       replySection.hidden = true;
       switchButton.hidden = true;
       askButton.hidden = true;
+      challengeButton.hidden = true;
       closePicker(false);
+      closeChallenge(false);
     },
     showTurn(turn, handlers) {
       stopReveal();
@@ -449,6 +566,7 @@ export function createDialogueBox(container: HTMLElement): DialogueBox {
         if (!open) return;
         replySection.hidden = false;
         askButton.hidden = !handlers.getAskOptions;
+        refreshChallengeButton();
         switchButton.hidden = currentChoices.length < 2;
         if (currentMode === "choices") renderChoices(handlers);
         else renderFree();
@@ -494,6 +612,7 @@ export function createDialogueBox(container: HTMLElement): DialogueBox {
     setBusy(busy: boolean) {
       box.classList.toggle("dialogue-busy", busy);
       for (const control of box.querySelectorAll<HTMLButtonElement | HTMLInputElement>("button, input")) control.disabled = busy;
+      if (!busy && !challengeButton.hidden) refreshChallengeButton();
     },
   };
 }

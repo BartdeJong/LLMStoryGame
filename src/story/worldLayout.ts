@@ -1,5 +1,3 @@
-import { doorPointsForBearings } from "../world/doorSlots";
-import type { GridPoint } from "../world/types";
 import type { LengthView } from "./loader";
 import { LENGTH_IDS, type StoryPack } from "./types";
 
@@ -102,20 +100,3 @@ export function bearingBetween(from: LocationCell, to: LocationCell): number {
   return (degrees + 360) % 360;
 }
 
-// Door tiles for a location, one per destination and in the same order, each on the side that faces its destination.
-// Returns undefined when a place is missing from the layout, so the caller can fall back to the default spots.
-export function storyDoorPoints(
-  layout: StoryWorldLayout,
-  locationId: string,
-  destinations: readonly string[],
-): GridPoint[] | undefined {
-  const here = layout.get(locationId);
-  if (!here) return undefined;
-  const bearings: number[] = [];
-  for (const destination of destinations) {
-    const there = layout.get(destination);
-    if (!there) return undefined;
-    bearings.push(bearingBetween(here, there));
-  }
-  return doorPointsForBearings(bearings);
-}

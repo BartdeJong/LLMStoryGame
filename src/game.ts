@@ -4,7 +4,7 @@ import { ambienceRecipe } from "./audio/ambienceRecipes";
 import type { BodyShape } from "./art/sprites";
 import type { Tile } from "./world/types";
 import type { DialogueTurn } from "./dialogue/controller";
-import { ConversationController } from "./dialogue/controller";
+import { challengeLine, ConversationController } from "./dialogue/controller";
 import type { AppliedEffects } from "./dialogue/effects";
 import { returnVisitFor, subjectLabel } from "./dialogue/askAbout";
 import type { DialogueContext } from "./dialogue/prompt";
@@ -27,8 +27,10 @@ import { mountPauseMenu } from "./ui/pause";
 import { createObjectiveHud, type ObjectiveHud } from "./ui/objectiveHud";
 import { createProgressToasts, shorten, type ProgressToasts } from "./ui/progressToast";
 import { buildRecap, caseProgress } from "./story/progress";
-import { progressLogOf } from "./story/state";
-import { createStoryJournal, type JournalFact, type JournalQuestion, type JournalRequest, type StoryJournal } from "./ui/storyJournal";
+import { caseRecordOf, progressLogOf } from "./story/state";
+import { answerSummation, finaleHasStakes, markAssisted, nextSummationIndex, summationComplete } from "./story/caseRecord";
+import { findStatement, isStatementBroken, isStatementHeard, type EvidenceRef } from "./story/statements";
+import { createStoryJournal, type JournalFact, type JournalStatement, type JournalQuestion, type JournalRequest, type StoryJournal } from "./ui/storyJournal";
 import { createCaseOverlay, type CaseOverlay } from "./ui/caseOverlay";
 import {
   answerDeduction,
@@ -127,7 +129,6 @@ export class Game {
   private readonly inventoryUI: InventoryUI;
   private readonly storyJournal: StoryJournal;
   private readonly caseOverlay: CaseOverlay;
-  private readonly deductionMisses = new Map<string, number>();
   private readonly lockedDoors = new Set<string>();
   private frameCount = 0;
   private greetingTimer = 0;
@@ -274,6 +275,8 @@ export class Game {
     window.addEventListener("pagehide", this.saveOnPageHide);
     this.animationFrame = requestAnimationFrame(this.frame);
     this.prefetchGreetings();
+    // A save loaded at the finale (or halfway through presenting the case) offers the case again at once.
+    void this.maybeFinish();
   }
 
   private readonly handlePauseKeyDown = (event: KeyboardEvent): void => {
@@ -1131,11 +1134,7 @@ export class Game {
     const questions: JournalQuestion[] = openDeductions(pack, this.story.state).flatMap((truth) => {
       const deduction = truth.deduction;
       if (!deduction) return [];
-      let options = deductionOptions(truth);
-      if ((this.deductionMisses.get(truth.id) ?? 0) >= 2) {
-        const removed = options.find((option) => option !== deduction.answer);
-        options = options.filter((option) => option !== removed);
-      }
+      const options = deductionOptions(truth);
       return [{
         id: truth.id,
         question: deduction.question,
@@ -1143,10 +1142,21 @@ export class Game {
         options,
       }];
     });
+    const statements: JournalStatement[] = pack.cast.flatMap((character) => (character.statements ?? [])
+      .filter((statement) => isStatementHeard(this.story.state, statement.id) || isStatementBroken(this.story.state, statement.id))
+      .map((statement) => ({
+        character: character.name,
+        topic: statement.topic,
+        text: statement.text,
+        ...(isStatementBroken(this.story.state, statement.id) ? { admission: statement.admission } : {}),
+      })));
+    const answeredWrong = caseRecordOf(this.story.state).deductions
+      .filter((entry) => !entry.correct)
+      .flatMap((entry) => pack.truths.find((truth) => truth.id === entry.truthId)?.text ?? []);
     const ruledOut = ruledOutHerrings(pack, this.story.state)
       .map((herring) => ({ description: herring.description, resolution: herring.resolution }));
     const progress = caseProgress(this.story.view, this.story.state);
-    this.storyJournal.render(facts, evidence, requests, { questions, ruledOut, progress });
+    this.storyJournal.render(facts, evidence, requests, { questions, ruledOut, progress, statements, answeredWrong });
   }
 
   private refreshObjective(): void {
@@ -1158,28 +1168,23 @@ export class Game {
     });
   }
 
+  // One answer per question. A wrong answer is final too: the game shows what really happened and confirms the
+  // truth so the story can go on, and the case record keeps the mistake for the ending.
   private answerQuestion(truthId: string, answer: string): void {
-    const truth = this.story.pack.truths.find((candidate) => candidate.id === truthId);
     const result = answerDeduction(this.story.pack, this.story.state, truthId, answer);
-    if (!result.correct) {
+    if (!result.accepted) return;
+    const ruled = result.ruledOut.map((herring) => `Ruled out: ${herring.resolution}`).join(" ");
+    let note: string;
+    if (result.correct) {
+      this.celebrateProgress(truthId);
+      note = `Confirmed: ${result.truth?.text ?? "your deduction was right."}${ruled ? ` ${ruled}` : ""}`;
+    } else {
       soundEffects.play("wrong");
-      const misses = (this.deductionMisses.get(truthId) ?? 0) + 1;
-      this.deductionMisses.set(truthId, misses);
-      this.storyJournal.setQuestionFeedback(
-        truthId,
-        misses === 2
-          ? "Not quite. One of the wrong answers has been set aside to help."
-          : "Not quite. Take another look at the evidence and try again.",
-      );
-      this.refreshJournal();
-      return;
+      this.celebrateProgress();
+      note = `Not quite: you chose "${answer.replace(/[.!?]+$/, "")}". What really happened: ${result.truth?.text ?? ""}${ruled ? ` ${ruled}` : ""}`;
     }
-    this.deductionMisses.delete(truthId);
-    this.celebrateProgress(truthId);
     this.refreshObjective();
     this.refreshJournal();
-    const ruled = result.ruledOut.map((herring) => `Ruled out: ${herring.resolution}`).join(" ");
-    const note = `Confirmed: ${truth?.text ?? "your deduction was right."}${ruled ? ` ${ruled}` : ""}`;
     this.storyJournal.announce(note);
     this.message.textContent = note;
     void this.saveProgress();
@@ -1207,10 +1212,33 @@ export class Game {
     if (!questions) return;
     this.storyJournal.close();
     this.inventoryUI.close();
-    this.caseOverlay.presentCase(questions, summationOptions(this.story.pack, this.story.state), () => {
+    const options = summationOptions(this.story.pack, this.story.state);
+    const done = (): void => {
       this.casePresented = true;
       this.caseOverlay.setCaseButtonVisible(false);
       void this.maybeFinish();
+    };
+    if (!finaleHasStakes()) {
+      // Assisted: the old finale with free retries; nothing is recorded.
+      markAssisted(this.story.state);
+      this.caseOverlay.presentCase(questions, options, done);
+      return;
+    }
+    const truthText = (id: string): string => this.story.pack.truths.find((truth) => truth.id === id)?.text ?? id;
+    this.caseOverlay.presentFinalCase(questions, options, {
+      startAt: nextSummationIndex(this.story.state, questions),
+      onAnswer: (question, answerId) => {
+        answerSummation(this.story.state, question, answerId);
+        void this.saveProgress();
+      },
+      results: () => {
+        const record = caseRecordOf(this.story.state);
+        return questions.map((question) => {
+          const entry = record.summation.find((candidate) => candidate.truthId === question.truthId);
+          return { question: question.question, answer: entry ? truthText(entry.answerId) : "", correct: entry?.correct ?? false, correctAnswer: truthText(question.truthId) };
+        });
+      },
+      onDone: done,
     });
   }
 
@@ -1322,6 +1350,20 @@ export class Game {
         void this.runDialogueTurn(this.conversation.give(itemId));
       },
       getAskOptions: () => this.conversation?.askOptions() ?? { people: [], items: [], evidence: [] },
+      getChallengeOptions: () => this.conversation?.challengeOptions() ?? { statements: [], evidence: [], locked: true },
+      onChallenge: (statementId: string, evidence: EvidenceRef) => {
+        if (!this.conversation) return;
+        const topic = findStatement(this.story.pack, statementId)?.statement.topic ?? "that";
+        const label = subjectLabel(this.story.pack, evidence) ?? evidence.id;
+        this.dialogueBox.showPlayerReply(challengeLine(topic, label));
+        let pending: Promise<DialogueTurn>;
+        try {
+          pending = this.conversation.challenge(statementId, evidence);
+        } catch (error) {
+          pending = Promise.reject(error);
+        }
+        void this.runDialogueTurn(pending);
+      },
       onAsk: (subject: SubjectRef) => {
         if (!this.conversation) return;
         const label = subjectLabel(this.story.pack, subject) ?? subject.id;
@@ -1353,6 +1395,21 @@ export class Game {
 
   private announceEffects(effects: AppliedEffects): void {
     const notices: string[] = [];
+    if (effects.challenge) {
+      const found = findStatement(this.story.pack, effects.challenge.statementId);
+      if (effects.challenge.fits) {
+        this.toasts.show("deduction", "Statement broken", shorten(found?.statement.admission ?? ""));
+        if (!effects.revealedClue) soundEffects.play("deduction");
+        notices.push(`${found?.character.name ?? "They"} admitted the truth.`);
+      } else {
+        soundEffects.play("wrong");
+        notices.push("That did not fit. They will not hear another challenge in this conversation; come back later.");
+      }
+    }
+    if (effects.heardStatement) {
+      const found = findStatement(this.story.pack, effects.heardStatement);
+      notices.push(`Noted in your journal: what ${found?.character.name ?? "they"} said about ${found?.statement.topic ?? "this"}.`);
+    }
     if (effects.resolvedGoal) {
       soundEffects.play("goal");
       notices.push("Goal completed.");
@@ -1408,7 +1465,10 @@ export class Game {
       this.caseOverlay.setCaseButtonVisible(false);
       return false;
     }
-    if (this.story.getSummation(this.areaId) && !this.casePresented) {
+    const summation = this.story.getSummation(this.areaId);
+    // A finale answered before a reload is not asked again.
+    if (summation && finaleHasStakes() && summationComplete(this.story.state, summation)) this.casePresented = true;
+    if (summation && !this.casePresented) {
       // An open conversation is never interrupted; the case is offered once the dialogue box closes.
       this.caseOverlay.setCaseButtonVisible(!this.dialogueBox.isOpen);
       if (!this.dialogueBox.isOpen && !this.caseOffered) {
@@ -1428,6 +1488,7 @@ export class Game {
       this.stop();
       this.onBackToTitle();
     };
+    const summationQuestions = this.story.getSummation(this.areaId);
     const finish = async (choiceIds: string[]): Promise<void> => {
       const ending = await this.story.finishEnding(choiceIds, this.areaId);
       await this.saveProgress();
@@ -1445,7 +1506,7 @@ export class Game {
           this.onBackToTitle();
         },
         {
-          ...buildRecap(this.story.pack, this.story.view, this.story.state),
+          ...buildRecap(this.story.pack, this.story.view, this.story.state, summationQuestions ?? []),
           timePlayedMs: this.persistence.timePlayedMs + Math.max(0, Date.now() - this.startedAt),
         },
       );

@@ -1,5 +1,6 @@
 import { activateGamepadFocus } from "../input/focus";
 import { fillPips, progressLabel, type HudProgress } from "./objectiveHud";
+import { el } from "./dom";
 
 export interface JournalFact {
   readonly importance: "Core" | "Side";
@@ -24,8 +25,19 @@ export interface JournalRuledOut {
   readonly resolution: string;
 }
 
+// Something a character said: a claim, not a fact, until evidence breaks it.
+export interface JournalStatement {
+  readonly character: string;
+  readonly topic: string;
+  readonly text: string;
+  readonly admission?: string; // set once the statement is broken
+}
+
 export interface JournalExtras {
   readonly questions: readonly JournalQuestion[];
+  readonly statements?: readonly JournalStatement[];
+  // Facts confirmed after a wrong final answer, keyed by the fact text.
+  readonly answeredWrong?: readonly string[];
   readonly ruledOut: readonly JournalRuledOut[];
   readonly progress?: Pick<HudProgress, "truthsFound" | "truthsTotal">;
 }
@@ -44,12 +56,6 @@ export interface StoryJournal {
   announce(message: string): void;
   toggle(): void;
   close(): void;
-}
-
-function el<K extends keyof HTMLElementTagNameMap>(tag: K, className: string): HTMLElementTagNameMap[K] {
-  const node = document.createElement(tag);
-  node.className = className;
-  return node;
 }
 
 export function createStoryJournal(
@@ -87,6 +93,7 @@ export function createStoryJournal(
     ["questions", "Open questions"],
     ["facts", "Story facts"],
     ["evidence", "Evidence"],
+    ["statements", "What people said"],
     ["ruled", "Ruled out"],
     ["requests", "Character requests"],
   ] as const) {
@@ -128,6 +135,12 @@ export function createStoryJournal(
   const evidenceEmpty = el("p", "inventory-empty");
   evidenceEmpty.textContent = "No evidence recorded yet.";
 
+  const statementsHeading = el("p", "journal-heading");
+  statementsHeading.textContent = "What people said";
+  const statementsList = el("div", "journal-list");
+  const statementsEmpty = el("p", "inventory-empty");
+  statementsEmpty.textContent = "No one has told you anything worth checking yet.";
+
   const requestsHeading = el("p", "journal-heading");
   requestsHeading.textContent = "Character requests";
   const requestsList = el("div", "journal-list");
@@ -137,6 +150,7 @@ export function createStoryJournal(
     questionsHeading, questionsList, questionsEmpty,
     factsHeading, factsList, factsEmpty,
     evidenceHeading, evidenceList, evidenceEmpty,
+    statementsHeading, statementsList, statementsEmpty,
     ruledHeading, ruledList, ruledEmpty,
     requestsHeading, requestsList, requestsEmpty);
 
@@ -144,6 +158,7 @@ export function createStoryJournal(
     { key: "questions", heading: questionsHeading, list: questionsList, empty: questionsEmpty },
     { key: "facts", heading: factsHeading, list: factsList, empty: factsEmpty },
     { key: "evidence", heading: evidenceHeading, list: evidenceList, empty: evidenceEmpty },
+    { key: "statements", heading: statementsHeading, list: statementsList, empty: statementsEmpty },
     { key: "ruled", heading: ruledHeading, list: ruledList, empty: ruledEmpty },
     { key: "requests", heading: requestsHeading, list: requestsList, empty: requestsEmpty },
   ] as const;
@@ -214,7 +229,9 @@ export function createStoryJournal(
         const row = el("article", "journal-entry journal-question");
         const prompt = el("p", "journal-entry-text");
         prompt.textContent = question.question;
-        row.append(prompt);
+        const final = el("p", "journal-entry-location journal-final-note");
+        final.textContent = "Your answer is final. You can keep looking for evidence before you choose.";
+        row.append(prompt, final);
         if (question.evidence.length > 0) {
           const label = el("p", "journal-entry-label");
           label.textContent = "Evidence so far";
@@ -267,7 +284,9 @@ export function createStoryJournal(
       for (const fact of facts) {
         const row = el("article", "journal-entry");
         const label = el("p", "journal-entry-label");
-        label.textContent = `${fact.importance} truth`;
+        const wrong = extras.answeredWrong?.includes(fact.text) ?? false;
+        label.textContent = wrong ? `${fact.importance} truth · your answer was wrong` : `${fact.importance} truth`;
+        if (wrong) row.classList.add("journal-entry-missed");
         const text = el("p", "journal-entry-text");
         text.textContent = fact.text;
         row.append(label, text);
@@ -284,6 +303,27 @@ export function createStoryJournal(
         row.append(content);
         row.dataset.search = text.toLocaleLowerCase();
         evidenceList.append(row);
+      }
+
+      statementsList.replaceChildren();
+      const statements = extras.statements ?? [];
+      statementsEmpty.hidden = statements.length > 0;
+      for (const statement of statements) {
+        const row = el("article", `journal-entry journal-statement${statement.admission ? " journal-statement-broken" : ""}`);
+        const label = el("p", "journal-entry-label");
+        label.textContent = statement.admission
+          ? `${statement.character} · ${statement.topic} · broken`
+          : `${statement.character} · ${statement.topic} · they said (not a fact)`;
+        const text = el("p", "journal-entry-text");
+        text.textContent = `“${statement.text}”`;
+        row.append(label, text);
+        if (statement.admission) {
+          const admitted = el("p", "journal-entry-location");
+          admitted.textContent = `Admitted: ${statement.admission}`;
+          row.append(admitted);
+        }
+        row.dataset.search = `${statement.character} ${statement.topic} ${statement.text} ${statement.admission ?? ""}`.toLocaleLowerCase();
+        statementsList.append(row);
       }
 
       requestsList.replaceChildren();

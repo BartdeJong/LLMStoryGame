@@ -604,6 +604,3 @@ export function buildLayout(req: LayoutRequest): { layout: Layout; doors: Pt[] }
   return { layout, doors };
 }
 
-export function shuffled<T>(rng: Rng, items: readonly T[]): T[] {
-  return shuffle(rng, items);
-}

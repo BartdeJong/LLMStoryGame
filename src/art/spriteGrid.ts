@@ -145,6 +145,3 @@ export function flare(style: string, below: number): number {
   }
 }
 
-export function hasOutfit(c: Ctx, ...styles: string[]): boolean {
-  return styles.includes(c.outfit.style);
-}

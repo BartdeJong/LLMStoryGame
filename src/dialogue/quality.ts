@@ -1,9 +1,5 @@
 import type { CastMember } from "../story/types";
-import { cleanCharacterLine, rejectionReason } from "./lineCleanup";
-
-export function sanitizeCharacterLine(text: string, characterName = ""): string {
-  return cleanCharacterLine(text, characterName);
-}
+import { rejectionReason } from "./lineCleanup";
 
 // A cleaned line is usable when it is not narration, not addressed to the player as "you feel...",
 // and passes the shared rejection rules (too short, third person, "welcome to <name>", scene text).

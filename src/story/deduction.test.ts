@@ -1,12 +1,12 @@
 import { afterEach, describe, expect, it } from "vitest";
-import fixture from "./fixtures/example-pack.json";
+import fixture from "../../public/stories/example.json";
 import { LLMClient } from "../llm/client";
 import { MockBackend } from "../llm/mock";
 import { setAssistedDeductions } from "./assist";
 import { answerDeduction, collectTwistReveals, deductionOptions, openDeductions, pickSummation } from "./deduction";
 import { getLengthView } from "./loader";
 import { storyMockRespond } from "./mockResponder";
-import { createStoryState, grantTruthsFromFoundClues, markClueFound } from "./state";
+import { caseRecordOf, createStoryState, grantTruthsFromFoundClues, markClueFound } from "./state";
 import { StorySession } from "./storySession";
 import type { StoryPack } from "./types";
 import { validateStoryPack } from "./validate";
@@ -34,21 +34,42 @@ describe("deductions", () => {
     expect(state.truthsReady).toEqual([]);
   });
 
-  it("makes a deduction truth ready, not found, until the right answer", () => {
+  it("makes a deduction truth ready, not found, until it is answered", () => {
     const { pack, state, find } = setup();
     find("cl_mira_talk", "cl_pip_saw");
     expect(state.truthsFound).toEqual(["t_missing"]);
     expect(state.truthsReady).toEqual(["t_night"]);
     expect(openDeductions(pack, state).map((truth) => truth.id)).toEqual(["t_night"]);
 
-    const wrong = answerDeduction(pack, state, "t_night", "The lantern simply blew away in the wind.");
-    expect(wrong).toEqual({ correct: false, ruledOut: [] });
-    expect(state.truthsFound).toEqual(["t_missing"]);
-
     const right = answerDeduction(pack, state, "t_night", pack.truths[1].deduction!.answer);
     expect(right.correct).toBe(true);
     expect(state.truthsFound).toContain("t_night");
     expect(state.truthsReady).toEqual([]);
+    expect(caseRecordOf(state).deductions).toEqual([{ truthId: "t_night", answer: pack.truths[1].deduction!.answer, correct: true }]);
+  });
+
+  it("takes one final answer: a wrong one still confirms the truth and is recorded", () => {
+    const { pack, state, find } = setup();
+    find("cl_mira_talk", "cl_pip_saw");
+    const wrongAnswer = pack.truths[1].deduction!.wrong_answers[0]!;
+    const wrong = answerDeduction(pack, state, "t_night", wrongAnswer);
+    expect(wrong.accepted).toBe(true);
+    expect(wrong.correct).toBe(false);
+    expect(wrong.truth?.id).toBe("t_night");
+    expect(state.truthsFound).toContain("t_night"); // the story goes on
+    expect(openDeductions(pack, state)).toEqual([]);
+    expect(caseRecordOf(state).deductions).toEqual([{ truthId: "t_night", answer: wrongAnswer, correct: false }]);
+
+    // No second try.
+    const again = answerDeduction(pack, state, "t_night", pack.truths[1].deduction!.answer);
+    expect(again.accepted).toBe(false);
+    expect(caseRecordOf(state).deductions).toHaveLength(1);
+  });
+
+  it("never offers fewer options after a miss", () => {
+    const { pack } = setup();
+    const truth = pack.truths[1];
+    expect(deductionOptions(truth)).toHaveLength(1 + truth.deduction!.wrong_answers.length);
   });
 
   it("waits for depends_on truths to be confirmed before a truth becomes ready", () => {

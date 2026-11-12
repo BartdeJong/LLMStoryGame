@@ -8,7 +8,7 @@ This document is the spec and build plan for the coding agent. Section 2 lists d
 
 ## 1. Summary
 
-A top-down 2D pixel-art exploration game that runs as a web app on PC, iPad and iPhone. The player walks around procedurally generated areas and moves between them through "doors". Each area is created the first time the player enters it. The story backbone (plot, cast, mystery, clues, endings) is authored in advance as a "story pack" (section 6.1), created with a repeatable Story Forge step using GitHub Copilot (section 6.2). A small language model running entirely on the player's device then brings that story to life while the game is played: it writes dialogue, area and object descriptions and flavor within the backbone. The tone is cozy exploration and mystery. Every story has a real ending and comes in three lengths; the player chooses the story and the length at the start.
+A top-down 2D pixel-art exploration game that runs as a web app on PC, iPad and iPhone. The player walks around procedurally generated areas and moves between them through "doors". Each area is created the first time the player enters it. The story backbone (plot, cast, mystery, clues, endings) is authored in advance as a "story pack" (section 6.1), created with a repeatable Story Forge step using GitHub Copilot (section 6.2). A small language model running entirely on the player's device then brings that story to life while the game is played: it writes dialogue, area and object descriptions and flavor within the backbone. The tone is cozy exploration and mystery. Every story has a real ending and is shipped in one length, its longest version; the player chooses the story at the start.
 
 ## 2. Fixed decisions
 
@@ -22,12 +22,12 @@ A top-down 2D pixel-art exploration game that runs as a web app on PC, iPad and 
 8. Interaction: the player talks to characters (people, animals, mythical creatures and so on) and interacts with objects (for example takes items from chests). The LLM imagines the objects too.
 9. Dialogue input: reply choices and free-text typing, whichever fits the conversation best at that moment.
 10. Characters never say the same thing twice, but keep their goal for existing in the game. Do not store old replies and do not check new replies against earlier ones. The LLM simply writes fresh text each conversation.
-11. Every story has a real ending. The player chooses the story and one of its three lengths (Short, Medium, Long) at the start of a playthrough.
+11. Every story has a real ending. The player chooses the story at the start of a playthrough. A story has exactly one length, its longest version; there is no length choice.
 12. Game state is stored on the device, including imagined objects, areas and characters.
 13. Device support: WebGPU only. No WASM/CPU fallback in the first version (too slow on phones for dialogue and area generation, and GitHub Pages cannot send the headers multithreaded WASM needs). Revisit later only if there is demand.
 14. Sound: simple sound effects only, generated in code with Web Audio (no audio files), with a mute toggle. No music.
 15. Hosting: GitHub Pages (free), static files only.
-16. Story packs: stories are authored in advance with GitHub Copilot (Story Forge, section 6.2), stored as JSON files in the repo, and loaded by the game. The step can be repeated to create any number of stories. Each story has three lengths. Packs must meet minimum complexity rules enforced by a validator (section 6.1).
+16. Story packs: stories are authored in advance with GitHub Copilot (Story Forge, section 6.2), stored as JSON files in the repo, and loaded by the game. The step can be repeated to create any number of stories. Each story has one length. Packs must meet minimum complexity rules enforced by a validator (section 6.1).
 
 ## 3. Tech stack
 
@@ -104,20 +104,16 @@ Menus the LLM picks from (so code can draw and generate): biomes, palettes, spri
 
 ## 6. Story engine
 
-- At game start the player picks a story (from `public/stories/index.json`) and a length. The game loads that story pack and uses the chosen length's definition (locations, cast, truths, beats, endings). Nothing about the plot is invented at runtime.
-- Game length, chosen together with the story (each pack defines the real numbers; these are the targets the packs aim for):
-  - Short: about 15 minutes, 5 to 6 areas.
-  - Medium: about 45 minutes, 12 to 15 areas.
-  - Long: about 2 hours, 25 or more areas.
-  Treat these as tunable constants.
-- Code controls pacing by following the pack's beats for the chosen length: which locations are open, which clues and characters appear where, and what must be found before the next stage opens. The LLM is told which truth a location should hint at (or none) and writes the wording only.
+- At game start the player picks a story (from `public/stories/index.json`). The game loads that story pack and uses its one length's definition (locations, cast, truths, beats, endings). Nothing about the plot is invented at runtime.
+- A story has exactly one length, the longest version (the validator reports `MULTIPLE_LENGTHS` otherwise). The complexity table below keeps its Short, Medium and Long columns as the minimums for whichever length a pack defines; the Long targets are about 2 hours and 25 or more areas. Treat these as tunable constants.
+- Code controls pacing by following the pack's beats for the story's length: which locations are open, which clues and characters appear where, and what must be found before the next stage opens. The LLM is told which truth a location should hint at (or none) and writes the wording only.
 - The ending area is only offered once enough truths are found (or a minimum area count is reached plus required truths). Which ending plays follows the pack's ending conditions (truths found, goals resolved, key choices). The LLM writes the scene text from the pack's ending outline, then the game shows an ending screen and offers a new game.
 - Story state (persisted): story pack id and version, chosen length, truths found/unfound, goal states, item list, visited areas, short rolling summary used in prompts. The pack itself is not copied into the save; saves record the pack id and version, and loading a save with a missing or changed pack version shows a clear message.
 - The summary is regenerated by the LLM every few areas from structured state, kept very short.
 
 ### 6.1 Story packs (authored backbone)
 
-A story is a **story pack**: one JSON file at `public/stories/<story-id>.json`, plus `public/stories/index.json` listing the available stories (id, title, logline, available lengths, estimated minutes). Packs are created with the Story Forge step (6.2), reviewed by the user and committed to the repo. Adding a story needs no code change.
+A story is a **story pack**: one JSON file at `public/stories/<story-id>.json`, plus `public/stories/index.json` listing the available stories (id, title, logline, length, estimated minutes). Packs are created with the Story Forge step (6.2), reviewed by the user and committed to the repo. Adding a story needs no code change.
 
 Division of labour: the pack decides who, what, where and why (plot, cast, mystery, clues, key items, location graph, endings). The on-device LLM decides how it sounds (dialogue lines, descriptions, flavor, minor extras).
 
@@ -131,9 +127,9 @@ Schema (versioned with `schema_version`; ship a JSON Schema and matching TypeScr
 - **locations**: id, biome, mood, palette, role in the story, required characters, objects and clues, doors (to location ids, with lock conditions), whether it is a hub.
 - **twists and red herrings**: id, description, setup clue ids, payoff trigger.
 - **endings**: id, conditions (truth ids found, goals resolved, key choices), scene outline, tone, epilogue notes.
-- **lengths**: `short`, `medium`, `long`. Each defines target minutes, the ordered locations (grouped into beats or acts), the cast included, core and side truths needed, subplots included, pacing beats (what must be found before the next stage opens) and which endings are available.
+- **lengths**: exactly one of `short`, `medium` or `long` (the longest version), defining target minutes, the ordered locations (grouped into beats or acts), the cast included, core and side truths needed, subplots included, pacing beats (what must be found before the next stage opens) and which endings are available.
 
-The three lengths are three versions of one story. Short is the spine: a complete, satisfying story on the simplest path. Medium adds subplots, side characters and red herrings. Long adds more subplots, twists and endings. Anything shared between lengths stays identical (same character, same goal, same truths); length-specific content is marked as such.
+A story ships as one version only: its longest, richest cut. Shorter and medium cuts are no longer authored or played.
 
 Minimum complexity (enforced by the validator; the numbers live in one config file and can be tuned):
 
@@ -156,17 +152,16 @@ At runtime the game loads the pack and chosen length, derives the area order and
 
 A repeatable workflow, run in the repository with the Copilot coding agent, that produces one story pack per run. Run it as often as you like to get more stories.
 
-Files in `tools/story-forge/`: `README.md` (the workflow), `prompts/` (templates for each step), `schema/story-pack.schema.json` and `examples/` (a small sample pack).
+Files in `tools/story-forge/`: `README.md` (the workflow), `prompts/` (templates for each step), `schema/story-pack.schema.json`, and the sample pack `public/stories/example.json`.
 
 Steps per story. Use a separate chat session for each step to keep credits low:
 1. **Brief.** The user writes a few lines: theme, setting, tone, twist wishes, things to avoid. Saved as `stories/briefs/<id>.md`.
 2. **Story bible.** The agent writes `stories/bibles/<id>.md` for the Long version first, since it is the richest: premise, the central mystery and its solution, truths and their dependencies, cast with goals and secrets, locations, twists and red herrings, endings.
 3. **User review.** The user reads the bible and approves it or asks for changes. Nothing continues until it is approved.
-4. **Length cut.** The agent derives the Medium and Short versions from the approved Long bible and writes down what was cut and why, so each shorter version stays coherent.
-5. **Pack generation.** The agent converts the approved bible to `public/stories/<id>.json` following the schema, including the style guide and the three length definitions. Do it in parts (identity and cast; truths, clues and items; locations and doors; lengths and endings) so each response stays within output limits.
-6. **Validation loop.** Run `npm run validate-stories`. The agent fixes errors until it passes.
-7. **Read-through.** A debug command prints the solved path for each length (ordered locations, clues found, characters met, ending reached). The user skims it to check the story makes sense.
-8. **Register and commit.** Add the story to `index.json` and commit.
+4. **Pack generation.** The agent converts the approved bible to `public/stories/<id>.json` following the schema, including the style guide and the length definition. Do it in parts (identity and cast; truths, clues and items; locations and doors; lengths and endings) so each response stays within output limits.
+5. **Validation loop.** Run `npm run validate-stories`. The agent fixes errors until it passes.
+6. **Read-through.** A debug command prints the solved path for each length (ordered locations, clues found, characters met, ending reached). The user skims it to check the story makes sense.
+7. **Register and commit.** Add the story to `index.json` and commit.
 
 Rules for the writing agent: follow the schema; every core truth must be discoverable by two routes; no character may be required to solve the mystery if their goal can be blocked; keep the cozy tone (no graphic violence); English only; keep text fields within the length limits.
 
@@ -259,7 +254,7 @@ Rules for working within the budget:
 - Keep changes small and well-scoped. Run tests and real-device checks yourself rather than asking the agent to.
 - Check the Copilot usage page after M1 and M2 and again after M4 to compare real credit use with the plan.
 - If a listed model is not available in the picker, use the nearest cheaper alternative first and escalate only when needed.
-- Writing a full story (three lengths) is output-heavy. A rough guess is 100 to 300 credits per story with Sonnet 5.5, but measure the first one and plan the number of stories around your remaining credits.
+- Writing a full story is output-heavy. A rough guess is 100 to 300 credits per story with Sonnet 5.5, but measure the first one and plan the number of stories around your remaining credits.
 
 **M1. Engine skeleton**
 - Vite and TypeScript project, canvas pixel renderer, game loop, keyboard and touch input, camera, collision, a hand-made test map.
@@ -302,8 +297,8 @@ Rules for working within the budget:
 - Test: install to the home screen on iPhone and iPad; airplane-mode play; 30-minute soak test with no memory growth problems.
 
 **S1. Story Forge (repeatable; start after M4.5, before M5 is tested with real content)**
-- Create `tools/story-forge/` with the workflow, prompt templates, schema and example (section 6.2) and the read-through debug command. Run the workflow to produce the first full story with three lengths.
-- Test: the validator passes for all three lengths; the read-through shows a sensible solved path for each; the user approves the story. Repeat the workflow for every further story. Each new story needs no code change.
+- Create `tools/story-forge/` with the workflow, prompt templates, schema and example (section 6.2) and the read-through debug command. Run the workflow to produce the first full story.
+- Test: the validator passes; the read-through shows a sensible solved path; the user approves the story. Repeat the workflow for every further story. Each new story needs no code change.
 
 ## 15. Risks and things to verify early
 

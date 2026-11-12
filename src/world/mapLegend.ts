@@ -35,8 +35,6 @@ const CELLS: Readonly<Record<string, readonly [ground: Tile, feature: Tile]>> = 
   "*": [Tile.Grass, Tile.Flowers],
 };
 
-export const MAP_CHARACTERS = [...Object.keys(CELLS), "1", "2", "3", "4", "5", "6", "7", "8", "9"];
-
 export interface ParsedAreaMap {
   width: number;
   height: number;
@@ -78,25 +76,3 @@ export function parseAreaMap(rows: readonly string[]): ParsedAreaMap {
   return { width, height, layers: { ground, feature }, doorSlots, start };
 }
 
-// The reverse, for the bake tool. `doors` maps "x,y" to a 1-based door number.
-export function formatAreaMap(layers: TileLayers, doors: ReadonlyMap<string, number> = new Map(), start?: GridPoint): string[] {
-  return layers.ground.map((row, y) => row.map((ground, x) => {
-    const door = doors.get(`${x},${y}`);
-    if (door !== undefined) return String(door);
-    if (start && start.x === x && start.y === y) return "@";
-    const feature = layers.feature[y]![x]!;
-    for (const [char, [g, f]] of Object.entries(CELLS)) {
-      if (char !== "@" && g === ground && f === feature) return char;
-    }
-    if (feature === Tile.Wall) return "#";
-    if (feature === Tile.Tree) return "T";
-    if (feature === Tile.Rock) return ground === Tile.Floor ? "O" : "o";
-    if (feature === Tile.Flowers) return "*";
-    if (feature === Tile.Counter) return "C";
-    if (ground === Tile.Void) return " ";
-    if (ground === Tile.Water) return "~";
-    if (ground === Tile.Path) return ":";
-    if (ground === Tile.Grass) return ",";
-    return ".";
-  }).join(""));
-}

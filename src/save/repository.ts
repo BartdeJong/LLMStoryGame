@@ -41,10 +41,28 @@ function isStoryState(value: unknown): value is JsonRecord & {
     && isRecord(value.characterMemory)
     && Object.values(value.characterMemory).every(isCharacterMemory)
     && Number.isInteger(value.areasSinceSummary)
+    && isStringArray(value.statementsHeard)
+    && isCaseRecord(value.caseRecord)
     // The progress log arrived after version 6 and is optional, so older saves load without it.
     && (value.progressLog === undefined || (Array.isArray(value.progressLog) && value.progressLog.every((entry) =>
       isRecord(entry) && typeof entry.id === "string" && ["clue", "truth", "item"].includes(String(entry.kind))
       && Number.isFinite(entry.at))));
+}
+
+function isEvidence(value: unknown): boolean {
+  return isRecord(value) && (value.type === "item" || value.type === "clue") && typeof value.id === "string";
+}
+
+// The case record (format 7): every final answer and challenge.
+function isCaseRecord(value: unknown): boolean {
+  return isRecord(value)
+    && Array.isArray(value.deductions) && value.deductions.every((entry) => isRecord(entry)
+      && typeof entry.truthId === "string" && typeof entry.answer === "string" && typeof entry.correct === "boolean")
+    && Array.isArray(value.summation) && value.summation.every((entry) => isRecord(entry)
+      && typeof entry.truthId === "string" && typeof entry.answerId === "string" && typeof entry.correct === "boolean")
+    && Array.isArray(value.challenges) && value.challenges.every((entry) => isRecord(entry)
+      && typeof entry.statementId === "string" && isEvidence(entry.evidence) && typeof entry.fits === "boolean")
+    && typeof value.assisted === "boolean";
 }
 
 function isSaveMetadata(value: unknown): value is SaveMetadata {
@@ -146,6 +164,22 @@ function migrateV5(value: JsonRecord): JsonRecord {
   return { ...rest, formatVersion: 6, areaIds };
 }
 
+// Statements and the case record arrive: older saves start with nothing heard and an empty record.
+function migrateV6(value: JsonRecord): JsonRecord {
+  const storyState = isRecord(value.storyState) ? value.storyState : {};
+  return {
+    ...value,
+    formatVersion: 7,
+    storyState: {
+      ...storyState,
+      statementsHeard: isStringArray(storyState.statementsHeard) ? storyState.statementsHeard : [],
+      caseRecord: isCaseRecord(storyState.caseRecord)
+        ? storyState.caseRecord
+        : { deductions: [], summation: [], challenges: [], assisted: false },
+    },
+  };
+}
+
 export function normalizeSave(value: unknown): GameSave {
   if (!isRecord(value) || !Number.isInteger(value.formatVersion)) {
     throw new Error("This file is not a valid game save.");
@@ -156,6 +190,7 @@ export function normalizeSave(value: unknown): GameSave {
   if (migrated.formatVersion === 3) migrated = migrateV3(migrated);
   if (migrated.formatVersion === 4) migrated = migrateV4(migrated);
   if (migrated.formatVersion === 5) migrated = migrateV5(migrated);
+  if (migrated.formatVersion === 6) migrated = migrateV6(migrated);
   if (migrated.formatVersion !== SAVE_FORMAT_VERSION) {
     throw new Error(`Save format version ${String(value.formatVersion)} is not supported.`);
   }

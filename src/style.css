@@ -2574,3 +2574,85 @@ html[data-reduced-motion="true"] *::after {
     font-size: 18px;
   }
 }
+
+/* Challenge: hold evidence against something a character said. */
+.dialogue-challenge {
+  border-color: #a8794a;
+  background: #4a3424;
+}
+
+.dialogue-challenge:disabled {
+  opacity: 0.6;
+}
+
+.dialogue-challenge-note {
+  margin: 0;
+  color: #d8cfae;
+  font-size: 12px;
+}
+
+.journal-statement .journal-entry-label {
+  color: #e2b27a;
+}
+
+.journal-statement-broken .journal-entry-text {
+  text-decoration: line-through;
+  opacity: 0.75;
+}
+
+.journal-final-note {
+  font-style: italic;
+}
+
+.journal-entry-missed .journal-entry-label {
+  color: #e29a7a;
+}
+
+.case-result-list {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding-left: 18px;
+}
+
+.case-result-wrong,
+.ending-recap-wrong {
+  color: #e29a7a;
+}
+
+.case-result-right,
+.ending-recap-right {
+  color: #a9d6a0;
+}
+
+.ending-flawed-note,
+.ending-recap-result {
+  font-weight: 700;
+}
+
+.ending-recap-result-clean { color: #a9d6a0; }
+.ending-recap-result-mistakes { color: #e7cd84; }
+.ending-recap-result-flawed { color: #e29a7a; }
+
+.ending-recap-heading {
+  margin: 12px 0 4px;
+  font-size: 1rem;
+}
+
+.ending-recap-answers {
+  display: grid;
+  gap: 8px;
+  padding-left: 20px;
+}
+
+.ending-recap-answers li {
+  display: grid;
+  gap: 2px;
+}
+
+.dialogue-challenge-heading {
+  margin: 0;
+  color: #f0e2b0;
+  font-size: 14px;
+  font-weight: 700;
+}

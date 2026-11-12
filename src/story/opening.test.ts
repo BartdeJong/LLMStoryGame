@@ -38,19 +38,19 @@ describe("story openings and objectives", () => {
     expect(pack).toBeDefined();
     if (!pack) return;
 
-    const view = getLengthView(pack, "short");
+    const view = getLengthView(pack);
     const story = new StorySession(
       pack,
       view,
       new LLMClient(new MockBackend(), { pauseWhenHidden: false }),
     );
-    expect(story.currentBeat.id).toBe("b_short_arrival");
+    expect(story.currentBeat.id).toBe("b_long_harbour");
     const firstObjective = story.currentBeat.objective;
     expect(story.currentBeat.objective).toBe(firstObjective);
 
     story.state.truthsFound.push(...(story.currentBeat.must_find.truths ?? []));
 
-    expect(story.currentBeat.id).toBe("b_short_ledger_light");
+    expect(story.currentBeat.id).toBe("b_long_lights");
   });
 
   it("still accepts older packs that do not contain opening metadata", () => {

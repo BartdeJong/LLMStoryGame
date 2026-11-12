@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import fixture from "./fixtures/example-pack.json";
+import fixture from "../../public/stories/example.json";
 import exampleStory from "../../public/stories/example.json";
 import lanternTide from "../../public/stories/lanterntide.json";
 import holmesAshEnvelope from "../../public/stories/holmesashenvelope.json";

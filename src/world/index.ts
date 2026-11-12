@@ -1,6 +1,4 @@
 export {
-  AREA_HEIGHT,
-  AREA_WIDTH,
   allPointsReachable,
   isWalkable,
   reachableTiles,

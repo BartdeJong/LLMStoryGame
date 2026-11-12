@@ -9,13 +9,7 @@ import { checkSupport } from "./support";
 import { Priority } from "./types";
 import type { LoadResult } from "./types";
 import { WebLLMBackend } from "./webllmBackend";
-
-function el<K extends keyof HTMLElementTagNameMap>(tag: K, className = "", text = ""): HTMLElementTagNameMap[K] {
-  const node = document.createElement(tag);
-  node.className = className;
-  node.textContent = text;
-  return node;
-}
+import { el } from "../ui/dom";
 
 export async function mountLLMDebugScreen(): Promise<void> {
   document.documentElement.classList.add("llm-debug-mode");

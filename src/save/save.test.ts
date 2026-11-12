@@ -10,7 +10,7 @@ import { buildPackArea } from "../story/packArea";
 import { StorySession } from "../story/storySession";
 import { loadPackForSave, SavePackError } from "./pack";
 import { normalizeSave, SaveRepository } from "./repository";
-import type { GameSave } from "./types";
+import { SAVE_FORMAT_VERSION, type GameSave } from "./types";
 import type { StoryPack } from "../story/types";
 
 const repositories: SaveRepository[] = [];
@@ -35,9 +35,16 @@ function makeSave(): GameSave {
     collectedEntities: ["item:key"],
     summary: "A saved story.",
     areasSinceSummary: 1,
+    statementsHeard: ["st_heard"],
+    caseRecord: {
+      deductions: [{ truthId: "truth", answer: "A guess", correct: false }],
+      summation: [{ truthId: "truth", answerId: "truth", correct: true }],
+      challenges: [{ statementId: "st_heard", evidence: { type: "item", id: "key" }, fits: false }],
+      assisted: false,
+    },
   };
   return {
-    formatVersion: 6,
+    formatVersion: 7,
     slotId: "slot-test",
     metadata: {
       storyTitle: "Test story",
@@ -137,6 +144,25 @@ describe("save persistence", () => {
     expect(story.getArea("l_bakery").entities?.length).toBeGreaterThan(0);
   });
 
+  it("migrates version 6 saves with nothing heard and an empty case record", () => {
+    const legacy = JSON.parse(JSON.stringify(makeSave())) as { formatVersion: number; storyState: Record<string, unknown> };
+    legacy.formatVersion = 6;
+    delete legacy.storyState.statementsHeard;
+    delete legacy.storyState.caseRecord;
+
+    const migrated = normalizeSave(legacy);
+
+    expect(migrated.formatVersion).toBe(7);
+    expect(migrated.storyState.statementsHeard).toEqual([]);
+    expect(migrated.storyState.caseRecord).toEqual({ deductions: [], summation: [], challenges: [], assisted: false });
+  });
+
+  it("rejects a current save whose case record is malformed", () => {
+    const save = JSON.parse(JSON.stringify(makeSave())) as { storyState: Record<string, unknown> };
+    save.storyState.caseRecord = { deductions: "nope" };
+    expect(() => normalizeSave(save)).toThrow("not a valid game save");
+  });
+
   it("migrates version 5 saves, keeping only which areas were visited", () => {
     const legacy = JSON.parse(JSON.stringify(makeSave())) as Record<string, unknown>;
     legacy.formatVersion = 5;
@@ -145,7 +171,7 @@ describe("save persistence", () => {
 
     const migrated = normalizeSave(legacy);
 
-    expect(migrated.formatVersion).toBe(6);
+    expect(migrated.formatVersion).toBe(SAVE_FORMAT_VERSION);
     expect(migrated.areaIds).toEqual(["start"]);
     expect("areas" in migrated).toBe(false);
   });
@@ -161,7 +187,7 @@ describe("save persistence", () => {
 
     const migrated = normalizeSave(legacy);
 
-    expect(migrated.formatVersion).toBe(6);
+    expect(migrated.formatVersion).toBe(SAVE_FORMAT_VERSION);
     expect(migrated.metadata.timePlayedMs).toBe(0);
   });
 
@@ -177,7 +203,7 @@ describe("save persistence", () => {
 
     const migrated = normalizeSave(legacy);
 
-    expect(migrated.formatVersion).toBe(6);
+    expect(migrated.formatVersion).toBe(SAVE_FORMAT_VERSION);
     expect(migrated.storyState.needsRecorded).toEqual([]);
     expect(migrated.storyState.knowledgeTold).toEqual([]);
   });
@@ -195,7 +221,7 @@ describe("save persistence", () => {
 
     const migrated = normalizeSave(legacy);
 
-    expect(migrated.formatVersion).toBe(6);
+    expect(migrated.formatVersion).toBe(SAVE_FORMAT_VERSION);
     expect(migrated.storyState.truthsFound).toEqual(["truth"]);
     expect(migrated.storyState.truthsReady).toEqual([]);
     expect(migrated.storyState.herringsRuledOut).toEqual([]);
@@ -213,7 +239,7 @@ describe("save persistence", () => {
 
     const migrated = normalizeSave(legacy);
 
-    expect(migrated.formatVersion).toBe(6);
+    expect(migrated.formatVersion).toBe(SAVE_FORMAT_VERSION);
     expect(migrated.storyState.characterMemory).toEqual({ c_oswin: { visits: 1, askedAbout: [] } });
   });
 

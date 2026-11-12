@@ -91,12 +91,22 @@ async function simulate(pack: StoryPack, lengthId: LengthId): Promise<void> {
       if (goalOpen && option) await controller.give(option.itemId);
       else if (clueOpen) {
         const knowledge = character.knowledge.find((item) => item.clue_id === clueId);
-        if (!knowledge) break;
-        await controller.reply(knowledge.ask);
+        const statement = character.statements?.find((candidate) => candidate.clue_id === clueId);
+        if (knowledge) await controller.reply(knowledge.ask);
+        else if (statement) await hearAndBreak(controller, statement.id, statement.ask);
+        else break;
       } else break;
     }
     if (goalStateId) expect(story.state.resolvedGoalStates, `resolved ${goalStateId}`).toContain(goalStateId);
     if (clueId) expect(story.state.cluesFound, `found ${clueId}`).toContain(clueId);
+  };
+
+  // Hears a statement, then challenges it with the evidence the solver used.
+  const hearAndBreak = async (controller: ConversationController, statementId: string, ask: string): Promise<void> => {
+    if (!story.state.statementsHeard?.includes(statementId)) await controller.reply(ask);
+    expect(story.state.statementsHeard, `heard ${statementId}`).toContain(statementId);
+    const [type, id] = (expected.statements.get(statementId) ?? "").split(":") as ["item" | "clue", string];
+    await controller.challenge(statementId, { type, id });
   };
 
   // A solving player answers every open casebook question as soon as it appears.
@@ -208,7 +218,7 @@ describe("M7 pacing and ending simulations", () => {
 
   it("draws the Sherlock cast in-game from their authored sprite specs", async () => {
     const pack = loadPack(holmes);
-    const view = getLengthView(pack, "short");
+    const view = getLengthView(pack);
     const story = new StorySession(pack, view, await makeClient());
     const area = await story.start();
     const characters = area.entities?.filter((entity) => entity.kind === "character") ?? [];

@@ -1,15 +1,6 @@
 import { Tile } from "./types";
 import type { Area, GridPoint } from "./types";
 
-export const AREA_WIDTH = 40;
-export const AREA_HEIGHT = 24;
-
-export function createLayers(groundTile: Tile): { ground: Tile[][]; feature: Tile[][] } {
-  return {
-    ground: Array.from({ length: AREA_HEIGHT }, () => Array<Tile>(AREA_WIDTH).fill(groundTile)),
-    feature: Array.from({ length: AREA_HEIGHT }, () => Array<Tile>(AREA_WIDTH).fill(Tile.Grass)),
-  };
-}
 
 export function isWalkable(area: Area, x: number, y: number): boolean {
   if (x < 0 || y < 0 || x >= area.width || y >= area.height) return false;
@@ -48,27 +39,3 @@ export function allPointsReachable(area: Area): boolean {
   return [...area.doors, ...area.spawnPoints].every((point) => reachable.has(`${point.x},${point.y}`));
 }
 
-export function repairReachability(area: Area): void {
-  const destinations: GridPoint[] = [...area.doors, ...area.spawnPoints];
-  for (const destination of destinations) {
-    let x = area.entry.x;
-    let y = area.entry.y;
-    while (x !== destination.x) {
-      x += Math.sign(destination.x - x);
-      carve(area, x, y);
-    }
-    while (y !== destination.y) {
-      y += Math.sign(destination.y - y);
-      carve(area, x, y);
-    }
-  }
-  carve(area, area.entry.x, area.entry.y);
-}
-
-export function carve(area: Area, x: number, y: number): void {
-  if (x < 0 || y < 0 || x >= area.width || y >= area.height) return;
-  area.layers.ground[y]![x] = area.biome === "cave" || area.biome === "building" || area.biome === "ruins"
-    ? Tile.Floor
-    : Tile.Path;
-  area.layers.feature[y]![x] = Tile.Grass;
-}

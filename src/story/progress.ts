@@ -1,5 +1,8 @@
 import type { LengthView } from "./loader";
-import { progressLogOf, type StoryState } from "./state";
+import { caseResult, CASE_RESULT_LABELS, recapAnswers, type CaseResultKind, type RecapAnswer, type RecapStatements } from "./caseRecord";
+import type { SummationQuestion } from "./deduction";
+import { caseRecordOf, progressLogOf, type StoryState } from "./state";
+import { isStatementBroken, isStatementHeard, lengthStatements } from "./statements";
 import type { StoryPack } from "./types";
 
 export interface CaseProgress {
@@ -27,10 +30,18 @@ export interface CaseRecap {
   items: string[];
   optionalCluesFound: number;
   optionalCluesTotal: number;
+  result: { kind: CaseResultKind; label: string };
+  answers: RecapAnswer[]; // every final answer, right or wrong
+  statements: RecapStatements;
 }
 
 // "How you solved it": everything is derived from state, so old saves without a progress log still get a recap.
-export function buildRecap(pack: StoryPack, view: LengthView, state: StoryState): CaseRecap {
+export function buildRecap(
+  pack: StoryPack,
+  view: LengthView,
+  state: StoryState,
+  summationQuestions: readonly SummationQuestion[] = [],
+): CaseRecap {
   const log = progressLogOf(state);
   const inOrder = (kind: "truth" | "item", held: readonly string[]): { id: string; at?: number }[] => {
     const logged = log.filter((entry) => entry.kind === kind && held.includes(entry.id))
@@ -56,6 +67,9 @@ export function buildRecap(pack: StoryPack, view: LengthView, state: StoryState)
   const items = inOrder("item", state.itemsHeld)
     .flatMap(({ id }) => pack.items.find((item) => item.id === id)?.name ?? []);
 
+  const record = caseRecordOf(state);
+  const result = caseResult(record);
+  const statements = lengthStatements(pack, view.definition);
   const sideIds = new Set(view.sideTruths.map((truth) => truth.id));
   const optional = pack.clues.filter((clue) => clue.truth_id !== undefined && sideIds.has(clue.truth_id));
   return {
@@ -64,6 +78,14 @@ export function buildRecap(pack: StoryPack, view: LengthView, state: StoryState)
     items,
     optionalCluesFound: optional.filter((clue) => state.cluesFound.includes(clue.id)).length,
     optionalCluesTotal: optional.length,
+    result: { kind: result.kind, label: CASE_RESULT_LABELS[result.kind] },
+    answers: recapAnswers(pack, state, summationQuestions),
+    statements: {
+      broken: statements.filter(({ statement }) => isStatementBroken(state, statement.id)).length,
+      standing: statements.filter(({ statement }) => !isStatementBroken(state, statement.id)).length,
+      heardStanding: statements.filter(({ statement }) => isStatementHeard(state, statement.id) && !isStatementBroken(state, statement.id)).length,
+      missedChallenges: record.challenges.filter((entry) => !entry.fits).length,
+    },
   };
 }
 

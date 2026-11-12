@@ -67,6 +67,18 @@ export function formatReadthrough(pack: StoryPack, lengthId: LengthId): string {
     const truth = pack.truths.find((entry) => entry.id === id);
     return truth ? `${truth.text} [${id}]` : id;
   });
+  const evidenceName = (ref: string): string => {
+    const [kind, id = ""] = ref.split(":");
+    if (kind === "item") return `item ${named(id, pack.items)}`;
+    return `clue "${pack.clues.find((entry) => entry.id === id)?.text ?? id}"`;
+  };
+  const statementLines = pack.cast.flatMap((member) => (member.statements ?? []).map((statement) => {
+    const evidence = solved.statements.get(statement.id);
+    const reveals = statement.clue_id ? ` -> reveals [${statement.clue_id}]` : "";
+    return evidence
+      ? `${member.name}: "${statement.text}" broken with ${evidenceName(evidence)} [${evidence}]${reveals} [${statement.id}]`
+      : solved.cast.has(member.id) ? `${member.name}: "${statement.text}" left standing (cannot be heard or broken) [${statement.id}]` : "";
+  })).filter(Boolean);
   const endingLines = solved.endings.map((id) => {
     const ending = pack.endings.find((entry) => entry.id === id);
     return ending ? `${ending.scene_outline} [${id}]` : id;
@@ -86,6 +98,9 @@ export function formatReadthrough(pack: StoryPack, lengthId: LengthId): string {
     "",
     "Items used:",
     list(itemLines),
+    "",
+    "Statements broken:",
+    list(statementLines),
     "",
     "Truths revealed:",
     list(truthLines),

@@ -2,13 +2,7 @@ import { activateGamepadFocus } from "../input/focus";
 import { getSelectedLocalModelId, LLM_CONFIG, saveSelectedLocalModelId } from "../llm/config";
 import { getLLMProviderSettings, saveLLMProviderSettings, validateBedrockEndpoint } from "../llm/providerSettings";
 import type { LLMProviderSettings } from "../llm/providerSettings";
-
-function el<K extends keyof HTMLElementTagNameMap>(tag: K, className: string, text = ""): HTMLElementTagNameMap[K] {
-  const node = document.createElement(tag);
-  node.className = className;
-  node.textContent = text;
-  return node;
-}
+import { el } from "./dom";
 
 export interface ProviderSetupSelection {
   readonly settings: LLMProviderSettings;

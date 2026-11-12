@@ -2,7 +2,7 @@ import { SYSTEM } from "../llm/prompts";
 import { endingSceneSchema } from "../llm/shapes";
 import { Priority } from "../llm/types";
 import type { LLMClient } from "../llm/client";
-import type { Ending, StoryPack } from "./types";
+import type { Ending, FlawedEnding, StoryPack } from "./types";
 
 export const ENDING_START = "ENDING:";
 export const ENDING_END = "END ENDING";
@@ -12,6 +12,7 @@ export interface EndingScene {
   endingTitle: string;
   scene: string;
   epilogue: string;
+  flawed?: boolean; // the authored flawed variant played
 }
 
 export interface EndingChoice {
@@ -35,35 +36,39 @@ function titleCase(value: string): string {
     .join(" ");
 }
 
-export function buildEndingPrompt(pack: StoryPack, ending: Ending): string {
+// The variant, when given, replaces the outline, tone and epilogue notes (a flawed case).
+export function buildEndingPrompt(pack: StoryPack, ending: Ending, variant?: FlawedEnding | null): string {
+  const source = variant ?? ending;
   return [
     "Write the final scene for this cozy mystery. Keep every plot fact within the outline; do not add a new twist.",
     ENDING_START,
     JSON.stringify({
       story_title: pack.identity.title,
-      outline: ending.scene_outline,
-      tone: ending.tone,
-      epilogue_notes: ending.epilogue_notes,
+      outline: source.scene_outline,
+      tone: source.tone,
+      epilogue_notes: source.epilogue_notes,
     }),
     ENDING_END,
     "Return JSON with scene (a short, warm ending scene) and epilogue (one or two concise sentences honoring the notes).",
   ].join("\n");
 }
 
-export async function writeEnding(client: LLMClient, pack: StoryPack, ending: Ending): Promise<EndingScene> {
+export async function writeEnding(client: LLMClient, pack: StoryPack, ending: Ending, variant?: FlawedEnding | null): Promise<EndingScene> {
+  const source = variant ?? ending;
   const result = await client.generateJSON({
     priority: Priority.Dialogue,
     system: SYSTEM,
     tag: "ending",
     schema: endingSceneSchema,
     maxTokens: 400,
-    prompt: buildEndingPrompt(pack, ending),
+    prompt: buildEndingPrompt(pack, ending, variant),
   });
   const generated = result.status === "ok" && result.value.scene.trim() && result.value.epilogue.trim();
   return {
     endingId: ending.id,
     endingTitle: endingTitle(ending.id),
-    scene: generated ? result.value.scene.trim() : ending.scene_outline,
-    epilogue: generated ? result.value.epilogue.trim() : ending.epilogue_notes,
+    scene: generated ? result.value.scene.trim() : source.scene_outline,
+    epilogue: generated ? result.value.epilogue.trim() : source.epilogue_notes,
+    ...(variant ? { flawed: true } : {}),
   };
 }

@@ -6,6 +6,7 @@ import type { PaletteName } from "../art/palettes";
 import type { SpriteSpec } from "../art/spriteSpec";
 import type { Biome, FloorStyle, WallStyle } from "../world/types";
 
+// Names a story's length. A pack defines exactly one of them (the longest version; see storyLengthOf).
 export const LENGTH_IDS = ["short", "medium", "long"] as const;
 export type LengthId = (typeof LENGTH_IDS)[number];
 
@@ -94,6 +95,28 @@ export interface Reaction {
   clue_id?: string;
 }
 
+// Evidence that breaks a statement: any one listed item the player holds or clue they found is enough.
+export interface StatementEvidence {
+  items?: string[];
+  clues?: string[];
+}
+
+// Something a character claims that is false or leaves out the important part. The player hears it in
+// conversation, finds evidence against it and challenges it; code decides whether the evidence fits. The
+// admission is never shown to the model before the statement is broken.
+export interface Statement {
+  id: string;
+  topic: string; // at most 3 words
+  ask: string; // what a player would naturally say to bring this up
+  keywords: string[];
+  text: string; // the cover story, spoken in the character's voice
+  requires?: Requirement; // when the statement can be heard
+  broken_by: StatementEvidence;
+  admission: string; // what the character admits once the statement is broken
+  clue_id?: string; // the clue the admission reveals
+  rebuff?: string; // authored line when a challenge does not fit (a deflection is used otherwise)
+}
+
 export interface GoalHints {
   unmet: string[];
   in_progress: string[];
@@ -119,6 +142,7 @@ export interface CastMember {
   goal_hints: GoalHints;
   deflections: string[];
   reactions?: Reaction[];
+  statements?: Statement[];
 }
 
 export type Importance = "core" | "side";
@@ -247,6 +271,13 @@ export interface SummationEntry {
   truth_id: string; // must be one of the ending's condition truths
 }
 
+// Plays instead of the normal ending when the player's case record is flawed (src/story/caseRecord.ts).
+export interface FlawedEnding {
+  scene_outline: string;
+  tone: string;
+  epilogue_notes: string;
+}
+
 export interface Ending {
   id: string;
   conditions: EndingConditions;
@@ -255,6 +286,7 @@ export interface Ending {
   scene_outline: string;
   tone: string;
   epilogue_notes: string;
+  flawed?: FlawedEnding;
 }
 
 export interface Beat {
@@ -308,16 +340,16 @@ export interface StoryPack {
   lengths: Partial<Record<LengthId, LengthDefinition>>;
 }
 
+// A story has exactly one length: the longest version. It is named here and defined in the pack's `lengths`.
 export interface StoryIndexEntry {
   id: string;
   title: string;
   logline: string;
-  lengths: LengthId[];
-  estimated_minutes: Partial<Record<LengthId, number>>;
+  length: LengthId;
+  estimated_minutes?: number;
 }
 
 export interface StoryIndex {
   stories: StoryIndexEntry[];
 }
 
-export const SCHEMA_VERSION = 2;

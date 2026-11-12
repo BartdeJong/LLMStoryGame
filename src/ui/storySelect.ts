@@ -1,18 +1,10 @@
 import { getLengthView, loadStoryIndex, loadStoryPack, StoryLoadError, type LengthView } from "../story/loader";
-import type { LengthId, StoryIndexEntry, StoryPack } from "../story/types";
+import type { StoryIndexEntry, StoryPack } from "../story/types";
 import { activateGamepadFocus } from "../input/focus";
+import { el } from "./dom";
 
-const LENGTH_LABELS: Record<LengthId, string> = { short: "Short", medium: "Medium", long: "Long" };
-
-function el<K extends keyof HTMLElementTagNameMap>(tag: K, className: string, text = ""): HTMLElementTagNameMap[K] {
-  const node = document.createElement(tag);
-  node.className = className;
-  node.textContent = text;
-  return node;
-}
-
-// Lists the stories from index.json. Choosing a length loads and validates the pack,
-// then hands the pack and length view to onChosen, which starts the game.
+// Lists the stories from index.json. Choosing a story loads and validates the pack,
+// then hands the pack and its view to onChosen, which starts the game. Every story has one length.
 export async function mountStorySelectScreen(
   root: HTMLElement,
   onChosen: (view: LengthView, pack: StoryPack) => void,
@@ -33,12 +25,12 @@ export async function mountStorySelectScreen(
     status.replaceChildren(...lines.map((line) => el("div", "", line)));
   };
 
-  const choose = async (entry: StoryIndexEntry, length: LengthId, buttons: HTMLButtonElement[]): Promise<void> => {
+  const choose = async (entry: StoryIndexEntry, buttons: HTMLButtonElement[]): Promise<void> => {
     buttons.forEach((b) => { b.disabled = true; });
     status.textContent = `Loading "${entry.title}"...`;
     try {
       const pack = await loadStoryPack(entry.id);
-      const view = getLengthView(pack, length);
+      const view = getLengthView(pack);
       status.textContent = "";
       onChosen(view, pack);
     } catch (error) {
@@ -56,14 +48,13 @@ export async function mountStorySelectScreen(
       card.append(el("h2", "story-card-title", entry.title), el("p", "", entry.logline));
       const row = el("div", "story-lengths");
       const buttons: HTMLButtonElement[] = [];
-      for (const length of entry.lengths) {
-        const minutes = entry.estimated_minutes[length];
-        const button = el("button", "llm-button", `${LENGTH_LABELS[length]}${minutes ? ` (~${minutes} min)` : ""}`);
-        button.type = "button";
-        button.addEventListener("click", () => void choose(entry, length, buttons));
-        buttons.push(button);
-        row.append(button);
-      }
+      const minutes = entry.estimated_minutes;
+      const button = el("button", "llm-button", `Play${minutes ? ` (~${minutes} min)` : ""}`);
+      button.type = "button";
+      button.setAttribute("aria-label", `Play ${entry.title}${minutes ? `, about ${minutes} minutes` : ""}`);
+      button.addEventListener("click", () => void choose(entry, buttons));
+      buttons.push(button);
+      row.append(button);
       card.append(row);
       list.append(card);
     }

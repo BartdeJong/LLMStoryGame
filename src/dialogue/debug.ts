@@ -1,6 +1,5 @@
 import { getLengthView, loadStoryIndex, loadStoryPack } from "../story/loader";
-import type { LengthId, StoryPack, SubjectRef } from "../story/types";
-import { LENGTH_IDS } from "../story/types";
+import type { StoryPack, SubjectRef } from "../story/types";
 import { addTruth, giveItem, markClueFound } from "../story/state";
 import type { StoryState } from "../story/state";
 import { subjectLabel } from "./askAbout";
@@ -12,24 +11,16 @@ import { checkSupport } from "../llm/support";
 import { WebLLMBackend } from "../llm/webllmBackend";
 import { runModelSetup, mountUnsupportedScreen } from "../ui/modelScreens";
 import { storyMockRespond } from "../story/mockResponder";
-import { ConversationController } from "./controller";
+import { challengeLine, ConversationController } from "./controller";
+import { findStatement, markStatementHeard } from "../story/statements";
+import type { EvidenceRef } from "../story/statements";
 import type { PlayerReply } from "./controller";
 import { DIALOGUE_FEEDBACK_TAGS } from "./feedback";
 import type { DialogueFeedbackMessage, DialogueFeedbackSession, DialogueFeedbackTag } from "./feedback";
 import type { DialogueTurn } from "./controller";
+import { el } from "../ui/dom";
 
 const FEEDBACK_ENDPOINT = "/__dialogue-feedback";
-
-function el<K extends keyof HTMLElementTagNameMap>(
-  tag: K,
-  className = "",
-  text = "",
-): HTMLElementTagNameMap[K] {
-  const node = document.createElement(tag);
-  node.className = className;
-  node.textContent = text;
-  return node;
-}
 
 function id(): string {
   return globalThis.crypto?.randomUUID?.() ?? `${Date.now()}-${Math.random().toString(36).slice(2)}`;
@@ -83,11 +74,9 @@ export async function mountDialogueDebugScreen(): Promise<void> {
 
   const selectionControls = el("div", "dialogue-debug-controls");
   const storySelect = el("select", "dialogue-debug-select");
-  const lengthSelect = el("select", "dialogue-debug-select");
   const characterSelect = el("select", "dialogue-debug-select");
   for (const [labelText, select] of [
     ["Story ", storySelect],
-    ["Length ", lengthSelect],
     ["Character ", characterSelect],
   ] as const) {
     const label = el("label", "", labelText);
@@ -145,6 +134,13 @@ export async function mountDialogueDebugScreen(): Promise<void> {
   const askButton = el("button", "llm-button", "Ask about subject");
   askButton.type = "button";
   askControls.append(askSelect, askButton);
+  // Challenge a statement of this character with the evidence picked in the subject list above.
+  const challengeControls = el("div", "dialogue-debug-controls");
+  const challengeSelect = el("select", "dialogue-debug-select");
+  challengeSelect.setAttribute("aria-label", "Statement to challenge");
+  const challengeButton = el("button", "llm-button", "Challenge with subject");
+  challengeButton.type = "button";
+  challengeControls.append(challengeSelect, challengeButton);
   const quickReplies = el("div", "dialogue-debug-quick-replies");
   const playerForm = el("form", "dialogue-debug-player-form");
   const playerInput = el("input", "dialogue-debug-player-input");
@@ -157,7 +153,7 @@ export async function mountDialogueDebugScreen(): Promise<void> {
   const retrySaveButton = el("button", "llm-button", "Retry saving");
   retrySaveButton.type = "button";
   retrySaveButton.hidden = true;
-  chatPanel.append(transcript, feedbackPanel, askControls, quickReplies, playerForm, retrySaveButton);
+  chatPanel.append(transcript, feedbackPanel, askControls, challengeControls, quickReplies, playerForm, retrySaveButton);
   shell.append(header, setupPanel, chatPanel);
   root.append(shell);
 
@@ -173,6 +169,7 @@ export async function mountDialogueDebugScreen(): Promise<void> {
   let unsaved = false;
   let truthChecks: HTMLInputElement[] = [];
   let itemChecks: HTMLInputElement[] = [];
+  let statementChecks: HTMLInputElement[] = [];
 
   function setStatus(text: string, isError = false): void {
     status.textContent = text;
@@ -181,21 +178,30 @@ export async function mountDialogueDebugScreen(): Promise<void> {
 
   function chosenView() {
     if (!pack) throw new Error("Choose a story before starting a conversation.");
-    return getLengthView(pack, lengthSelect.value as LengthId);
+    return getLengthView(pack);
   }
 
   function selectedCharacter() {
     const view = chosenView();
     const character = view.cast.find((candidate) => candidate.id === characterSelect.value);
-    if (!character) throw new Error("Choose a character in the selected story length.");
+    if (!character) throw new Error("Choose a character in the selected story.");
     return character;
   }
 
-  function selectedState(): { truthsFound: string[]; itemsHeld: string[] } {
+  function selectedState(): { truthsFound: string[]; itemsHeld: string[]; statementsHeard: string[] } {
     return {
       truthsFound: truthChecks.filter((input) => input.checked).map((input) => input.value),
       itemsHeld: itemChecks.filter((input) => input.checked).map((input) => input.value),
+      statementsHeard: statementChecks.filter((input) => input.checked).map((input) => input.value),
     };
+  }
+
+  function renderChallengeOptions(): void {
+    challengeSelect.replaceChildren();
+    if (!pack) return;
+    const character = pack.cast.find((member) => member.id === characterSelect.value);
+    for (const statement of character?.statements ?? []) option(challengeSelect, statement.id, `${statement.topic}: ${statement.text.slice(0, 60)}`);
+    challengeControls.hidden = challengeSelect.options.length === 0;
   }
 
   function makeCheck(text: string, value: string, list: HTMLElement, target: HTMLInputElement[]): void {
@@ -210,16 +216,12 @@ export async function mountDialogueDebugScreen(): Promise<void> {
 
   function renderPackOptions(): void {
     if (!pack) return;
-    const availableLengths = LENGTH_IDS.filter((length) => pack?.lengths[length]);
-    lengthSelect.replaceChildren();
-    for (const length of availableLengths) option(lengthSelect, length, length);
-    if (availableLengths.length === 0) throw new Error(`Story "${pack.identity.title}" has no playable lengths.`);
     renderLengthOptions();
   }
 
   function renderLengthOptions(): void {
     if (!pack) return;
-    const view = getLengthView(pack, lengthSelect.value as LengthId);
+    const view = getLengthView(pack);
     characterSelect.replaceChildren();
     for (const character of view.cast) option(characterSelect, character.id, character.name);
     askSelect.replaceChildren();
@@ -235,7 +237,14 @@ export async function mountDialogueDebugScreen(): Promise<void> {
     const items = el("details", "dialogue-debug-state-group");
     items.append(el("summary", "", "Player inventory"));
     for (const item of pack.items) makeCheck(item.name, item.id, items, itemChecks);
-    stateOptions.append(truths, items);
+    statementChecks = [];
+    const statements = el("details", "dialogue-debug-state-group");
+    statements.append(el("summary", "", "Heard statements"));
+    for (const member of view.cast) {
+      for (const statement of member.statements ?? []) makeCheck(`${member.name}: ${statement.text}`, statement.id, statements, statementChecks);
+    }
+    stateOptions.append(truths, items, statements);
+    renderChallengeOptions();
   }
 
   async function loadSelectedPack(): Promise<void> {
@@ -282,15 +291,16 @@ export async function mountDialogueDebugScreen(): Promise<void> {
     for (const button of quickReplies.querySelectorAll<HTMLButtonElement>("button")) button.disabled = value || Boolean(pendingFeedbackId) || unsaved;
     askSelect.disabled = value || !controller || Boolean(pendingFeedbackId) || unsaved;
     askButton.disabled = askSelect.disabled;
+    challengeSelect.disabled = askSelect.disabled;
+    challengeButton.disabled = askSelect.disabled || !controller?.challengeOptions() || Boolean(controller?.challengeOptions().locked);
     startButton.disabled = value || !client || !pack || Boolean(session);
     endButton.disabled = value || unsaved || Boolean(pendingFeedbackId);
     retrySaveButton.disabled = value;
     loadButton.disabled = value || Boolean(session);
     modelSelect.disabled = value || Boolean(session) || useMock;
     storySelect.disabled = value || Boolean(session);
-    lengthSelect.disabled = value || Boolean(session);
     characterSelect.disabled = value || Boolean(session);
-    for (const checkbox of [...truthChecks, ...itemChecks]) checkbox.disabled = value || Boolean(session);
+    for (const checkbox of [...truthChecks, ...itemChecks, ...statementChecks]) checkbox.disabled = value || Boolean(session);
     for (const control of feedbackPanel.querySelectorAll<HTMLTextAreaElement | HTMLInputElement | HTMLButtonElement>("textarea, input, button")) {
       control.disabled = value;
     }
@@ -417,6 +427,39 @@ export async function mountDialogueDebugScreen(): Promise<void> {
 
   askButton.addEventListener("click", () => void submitAsk());
 
+  async function submitChallenge(): Promise<void> {
+    if (!session || !controller || !pack || !labState || busy || pendingFeedbackId || unsaved) return;
+    const separator = askSelect.value.indexOf(":");
+    const subject = { type: askSelect.value.slice(0, separator), id: askSelect.value.slice(separator + 1) } as SubjectRef;
+    if (subject.type === "cast") {
+      setStatus("Pick an item or a clue in the subject list to challenge with.", true);
+      return;
+    }
+    const evidence = subject as EvidenceRef;
+    const statementId = challengeSelect.value;
+    // The lab is a sandbox: the statement counts as heard and the evidence as held.
+    markStatementHeard(labState, statementId);
+    if (evidence.type === "item") giveItem(labState, evidence.id);
+    else markClueFound(labState, evidence.id);
+    const topic = findStatement(pack, statementId)?.statement.topic ?? statementId;
+    session.turns.push({ id: id(), speaker: "player", text: challengeLine(topic, subjectLabel(pack, evidence) ?? evidence.id), createdAt: timestamp() });
+    renderTranscript();
+    quickReplies.replaceChildren();
+    setBusy(true);
+    if (!(await persistSession())) {
+      setBusy(false);
+      return;
+    }
+    try {
+      await generateCharacterTurn(controller.challenge(statementId, evidence));
+    } catch (error) {
+      setStatus(`The challenge could not be made: ${error instanceof Error ? error.message : String(error)}`, true);
+      setBusy(false);
+    }
+  }
+
+  challengeButton.addEventListener("click", () => void submitChallenge());
+
   async function submitPlayerTurn(reply: PlayerReply): Promise<void> {
     if (!session || !controller || busy || pendingFeedbackId || unsaved || !reply.text.trim()) return;
     const text = reply.text.trim();
@@ -446,12 +489,13 @@ export async function mountDialogueDebugScreen(): Promise<void> {
     if (!client || !pack || session) return;
     try {
       const selectedPack = pack;
-      const view = getLengthView(selectedPack, lengthSelect.value as LengthId);
+      const view = getLengthView(selectedPack);
       const character = selectedCharacter();
       const setup = selectedState();
       const story = new StorySession(selectedPack, view, client);
       for (const truthId of setup.truthsFound) addTruth(story.state, truthId);
       for (const itemId of setup.itemsHeld) giveItem(story.state, itemId);
+      for (const statementId of setup.statementsHeard) markStatementHeard(story.state, statementId);
       const location = selectedPack.locations.find((entry) => entry.id === character.home_location);
       const context = {
         locationName: location?.name ?? selectedPack.identity.title,
@@ -623,7 +667,7 @@ export async function mountDialogueDebugScreen(): Promise<void> {
   });
 
   storySelect.addEventListener("change", () => void loadSelectedPack());
-  lengthSelect.addEventListener("change", renderLengthOptions);
+  characterSelect.addEventListener("change", renderChallengeOptions);
   startButton.addEventListener("click", () => void startConversation());
   endButton.addEventListener("click", endConversation);
   playerForm.addEventListener("submit", (event) => {

@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import fixture from "../story/fixtures/example-pack.json";
+import fixture from "../../public/stories/example.json";
 import { BedrockGatewayBackend } from "../llm/bedrockGatewayBackend";
 import { LLMClient } from "../llm/client";
 import { MockBackend } from "../llm/mock";

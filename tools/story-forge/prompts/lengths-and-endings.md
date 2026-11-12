@@ -1,13 +1,13 @@
 # Pack part 4: lengths and endings
 
-Convert the approved bible and length-cut decisions into the JSON members for
+Convert the approved bible into the JSON members for
 `endings` and `lengths`, following the supplied
 `schema/story-pack.schema.json` exactly. Return only these members as a JSON
-fragment. Define short, medium, and long; preserve the approved beat order,
-starting location, included cast, required truths, subplots, twists,
-red herrings, and available endings for each. Ensure beat requirements are
+fragment. Define exactly one length (the longest version, normally `long`) under
+`lengths`; preserve the approved beat order, starting location, included cast,
+required truths, subplots, twists, red herrings, and available endings. Ensure beat requirements are
 discoverable before the next beat opens and each ending is reachable.
-For every length, include `opening.context` with a brief, spoiler-safe
+Include `opening.context` with a brief, spoiler-safe
 orientation for a new player. Give every beat a player-facing `objective` and
 an actionable `guidance` line that points to a reachable next step from that
 beat's locations. The opening screen and persistent in-game lead use these
@@ -19,11 +19,16 @@ For each ending that depends on the player solving the case, add a
 appear in that ending's `conditions.truths`, so list the truths the player
 must have confirmed there. Endings without a `summation` play as soon as their
 conditions are met.
+
+Give each ending an optional `flawed` variant: `{ scene_outline, tone,
+epilogue_notes }`. It plays instead of the normal scene when the player's case
+record is flawed (many wrong final answers or failed challenges). Keep every
+plot fact of the normal ending; the case is still closed, but something is left
+unsettled or someone else has to put it right. Keep it cozy and never punishing.
+
 Approved bible:
 <paste the complete approved bible here>
 
-Length-cut decisions:
-<paste the relevant approved decisions here>
 
 Accepted identity, cast, truths, clues, items, and locations:
 <paste the accepted earlier fragments here>

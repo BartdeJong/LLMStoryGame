@@ -4,7 +4,6 @@ import holmes from "../../public/stories/holmesashenvelope.json";
 import lanterntide from "../../public/stories/lanterntide.json";
 import { LLMClient } from "../llm/client";
 import { MockBackend } from "../llm/mock";
-import { doorPointsForBearings } from "../world/doorSlots";
 import { bakeSimple } from "./fixtures/bakeSimple";
 import { getLengthView } from "./loader";
 import { storyMockRespond } from "./mockResponder";
@@ -21,22 +20,6 @@ function loadPack(id: string): StoryPack {
   if (!report.pack) throw new Error(`pack ${id} is invalid`);
   return report.pack;
 }
-
-describe("door spots", () => {
-  it("puts doors on the edge that matches their bearing", () => {
-    const [north, east, south, west] = doorPointsForBearings([0, 90, 180, 270]);
-    expect(north).toEqual({ x: 20, y: 2 });
-    expect(east).toEqual({ x: 37, y: 12 });
-    expect(south).toEqual({ x: 20, y: 21 });
-    expect(west).toEqual({ x: 2, y: 12 });
-  });
-
-  it("gives doors with the same bearing their own tiles next to each other", () => {
-    const points = doorPointsForBearings([90, 90, 90, 450, -270]);
-    expect(new Set(points.map(({ x, y }) => `${x},${y}`)).size).toBe(points.length);
-    for (const point of points) expect(point.x).toBe(37);
-  });
-});
 
 describe("story world layout", () => {
   for (const id of Object.keys(PACKS)) {

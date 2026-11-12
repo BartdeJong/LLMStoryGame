@@ -73,3 +73,12 @@ export const DIALOGUE_LIMITS = {
   topicWords: 3,
   lineChars: 200, // greetings, hints and deflections
 };
+
+// How the case record turns into a result at the ending (src/story/caseRecord.ts). The share of mistakes is
+// (wrong final answers + weighted failed challenges) / (final answers + weighted challenges).
+export const CASE_RESULT = {
+  // Any mistake below this share is a solve with mistakes; at or above it the case is flawed.
+  flawedShare: 0.4,
+  // A failed challenge weighs less than a wrong deduction: it costs a conversation, not the answer.
+  challengeWeight: 0.5,
+};

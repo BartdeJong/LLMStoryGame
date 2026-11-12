@@ -6,9 +6,11 @@ import { findDoorLock, isRequirementMet, missingRequirementNames } from "./requi
 import { endingChoiceLabel, writeEnding } from "./ending";
 import { pickSummation, type SummationQuestion } from "./deduction";
 import type { EndingChoice, EndingScene } from "./ending";
-import { createStoryState, giveItem, grantTruthsFromFoundClues, markClueFound, markCollected, markVisited, summaryDue } from "./state";
+import { caseRecordOf, createStoryState, giveItem, grantTruthsFromFoundClues, markClueFound, markCollected, markVisited, summaryDue } from "./state";
 import type { StoryState } from "./state";
 import { refreshSummary } from "./summary";
+import { statementForClue } from "./statements";
+import { caseResult, endingVariant } from "./caseRecord";
 import { layoutStoryWorld, type LocationCell, type StoryWorldLayout } from "./worldLayout";
 import type { Beat, CastMember, Ending, Item, StoryPack } from "./types";
 import type { GameSave } from "../save/types";
@@ -166,7 +168,8 @@ export class StorySession {
       )
       .sort((a, b) => endingSpecificity(b) - endingSpecificity(a))[0];
     if (!ending) throw new Error("No ending matches the choices and story so far.");
-    return writeEnding(this.client, this.pack, ending);
+    // A flawed case plays the ending's authored flawed variant, when it has one.
+    return writeEnding(this.client, this.pack, ending, endingVariant(ending, caseResult(caseRecordOf(this.state))));
   }
 
   getAvailableCharacterClues(characterId: string): { id: string; text: string }[] {
@@ -177,6 +180,8 @@ export class StorySession {
           (source) => source.type === "character" && source.id === characterId,
         );
         if (!availableHere || this.state.cluesFound.includes(clue.id)) return false;
+        // A clue behind one of this character's statements is not offered: it takes a challenge.
+        if (statementForClue(this.pack, characterId, clue.id)) return false;
         return isRequirementMet(clue.requirements, this.state);
       })
       .map((clue) => ({ id: clue.id, text: clue.text }));

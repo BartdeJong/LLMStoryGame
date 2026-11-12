@@ -1,22 +1,21 @@
 import { describe, expect, it } from "vitest";
-import fixture from "./fixtures/example-pack.json";
-import publicExample from "../../public/stories/example.json";
+import fixture from "../../public/stories/example.json";
 import schema from "../../tools/story-forge/schema/story-pack.schema.json";
 import { checkSchema } from "./jsonSchema";
-import { getLengthView, loadStoryIndex, loadStoryPack, parseStoryIndex, StoryLoadError } from "./loader";
+import { getLengthView, storyLengthOf, loadStoryIndex, loadStoryPack, parseStoryIndex, StoryLoadError } from "./loader";
 import { solveLength } from "./solver";
 import type { StoryPack } from "./types";
 import { formatIssue, validateStoryPack } from "./validate";
 import { seededIconRecipe } from "./recipes";
+import storyIndex from "../../public/stories/index.json";
+import lanterntidePack from "../../public/stories/lanterntide.json";
+import holmesPack from "../../public/stories/holmesashenvelope.json";
+import paddingtonPack from "../../public/stories/paddingtonhat.json";
 
 const fresh = (): StoryPack => structuredClone(fixture) as unknown as StoryPack;
 const codes = (data: unknown): string[] => validateStoryPack(data).errors.map((e) => e.code);
 
 describe("example pack", () => {
-  it("is identical to the public copy", () => {
-    expect(publicExample).toEqual(fixture);
-  });
-
   describe("semantic item icon fallbacks", () => {
     it.each([
       ["i_overdue_book", "An old repair book", "book"],
@@ -167,11 +166,11 @@ describe("loader", () => {
 
   it("loads the index and a pack, then exposes the length view in beat order", async () => {
     const fetcher = respond({
-      "index.json": { stories: [{ id: "example", title: "T", logline: "L", lengths: ["short"], estimated_minutes: { short: 15 } }] },
+      "index.json": { stories: [{ id: "example", title: "T", logline: "L", length: "short", estimated_minutes: 15 }] },
       "example.json": fixture,
     });
     const index = await loadStoryIndex(fetcher);
-    expect(index.stories[0].lengths).toEqual(["short"]);
+    expect(index.stories[0]).toMatchObject({ length: "short", estimated_minutes: 15 });
     const view = getLengthView(await loadStoryPack("example", fetcher), "short");
     expect(view.locations.map((l) => l.id)).toEqual(["l_square", "l_bakery", "l_garden", "l_library", "l_clocktower"]);
     expect(view.cast).toHaveLength(4);
@@ -192,5 +191,34 @@ describe("loader", () => {
     await expect(loadStoryPack("nope", respond({}))).rejects.toThrow(/HTTP 404/);
     expect(() => getLengthView(fresh(), "long")).toThrow(/no "long" length/);
     expect(() => parseStoryIndex({ stories: [{ id: "x" }] })).toThrow(/stories\[0\]/);
+  });
+});
+
+describe("one length per story", () => {
+  it("uses the only defined length when none is named", () => {
+    const pack = fresh();
+    expect(storyLengthOf(pack)).toBe("short");
+    expect(getLengthView(pack).length).toBe("short");
+  });
+
+  it("rejects a pack that defines more than one length", () => {
+    const pack = fresh();
+    pack.lengths.medium = structuredClone(pack.lengths.short!);
+    const report = validateStoryPack(pack);
+    expect(report.errors.map((issue) => issue.code)).toContain("MULTIPLE_LENGTHS");
+  });
+
+  it("rejects an index entry without a valid length", () => {
+    expect(() => parseStoryIndex({ stories: [{ id: "a", title: "A", logline: "L", lengths: ["short"] }] })).toThrow(/valid length/);
+    expect(parseStoryIndex({ stories: [{ id: "a", title: "A", logline: "L", length: "long" }] }).stories[0]).toEqual({ id: "a", title: "A", logline: "L", length: "long" });
+  });
+
+  it("ships exactly one length per story pack", () => {
+    const packs: Record<string, { lengths: Record<string, unknown> }> = {
+      example: fixture, lanterntide: lanterntidePack, holmesashenvelope: holmesPack, paddingtonhat: paddingtonPack,
+    };
+    for (const entry of storyIndex.stories) {
+      expect(Object.keys(packs[entry.id]!.lengths), entry.id).toEqual([entry.length]);
+    }
   });
 });

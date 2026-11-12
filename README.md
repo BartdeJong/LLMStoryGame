@@ -11,6 +11,12 @@ Move with **WASD** or the **arrow keys**. Walk onto a path, cave opening, gate, 
 
 The **Map** button shows every explored area as a card, placed where the area lies in the world (north is up), and each area keeps its place as you explore. A card lists the area's exits: the arrow in front of an exit tells you which side of the area that exit is on, and the name after it is the area it leads to. Exits you have not used yet are marked as unexplored, and locked exits say what is still needed. Lines join the two ends of each path, with the paths from your current area in gold. A **Lead** tag marks the places, and the exits to unexplored places, that belong to your current lead, and a card names the people you have already talked to there. Choose a card to see the way there: the exits to take are numbered and stay marked until you arrive or choose the card again. The map highlights your current area and can center the view on it. Open **Journal** to search and filter discovered story facts, evidence, and character requests. A request only shows a finding place after a character has told you where to look. The inventory can also be searched.
 
+### Detective work
+
+Not everyone tells you the whole truth. When a character says something worth checking, it is noted in the journal under **What people said**, marked as their claim, not a fact. Once you hold an item or have found a clue that contradicts it, open **Challenge…** in the conversation (next to **Ask about…**), pick what they said, then pick the item or clue. If it fits, they admit the truth and you gain a clue. If it does not, they brush you off and will not hear another challenge until you talk to them again; the miss is remembered.
+
+Answers are final. Each casebook question is answered once, so keep looking for evidence until you are sure. A wrong answer is not a dead end: the game shows what really happened and the story goes on, but the mistake is remembered. At the finale you present your case once, question by question, and hear how you did at the end. The ending reflects your record: a clean solve, a solve with mistakes, or a flawed case, which in some stories plays a different version of the ending. The recap lists every answer, whether it was right, and how many statements you broke or left standing. With **Assisted deductions** on, truths confirm by themselves and nothing counts as a mistake.
+
 Run `npm run build` to type-check and create the static site in `dist/`.
 Run `npm run preview` after building to test the production bundle locally.
 
@@ -22,12 +28,12 @@ Areas are never generated while you play. Every location in a story pack carries
 its finished map, door signs, style, decor and the tile of every person, object,
 item and clue (`location.area`); the game only reads it. The Story Forge bake
 step writes those blocks, and `npm run validate-stories` checks that every door,
-placement and decor tile is valid and reachable in every story length.
+placement and decor tile is valid and reachable.
 
 ## Test character dialogue and save feedback
 
 Run `npm run dev` and open `http://localhost:5173/?debug=dialogue`. Load the
-on-device model, choose a story, length, and character, then start a conversation.
+on-device model, choose a story and character, then start a conversation.
 After each character reply, add feedback or explicitly choose **No feedback**
 before continuing. The optional story-context controls let you set known truths
 and inventory items for a test.
@@ -133,10 +139,11 @@ push branch filter.
 
 1. Add `public/stories/<id>.json` with a lowercase alphanumeric ID without
    separators; make its `identity.id` match the filename.
-2. Add the story's title, logline, available lengths, and estimates to
-   `public/stories/index.json`.
+2. Add the story's title, logline, length and estimated minutes to
+   `public/stories/index.json`. A story has exactly one length, its longest
+   version, so there is no length choice for the player.
 3. Run `npm run validate-stories`, then run
-   `npm run story-readthrough -- <id> <short|medium|long>` for each length.
+   `npm run story-readthrough -- <id>`.
 4. Run `npm test` and `npm run build`. No app code changes are needed for a
    valid story pack.
 

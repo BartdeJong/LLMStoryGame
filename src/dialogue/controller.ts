@@ -2,9 +2,20 @@ import type { LLMClient } from "../llm/client";
 import type { CharacterLineOutput } from "../llm/shapes";
 import type { JSONResult } from "../llm/types";
 import { rememberAskedAbout, rememberKnowledge, rememberNeed, recordVisit } from "../story/state";
+import {
+  challengeStatement,
+  challengeableStatements,
+  evidenceFits,
+  findStatement,
+  holdsEvidence,
+  isStatementBroken,
+  markStatementHeard,
+  statementIdOfFact,
+} from "../story/statements";
+import type { EvidenceRef } from "../story/statements";
 import type { StoryState } from "../story/state";
 import type { CastMember, KnowledgeItem, StoryPack, SubjectRef } from "../story/types";
-import { askOptions, isAskable, resolveAsk, returnVisitFor } from "./askAbout";
+import { askOptions, isAskable, resolveAsk, returnVisitFor, subjectLabel } from "./askAbout";
 import type { AskOptions } from "./askAbout";
 import {
   NO_EFFECTS,
@@ -61,7 +72,16 @@ interface LineInput {
   handoverLines: ReturnType<typeof handoverPromptLines>;
   turns: readonly ConversationTurn[];
   ask?: AskedAbout;
+  holdStatement: boolean; // a standing statement is among the facts
+  admittedTo?: string; // label of the evidence that just broke a statement
+  fallbackLine?: string; // authored words to use when the model fails (a statement or an admission)
   key: string;
+}
+
+export interface ChallengeOptions {
+  statements: { id: string; topic: string; text: string }[];
+  evidence: { subject: EvidenceRef; label: string }[];
+  locked: boolean; // a challenge already missed in this conversation
 }
 
 // The subject of an "Ask about..." turn, kept so the commit step can record it and reveal a reaction's clue.
@@ -83,6 +103,11 @@ interface Speculation {
   job: LineJob;
   abort: AbortController;
   promise: Promise<GeneratedLine | null>;
+}
+
+// What the player says when they challenge a statement.
+export function challengeLine(topic: string, evidence: string): string {
+  return `What you said about "${topic}" does not fit this: ${evidence}`;
 }
 
 function asksWhatIsNeeded(text: string): boolean {
@@ -118,6 +143,7 @@ export class ConversationController {
   private readonly speculations = new Map<string, Speculation>();
   private speculationCounter = 0;
   private closed = false;
+  private challengeLocked = false;
 
   constructor(
     private readonly client: LLMClient,
@@ -227,6 +253,61 @@ export class ConversationController {
     return askOptions(this.pack, this.state, this.character);
   }
 
+  // Heard, still-standing statements of this character, and everything the player could hold against them.
+  challengeOptions(): ChallengeOptions {
+    const ask = askOptions(this.pack, this.state, this.character);
+    return {
+      statements: challengeableStatements(this.state, this.character)
+        .map((statement) => ({ id: statement.id, topic: statement.topic, text: statement.text })),
+      evidence: [...ask.items, ...ask.evidence].flatMap((entry) =>
+        entry.subject.type === "cast" ? [] : [{ subject: entry.subject as EvidenceRef, label: entry.label }]),
+      locked: this.challengeLocked,
+    };
+  }
+
+  // True while Challenge can be used: a heard statement stands and no challenge was missed in this conversation.
+  canChallenge(): boolean {
+    return !this.challengeLocked && challengeableStatements(this.state, this.character).length > 0;
+  }
+
+  // The player holds evidence against a statement. Code decides whether it fits: if so the statement breaks,
+  // its clue is found and the model phrases the admission; if not the character brushes it off with an
+  // authored line and hears no more challenges in this conversation.
+  challenge(statementId: string, evidence: EvidenceRef): Promise<DialogueTurn> {
+    if (this.challengeLocked) throw new Error(`${this.character.name} will not hear another challenge right now.`);
+    const statement = challengeableStatements(this.state, this.character).find((candidate) => candidate.id === statementId);
+    if (!statement) throw new Error("There is no standing statement of this character to challenge.");
+    if (!holdsEvidence(this.state, evidence)) throw new Error("The player does not have that evidence.");
+    this.cancelSpeculation();
+    const label = subjectLabel(this.pack, evidence) ?? evidence.id;
+    this.turns.push({ speaker: "player", text: challengeLine(statement.topic, label) });
+    const applied = (fits: boolean, revealedClue: string | null): AppliedEffects => ({
+      ...NO_EFFECTS,
+      revealedClue,
+      challenge: { statementId, fits },
+    });
+    if (!evidenceFits(statement, evidence)) {
+      const result = challengeStatement(this.pack, this.state, this.character, statementId, evidence);
+      this.challengeLocked = true;
+      this.hintTurn += 1;
+      const line = statement.rebuff ?? this.deflection();
+      this.turns.push({ speaker: "character", text: line });
+      return Promise.resolve(this.commitTurn(this.makeTurn(line, "fallback", applied(false, result.revealedClue))));
+    }
+    const admission: RetrievedFact = {
+      item: { id: `statement:${statementId}`, topic: statement.topic, ask: "", text: statement.admission, keywords: [] },
+      score: 1,
+      explicit: false,
+    };
+    const input = this.buildInput([admission], [], [...this.turns], undefined, { admittedTo: label, fallbackLine: statement.admission });
+    // The admission is worded first; the break is applied with it, so the clue arrives with the words. A
+    // cancelled line still breaks the statement (the authored admission is used).
+    return this.generateLine(input, { priority: Priority.Dialogue, jobId: "" }, "dialogue").then((generated) => {
+      const result = challengeStatement(this.pack, this.state, this.character, statementId, evidence);
+      return this.commit(generated, input, applied(true, result.revealedClue));
+    });
+  }
+
   private buildReplyInput(text: string): LineInput {
     const facts = retrieveKnowledge(availableKnowledge(this.pack, this.state, this.character), text);
     const requestedItems = asksWhatIsNeeded(text)
@@ -242,15 +323,35 @@ export class ConversationController {
     requestedItems: readonly string[],
     turns: readonly ConversationTurn[],
     ask?: AskedAbout,
+    challenge?: { admittedTo: string; fallbackLine: string },
   ): LineInput {
+    const standingText = (fact: RetrievedFact | undefined): string | undefined => {
+      const id = fact ? statementIdOfFact(fact.item.id) : undefined;
+      return id && !isStatementBroken(this.state, id) ? findStatement(this.pack, id)?.statement.text : undefined;
+    };
+    const holdStatement = !challenge && facts.some((fact) => standingText(fact) !== undefined);
+    const fallbackLine = challenge?.fallbackLine ?? standingText(facts[0]);
     const goalHint = requestedItems.length > 0
       ? `The player asked what you need. Tell them you need ${requestedItems
         .map((itemId) => this.pack.items.find((item) => item.id === itemId)?.name ?? itemId)
         .join(" and ")}. Do not invent where to find it.`
       : goalHintLine(this.character, this.state, this.hintTurn);
     const handoverLines = handoverPromptLines(this.pack, this.state, this.character, this.pendingHandovers);
-    const key = JSON.stringify({ facts: facts.map((fact) => fact.item.id), requestedItems, goalHint, handoverLines, turns, ask: ask?.label });
-    return { facts, requestedItems, goalHint, handoverLines, turns, ...(ask ? { ask } : {}), key };
+    const key = JSON.stringify({
+      facts: facts.map((fact) => fact.item.id), requestedItems, goalHint, handoverLines, turns, ask: ask?.label, admitted: challenge?.admittedTo,
+    });
+    return {
+      facts,
+      requestedItems,
+      goalHint,
+      handoverLines,
+      turns,
+      ...(ask ? { ask } : {}),
+      holdStatement,
+      ...(challenge ? { admittedTo: challenge.admittedTo } : {}),
+      ...(fallbackLine ? { fallbackLine } : {}),
+      key,
+    };
   }
 
   // Generates and validates a line for the given input. Changes no conversation or story state.
@@ -267,6 +368,8 @@ export class ConversationController {
         goalHint: input.goalHint,
         handoverLines: input.handoverLines,
         askedAbout: input.ask?.label,
+        holdStatement: input.holdStatement,
+        admittedTo: input.admittedTo,
         reminder: reminderFor(this.character, attempt),
         style: this.client.dialoguePromptStyle,
       });
@@ -355,10 +458,16 @@ export class ConversationController {
     const quality = generated.quality;
     let notice = generated.notice;
     let effects = earlyEffects;
-    if (quality === "fallback") {
+    if (quality === "fallback" && input.fallbackLine) {
+      // The authored words are spoken as they are, so a statement or an admission still lands.
+      line = input.fallbackLine;
+      notice ??= "The model could not produce a reliable reply; these are the character's authored words.";
+      effects = this.hearStatements(input.facts.slice(0, 1), effects);
+    } else if (quality === "fallback") {
       line = this.deflection();
       notice ??= "The model could not produce a reliable reply; this is an authored fallback.";
     } else {
+      effects = this.hearStatements(input.facts, effects);
       this.pendingHandovers = [];
       for (const fact of input.facts) this.discussed.add(fact.item.id);
       for (const fact of input.facts) {
@@ -379,6 +488,17 @@ export class ConversationController {
     effects = this.applyReadyGoal(effects);
     this.turns.push({ speaker: "character", text: line });
     return this.commitTurn(this.makeTurn(line, quality, effects, notice));
+  }
+
+  // Standing statements among the spoken facts are now heard (journal, Challenge).
+  private hearStatements(facts: readonly RetrievedFact[], effects: AppliedEffects): AppliedEffects {
+    let result = effects;
+    for (const fact of facts) {
+      const id = statementIdOfFact(fact.item.id);
+      if (!id || isStatementBroken(this.state, id)) continue;
+      if (markStatementHeard(this.state, id)) result = { ...result, heardStatement: id };
+    }
+    return result;
   }
 
   private knownText(): string {

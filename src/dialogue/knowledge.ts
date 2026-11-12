@@ -3,6 +3,7 @@
 
 import { goalStatus } from "../story/goals";
 import { isRequirementMet } from "../story/requirements";
+import { statementFacts } from "../story/statements";
 import type { StoryState } from "../story/state";
 import type { CastMember, KnowledgeItem, StoryPack } from "../story/types";
 
@@ -77,13 +78,17 @@ export function retrieveKnowledge(items: readonly KnowledgeItem[], playerText: s
     .map(({ item, score, explicit }) => ({ item, score, explicit }));
 }
 
-// Facts behind an unmet clue requirement stay locked, so the character cannot spoil them early.
+// Facts behind an unmet clue requirement stay locked, so the character cannot spoil them early. Statements
+// join as facts too: the cover story while it stands, the admission only once it is broken.
 export function availableKnowledge(pack: StoryPack, state: StoryState, character: CastMember): KnowledgeItem[] {
-  return character.knowledge.filter((item) => {
-    if (!item.clue_id) return true;
-    const clue = pack.clues.find((candidate) => candidate.id === item.clue_id);
-    return !clue || isRequirementMet(clue.requirements, state);
-  });
+  return [
+    ...character.knowledge.filter((item) => {
+      if (!item.clue_id) return true;
+      const clue = pack.clues.find((candidate) => candidate.id === item.clue_id);
+      return !clue || isRequirementMet(clue.requirements, state);
+    }),
+    ...statementFacts(state, character),
+  ];
 }
 
 // Up to three buttons for topics not discussed yet (unfound clues first), plus the two fixed ones.

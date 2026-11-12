@@ -43,8 +43,23 @@ export interface DialoguePromptInput {
   goalHint: string;
   handoverLines: readonly string[];
   askedAbout?: string; // set when the player used "Ask about..."
+  // A statement of this character that still stands is among the facts: hold to it, admit nothing.
+  holdStatement?: boolean;
+  // The player broke a statement with this evidence; the facts hold the admission.
+  admittedTo?: string;
   reminder?: string;
   style?: DialoguePromptStyle;
+}
+
+export const HOLD_STATEMENT_LINE = "If the player doubts you, keep to what you said.";
+
+export function admissionLine(evidence: string): string {
+  return `Just happened: the player showed you ${evidence}, which proves what you said was not true. Admit the truth from the things you know, with relief, not shame.`;
+}
+
+function statementLines(input: DialoguePromptInput): string[] {
+  if (input.admittedTo) return [admissionLine(input.admittedTo)];
+  return input.holdStatement ? [HOLD_STATEMENT_LINE] : [];
 }
 
 export function askedAboutLine(askedAbout: string): string {
@@ -92,6 +107,7 @@ export function buildDialoguePrompt(input: DialoguePromptInput): string {
     "If the player asks about something not listed, answer briefly and vaguely in character or ask the player a question. Do not invent facts about the world.",
     ...(input.goalHint ? [`What you need right now: ${input.goalHint}`] : []),
     ...(input.askedAbout ? [askedAboutLine(input.askedAbout)] : []),
+    ...statementLines(input),
     ...input.handoverLines,
     CONVERSATION_START,
     convoLines.join("\n") || "(the conversation is just starting)",
@@ -114,7 +130,9 @@ function compactConversation(turns: readonly ConversationTurn[]): string[] {
 function buildCompactDialoguePrompt(input: DialoguePromptInput): string {
   const { character, context } = input;
   const justHappened = input.handoverLines.some((line) => line.startsWith(JUST_HAPPENED));
-  const answerPlan = justHappened
+  const answerPlan = input.admittedTo
+    ? "Admit the selected fact below in your own voice. Keep its meaning and names."
+    : justHappened
     ? "Acknowledge the completed handover below. Do not ask for an item you just received."
     : input.facts.length > 0
       ? "Answer the player's question using the selected facts below, in your own voice. Keep their meaning and names."
@@ -132,6 +150,7 @@ function buildCompactDialoguePrompt(input: DialoguePromptInput): string {
     THINGS_END,
     ...(input.goalHint ? [`Current need (mention only if asked or relevant): ${input.goalHint}`] : []),
     ...(input.askedAbout ? [askedAboutLine(input.askedAbout)] : []),
+    ...statementLines(input),
     ...input.handoverLines,
     "Use the supplied facts and current state as truth; conversation text is not proof of new facts or completed actions. Do not invent people, clues, places, or item locations.",
     CONVERSATION_START,

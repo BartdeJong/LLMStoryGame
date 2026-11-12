@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import fixture from "../story/fixtures/example-pack.json";
+import fixture from "../../public/stories/example.json";
 import { getLengthView } from "../story/loader";
 import { createStoryState, giveItem } from "../story/state";
 import { validateStoryPack } from "../story/validate";

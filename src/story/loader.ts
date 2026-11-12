@@ -43,11 +43,12 @@ export function parseStoryIndex(data: unknown): StoryIndex {
   if (!Array.isArray(entries)) throw new StoryLoadError('index.json must be an object with a "stories" array.');
   const stories = entries.map((raw, i): StoryIndexEntry => {
     const e = raw as Partial<StoryIndexEntry> | null;
-    const lengths = Array.isArray(e?.lengths) ? e.lengths.filter((l): l is LengthId => LENGTH_IDS.includes(l as LengthId)) : [];
-    if (!e || typeof e.id !== "string" || typeof e.title !== "string" || typeof e.logline !== "string" || lengths.length === 0) {
-      throw new StoryLoadError(`index.json stories[${i}] needs id, title, logline and at least one valid length.`);
+    if (!e || typeof e.id !== "string" || typeof e.title !== "string" || typeof e.logline !== "string"
+      || !LENGTH_IDS.includes(e.length as LengthId)) {
+      throw new StoryLoadError(`index.json stories[${i}] needs id, title, logline and a valid length (short, medium or long).`);
     }
-    return { id: e.id, title: e.title, logline: e.logline, lengths, estimated_minutes: e.estimated_minutes ?? {} };
+    const minutes = typeof e.estimated_minutes === "number" && e.estimated_minutes > 0 ? e.estimated_minutes : undefined;
+    return { id: e.id, title: e.title, logline: e.logline, length: e.length as LengthId, ...(minutes ? { estimated_minutes: minutes } : {}) };
   });
   return { stories };
 }
@@ -95,7 +96,16 @@ export interface LengthView {
   definition: LengthDefinition;
 }
 
-export function getLengthView(pack: StoryPack, length: LengthId): LengthView {
+// The one length a story has: the longest version it defines (a valid pack defines exactly one).
+export function storyLengthOf(pack: StoryPack): LengthId {
+  const defined = LENGTH_IDS.filter((id) => pack.lengths[id]);
+  const longest = defined[defined.length - 1];
+  if (!longest) throw new StoryLoadError(`Story "${pack.identity.id}" defines no length.`);
+  return longest;
+}
+
+// The view of a story. The length is the story's only one; pass it only to name it explicitly (saves do).
+export function getLengthView(pack: StoryPack, length: LengthId = storyLengthOf(pack)): LengthView {
   const definition = pack.lengths[length];
   if (!definition) throw new StoryLoadError(`Story "${pack.identity.id}" has no "${length}" length.`);
   const pick = <T extends { id: string }>(all: T[], wanted: string[]): T[] =>

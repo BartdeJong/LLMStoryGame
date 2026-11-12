@@ -1,6 +1,6 @@
 # Pack part 2: truths, clues, and items
 
-Convert the approved bible and length-cut decisions into the JSON members for
+Convert the approved bible into the JSON members for
 `truths`, `clues`, `items`, `twists`, and `red_herrings`, following the supplied
 `schema/story-pack.schema.json` exactly. Return only these members as a JSON
 fragment. Ensure every core truth has at least two independent clue routes;
@@ -31,8 +31,6 @@ match: add a top-level `visual_requests` entry with `name`, `description`, and
 Approved bible:
 <paste the complete approved bible here>
 
-Length-cut decisions:
-<paste the relevant approved decisions here>
 
 Part 1 ids and cast:
 <paste the accepted identity/style-guide/cast fragment here>

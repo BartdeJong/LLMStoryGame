@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import example from "../story/fixtures/example-pack.json";
+import example from "../../public/stories/example.json";
 import { reachableTiles } from "./connectivity";
 import { areaFromRows } from "./testArea";
 

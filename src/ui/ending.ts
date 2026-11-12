@@ -1,13 +1,7 @@
 import type { EndingChoice, EndingScene } from "../story/ending";
 import { activateGamepadFocus } from "../input/focus";
 import { formatPlayTime, type CaseRecap } from "../story/progress";
-
-function el<K extends keyof HTMLElementTagNameMap>(tag: K, className: string, text = ""): HTMLElementTagNameMap[K] {
-  const node = document.createElement(tag);
-  node.className = className;
-  node.textContent = text;
-  return node;
-}
+import { el } from "./dom";
 
 export function mountEndingChoiceScreen(
   root: HTMLElement,
@@ -55,6 +49,7 @@ export function mountEndingScreen(
   screen.append(
     el("p", "ending-kicker", storyTitle),
     el("h1", "llm-screen-title", ending.endingTitle),
+    ...(ending.flawed ? [el("p", "ending-flawed-note", "The case is closed, but not everything was set right.")] : []),
     el("p", "ending-scene", ending.scene),
     el("h2", "ending-subtitle", "Epilogue"),
     el("p", "ending-epilogue", ending.epilogue),
@@ -78,7 +73,24 @@ function recapSection(recap: CaseRecap & { timePlayedMs?: number }): HTMLElement
   const section = el("section", "ending-recap");
   section.setAttribute("aria-label", "How you solved it");
   section.append(el("h2", "ending-subtitle", "How you solved it"));
+  section.append(el("p", `ending-recap-result ending-recap-result-${recap.result.kind}`, recap.result.kind === "assisted"
+    ? `${recap.result.label}: deductions were confirmed for you, so nothing counted as a mistake.`
+    : recap.result.label));
+  if (recap.answers.length > 0) {
+    section.append(el("h3", "ending-recap-heading", "Your answers"));
+    const answers = el("ol", "ending-recap-answers");
+    for (const answer of recap.answers) {
+      const item = el("li", answer.correct ? "ending-recap-right" : "ending-recap-wrong");
+      item.append(el("span", "ending-recap-text", `${answer.kind === "summation" ? "Finale: " : ""}${answer.question}`));
+      item.append(el("span", "ending-recap-clue", answer.correct
+        ? `✓ ${answer.answer}`
+        : `✗ You answered: ${answer.answer} · In truth: ${answer.correctAnswer}`));
+      answers.append(item);
+    }
+    section.append(answers);
+  }
   if (recap.truths.length > 0) {
+    section.append(el("h3", "ending-recap-heading", "What you uncovered"));
     const list = el("ol", "ending-recap-truths");
     for (const truth of recap.truths) {
       const item = el("li", "ending-recap-truth");
@@ -96,6 +108,14 @@ function recapSection(recap: CaseRecap & { timePlayedMs?: number }): HTMLElement
   };
   fact("People met", recap.people.length > 0 ? recap.people.join(", ") : "none");
   fact("Items found", recap.items.length > 0 ? recap.items.join(", ") : "none");
+  const statements = recap.statements;
+  if (statements.broken + statements.standing > 0) {
+    const standing = statements.standing > 0
+      ? `, ${statements.standing} left standing${statements.heardStanding > 0 ? ` (${statements.heardStanding} heard but never challenged successfully)` : ""}`
+      : "";
+    fact("Statements broken", `${statements.broken} of ${statements.broken + statements.standing}${standing}`);
+  }
+  if (statements.missedChallenges > 0) fact("Challenges that missed", String(statements.missedChallenges));
   if (recap.optionalCluesTotal > 0) fact("Optional clues", `${recap.optionalCluesFound} of ${recap.optionalCluesTotal}`);
   if (recap.timePlayedMs !== undefined) fact("Time played", formatPlayTime(recap.timePlayedMs));
   section.append(facts);

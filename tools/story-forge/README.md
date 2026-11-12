@@ -8,7 +8,7 @@ Do not change the schema to make a pack pass; fix the pack instead.
 ## Files and commands
 
 - Pack schema: `schema/story-pack.schema.json`
-- Example pack copied from the M4.5 fixture: `examples/example-pack.json`
+- Example pack (also the fixture most tests use): `../../public/stories/example.json`
 - Reviewed game packs: `../../public/stories/<story-id>.json`
 - Story index: `../../public/stories/index.json`
 - Brief and bible folders: `stories/briefs/` and `stories/bibles/`
@@ -19,33 +19,30 @@ Do not change the schema to make a pack pass; fix the pack instead.
 - Visual review pages: open `?debug=icons` or
   `?debug=story-visuals&story=<story-id>`.
 - Read-through: from the repository root, run
-  `npm run story-readthrough -- <story-id> <short|medium|long>`
+  `npm run story-readthrough -- <story-id>`
 
 Use a lowercase, hyphen-separated story id for filenames. The read-through
 command loads `public/stories/<story-id>.json`, validates it, and uses the
 validator's solver. It reports locations in solved order, discovered clues,
 met characters, items required by solved actions, revealed truths, and reached
-endings. The solver does not consume items. A requested length must exist in the
-pack; the example currently has only `short`.
+endings. The solver does not consume items. A story has exactly one length (its
+longest version, defined under `lengths`); the validator reports `MULTIPLE_LENGTHS`
+when a pack defines more, and `index.json` names that length with `length`.
 
-## Eight-step workflow
+## Seven-step workflow
 
 1. **Brief.** Fill in `prompts/brief.md` with a few lines about theme, setting,
    tone, desired twists, and things to avoid. Save it as
    `stories/briefs/<story-id>.md`. Keep this as user-authored input.
 2. **Story bible.** In a new chat, give the agent the brief and
    `prompts/bible.md`. Ask it to write `stories/bibles/<story-id>.md` for the
-   Long version first. The bible must cover the premise and mystery solution,
+   one version the game ships (the longest). The bible must cover the premise and mystery solution,
    dependent truths, cast and their goals/secrets, locations, twists and red
    herrings, and ending outlines.
 3. **User review.** Read the whole bible. Request edits or approve it yourself.
-   Do not generate length cuts or a pack until it is approved.
-4. **Length cut.** In a new chat, provide the approved bible and
-   `prompts/length-cut.md`. Derive coherent Medium and Short versions from Long,
-   and record what was removed and why. Shared content must retain the same
-   facts, characters, and goals.
-5. **Pack generation.** In separate focused chats, give the approved bible,
-   length-cut notes, schema, and the corresponding prompt, in this order:
+   Do not generate a pack until it is approved.
+4. **Pack generation.** In separate focused chats, give the approved bible,
+   schema, and the corresponding prompt, in this order:
    `identity-and-cast.md`, `truths-clues-and-items.md`,
    `locations-and-doors.md`, then `lengths-and-endings.md`. Assemble the
    returned JSON fragments into `public/stories/<story-id>.json`. Then run
@@ -57,17 +54,16 @@ pack; the example currently has only `short`.
    game only reads the baked areas and generates no places while it runs. Generate the
    style guide as part of identity and cast. Treat the schema as authoritative:
    do not invent fields or omit required fields.
-6. **Validation loop.** Run `npm run validate-stories` from the repository
+5. **Validation loop.** Run `npm run validate-stories` from the repository
    root. For each failure, give the exact validator output and pack to a new
    agent chat using `prompts/validation-fix.md`. Apply only the targeted pack
    fixes, then rerun the validator. Repeat until there are no errors; resolve
    warnings deliberately rather than hiding them.
-7. **Read-through.** Run the command for each length defined by the pack, for
-   example `npm run story-readthrough -- <story-id> short`. Review the solved
+6. **Read-through.** Run `npm run story-readthrough -- <story-id>`. Review the solved
    locations, clues, characters, item requirements, truths, and ending for
    coherence. Fix the pack and repeat validation and read-through as needed.
-8. **Register and commit.** Add the story's id, title, logline, available
-   lengths, and estimated minutes to `public/stories/index.json`. Check that the
+7. **Register and commit.** Add the story's id, title, logline, length and
+   estimated minutes to `public/stories/index.json`. Check that the
    filenames and identity id match, run validation and read-through once more,
    review the diff, then commit the brief, bible, pack, and index entry.
 
@@ -164,24 +160,55 @@ fog or flowers are placed at the water or in the flowers.
   `visual_requests` entry with its name, description, and suggested category;
   do not use a wrong icon. Fix every `weak visual match` warning before review.
 - Follow `schema/story-pack.schema.json` and the validator's reference and text
-  limits. Keep all three lengths coherent; every core truth needs two
+  limits. Define exactly one length; every core truth needs two
   independent clue routes, and key items cannot be missable.
 - Keep the tone cozy, avoid graphic violence, and write English only.
 - Make the player solve the mystery. Give key truths an optional
   `deduction` (`question`, `answer`, 2-3 `wrong_answers`, and optional
   `rules_out` red herring ids). Such a truth becomes an open question in the
   casebook once a clue for it is found and its `depends_on` truths are
-  confirmed, and is confirmed only when the player picks the right answer.
+  confirmed. The player answers it once: the truth is confirmed either way, and
+  a wrong answer is recorded as a mistake in the case record.
   Wrong answers must be plausible but clearly wrong given the clues, and all
   options must differ. Truths without a `deduction` are confirmed as soon as a
-  clue is found. Answering correctly also settles the red herrings in
+  clue is found. Answering (right or wrong) also settles the red herrings in
   `rules_out`, showing their `resolution` text.
 - Give an ending an optional `summation`: 2-4 `{ question, truth_id }` entries,
   each `truth_id` taken from that ending's `conditions.truths`. At the finale
-  the player presents the case by matching each question to a confirmed truth.
-  Endings without a `summation` play as soon as their conditions are met. The
-  solver assumes a player who answers every deduction correctly, so these
-  fields never make an ending unreachable.
+  the player presents the case by matching each question to a confirmed truth,
+  once per question. Endings without a `summation` play as soon as their
+  conditions are met. The solver assumes a player who reaches every truth (a
+  wrong answer still confirms it), so these fields never make an ending
+  unreachable.
+- Optionally give a cast member `statements`: things they say that are false or
+  leave out the important part. The player hears a statement through talk,
+  quick replies or "Ask about...", finds evidence against it and uses
+  "Challenge" in the conversation. Code checks whether the chosen item or clue is
+  in `broken_by` (any one is enough): if it fits, the statement breaks, the
+  `clue_id` is found and the model phrases the `admission`; if not, the
+  character answers with `rebuff` (or a deflection), the miss goes into the case
+  record and they hear no more challenges in that conversation. The admission
+  and the character's `secret` never reach a prompt before the break. A clue
+  behind a statement may only come from that statement for that character (no
+  knowledge item or reaction with the same `clue_id`), and the statement's
+  `requires` must include the clue's requirements. The validator reports
+  unknown references, statements without evidence, statements that can be heard
+  in a length where none of their evidence can be obtained
+  (`STATEMENT_UNBREAKABLE`), clues given away freely (`STATEMENT_CLUE_GIVEN_FREELY`)
+  and the usual dialogue length and narration rules. The solver breaks a
+  statement once its character can be met, its `requires` hold and one piece of
+  evidence is held, and the read-through lists which statements break and with
+  what. A clue that comes only from a statement with exactly one obtainable
+  piece of evidence depends on that evidence when routes are counted.
+  Statements are optional and keep `schema_version` 2.
+- Answers are final. A deduction is answered once; a wrong answer still
+  confirms the truth (so the story continues) and is recorded. The finale's
+  summation is answered once per question, with no feedback until the end. The
+  case record (answers and challenges) gives a result at the ending: a clean
+  solve, a solve with mistakes or a flawed case (`CASE_RESULT` in
+  `src/story/config.ts`). Give an ending an optional `flawed` variant
+  (`scene_outline`, `tone`, `epilogue_notes`) to play instead when the case is
+  flawed; endings without one play as normal. Assisted deductions have no stakes.
 - Optionally give a cast member `reactions` so the player can use "Ask about..."
   on a person, item or found clue. A reaction with a `clue_id` marks that clue
   found, so it must be a clue that character tells; gate it with `requires` when

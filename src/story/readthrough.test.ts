@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import example from "./fixtures/example-pack.json";
+import example from "../../public/stories/example.json";
 import { formatReadthrough } from "../../tools/story-forge/readthrough";
 import type { StoryPack } from "./types";
 

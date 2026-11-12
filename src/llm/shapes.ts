@@ -1,20 +1,14 @@
-import { BODY_SHAPES, CHARACTER_FEATURES, ICON_SHAPES, PALETTE_COLOR_SLOTS } from "../art";
+import { BODY_SHAPES, CHARACTER_FEATURES, PALETTE_COLOR_SLOTS } from "../art";
 import type { CharacterRecipe } from "../art";
 import { defineSchema, s } from "./schema";
 
-// Sprite and icon recipes are menu picks the code can draw directly.
+// Sprite recipes are menu picks the code can draw directly.
 const spriteRecipe = s.object({
   body: s.string("round", { oneOf: BODY_SHAPES }),
   bodyColor: s.string("leaf", { oneOf: PALETTE_COLOR_SLOTS }),
   accentColor: s.string("accent", { oneOf: PALETTE_COLOR_SLOTS }),
   skinColor: s.string("skin", { oneOf: PALETTE_COLOR_SLOTS }),
   feature: s.string("none", { oneOf: CHARACTER_FEATURES }),
-});
-
-const iconRecipe = s.object({
-  shape: s.string("gem", { oneOf: ICON_SHAPES }),
-  primaryColor: s.string("accent", { oneOf: PALETTE_COLOR_SLOTS }),
-  secondaryColor: s.string("cream", { oneOf: PALETTE_COLOR_SLOTS }),
 });
 
 export interface CharacterOutput {
@@ -65,22 +59,6 @@ export interface CharacterLineOutput {
 
 export const characterLineSchema = defineSchema<CharacterLineOutput>(
   s.object({ line: s.string("", { maxLength: 300 }) }),
-);
-
-export interface ItemOutput {
-  name: string;
-  description: string;
-  icon_recipe: { shape: string; primaryColor: string; secondaryColor: string };
-  story_use: string;
-}
-
-export const itemSchema = defineSchema<ItemOutput>(
-  s.object({
-    name: s.string("Curious Trinket", { maxLength: 30 }),
-    description: s.string("A small thing with a story of its own.", { maxLength: 160 }),
-    icon_recipe: iconRecipe,
-    story_use: s.string("decoration", { maxLength: 80 }),
-  }),
 );
 
 export interface EndingSceneOutput {

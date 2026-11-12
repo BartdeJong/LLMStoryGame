@@ -33,8 +33,8 @@ async function makeClient(): Promise<LLMClient> {
 
 const CASES: [string, LengthId][] = [
   ["example", "short"],
-  ["lanterntide", "short"], ["lanterntide", "medium"], ["lanterntide", "long"],
-  ["holmesashenvelope", "short"], ["holmesashenvelope", "medium"], ["holmesashenvelope", "long"],
+  ["lanterntide", "long"],
+  ["holmesashenvelope", "long"],
 ];
 
 // Clues have no tiles of their own: they are found by examining the object they are anchored to.

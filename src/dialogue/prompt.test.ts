@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import fixture from "../story/fixtures/example-pack.json";
+import fixture from "../../public/stories/example.json";
 import { validateStoryPack } from "../story/validate";
 import { LLMClient } from "../llm/client";
 import { MockBackend } from "../llm/mock";

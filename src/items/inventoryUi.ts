@@ -3,6 +3,7 @@ import { getVisualCanvas } from "../art/glyphs";
 import type { PaletteName } from "../art";
 import type { InventoryItem } from "./inventory";
 import { activateGamepadFocus } from "../input/focus";
+import { el } from "../ui/dom";
 
 export interface InventoryUI {
   readonly toggleButton: HTMLButtonElement;
@@ -11,12 +12,6 @@ export interface InventoryUI {
   render(items: readonly InventoryItem[], palette: PaletteName): void;
   toggle(): void;
   close(): void;
-}
-
-function el<K extends keyof HTMLElementTagNameMap>(tag: K, className: string): HTMLElementTagNameMap[K] {
-  const node = document.createElement(tag);
-  node.className = className;
-  return node;
 }
 
 // A small toggle button plus a slide-in panel listing the player's items with icon, name and description.

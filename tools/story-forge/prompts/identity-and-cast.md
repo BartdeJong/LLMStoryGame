@@ -1,9 +1,9 @@
 # Pack part 1: identity, style guide, and cast
 
-Convert the approved bible and length-cut decisions into the JSON members for
+Convert the approved bible into the JSON members for
 `identity`, `style_guide`, and `cast`, following the supplied
 `schema/story-pack.schema.json` exactly. Return only these members as a JSON
-fragment. Include every cast member used by any length. Use stable ids and
+fragment. Include every cast member of the story. Use stable ids and
 ensure all cross-references agree with the bible. Character example lines are
 short author-written style samples, not dialogue history.
 
@@ -30,6 +30,21 @@ rejects the pack without them):
   `alternatives`); saying the reaction marks it found. Never put a secret in a
   reaction unless `requires` gates it. Without a reaction code falls back to a
   matching knowledge item, a relationship, a needed item, and finally a deflection.
+- `statements` (optional, at most 3): things the character says that are false or
+  leave out the important part, taken from the bible's statements table. Shape:
+  `{ id, topic (max 3 words), ask, keywords (3+), text, requires?, broken_by: {
+  items?, clues? }, admission, clue_id?, rebuff? }`. `text` is the cover story and
+  `admission` what they say once the player challenges it with any one item or
+  clue in `broken_by`; both are first-person spoken lines of at most 200
+  characters in the character's `voice_notes`. `clue_id` is a clue this character
+  tells (clue `where` or `alternatives`) that the admission reveals; then no
+  knowledge item or reaction of the same character may give that clue, and
+  `requires` must include the clue's requirements. Base each lie on the secret,
+  motivations or relationships; people hide things out of embarrassment,
+  loyalty, fear or kindness, and the admission should sound like relief. Keep at
+  least one other route to every core truth, and make sure no knowledge item or
+  reaction already admits what the statement hides. `rebuff` is the authored
+  brush-off when the evidence does not fit (a deflection is used otherwise).
 Sprites. Every character, and the player, gets a layered pixel-sprite spec that
 makes them recognisable at a glance. The cast step writes it; nothing is drawn
 by guesswork later.
@@ -67,5 +82,3 @@ Characters only talk and hand over items: do not invite physical actions.
 Approved bible:
 <paste the complete approved bible here>
 
-Length-cut decisions:
-<paste the relevant approved decisions here>

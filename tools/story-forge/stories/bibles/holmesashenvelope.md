@@ -270,3 +270,20 @@ Shared truth wording, cast goals, location facts, clue texts, and item facts do 
 - **Must find before next stage:** Establish the staged scene and discovery of the account irregularities before pursuing office records; establish the false alibi and ward diversion before the long witness/records trail; find the duplicate ledger and resolve the envelope before the final committee confrontation. No gate requires a missed item.
 
 **Threshold check:** Short meets 5 locations / 4 cast / 4 core truths / 1 red herring / 1 twist / 0 subplots / 1 ending / 2 routes; Medium meets 13 / 8 / 8 / 2 / 2 / 1 / 2 / 2; Long meets 25 / 12 / 10 / 4 / 3 / 3 / 3 / 2.
+
+## 10. Statements and flawed endings
+
+Pack version 4 adds statements. A character says something false or incomplete; the player hears it, finds evidence against it and challenges it. If the evidence fits, the character admits the truth, and the admission is the only way that character gives the clue. Each lie comes from the character's secret or motivations and changes nothing about the solution.
+
+| Statement | Who | The cover story | Why they hide it | Broken by (any one) | Admission reveals | Lengths |
+|---|---|---|---|---|---|---|
+| `st_lestrade_timetable` | Lestrade | Vale's ferry timetable is sound; the stairs look like a robbery. | He accepted Vale's timetable before he had the river evidence. | `cl_mortuary_fibres`, `cl_river_drag` | `cl_lestrade_keylog` (`t_fane_killed_wren`, core) | S, M, L |
+| `st_hudson_appeal` | Mrs Hudson | She knows nothing of hospital matters. | She gave to the ward's appeal and will not be thought soft. | `i_wren_docket`, `cl_wren_docket` | `cl_ward_appeal` (`t_diversion_for_ward`, core) | S, M, L |
+| `st_holmes_stairs` | Holmes | He has formed no view of the stairs yet. | He suspected a staged scene and kept quiet so as not to colour the player's eyes. | `cl_mortuary_fibres`, `cl_river_drag` | (no clue) | S, M, L |
+| `st_vale_key` | Vale | He had no key and no reason to enter after hours. | Concealment; he concedes only to specific evidence. | `cl_duplicate_key`, `cl_lestrade_keylog` | `cl_vale_key_admission` (`t_fane_access`, core) | M, L |
+| `st_silas_grease` | Silas | He never touched grease that night. | Fear of being blamed for Wren's death. | `cl_river_drag`, `cl_mortuary_fibres` (proof the rag was placed) | `cl_silas_pump_grease` (`t_silas_framed`, core) | M, L |
+| `st_shaw_receipts` | Dr Shaw | She cleared out the old papers as Vale asked. | Protecting the ward from the inquiry. | `i_ward_receipt` | `cl_ward_receipts` (`t_fane_diverted`, core) | M, L |
+
+Short has three statements; Medium and Long have six. `cl_ward_receipts` no longer requires the receipt item, because the statement now gates it. Kit and Ada keep no statements: their existing lines already admit what they would hide. Every core truth keeps a second route that needs no challenge.
+
+Every ending also has a flawed variant. It plays when the player's case record is flawed (too many wrong final answers or failed challenges). Vale is still charged and the facts stand, but the case is thinner than it should be, and Lestrade, Dr Shaw and Matron Crane, Pembroke, or Mrs Hudson and Ada have to put right what the player's account left crooked.

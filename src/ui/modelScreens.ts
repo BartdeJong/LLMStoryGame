@@ -4,13 +4,7 @@ import type { SupportReport } from "../llm/support";
 import type { LoadResult } from "../llm/types";
 import { isModelCached } from "../llm/webllmBackend";
 import { activateGamepadFocus } from "../input/focus";
-
-function el<K extends keyof HTMLElementTagNameMap>(tag: K, className: string, text = ""): HTMLElementTagNameMap[K] {
-  const node = document.createElement(tag);
-  node.className = className;
-  node.textContent = text;
-  return node;
-}
+import { el } from "./dom";
 
 function screen(root: HTMLElement, title: string): HTMLElement {
   root.replaceChildren();

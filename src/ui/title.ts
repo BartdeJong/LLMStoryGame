@@ -1,12 +1,6 @@
 import { createPreferenceControls } from "./preferences";
 import { activateGamepadFocus } from "../input/focus";
-
-function el<K extends keyof HTMLElementTagNameMap>(tag: K, className: string, text = ""): HTMLElementTagNameMap[K] {
-  const node = document.createElement(tag);
-  node.className = className;
-  node.textContent = text;
-  return node;
-}
+import { el } from "./dom";
 
 export function mountTitleScreen(
   root: HTMLElement,

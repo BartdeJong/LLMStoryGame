@@ -1,5 +1,6 @@
 import { PALETTE_COLOR_SLOTS, PALETTES, type PaletteName } from "../palettes";
 import { GLYPH_CATALOG, type GlyphDefinition, type GlyphMaterial, type GlyphState } from "./catalog";
+import { hashSeed } from "../random";
 
 type Ramp = Readonly<Record<"o" | "b" | "h" | "s" | "d", string>>;
 type PixelColor = "o" | "b" | "h" | "s" | "d" | "a" | "g";
@@ -29,14 +30,6 @@ function mixColor(left: string, right: string, amount: number): string {
   const b = parse(right);
   return `#${a.map((channel, index) => Math.round(channel * (1 - amount) + b[index]! * amount)
     .toString(16).padStart(2, "0")).join("")}`;
-}
-
-function hashSeed(seed: string): number {
-  let hash = 2166136261;
-  for (let index = 0; index < seed.length; index += 1) {
-    hash = Math.imul(hash ^ seed.charCodeAt(index), 16777619);
-  }
-  return hash >>> 0;
 }
 
 function randomFrom(seed: string): () => number {

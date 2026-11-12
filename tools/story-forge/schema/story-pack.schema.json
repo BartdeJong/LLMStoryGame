@@ -226,7 +226,32 @@
           }
         },
         "deflections": { "type": "array", "minItems": 5, "items": { "$ref": "#/$defs/text" } },
-        "reactions": { "type": "array", "items": { "$ref": "#/$defs/reaction" } }
+        "reactions": { "type": "array", "items": { "$ref": "#/$defs/reaction" } },
+        "statements": { "type": "array", "maxItems": 3, "items": { "$ref": "#/$defs/statement" } }
+      }
+    },
+    "statement": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "topic", "ask", "keywords", "text", "broken_by", "admission"],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "topic": { "type": "string", "minLength": 1, "maxLength": 30 },
+        "ask": { "type": "string", "minLength": 1, "maxLength": 80 },
+        "keywords": { "type": "array", "minItems": 3, "items": { "$ref": "#/$defs/text" } },
+        "text": { "type": "string", "minLength": 1, "maxLength": 200 },
+        "requires": { "$ref": "#/$defs/requirement" },
+        "broken_by": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "items": { "$ref": "#/$defs/idList" },
+            "clues": { "$ref": "#/$defs/idList" }
+          }
+        },
+        "admission": { "type": "string", "minLength": 1, "maxLength": 200 },
+        "clue_id": { "$ref": "#/$defs/id" },
+        "rebuff": { "type": "string", "minLength": 1, "maxLength": 200 }
       }
     },
     "reaction": {
@@ -462,7 +487,17 @@
         },
         "scene_outline": { "$ref": "#/$defs/text" },
         "tone": { "$ref": "#/$defs/text" },
-        "epilogue_notes": { "$ref": "#/$defs/text" }
+        "epilogue_notes": { "$ref": "#/$defs/text" },
+        "flawed": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["scene_outline", "tone", "epilogue_notes"],
+          "properties": {
+            "scene_outline": { "$ref": "#/$defs/text" },
+            "tone": { "$ref": "#/$defs/text" },
+            "epilogue_notes": { "$ref": "#/$defs/text" }
+          }
+        }
       }
     },
     "length": {

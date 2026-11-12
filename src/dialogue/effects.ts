@@ -1,6 +1,7 @@
 import { isRequirementMet } from "../story/requirements";
 import { nextGoalState, resolveGoalState } from "../story/goals";
 import { grantTruthsFromFoundClues, markClueFound } from "../story/state";
+import { statementForClue } from "../story/statements";
 import type { StoryState } from "../story/state";
 import type { CastMember, StoryPack } from "../story/types";
 
@@ -11,6 +12,8 @@ export interface AppliedEffects {
   resolvedGoal: string | null;
   givenItem: string | null;
   revealedClue: string | null;
+  heardStatement?: string; // a statement the player heard for the first time
+  challenge?: { statementId: string; fits: boolean };
 }
 
 export const NO_EFFECTS: AppliedEffects = { resolvedGoal: null, givenItem: null, revealedClue: null };
@@ -109,6 +112,8 @@ export function revealClueFromTalk(pack: StoryPack, state: StoryState, character
   const clue = pack.clues.find((candidate) => candidate.id === clueId);
   const toldHere = clue && [clue.where, ...clue.alternatives].some((source) => source.type === "character" && source.id === character.id);
   if (!clue || !toldHere || state.cluesFound.includes(clue.id) || !isRequirementMet(clue.requirements, state)) return null;
+  // A clue behind one of this character's statements only comes out when the statement is broken.
+  if (statementForClue(pack, character.id, clue.id)) return null;
   markClueFound(state, clue.id);
   grantTruthsFromFoundClues(pack, state);
   return clue.id;
