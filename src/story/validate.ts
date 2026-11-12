@@ -5,6 +5,7 @@ import { narrationIssue } from "../dialogue/lineCleanup";
 import { checkSchema, joinPath } from "./jsonSchema";
 import { missingOf, orderedLocations, requirementEntries, solveLength, type SolveResult } from "./solver";
 import { LENGTH_IDS, type CastMember, type LengthDefinition, type LengthId, type Location, type Requirement, type SourceRef, type StoryPack } from "./types";
+import { placedObjects } from "./slice";
 import { GLYPH_STATES, getGlyph, resolveVisual, tokenizeVisualText } from "../art/glyphs";
 import { PALETTE_COLOR_SLOTS } from "../art";
 import { isWalkable, reachableTiles } from "../world/connectivity";
@@ -191,6 +192,21 @@ export function validateStoryPack(data: unknown): ValidationReport {
     refSource(c.where, `${p}.where`, owner);
     c.alternatives.forEach((a, j) => refSource(a, `${p}.alternatives[${j}]`, owner));
     refReq(c.requirements, `${p}.requirements`, owner);
+    // A clue found at a location is anchored to an object there: examining that object finds the clue.
+    const places = [...new Set([c.where, ...c.alternatives].filter((s) => s.type === "location").map((s) => s.id))];
+    const objectIn = (locationId: string): boolean => pack.locations.some((l) => l.id === locationId
+      && placedObjects(pack, l).some((object) => object.id === c.object_id));
+    if (c.object_id !== undefined && !pack.locations.some((l) => placedObjects(pack, l).some((o) => o.id === c.object_id))) {
+      error("REF_UNKNOWN", `${p}.object_id`, `${owner} is anchored to "${c.object_id}", which is not an object of any location.`);
+    } else if (c.object_id !== undefined && !places.some((id) => objectIn(id))) {
+      error("CLUE_ANCHOR_ELSEWHERE", `${p}.object_id`, `${owner} is anchored to object "${c.object_id}", but that object is not in a location where the clue can be found.`);
+    }
+    for (const locationId of places) {
+      if (!pack.locations.some((l) => l.id === locationId)) continue;
+      if (!objectIn(locationId)) {
+        error("CLUE_ANCHOR_MISSING", `${p}`, `${owner} can be found at "${locationId}" but has no object_id naming an object of that location. Add an object to "${locationId}" and set object_id to its id.`);
+      }
+    }
     const truth = pack.truths.find((t) => t.id === c.truth_id);
     if (truth && !truth.revealed_by.includes(c.id)) {
       error("REVEAL_MISMATCH", `${p}.truth_id`, `${owner} points at truth "${truth.id}", but that truth's revealed_by does not list "${c.id}".`);
@@ -207,6 +223,12 @@ export function validateStoryPack(data: unknown): ValidationReport {
   });
   pack.locations.forEach((l, i) => {
     const owner = `location "${l.id}"`;
+    const placed = new Set(placedObjects(pack, l));
+    l.objects.forEach((object, j) => {
+      if (!placed.has(object)) {
+        error("OBJECT_DUPLICATES_ITEM", `locations[${i}].objects[${j}]`, `object "${object.id}" in "${l.id}" is the same thing as the item "${object.id}" found there. Keep only the item and remove it from objects.`);
+      }
+    });
     refs("cast", l.required_characters, `locations[${i}].required_characters`, owner);
     l.doors.forEach((d, j) => {
       ref("location", d.to, `locations[${i}].doors[${j}].to`, `door "${d.id}"`);
@@ -501,17 +523,15 @@ function checkLocationArea({ pack, error, warn }: AreaCheckContext, l: Location,
   }
 
   // ---- placements ----
-  // A placement is keyed by the entity id ("obj:o_bin", "item:i_key", "char:c_mira", "clue:cl_notice") or, when the pack
-  // id is unique among the things at this location, by the plain pack id.
-  const things: { entityId: string; packId: string; kind: "object" | "item" | "character" | "clue" }[] = [
-    ...l.objects.map((o) => ({ entityId: `obj:${o.id}`, packId: o.id, kind: "object" as const })),
+  // A placement is keyed by the entity id ("obj:o_bin", "item:i_key", "char:c_mira") or, when the pack id is unique
+  // among the things at this location, by the plain pack id. Clues have no placement: they belong to an object.
+  const things: { entityId: string; packId: string; kind: "object" | "item" | "character" }[] = [
+    ...placedObjects(pack, l).map((o) => ({ entityId: `obj:${o.id}`, packId: o.id, kind: "object" as const })),
     ...pack.items.filter((x) => x.found_at?.type === "location" && x.found_at.id === l.id)
       .map((x) => ({ entityId: `item:${x.id}`, packId: x.id, kind: "item" as const })),
     ...l.required_characters.map((id) => ({ entityId: `char:${id}`, packId: id, kind: "character" as const })),
-    ...pack.clues.filter((c) => [c.where, ...c.alternatives].some((w) => w.type === "location" && w.id === l.id))
-      .map((c) => ({ entityId: `clue:${c.id}`, packId: c.id, kind: "clue" as const })),
   ];
-  const thingKinds = new Map<string, "object" | "item" | "character" | "clue">();
+  const thingKinds = new Map<string, "object" | "item" | "character">();
   const resolved = new Map<string, number[]>();
   const usedKeys = new Set<string>();
   for (const thing of things) {
@@ -533,7 +553,7 @@ function checkLocationArea({ pack, error, warn }: AreaCheckContext, l: Location,
     }
   }
   for (const id of Object.keys(a.placements)) {
-    if (!usedKeys.has(id)) error("AREA_PLACEMENT_UNKNOWN", `${path}.placements.${id}`, `"${id}" is not an object, item, character or clue that can appear at "${l.id}".`);
+    if (!usedKeys.has(id)) error("AREA_PLACEMENT_UNKNOWN", `${path}.placements.${id}`, `"${id}" is not an object, item or character that can appear at "${l.id}".`);
   }
   if (!parsed) return;
 

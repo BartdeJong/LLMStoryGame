@@ -31,6 +31,7 @@ export interface BriefObject {
   visualInferred: boolean;
   required: boolean;
   keyItem: boolean;
+  clueIds: string[]; // clues found by examining this object
 }
 
 export interface BriefClue {
@@ -136,6 +137,7 @@ export function buildPackArea(pack: StoryPack, view: LengthView, locationId: str
       visualInferred: object.visualInferred ?? !object.visual,
       required: true,
       keyItem: object.kind === "key_item",
+      clueIds: slice.clues.filter((clue) => clue.object_id === object.id).map((clue) => clue.id),
     };
   });
   const clues: BriefClue[] = slice.clues.map((clue) => ({ id: clue.id, truthId: clue.truth_id, text: clue.text }));
@@ -160,14 +162,7 @@ export function buildPackArea(pack: StoryPack, view: LengthView, locationId: str
       ...at(id, object.packId), id, kind: object.keyItem ? "key" : "object", required: object.required, packId: object.packId,
       name: object.name, description: object.description, icon: object.icon,
       visual: object.visual, visualInferred: object.visualInferred,
-    });
-  }
-  for (const clue of clues) {
-    const id = `clue:${clue.id}`;
-    entities.push({
-      ...at(id, clue.id), id, kind: "clue", required: true, packId: clue.id, truthId: clue.truthId ?? undefined,
-      name: "Something to examine", description: clue.text,
-      icon: { shape: "gem", primaryColor: "highlight", secondaryColor: "cream" },
+      ...(object.clueIds.length > 0 ? { clueIds: object.clueIds } : {}),
     });
   }
   const spawnPoints: EntitySpawnPoint[] = entities.map(({ id, kind, x, y }) => ({ id, kind, x, y }));

@@ -10,6 +10,7 @@ const entryPoints = {
   "visual-report": "visual-report.ts",
   "list-visual-requests": "list-visual-requests.ts",
   "bake-areas": "bake-areas.ts",
+  "anchor-clues": "anchor-clues.ts",
 };
 const entry = entryPoints[command];
 if (!entry) throw new Error(`Unknown visual tool "${command ?? ""}".`);

@@ -32,10 +32,6 @@ function reachableWithoutEntities(area: Area, blocked: ReadonlySet<string>): Set
   return visited;
 }
 
-function entityIsSolidCandidate(entity: AreaEntity): boolean {
-  return entity.kind !== "clue";
-}
-
 export function entitySolidityIsSafe(
   area: Area,
   solidEntityIds: ReadonlySet<string>,
@@ -73,9 +69,7 @@ export function selectSolidEntityIds(
 
   const solidIds = new Set<string>();
   const solidTiles = new Set<string>();
-  const orderedCandidates = entities.filter(entityIsSolidCandidate);
-
-  for (const entity of orderedCandidates) {
+  for (const entity of entities) {
     const x = Math.floor(entity.x);
     const y = Math.floor(entity.y);
     const key = pointKey(x, y);

@@ -2712,6 +2712,7 @@
   "clues": [
     {
       "id": "cl_berth_empty",
+      "object_id": "o_empty_lamp_stand",
       "truth_id": "t_thirteen_berths",
       "kind": "place",
       "where": {
@@ -2736,6 +2737,7 @@
     },
     {
       "id": "cl_banner_stars",
+      "object_id": "o_founders_banner",
       "truth_id": "t_thirteen_berths",
       "kind": "object",
       "where": {
@@ -2760,6 +2762,7 @@
     },
     {
       "id": "cl_ledger_entry",
+      "object_id": "o_ledger_desk",
       "truth_id": "t_wren_keeper",
       "kind": "object",
       "where": {
@@ -2776,6 +2779,7 @@
     },
     {
       "id": "cl_attic_initials",
+      "object_id": "o_apprentice_cot",
       "truth_id": "t_wren_keeper",
       "kind": "place",
       "where": {
@@ -2812,6 +2816,7 @@
     },
     {
       "id": "cl_founders_recipe",
+      "object_id": "o_recipe_book",
       "truth_id": "t_oil_from_memories",
       "kind": "object",
       "where": {
@@ -2824,6 +2829,7 @@
     },
     {
       "id": "cl_archive_recipe_copy",
+      "object_id": "o_archive_bookshelf",
       "truth_id": "t_oil_from_memories",
       "kind": "object",
       "where": {
@@ -2836,6 +2842,7 @@
     },
     {
       "id": "cl_cistern_plaque",
+      "object_id": "o_cistern_plaque",
       "truth_id": "t_oil_from_memories",
       "kind": "place",
       "where": {
@@ -2860,6 +2867,7 @@
     },
     {
       "id": "cl_pilchard_log",
+      "object_id": "o_scorched_log",
       "truth_id": "t_hush_seven_years",
       "kind": "object",
       "where": {
@@ -2884,6 +2892,7 @@
     },
     {
       "id": "cl_oil_tally_cold",
+      "object_id": "o_tally_ledger",
       "truth_id": "t_hush_seven_years",
       "kind": "object",
       "where": {
@@ -2920,6 +2929,7 @@
     },
     {
       "id": "cl_bell_ledger",
+      "object_id": "o_bell_ledger",
       "truth_id": "t_wren_lit_lamp",
       "kind": "object",
       "where": {
@@ -2944,6 +2954,7 @@
     },
     {
       "id": "cl_archive_bell_copy",
+      "object_id": "o_ledger_desk",
       "truth_id": "t_wren_lit_lamp",
       "kind": "object",
       "where": {
@@ -2980,6 +2991,7 @@
     },
     {
       "id": "cl_lamp_room_flicker",
+      "object_id": "o_lamproom_oilcan",
       "truth_id": "t_village_forgot",
       "kind": "place",
       "where": {
@@ -2992,6 +3004,7 @@
     },
     {
       "id": "cl_oil_tally_flow",
+      "object_id": "o_tally_ledger",
       "truth_id": "t_oil_flows_to_deep",
       "kind": "object",
       "where": {
@@ -3004,6 +3017,7 @@
     },
     {
       "id": "cl_kelp_threads",
+      "object_id": "o_amber_threads",
       "truth_id": "t_oil_flows_to_deep",
       "kind": "place",
       "where": {
@@ -3028,6 +3042,7 @@
     },
     {
       "id": "cl_gallery_threads",
+      "object_id": "o_gallery_windows",
       "truth_id": "t_oil_flows_to_deep",
       "kind": "place",
       "where": {
@@ -3052,6 +3067,7 @@
     },
     {
       "id": "cl_spyglass_glow",
+      "object_id": "o_spyglass_stand",
       "truth_id": "t_wren_alive",
       "kind": "item_combination",
       "where": {
@@ -3068,6 +3084,7 @@
     },
     {
       "id": "cl_drowned_lamp_glow",
+      "object_id": "cl_drowned_lamp_glow",
       "truth_id": "t_wren_alive",
       "kind": "place",
       "where": {
@@ -3092,6 +3109,7 @@
     },
     {
       "id": "cl_attic_cot",
+      "object_id": "o_apprentice_cot",
       "truth_id": "t_player_was_spark",
       "kind": "object",
       "where": {
@@ -3116,6 +3134,7 @@
     },
     {
       "id": "cl_base_hook",
+      "object_id": "o_apprentice_hook",
       "truth_id": "t_player_was_spark",
       "kind": "object",
       "where": {
@@ -3152,6 +3171,7 @@
     },
     {
       "id": "cl_hobb_locket",
+      "object_id": "o_study_door",
       "truth_id": "t_hobb_remembers",
       "kind": "place",
       "where": {
@@ -3164,6 +3184,7 @@
     },
     {
       "id": "cl_hobb_letters",
+      "object_id": "o_letter_box",
       "truth_id": "t_hobb_remembers",
       "kind": "object",
       "where": {
@@ -3188,6 +3209,7 @@
     },
     {
       "id": "cl_chorus_rite",
+      "object_id": "cl_chorus_rite",
       "truth_id": "t_told_aloud",
       "kind": "object",
       "where": {
@@ -3200,6 +3222,7 @@
     },
     {
       "id": "cl_flask_cistern",
+      "object_id": "o_cistern_plaque",
       "truth_id": "t_told_aloud",
       "kind": "item_combination",
       "where": {
@@ -3357,6 +3380,7 @@
     },
     {
       "id": "cl_name_tag",
+      "object_id": "cl_name_tag",
       "kind": "object",
       "where": {
         "type": "location",
@@ -3401,6 +3425,7 @@
     },
     {
       "id": "cl_study_locked",
+      "object_id": "o_study_door",
       "kind": "place",
       "where": {
         "type": "location",
@@ -3412,6 +3437,7 @@
     },
     {
       "id": "cl_ghost_light",
+      "object_id": "o_fog_bank",
       "kind": "place",
       "where": {
         "type": "location",
@@ -3423,6 +3449,7 @@
     },
     {
       "id": "cl_rook_midnight",
+      "object_id": "o_boat_hook",
       "kind": "place",
       "where": {
         "type": "location",
@@ -3434,6 +3461,7 @@
     },
     {
       "id": "cl_bad_luck_lamp",
+      "object_id": "cl_bad_luck_lamp",
       "kind": "object",
       "where": {
         "type": "location",
@@ -3683,7 +3711,7 @@
           "#................#",
           "##################"
         ],
-        "placements": { "obj:o_founders_banner": [3, 2], "obj:o_loft_worktable": [6, 5], "obj:o_loft_spool_basket": [16, 7], "char:c_yarrow": [12, 3], "clue:cl_banner_stars": [4, 8] },
+        "placements": { "obj:o_founders_banner": [13, 2], "obj:o_loft_worktable": [5, 9], "obj:o_loft_spool_basket": [16, 7], "char:c_yarrow": [3, 5] },
         "decor": [{ "icon": "stool", "x": 16, "y": 5 }, { "icon": "candle", "x": 5, "y": 2 }]
       }
     },
@@ -3706,6 +3734,12 @@
           "id": "o_notice_board",
           "name": "Notice board",
           "description": "A board of chores, ferries and lost things."
+        },
+        {
+          "id": "cl_name_tag",
+          "name": "Stitched letters",
+          "description": "The player's half-sewn name tag has only a few stitched letters.",
+          "visual": { "icon": "letter" }
         }
       ],
       "doors": [
@@ -3751,7 +3785,7 @@
           "#................................#",
           "###########2##########4###########"
         ],
-        "placements": { "obj:o_lamp_post": [14, 3], "obj:o_notice_board": [20, 2], "clue:cl_name_tag": [30, 11] },
+        "placements": { "obj:o_lamp_post": [24, 2], "obj:o_notice_board": [16, 2], "obj:cl_name_tag": [30, 11] },
         "decor": [{ "icon": "fountain", "x": 17, "y": 9 }, { "icon": "bench", "x": 14, "y": 7 }, { "icon": "bench", "x": 20, "y": 7 }, { "icon": "bench", "x": 14, "y": 11 }, { "icon": "bench", "x": 20, "y": 11 }, { "icon": "barrel", "x": 2, "y": 3 }, { "icon": "crate", "x": 31, "y": 3 }, { "icon": "flower", "x": 2, "y": 16 }, { "icon": "flower", "x": 31, "y": 16 }]
       }
     },
@@ -3802,7 +3836,7 @@
           "#....................#",
           "######################"
         ],
-        "placements": { "obj:o_bun_tray": [13, 7], "obj:o_bakery_flour_sack": [14, 4], "obj:o_bakery_cooling_rack": [18, 10], "char:c_granny": [2, 7] },
+        "placements": { "obj:o_bun_tray": [14, 9], "obj:o_bakery_flour_sack": [4, 9], "obj:o_bakery_cooling_rack": [5, 5], "char:c_granny": [18, 5] },
         "decor": [{ "icon": "stove", "x": 19, "y": 2 }, { "icon": "stool", "x": 1, "y": 9 }]
       }
     },
@@ -3866,7 +3900,7 @@
           "#...................#             ",
           "################2####             "
         ],
-        "placements": { "obj:o_study_door": [6, 2], "obj:o_hall_council_table": [22, 9], "obj:o_hall_windows": [3, 2], "char:c_hobb": [24, 3], "clue:cl_hobb_locket": [3, 13], "clue:cl_study_locked": [21, 4] },
+        "placements": { "obj:o_study_door": [21, 2], "obj:o_hall_council_table": [1, 6], "obj:o_hall_windows": [29, 2], "char:c_hobb": [18, 8] },
         "decor": [{ "icon": "painting", "x": 19, "y": 2 }, { "icon": "statue", "x": 27, "y": 2 }, { "icon": "painting", "x": 23, "y": 2 }, { "icon": "bench", "x": 32, "y": 3 }, { "icon": "chair", "x": 19, "y": 10 }]
       }
     },
@@ -3923,7 +3957,7 @@
           "#........................#",
           "##########################"
         ],
-        "placements": { "obj:o_ledger_desk": [18, 11], "obj:o_archive_bookshelf": [17, 5], "obj:o_archive_chair": [9, 3], "char:c_tamsin": [2, 6], "clue:cl_ledger_entry": [14, 7], "clue:cl_archive_recipe_copy": [7, 10], "clue:cl_archive_bell_copy": [6, 7] },
+        "placements": { "obj:o_ledger_desk": [24, 4], "obj:o_archive_bookshelf": [20, 11], "obj:o_archive_chair": [18, 5], "char:c_tamsin": [16, 9] },
         "decor": [{ "icon": "stool", "x": 1, "y": 8 }, { "icon": "stool", "x": 24, "y": 10 }]
       }
     },
@@ -3978,7 +4012,7 @@
           "T*,,*,,,,,*,*,,,,T,,,,T,~~~~~~~~*T",
           "TTTTTTTTTTT5TTTTTTTTT4TTTTTTTTTTTT"
         ],
-        "placements": { "obj:o_boat_hook": [22, 9], "char:c_rook": [13, 8], "clue:cl_rook_midnight": [25, 9] },
+        "placements": { "obj:o_boat_hook": [4, 11], "char:c_rook": [5, 4] },
         "decor": [{ "icon": "lamp_post", "x": 25, "y": 3 }, { "icon": "barrel", "x": 6, "y": 3 }, { "icon": "crate", "x": 8, "y": 2 }, { "icon": "bench", "x": 23, "y": 3 }, { "icon": "lamp_post", "x": 11, "y": 2 }, { "icon": "lamp_post", "x": 30, "y": 2 }, { "icon": "reed_boat", "x": 23, "y": 10 }]
       }
     },
@@ -4033,7 +4067,7 @@
           "#..............#",
           "################"
         ],
-        "placements": { "obj:o_tally_ledger": [6, 8], "obj:o_ink_shelf": [13, 2], "obj:o_press_stool": [12, 9], "item:i_dusk_ink": [10, 5], "char:c_bramwell": [3, 7], "clue:cl_oil_tally_cold": [13, 6], "clue:cl_oil_tally_flow": [9, 8] },
+        "placements": { "obj:o_tally_ledger": [12, 3], "obj:o_ink_shelf": [8, 4], "obj:o_press_stool": [4, 2], "item:i_dusk_ink": [4, 8], "char:c_bramwell": [12, 6] },
         "decor": [{ "icon": "table", "x": 1, "y": 7 }, { "icon": "table", "x": 1, "y": 4 }, { "icon": "candle", "x": 10, "y": 2 }]
       }
     },
@@ -4085,7 +4119,7 @@
           "#............#",
           "######1#######"
         ],
-        "placements": { "obj:o_apprentice_cot": [12, 7], "obj:o_old_coat": [3, 7], "obj:o_attic_window": [11, 2], "obj:o_attic_bedside_table": [2, 2], "clue:cl_attic_initials": [8, 7], "clue:cl_attic_cot": [7, 3] },
+        "placements": { "obj:o_apprentice_cot": [4, 8], "obj:o_old_coat": [4, 4], "obj:o_attic_window": [11, 2], "obj:o_attic_bedside_table": [1, 7] },
         "decor": [{ "icon": "painting", "x": 7, "y": 2 }, { "icon": "chair", "x": 1, "y": 5 }]
       }
     },
@@ -4134,7 +4168,7 @@
           "#..............#",
           "################"
         ],
-        "placements": { "obj:o_hoard_shelf": [11, 2], "obj:o_shed_peg_rail": [5, 2], "obj:o_shed_washbasin": [12, 6], "item:i_tallow_key": [2, 5], "char:c_pell": [9, 5] },
+        "placements": { "obj:o_hoard_shelf": [6, 2], "obj:o_shed_peg_rail": [13, 2], "obj:o_shed_washbasin": [12, 5], "item:i_tallow_key": [3, 4], "char:c_pell": [6, 5] },
         "decor": [{ "icon": "stool", "x": 1, "y": 6 }]
       }
     },
@@ -4204,7 +4238,7 @@
           "  ##........##  ",
           "   ##########   "
         ],
-        "placements": { "obj:o_apprentice_hook": [2, 4], "obj:o_base_keeper_chair": [8, 12], "obj:o_base_oil_cupboard": [14, 7], "char:c_hester": [6, 7], "clue:cl_base_hook": [5, 4] },
+        "placements": { "obj:o_apprentice_hook": [9, 2], "obj:o_base_keeper_chair": [3, 3], "obj:o_base_oil_cupboard": [10, 12], "char:c_hester": [2, 6] },
         "decor": [{ "icon": "barrel", "x": 11, "y": 2 }]
       }
     },
@@ -4259,7 +4293,7 @@
           "  ##........##  ",
           "   ####2#####   "
         ],
-        "placements": { "obj:o_ember_bowl": [13, 6], "obj:o_lamproom_oilcan": [10, 4], "obj:o_lamproom_window": [2, 4], "item:i_mothlight_ember": [5, 4], "clue:cl_lamp_room_flicker": [4, 9] },
+        "placements": { "obj:o_ember_bowl": [11, 3], "obj:o_lamproom_oilcan": [7, 8], "obj:o_lamproom_window": [3, 3], "item:i_mothlight_ember": [6, 4] },
         "decor": [{ "icon": "stool", "x": 1, "y": 6 }, { "icon": "stool", "x": 14, "y": 7 }]
       }
     },
@@ -4298,7 +4332,7 @@
           "      #.............#",
           "      ####1##########"
         ],
-        "placements": { "obj:o_spyglass_stand": [15, 10], "clue:cl_spyglass_glow": [13, 4] },
+        "placements": { "obj:o_spyglass_stand": [15, 10] },
         "decor": []
       }
     },
@@ -4352,7 +4386,7 @@
           "   ##......##   ",
           "    ########    "
         ],
-        "placements": { "obj:o_bell_ledger": [9, 7], "obj:o_belltower_rope": [9, 10], "obj:o_belltower_stool": [9, 13], "char:c_ismay": [5, 3], "clue:cl_bell_ledger": [12, 8] },
+        "placements": { "obj:o_bell_ledger": [8, 10], "obj:o_belltower_rope": [4, 6], "obj:o_belltower_stool": [12, 4], "char:c_ismay": [10, 7] },
         "decor": [{ "icon": "crate", "x": 1, "y": 8 }, { "icon": "barrel", "x": 3, "y": 11 }, { "icon": "lamp_stand", "x": 12, "y": 11 }]
       }
     },
@@ -4405,7 +4439,7 @@
           "#....#######.....................#",
           "################1#################"
         ],
-        "placements": { "obj:o_empty_lamp_stand": [10, 7], "clue:cl_berth_empty": [9, 8] },
+        "placements": { "obj:o_empty_lamp_stand": [1, 13] },
         "decor": [{ "icon": "barrel", "x": 32, "y": 13 }, { "icon": "crate", "x": 6, "y": 12 }, { "icon": "sack", "x": 3, "y": 14 }, { "icon": "stone", "x": 13, "y": 13 }, { "icon": "crate", "x": 19, "y": 9 }, { "icon": "barrel", "x": 19, "y": 13 }]
       }
     },
@@ -4428,6 +4462,12 @@
           "id": "o_letter_box",
           "name": "Letter box",
           "description": "A box of unsent letters tied with string."
+        },
+        {
+          "id": "cl_chorus_rite",
+          "name": "Rite scroll",
+          "description": "The founders' chorus rite page says burnt memories return when told aloud together.",
+          "visual": { "icon": "scroll" }
         }
       ],
       "doors": [],
@@ -4449,7 +4489,7 @@
           "#.......................#",
           "#########################"
         ],
-        "placements": { "obj:o_recipe_book": [15, 9], "obj:o_letter_box": [16, 5], "clue:cl_founders_recipe": [9, 6], "clue:cl_hobb_letters": [10, 9], "clue:cl_chorus_rite": [22, 3] },
+        "placements": { "obj:o_recipe_book": [9, 4], "obj:o_letter_box": [14, 7], "obj:cl_chorus_rite": [2, 4] },
         "decor": [{ "icon": "barrel", "x": 1, "y": 3 }]
       }
     },
@@ -4507,7 +4547,7 @@
           "#..........................#",
           "#############2##############"
         ],
-        "placements": { "obj:o_barometer": [21, 11], "char:c_dorrin": [6, 5] },
+        "placements": { "obj:o_barometer": [21, 11], "char:c_dorrin": [7, 9] },
         "decor": [{ "icon": "stone", "x": 15, "y": 9 }, { "icon": "stone", "x": 13, "y": 9 }, { "icon": "shell", "x": 6, "y": 12 }, { "icon": "stone", "x": 8, "y": 11 }, { "icon": "shell", "x": 11, "y": 9 }, { "icon": "stone", "x": 18, "y": 6 }]
       }
     },
@@ -4548,7 +4588,7 @@
           "#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#",
           "##################################"
         ],
-        "placements": { "obj:o_fog_bank": [10, 5], "clue:cl_ghost_light": [22, 5] },
+        "placements": { "obj:o_fog_bank": [22, 5] },
         "decor": [{ "icon": "shell", "x": 30, "y": 4 }, { "icon": "stone", "x": 7, "y": 5 }, { "icon": "shell", "x": 20, "y": 4 }, { "icon": "stone", "x": 5, "y": 3 }, { "icon": "shell", "x": 7, "y": 3 }]
       }
     },
@@ -4696,7 +4736,7 @@
           "T,,,,,,,,,,,,,::::::::,,,,,,T",
           "TTTTTTTTTTTTTT1TTTTTTTTTTTTTT"
         ],
-        "placements": { "obj:o_amber_threads": [14, 7], "clue:cl_kelp_threads": [19, 8] },
+        "placements": { "obj:o_amber_threads": [14, 7] },
         "decor": [{ "icon": "stone", "x": 2, "y": 13 }, { "icon": "shell", "x": 12, "y": 3 }]
       }
     },
@@ -4763,6 +4803,12 @@
           "id": "o_signal_mirrors",
           "name": "Signalling mirrors",
           "description": "Old signalling mirrors in a battered chest."
+        },
+        {
+          "id": "cl_bad_luck_lamp",
+          "name": "Bad luck lamp",
+          "description": "Sailors say a bad-luck lamp sits in the wreck of the Pilchard.",
+          "visual": { "icon": "lantern" }
         }
       ],
       "doors": [],
@@ -4785,7 +4831,7 @@
           " ##.....................##       ",
           "  #######################        "
         ],
-        "placements": { "obj:o_scorched_log": [12, 5], "obj:o_signal_mirrors": [27, 5], "item:i_brass_spyglass": [8, 10], "clue:cl_pilchard_log": [18, 6], "clue:cl_bad_luck_lamp": [16, 10] },
+        "placements": { "obj:o_scorched_log": [12, 5], "obj:o_signal_mirrors": [27, 5], "obj:cl_bad_luck_lamp": [8, 10], "item:i_brass_spyglass": [18, 6] },
         "decor": [{ "icon": "crate", "x": 3, "y": 2 }]
       }
     },
@@ -4894,7 +4940,7 @@
           "#..........................#",
           "#############2##############"
         ],
-        "placements": { "obj:o_gallery_windows": [17, 2], "clue:cl_gallery_threads": [23, 17] },
+        "placements": { "obj:o_gallery_windows": [20, 2] },
         "decor": [{ "icon": "statue", "x": 10, "y": 2 }, { "icon": "painting", "x": 22, "y": 2 }, { "icon": "statue", "x": 25, "y": 2 }, { "icon": "painting", "x": 8, "y": 2 }, { "icon": "statue", "x": 3, "y": 2 }, { "icon": "lamp_stand", "x": 26, "y": 5 }, { "icon": "statue", "x": 1, "y": 17 }, { "icon": "lamp_stand", "x": 1, "y": 6 }, { "icon": "statue", "x": 1, "y": 9 }, { "icon": "lamp_stand", "x": 26, "y": 15 }, { "icon": "statue", "x": 26, "y": 7 }]
       }
     },
@@ -4940,7 +4986,7 @@
           "#...................#",
           "#####################"
         ],
-        "placements": { "obj:o_cistern_plaque": [14, 6], "obj:o_cistern_shelf": [11, 2], "item:i_empty_flask": [11, 10], "clue:cl_cistern_plaque": [15, 9], "clue:cl_flask_cistern": [2, 4] },
+        "placements": { "obj:o_cistern_plaque": [4, 2], "obj:o_cistern_shelf": [17, 6], "item:i_empty_flask": [8, 5] },
         "decor": [{ "icon": "lamp_stand", "x": 6, "y": 2 }]
       }
     },
@@ -4963,6 +5009,12 @@
             "accent": "water",
             "states": ["glow"]
           }
+        },
+        {
+          "id": "cl_drowned_lamp_glow",
+          "name": "Drowned lamp glow",
+          "description": "A warm glow with a small figure sitting beside it.",
+          "visual": { "icon": "lantern" }
         }
       ],
       "doors": [
@@ -4994,7 +5046,7 @@
           "  ##..........##  ",
           "   ############   "
         ],
-        "placements": { "obj:o_thirteenth_light": [12, 9], "clue:cl_drowned_lamp_glow": [4, 6] },
+        "placements": { "obj:o_thirteenth_light": [12, 5], "obj:cl_drowned_lamp_glow": [4, 7] },
         "decor": [{ "icon": "urn", "x": 14, "y": 3 }]
       }
     },
@@ -5046,7 +5098,7 @@
           "  ##......##  ",
           "   ########   "
         ],
-        "placements": { "obj:o_wren_cot": [5, 2], "obj:o_wren_bedside_table": [7, 2], "obj:o_wren_window": [9, 2], "char:c_wren": [9, 8] },
+        "placements": { "obj:o_wren_cot": [10, 3], "obj:o_wren_bedside_table": [6, 11], "obj:o_wren_window": [7, 2], "char:c_wren": [9, 8] },
         "decor": [{ "icon": "urn", "x": 3, "y": 4 }, { "icon": "flower", "x": 10, "y": 8 }]
       }
     }

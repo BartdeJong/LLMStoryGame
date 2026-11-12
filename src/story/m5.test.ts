@@ -37,12 +37,12 @@ const CASES: [string, LengthId][] = [
   ["holmesashenvelope", "short"], ["holmesashenvelope", "medium"], ["holmesashenvelope", "long"],
 ];
 
+// Clues have no tiles of their own: they are found by examining the object they are anchored to.
 function expectedIds(pack: StoryPack, view: LengthView, locationId: string): string[] {
   const slice = buildLocationSlice(pack, view, locationId);
   return [
     ...slice.characters.map((c) => `char:${c.id}`),
     ...slice.objects.map((o) => `${o.kind === "key_item" ? "item" : "obj"}:${o.id}`),
-    ...slice.clues.map((c) => `clue:${c.id}`),
   ];
 }
 
@@ -68,7 +68,7 @@ const SQUARE: AuthoredArea = {
     "#............#",
     "######3#######",
   ],
-  placements: { o_notice_board: [3, 1], cl_notice_board: [4, 1] },
+  placements: { o_notice_board: [3, 1] },
   decor: [],
 };
 const LIBRARY: AuthoredArea = {
@@ -91,7 +91,7 @@ const LIBRARY: AuthoredArea = {
     "#..........#",
     "######2#####",
   ],
-  placements: { "char:c_oswin": [3, 2], "obj:o_key_log": [8, 2], "clue:cl_library_log": [5, 4] },
+  placements: { "char:c_oswin": [3, 2], "obj:o_key_log": [8, 2] },
   decor: [{ icon: "plant", x: 9, y: 5 }],
 };
 
@@ -128,10 +128,11 @@ describe("buildPackArea", () => {
     expect(area.entities?.map(({ id, kind, x, y, packId }) => ({ id, kind, x, y, packId }))).toEqual([
       { id: "char:c_oswin", kind: "character", x: 3, y: 2, packId: "c_oswin" },
       { id: "obj:o_key_log", kind: "object", x: 8, y: 2, packId: "o_key_log" },
-      { id: "clue:cl_library_log", kind: "clue", x: 5, y: 4, packId: "cl_library_log" },
     ]);
     expect(area.entities?.find((entity) => entity.kind === "character")?.character).toBeDefined();
-    expect(area.entities?.find((entity) => entity.kind === "clue")?.truthId).toBeDefined();
+    // the clue is found by examining the object it is anchored to
+    expect(area.entities?.find((entity) => entity.id === "obj:o_key_log")?.clueIds).toEqual(["cl_library_log"]);
+    expect(area.entities?.some((entity) => entity.id.startsWith("clue:"))).toBe(false);
     expect(area.spawnPoints.map((point) => point.id)).toEqual(area.entities?.map((entity) => entity.id));
     expect(area.decor).toEqual([{ icon: "plant", x: 9, y: 5 }]);
   });
@@ -159,7 +160,7 @@ describe("buildPackArea", () => {
     const pack = handWritten();
     pack.lengths.short!.cast = pack.lengths.short!.cast.filter((id) => id !== "c_oswin");
     const { area, brief } = buildPackArea(pack, getLengthView(pack, "short"), "l_library");
-    expect(area.entities?.map((entity) => entity.id)).toEqual(["obj:o_key_log", "clue:cl_library_log"]);
+    expect(area.entities?.map((entity) => entity.id)).toEqual(["obj:o_key_log"]);
     expect(brief.characters).toEqual([]);
   });
 
@@ -211,9 +212,9 @@ describe("story session", () => {
     expect(story.isDoorLocked(area.id, libraryDoor.id)).toBe(true);
     expect(story.describeDoorLock(area.id, libraryDoor.id)).toContain("Keep exploring nearby");
     expect(() => story.enterDoor(area.id, libraryDoor.id)).toThrow("Keep exploring nearby");
-    const openingClue = area.entities?.find((entity) => entity.kind === "clue" && entity.packId === "cl_notice_board");
+    const openingClue = area.entities?.find((entity) => entity.clueIds?.includes("cl_notice_board"));
     expect(openingClue).toBeDefined();
-    story.examineClue(openingClue!);
+    expect(story.examineClues(openingClue!)).toContain("festival notice");
     expect(story.isLocationOpen("l_library")).toBe(true);
     expect(story.isDoorLocked(area.id, libraryDoor.id)).toBe(false);
     giveItem(story.state, "i_tower_key");
@@ -223,9 +224,9 @@ describe("story session", () => {
       area = story.enterDoor(area.id, door!.id).area;
       expect(area.id).toBe(target);
     }
-    const clue = area.entities?.find((entity) => entity.kind === "clue");
-    expect(clue).toBeDefined();
-    expect(story.examineClue(clue!)).toBeTruthy();
+    const clueObject = area.entities?.find((entity) => entity.clueIds?.includes("cl_workbench"));
+    expect(clueObject).toBeDefined();
+    expect(story.examineClues(clueObject!)).toBeTruthy();
     expect(story.state.truthsFound.length).toBe(1);
     expect(story.state.visitedAreas).toEqual(["l_square", "l_bakery", "l_library", "l_clocktower"]);
     expect(story.state).toMatchObject({ packId: "example", length: "short" });

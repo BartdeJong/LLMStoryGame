@@ -1,5 +1,6 @@
 // Decor and story placements for a baked layout. Everything is deterministic for a given rng.
 import { getGlyph, resolveVisualSpec, tokenizeVisualText } from "../../../src/art/glyphs";
+import { placedObjects } from "../../../src/story/slice";
 import type { Location, StoryPack } from "../../../src/story/types";
 import type { DecorRule } from "./kinds";
 import type { Grid, Pt, Rng } from "./grid";
@@ -113,7 +114,7 @@ export function placeDecor(
 
 export interface Thing {
   id: string;
-  kind: "object" | "item" | "character" | "clue";
+  kind: "object" | "item" | "character";
   name: string;
   text: string; // description, personality, clue text...
   icon?: string;
@@ -121,9 +122,10 @@ export interface Thing {
   related?: string; // extra words for matching (goal, secret, where...)
 }
 
+// Everything that gets a tile in a location. Clues have none: each is anchored to an object (clue.object_id).
 export function collectThings(pack: StoryPack, location: Location): Thing[] {
   const things: Thing[] = [];
-  for (const object of location.objects) {
+  for (const object of placedObjects(pack, location)) {
     const icon = object.visual?.icon ?? resolveVisualSpec(object.name, object.description).icon;
     things.push({ id: `obj:${object.id}`, kind: "object", name: object.name, text: object.description, icon, required: true });
   }
@@ -141,11 +143,6 @@ export function collectThings(pack: StoryPack, location: Location): Thing[] {
       related: `${member.species} ${member.goal} ${member.secret}`,
     });
   }
-  for (const clue of pack.clues) {
-    const here = (clue.where.type === "location" && clue.where.id === location.id)
-      || clue.alternatives.some((alt) => alt.type === "location" && alt.id === location.id);
-    if (here) things.push({ id: `clue:${clue.id}`, kind: "clue", name: clue.id, text: clue.text, required: true, related: clue.id.replace(/_/g, " ") });
-  }
   return things;
 }
 
@@ -154,8 +151,8 @@ const STOP = new Set([
   "just", "keep", "near", "once", "place", "room", "someone", "something", "stay", "that", "their", "there", "they",
   "this", "through", "thing", "want", "what", "when", "where", "which", "with", "would", "your",
 ]);
-const words = (text: string): Set<string> => new Set(tokenizeVisualText(text).filter((w) => w.length > 2 && !STOP.has(w)));
-const overlap = (a: ReadonlySet<string>, b: ReadonlySet<string>): number => [...a].filter((w) => b.has(w)).length;
+export const words = (text: string): Set<string> => new Set(tokenizeVisualText(text).filter((w) => w.length > 2 && !STOP.has(w)));
+export const overlap = (a: ReadonlySet<string>, b: ReadonlySet<string>): number => [...a].filter((w) => b.has(w)).length;
 
 const WALL_MOUNTED = new Set(["window", "shelf", "poster", "banner", "plaque", "hook", "rail", "notice", "board", "painting", "mirror", "clock", "peg"]);
 const AGAINST_WALL = new Set(["desk", "cot", "cupboard", "bench", "chair", "table", "bed", "cabinet", "wardrobe", "stove", "oven", "bin", "bookshelf", "workbench", "counter", "basket"]);
@@ -178,7 +175,7 @@ function classify(thing: Thing): Placement {
   return "free";
 }
 
-function keywords(thing: Thing): Set<string> {
+export function keywords(thing: Thing): Set<string> {
   const glyph = thing.icon ? getGlyph(thing.icon) : undefined;
   return words(`${thing.name} ${glyph?.name ?? ""}`);
 }
@@ -261,9 +258,9 @@ export function placeThings(opts: PlaceOptions): Record<string, [number, number]
     .map(([dx, dy]) => ({ x: p.x + dx!, y: p.y + dy! }))
     .filter((q) => reach.has(key(q.x, q.y)) && !zone(q));
 
-  // objects that characters or clues refer to keep their neighbours free
+  // objects that characters refer to keep their neighbours free
   const referenced = (thing: Thing): boolean => things.some((other) =>
-    (other.kind === "character" || other.kind === "clue")
+    other.kind === "character"
     && overlap(words(`${other.id.replace(/[_-]/g, " ")} ${other.name} ${other.text} ${other.related ?? ""}`), keywords(thing)) > 0);
 
   for (const thing of [...objects].sort((a, b) => Number(referenced(b)) - Number(referenced(a)))) {
@@ -284,13 +281,6 @@ export function placeThings(opts: PlaceOptions): Record<string, [number, number]
   for (const thing of todo.filter((t) => t.kind === "character")) {
     const near = nearTo(thing);
     const pools = near ? [adjacent(near).filter((q) => !onPath(q)), open, openAny] : [open, openAny];
-    const p = choose([...pools, fallback]) ?? choose([fallback], false);
-    if (!p) throw new Error(`No reachable tile for "${thing.id}".`);
-    commit(thing, p);
-  }
-  for (const thing of todo.filter((t) => t.kind === "clue")) {
-    const near = nearTo(thing);
-    const pools = near ? [adjacent(near), open, openAny] : [open, openAny];
     const p = choose([...pools, fallback]) ?? choose([fallback], false);
     if (!p) throw new Error(`No reachable tile for "${thing.id}".`);
     commit(thing, p);

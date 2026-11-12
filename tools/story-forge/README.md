@@ -48,7 +48,9 @@ pack; the example currently has only `short`.
    length-cut notes, schema, and the corresponding prompt, in this order:
    `identity-and-cast.md`, `truths-clues-and-items.md`,
    `locations-and-doors.md`, then `lengths-and-endings.md`. Assemble the
-   returned JSON fragments into `public/stories/<story-id>.json`. Then, in
+   returned JSON fragments into `public/stories/<story-id>.json`. Then run
+   `npm run anchor-clues -- <story-id>` (see "Clue anchors" below) so every
+   clue found at a location has an object to examine. Then, in
    one more chat, give the assembled pack and `areas.md` and add the returned
    `area` block (description and door texts) to each location. Then run
    `npm run bake-areas` (see "Baking areas" below) to generate the layouts. The
@@ -74,9 +76,33 @@ pack; the example currently has only `short`.
 An agent writes the area text (`prompts/areas.md`: `description` and the door
 `label`/`hint` texts). `npm run bake-areas` then adds everything else: biome,
 palette, floor and wall style, the ASCII `map`, `placements` (a tile for each
-object, key item, required character and clue of the location, keyed
-`obj:<id>`, `item:<id>`, `char:<id>`, `clue:<id>`) and `decor`. Key rooms are
-then hand-edited.
+object, key item and required character of the location, keyed `obj:<id>`,
+`item:<id>`, `char:<id>`) and `decor`. Key rooms are then hand-edited.
+
+## Clue anchors
+
+A clue that can be found at a location is not a thing of its own on the map.
+It is attached to one object of that location with `object_id`: examining the
+object finds the clue (when its requirements are met). Several clues may share
+an object. `npm run anchor-clues -- [story-id] [--check]` sets `object_id` on
+every such clue that lacks one, in this order:
+
+1. the location object with the clue's id;
+2. else the location object sharing the most words with the clue's id and text
+   (names and glyph names, as in `bake/furnish.ts`);
+3. else a new object at the location: id = clue id, name made from the id
+   (`cl_shard_match` becomes "Shard match"), the clue text as description, and
+   an icon chosen from the catalog.
+
+Only the lines that change are edited. Areas that are already baked then need
+`npm run bake-areas -- <story-id> --placements` to give the new objects their
+tiles (a location still to be baked picks them up by itself). Clues told only
+by a character need no anchor. The validator requires an
+anchor for every clue found at a location (`CLUE_ANCHOR_MISSING`), an anchor in
+one of those locations (`CLUE_ANCHOR_ELSEWHERE`), and an object that exists
+(`REF_UNKNOWN`). An item found at a location is the only thing placed there:
+a location object with the same id as that item is an error
+(`OBJECT_DUPLICATES_ITEM`).
 
 ```
 npm run bake-areas -- [story-id] [--only <location-id>] [--force]
@@ -129,6 +155,9 @@ fog or flowers are placed at the water or in the flowers.
 - The pack fixes plot facts, cast, mystery, clues, key items, locations, and
   endings. Runtime generation may add only surface descriptions, dialogue,
   flavor, and minor extras without contradicting the pack. Every location needs a complete, baked `area` block (text and layout).
+- Every clue found at a location names an object of that location with
+  `object_id`, and an item found at a location is not also listed in that
+  location's `objects`. `npm run anchor-clues` adds the missing anchors.
 - Choose `visual.icon` for every item and location object from
   `icon-catalog.md`, using a catalog id. Use `accent` and `states` only when
   they help the object read clearly. If no glyph fits, add a

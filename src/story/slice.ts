@@ -1,8 +1,17 @@
 import type { LengthView } from "./loader";
-import type { CastMember, Location, StoryPack } from "./types";
+import type { CastMember, Location, StoryPack, WorldObject } from "./types";
 import type { VisualSpec } from "../art/glyphs";
 
 export const STYLE_EXCERPT_MAX_CHARS = 500;
+
+// The objects of a location that are placed as things. An object with the same id as an item found here is the
+// same thing, so only the item is placed (the validator reports such duplicates).
+export function placedObjects(pack: StoryPack, location: Location): WorldObject[] {
+  const found = new Set(pack.items
+    .filter((item) => item.found_at?.type === "location" && item.found_at.id === location.id)
+    .map((item) => item.id));
+  return location.objects.filter((object) => !found.has(object.id));
+}
 
 export interface SliceCharacter {
   id: string;
@@ -26,6 +35,7 @@ export interface SliceObject {
 export interface SliceClue {
   id: string;
   truth_id: string | null;
+  object_id: string | null;
   text: string;
 }
 
@@ -105,7 +115,7 @@ export function buildLocationSlice(
     }));
 
   const objects: SliceObject[] = [
-    ...location.objects.map((object): SliceObject => ({
+    ...placedObjects(pack, location).map((object): SliceObject => ({
       id: object.id, name: object.name, description: object.description, kind: "object",
       visual: object.visual, visualInferred: object.visualInferred,
     })),
@@ -121,7 +131,7 @@ export function buildLocationSlice(
     .filter((clue) =>
       (clue.where.type === "location" && clue.where.id === locationId)
       || clue.alternatives.some((alternative) => alternative.type === "location" && alternative.id === locationId))
-    .map((clue): SliceClue => ({ id: clue.id, truth_id: clue.truth_id ?? null, text: clue.text }));
+    .map((clue): SliceClue => ({ id: clue.id, truth_id: clue.truth_id ?? null, object_id: clue.object_id ?? null, text: clue.text }));
 
   const doors = locationDoorTargets(pack, view, locationId).map((to): SliceDoor => ({
     to,

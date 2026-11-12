@@ -66,7 +66,7 @@ export class StorySession {
     const area = this.areas.get(locationId);
     if (!area || !this.state.visitedAreas.includes(locationId)) return true;
     return (area.entities ?? []).some((entity) => {
-      if (entity.kind === "clue") return entity.packId !== undefined && !this.state.cluesFound.includes(entity.packId);
+      if (this.hasOpenClues(entity)) return true;
       if (entity.kind === "key") return !this.state.collectedEntities.includes(entity.id);
       if (entity.kind !== "character" || !entity.packId) return false;
       const character = this.pack.cast.find((member) => member.id === entity.packId);
@@ -202,18 +202,30 @@ export class StorySession {
     return { area, spawn };
   }
 
-  // Examining a clue spot records its truth. Returns the clue text, or null if the entity is not a clue.
-  examineClue(entity: AreaEntity): string | null {
-    if (entity.kind !== "clue") return null;
-    const clue = this.pack.clues.find((candidate) => candidate.id === entity.packId);
-    if (clue) {
-      if (!isRequirementMet(clue.requirements, this.state)) {
-        return "This little detail can wait until the story has unfolded a bit more.";
-      }
+  // True while the object anchors a clue the player has not found yet.
+  hasOpenClues(entity: AreaEntity): boolean {
+    return (entity.clueIds ?? []).some((id) => !this.state.cluesFound.includes(id));
+  }
+
+  // True when the object anchors clues and the player has found all of them.
+  allCluesFound(entity: AreaEntity): boolean {
+    return (entity.clueIds?.length ?? 0) > 0 && !this.hasOpenClues(entity);
+  }
+
+  // Examining an object records the clues anchored to it whose requirements are met. Returns the clue text to show,
+  // or null when the object has no clue left to find (it then reads as plain scenery).
+  examineClues(entity: AreaEntity): string | null {
+    if (!this.hasOpenClues(entity)) return null;
+    const texts: string[] = [];
+    for (const id of entity.clueIds ?? []) {
+      const clue = this.pack.clues.find((candidate) => candidate.id === id);
+      if (!clue || this.state.cluesFound.includes(id) || !isRequirementMet(clue.requirements, this.state)) continue;
       markClueFound(this.state, clue.id);
-      grantTruthsFromFoundClues(this.pack, this.state);
+      texts.push(clue.text);
     }
-    return entity.description;
+    if (texts.length === 0) return "This little detail can wait until the story has unfolded a bit more.";
+    grantTruthsFromFoundClues(this.pack, this.state);
+    return texts.join(" ");
   }
 
   // The pack core for a character entity, or undefined for a non-cast entity (no core, no dialogue).

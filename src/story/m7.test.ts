@@ -154,10 +154,10 @@ async function simulate(pack: StoryPack, lengthId: LengthId): Promise<void> {
       if (accessibleSource?.type === "location") {
         await moveTo(accessibleSource.id);
         const entity = story.getArea(currentAreaId).entities?.find(
-          (candidate) => candidate.kind === "clue" && candidate.packId === clue.id,
+          (candidate) => candidate.clueIds?.includes(clue.id),
         );
-        expect(entity, `clue entity ${clue.id}`).toBeDefined();
-        story.examineClue(entity!);
+        expect(entity, `object anchoring clue ${clue.id}`).toBeDefined();
+        story.examineClues(entity!);
         expect(story.state.cluesFound).toContain(clue.id);
       } else if (accessibleSource?.type === "character") {
         await speakTo(accessibleSource.id, undefined, clue.id);

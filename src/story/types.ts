@@ -146,6 +146,7 @@ export interface Clue {
   kind: ClueKind;
   where: SourceRef;
   alternatives: SourceRef[]; // other places the same clue can be found
+  object_id?: string; // location object the clue is attached to: examining it finds the clue (see "Clue anchors")
   requirements: Requirement;
   text: string;
 }
@@ -200,8 +201,9 @@ export interface AuthoredArea {
   floor: FloorStyle;
   wall: WallStyle;
   map: string[];
-  // Tile for each story thing that can appear here, keyed by pack id: location object, item found here,
-  // required character, or clue found here. Things missing from the current length are not placed.
+  // Tile for each story thing that can appear here, keyed by pack id: location object, item found here or
+  // required character. Clues have no tile of their own; they belong to the object they are anchored to.
+  // Things missing from the current length are not placed.
   placements: Record<string, [number, number]>;
   decor: { icon: string; x: number; y: number }[];
 }

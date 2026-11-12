@@ -65,7 +65,7 @@ import {
 const PLAYER_SPEED = 58;
 const PLAYER_HALF_SIZE = 5;
 const INTERACT_RANGE = TILE_SIZE * 1.5;
-// A tap picks the nearest character, clue, item or door within this reach of the finger, whichever is larger.
+// A tap picks the nearest character, object, item or door within this reach of the finger, whichever is larger.
 const TAP_REACH_WORLD = TILE_SIZE;
 const TAP_REACH_CSS = 28;
 // Walking that makes no headway for this long means something got in the way.
@@ -556,7 +556,7 @@ export class Game {
       {
         characters: this.characterRenderStates(world),
         talkMarkerIds: this.talkMarkerIds(world),
-        foundClueIds: new Set(this.story.state.cluesFound),
+        checkedEntityIds: this.checkedClueEntityIds(world),
         animateCharacters: !reducedMotion && !this.paused && !this.transitioning && !this.inDialogue && !this.worldMap.isOpen,
         doorSigns: this.doorSigns(world),
         playerSprite: this.story.pack.identity.player?.sprite,
@@ -723,6 +723,15 @@ export class Game {
       if (entity.character) states.set(entity.id, this.characterState(area, entity));
     }
     return states;
+  }
+
+  // Objects whose clues have all been found; they read as done instead of pulsing.
+  private checkedClueEntityIds(area: Area): Set<string> {
+    const checked = new Set<string>();
+    for (const entity of area.entities ?? []) {
+      if (this.story.allCluesFound(entity)) checked.add(entity.id);
+    }
+    return checked;
   }
 
   private talkMarkerIds(area: Area): Set<string> {
@@ -1028,7 +1037,7 @@ export class Game {
   }
 
   private examine(entity: AreaEntity): void {
-    const clue = this.story.examineClue(entity);
+    const clue = this.story.examineClues(entity);
     if (clue !== null) {
       this.message.textContent = `Clue: ${clue}`;
       this.celebrateProgress();

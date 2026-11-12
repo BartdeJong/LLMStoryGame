@@ -130,7 +130,8 @@ describe("save persistence", () => {
 
     expect(story.state).toEqual(save.storyState);
     expect(story.getAreaIds()).toEqual([areaId, "l_bakery"]);
-    expect(story.getArea(areaId).entities?.map((entity) => entity.id)).toEqual(["clue:cl_notice_board"]);
+    // the notice board was collected, so the object that anchors the clue is gone too
+    expect(story.getArea(areaId).entities?.map((entity) => entity.id)).toEqual([]);
     expect(story.getArea(areaId).layers).toEqual(buildPackArea(pack, view, areaId).area.layers);
     expect(story.getBrief(areaId)?.description).toBe(pack.locations[0]!.area!.description);
     expect(story.getArea("l_bakery").entities?.length).toBeGreaterThan(0);

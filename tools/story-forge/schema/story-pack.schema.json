@@ -296,6 +296,7 @@
         "kind": { "type": "string", "enum": ["spoken", "object", "place", "item_combination"] },
         "where": { "$ref": "#/$defs/sourceRef" },
         "alternatives": { "type": "array", "items": { "$ref": "#/$defs/sourceRef" } },
+        "object_id": { "$ref": "#/$defs/id" },
         "requirements": { "$ref": "#/$defs/requirement" },
         "text": { "$ref": "#/$defs/text" }
       }

@@ -110,10 +110,8 @@ describe("baked area validation", () => {
     expect(validateStoryPack(pack).errors).toEqual([]);
 
     pack = fresh();
-    square(pack).objects.push({ id: "cl_notice_board", name: "Painted board", description: "A board." });
-    square(pack).area!.placements.cl_notice_board = square(pack).area!.placements["clue:cl_notice_board"]!;
-    delete square(pack).area!.placements["clue:cl_notice_board"];
-    square(pack).area!.placements["obj:cl_notice_board"] = [5, 3];
+    library(pack).objects.push({ id: "c_oswin", name: "Oswin's cup", description: "A cup." });
+    library(pack).area!.placements.c_oswin = [6, 1];
     expect(codes(pack)).toContain("AREA_PLACEMENT_AMBIGUOUS");
   });
 
@@ -138,8 +136,9 @@ describe("baked area validation", () => {
     }
 
     pack = fresh();
+    square(pack).objects.push({ id: "o_bench", name: "Bench", description: "A bench." });
     const placements = square(pack).area!.placements;
-    placements["clue:cl_notice_board"] = [...placements["obj:o_notice_board"]!] as [number, number];
+    placements["obj:o_bench"] = [...placements["obj:o_notice_board"]!] as [number, number];
     expect(codes(pack)).toContain("AREA_PLACEMENT_OVERLAP");
   });
 
@@ -165,13 +164,15 @@ describe("baked area validation", () => {
   it("reports things and doors that cannot be reached from the start", () => {
     let pack = fresh();
     for (let y = 1; y <= 6; y += 1) setTile(square(pack), 11, y, "#");
-    square(pack).area!.placements["clue:cl_notice_board"] = [12, 5];
+    square(pack).objects.push({ id: "o_bench", name: "Bench", description: "A bench." });
+    square(pack).area!.placements["obj:o_bench"] = [12, 5];
     expect(codes(pack)).toContain("AREA_UNREACHABLE");
 
     // A decor item that closes a one-tile corridor cuts the rest off as well.
     pack = fresh();
     for (let y = 1; y <= 6; y += 1) if (y !== 3) setTile(square(pack), 11, y, "#");
-    square(pack).area!.placements["clue:cl_notice_board"] = [12, 5];
+    square(pack).objects.push({ id: "o_bench", name: "Bench", description: "A bench." });
+    square(pack).area!.placements["obj:o_bench"] = [12, 5];
     expect(codes(pack)).not.toContain("AREA_UNREACHABLE");
     square(pack).area!.decor = [{ icon: "leaf", x: 11, y: 3 }];
     expect(codes(pack)).toContain("AREA_UNREACHABLE");
@@ -183,5 +184,38 @@ describe("baked area validation", () => {
     area.map = area.map.map((row) => row.replace(/[1-9@]/g, (char) => (char === "@" ? "." : "#")));
     area.doors = [];
     expect(codes(pack)).toContain("AREA_START_NO_ENTRY");
+  });
+});
+
+describe("clue anchors and items", () => {
+  const clue = (pack: StoryPack, id: string) => pack.clues.find((candidate) => candidate.id === id)!;
+
+  it("needs an object at each location where a clue can be found, and accepts the anchored example", () => {
+    expect(validateStoryPack(fresh()).errors).toEqual([]);
+
+    let pack = fresh();
+    delete clue(pack, "cl_notice_board").object_id;
+    expect(codes(pack)).toContain("CLUE_ANCHOR_MISSING");
+
+    pack = fresh();
+    clue(pack, "cl_library_log").object_id = "o_notice_board";
+    expect(codes(pack)).toContain("CLUE_ANCHOR_ELSEWHERE");
+
+    pack = fresh();
+    clue(pack, "cl_library_log").object_id = "o_nowhere";
+    expect(codes(pack)).toContain("REF_UNKNOWN");
+
+    // a clue that only a character tells is not found at a place, so it needs no object
+    pack = fresh();
+    clue(pack, "cl_pip_saw").object_id = "o_notice_board";
+    expect(codes(pack)).toContain("CLUE_ANCHOR_ELSEWHERE");
+  });
+
+  it("does not let a location object duplicate an item found there", () => {
+    const pack = fresh();
+    const bakery = pack.locations.find((location) => location.id === "l_bakery")!;
+    bakery.objects.push({ id: "i_overdue_book", name: "Overdue book", description: "A dusty book." });
+    const report = validateStoryPack(pack);
+    expect(report.errors.map((e) => e.code)).toEqual(["OBJECT_DUPLICATES_ITEM"]);
   });
 });

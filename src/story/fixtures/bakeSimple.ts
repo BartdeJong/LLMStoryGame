@@ -1,4 +1,5 @@
 import { mapPackBiome, mapPackPalette, paletteForBiome } from "../recipes";
+import { placedObjects } from "../slice";
 import { LENGTH_IDS, type AuthoredArea, type StoryPack } from "../types";
 
 // Test helper: gives every location of a pack a plain hand-made area (a walled room, doors along the top wall,
@@ -13,12 +14,9 @@ export function bakeSimple(source: unknown): unknown {
       ...pack.locations.filter((other) => other.doors.some((door) => door.to === location.id)).map((other) => other.id),
     ])];
     const things = [
-      ...location.objects.map((object) => `obj:${object.id}`),
+      ...placedObjects(pack, location).map((object) => `obj:${object.id}`),
       ...pack.items.filter((item) => item.found_at?.type === "location" && item.found_at.id === location.id).map((item) => `item:${item.id}`),
       ...location.required_characters.map((id) => `char:${id}`),
-      ...pack.clues
-        .filter((clue) => [clue.where, ...clue.alternatives].some((ref) => ref.type === "location" && ref.id === location.id))
-        .map((clue) => `clue:${clue.id}`),
     ];
     const width = Math.max(14, neighbours.length * 2 + 3);
     const rows = Array.from({ length: 8 }, (_, y) => (y === 0 || y === 7 ? "#".repeat(width) : "#" + ".".repeat(width - 2) + "#").split(""));

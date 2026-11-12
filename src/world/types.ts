@@ -57,7 +57,7 @@ export interface GridPoint {
   readonly y: number;
 }
 
-export type SpawnKind = "character" | "object" | "clue" | "key";
+export type SpawnKind = "character" | "object" | "key";
 
 export interface EntitySpawnPoint extends GridPoint {
   readonly id: string;
@@ -69,8 +69,8 @@ export interface AreaEntity extends EntitySpawnPoint {
   readonly name: string;
   readonly description: string;
   readonly required: boolean;
-  readonly packId?: string; // cast, item, object or clue id from the story pack
-  readonly truthId?: string;
+  readonly packId?: string; // cast, item or object id from the story pack
+  readonly clueIds?: readonly string[]; // objects only: the clues examining this object finds
   readonly character?: CharacterRecipe;
   readonly sprite?: SpriteSpec; // layered look of a character; drawn instead of `character` when present
   readonly icon?: IconRecipe;

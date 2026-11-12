@@ -54,24 +54,12 @@ export interface EntityPresentation {
   animateCharacters: boolean;
   // Signs for the doors of the area; only those whose door is in view are shown.
   doorSigns?: readonly DoorSign[];
-  // Pack ids of the clues the player has already found; their markers turn into a quiet check.
-  foundClueIds?: ReadonlySet<string>;
+  // Objects whose clues the player has all found; they get a quiet check instead of the pulsing outline.
+  checkedEntityIds?: ReadonlySet<string>;
   // How the player looks (identity.player.sprite of the story pack).
   playerSprite?: SpriteSpec;
 }
 
-// Magnifier drawn on clue spots: o outline, l lens, h handle.
-const MAGNIFIER = [
-  ".oooo....",
-  "olllllo..",
-  "ollllllo.",
-  "ollllllo.",
-  "ollllllo.",
-  ".oooooo..",
-  ".....hho.",
-  "......hho",
-  ".......oo",
-];
 const GOLD = "#f2a81d";
 const CHECK = ["......o", ".....oo", "o...oo.", "oo.oo..", ".ooo...", "..o...."];
 
@@ -414,10 +402,7 @@ export class Renderer {
     const y = Math.round((character?.y ?? entity.y) * TILE_SIZE - camera.y);
     if (x < -TILE_SIZE || y < -TILE_SIZE || x > this.viewWidthPx || y > this.viewHeightPx) return;
     const objectSprite = entity.packId ? getAshenObjectSprite(entity.packId, palette) : null;
-    if (entity.kind === "clue") {
-      this.drawClueMarker(entity, x, y, camera, presentation);
-      return;
-    }
+    const checked = presentation?.checkedEntityIds?.has(entity.id) === true;
     const useVisual = !!entity.visual && (!entity.visualInferred || !objectSprite);
     if (!entity.character && !useVisual) this.drawObjectShadow(x, y);
     if (entity.sprite) {
@@ -449,8 +434,8 @@ export class Renderer {
       const time = reduced ? 0 : performance.now() / 1000 + (hashId(entity.id) % 50);
       let outline: { color: string; alpha: number } | undefined;
       let lift = 0;
-      if (entity.kind === "object") {
-        // A soft rim that swells for a moment every few seconds.
+      if (entity.kind === "object" && !checked) {
+        // A soft rim that swells for a moment every few seconds; it stops once the object's clues are found.
         const swell = reduced ? 0 : Math.max(0, Math.sin((time % 4.5) / 4.5 * Math.PI * 2 - Math.PI / 2) - 0.4);
         outline = { color: GOLD, alpha: 0.55 + swell * 0.45 };
       } else if (entity.kind === "key") {
@@ -466,6 +451,7 @@ export class Renderer {
     } else if (entity.icon) {
       this.context.drawImage(getIconCanvas(entity.icon, palette), x, y);
     }
+    if (checked) this.drawFoundCheck(x + TILE_SIZE - 3, y + 3);
   }
 
   private drawSparkle(cx: number, cy: number, phase: number, color: string, still: boolean, reach = 2): void {
@@ -482,69 +468,21 @@ export class Renderer {
     }
   }
 
-  // A bobbing magnifier in a soft glow marks a clue; once found it dims to a small check.
-  // Next to a related object the marker floats over that object instead of bare floor.
-  private drawClueMarker(
-    clue: AreaEntity,
-    x: number,
-    y: number,
-    camera: Position,
-    presentation?: EntityPresentation,
-  ): void {
+  // A small dark badge with a check, drawn on an object whose clues have all been found.
+  private drawFoundCheck(cx: number, cy: number): void {
     const context = this.context;
-    const reduced = document.documentElement.dataset.reducedMotion === "true";
-    const time = reduced ? 0 : performance.now() / 1000;
-    const found = !!clue.packId && presentation?.foundClueIds?.has(clue.packId) === true;
-    const near = (this.frameWorld?.entities ?? []).filter((other) => other.kind === "object" || other.kind === "key")
-      .find((other) => Math.abs(other.x - clue.x) + Math.abs(other.y - clue.y) === 1);
-    const cx = (near ? Math.round(near.x * TILE_SIZE - camera.x) : x) + TILE_SIZE / 2;
-    const baseY = (near ? Math.round(near.y * TILE_SIZE - camera.y) : y) + TILE_SIZE / 2;
-    if (found) {
-      context.save();
-      context.globalAlpha = 0.65;
-      context.fillStyle = "rgba(20, 28, 22, 0.55)";
-      context.beginPath();
-      context.arc(cx, baseY - 3, 5, 0, Math.PI * 2);
-      context.fill();
-      CHECK.forEach((row, dy) => [...row].forEach((pixel, dx) => {
-        if (pixel === ".") return;
-        context.fillStyle = "#cfe8c0";
-        context.fillRect(cx - 3 + dx, baseY - 6 + dy, 1, 1);
-      }));
-      context.restore();
-      return;
-    }
-    const bob = Math.round(Math.sin(time * 3.2) * 1.5);
-    const my = baseY - (near ? 19 : 13) + bob;
-    const pulse = reduced ? 0.5 : 0.5 + 0.5 * Math.sin(time * 2.4);
-    const centerY = my + 4.5;
     context.save();
-    // A dark badge with a gold rim reads on both light and dark floors.
-    context.strokeStyle = `rgba(255, 214, 102, ${0.3 + pulse * 0.4})`;
-    context.lineWidth = 1;
+    context.globalAlpha = 0.65;
+    context.fillStyle = "rgba(20, 28, 22, 0.55)";
     context.beginPath();
-    context.arc(cx, centerY, 8 + pulse * 2, 0, Math.PI * 2);
-    context.stroke();
-    context.fillStyle = "rgba(34, 24, 28, 0.88)";
-    context.beginPath();
-    context.arc(cx, centerY, 7, 0, Math.PI * 2);
+    context.arc(cx, cy, 5, 0, Math.PI * 2);
     context.fill();
-    context.strokeStyle = GOLD;
-    context.beginPath();
-    context.arc(cx, centerY, 7, 0, Math.PI * 2);
-    context.stroke();
-    // A little tail pointing down to the spot.
-    context.fillStyle = GOLD;
-    context.fillRect(cx - 1, centerY + 7, 3, 1);
-    context.fillRect(cx, centerY + 8, 1, 1);
-    context.restore();
-    const colors: Record<string, string> = { o: "#fff4c2", l: "#6fb7cf", h: GOLD };
-    MAGNIFIER.forEach((row, dy) => [...row].forEach((pixel, dx) => {
+    CHECK.forEach((row, dy) => [...row].forEach((pixel, dx) => {
       if (pixel === ".") return;
-      context.fillStyle = colors[pixel]!;
-      context.fillRect(cx - 4 + dx, my + dy, 1, 1);
+      context.fillStyle = "#cfe8c0";
+      context.fillRect(cx - 3 + dx, cy - 3 + dy, 1, 1);
     }));
-    this.drawSparkle(cx + 8, my - 2, time * 2.6, GOLD, reduced, 2);
+    context.restore();
   }
 
   private drawTalkMarker(x: number, y: number, palette: PaletteName): void {

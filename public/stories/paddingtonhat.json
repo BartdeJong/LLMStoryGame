@@ -512,27 +512,27 @@
     }
   ],
   "clues": [
-    { "id": "cl_empty_peg", "truth_id": "t_hat_missing", "kind": "object", "where": { "type": "location", "id": "l_hall" }, "alternatives": [], "requirements": {}, "text": "The hat peg in the hall is empty. Paddington's old hat is not there." },
+    { "id": "cl_empty_peg", "object_id": "o_hat_peg", "truth_id": "t_hat_missing", "kind": "object", "where": { "type": "location", "id": "l_hall" }, "alternatives": [], "requirements": {}, "text": "The hat peg in the hall is empty. Paddington's old hat is not there." },
     { "id": "cl_jonathan_peg", "truth_id": "t_hat_missing", "kind": "spoken", "where": { "type": "character", "id": "c_jonathan" }, "alternatives": [], "requirements": {}, "text": "Jonathan says the hat was not on the peg at breakfast." },
-    { "id": "cl_empty_shelf", "truth_id": "t_marmalade_gone", "kind": "object", "where": { "type": "location", "id": "l_kitchen" }, "alternatives": [], "requirements": {}, "text": "The marmalade shelf is empty. Even the big jar is gone." },
+    { "id": "cl_empty_shelf", "object_id": "o_marmalade_shelf", "truth_id": "t_marmalade_gone", "kind": "object", "where": { "type": "location", "id": "l_kitchen" }, "alternatives": [], "requirements": {}, "text": "The marmalade shelf is empty. Even the big jar is gone." },
     { "id": "cl_mrs_brown_marmalade", "truth_id": "t_marmalade_gone", "kind": "spoken", "where": { "type": "character", "id": "c_mrs_brown" }, "alternatives": [], "requirements": {}, "text": "Mrs Brown says all the marmalade has run out." },
-    { "id": "cl_shed_sheet", "truth_id": "t_secret", "kind": "object", "where": { "type": "location", "id": "l_shed" }, "alternatives": [], "requirements": {}, "text": "Something big is hidden under a sheet. Mr Brown stands in front of it." },
+    { "id": "cl_shed_sheet", "object_id": "cl_shed_sheet", "truth_id": "t_secret", "kind": "object", "where": { "type": "location", "id": "l_shed" }, "alternatives": [], "requirements": {}, "text": "Something big is hidden under a sheet. Mr Brown stands in front of it." },
     { "id": "cl_judy_no_secrets", "truth_id": "t_secret", "kind": "spoken", "where": { "type": "character", "id": "c_judy" }, "alternatives": [], "requirements": {}, "text": "Judy says there are no secrets here. She says it much too fast." },
-    { "id": "cl_judy_ticket", "truth_id": "t_judy_took_hat", "kind": "object", "where": { "type": "location", "id": "l_judy_room" }, "alternatives": [], "requirements": {}, "text": "A bus ticket on Judy's desk: Portobello Road, eight o'clock this morning. Next to it is a little brown thread from a hat." },
+    { "id": "cl_judy_ticket", "object_id": "o_bus_ticket", "truth_id": "t_judy_took_hat", "kind": "object", "where": { "type": "location", "id": "l_judy_room" }, "alternatives": [], "requirements": {}, "text": "A bus ticket on Judy's desk: Portobello Road, eight o'clock this morning. Next to it is a little brown thread from a hat." },
     { "id": "cl_curry_saw", "truth_id": "t_judy_took_hat", "kind": "spoken", "where": { "type": "character", "id": "c_mr_curry" }, "alternatives": [], "requirements": { "goal_states": ["gs_curry_paper"] }, "text": "Mr Curry saw Judy carry the hat to the bus at eight o'clock." },
     { "id": "cl_barnaby_saw", "truth_id": "t_hat_at_gruber", "kind": "spoken", "where": { "type": "character", "id": "c_barnaby" }, "alternatives": [], "requirements": {}, "text": "Barnaby saw Judy take a brown hat into Mr Gruber's shop." },
-    { "id": "cl_gruber_tag", "truth_id": "t_hat_at_gruber", "kind": "object", "where": { "type": "location", "id": "l_gruber_shop" }, "alternatives": [], "requirements": {}, "text": "A paper tag on the counter says: Paddington's hat. Ready by two o'clock." },
-    { "id": "cl_workbench_hat", "truth_id": "t_hat_mended", "kind": "object", "where": { "type": "location", "id": "l_gruber_backroom" }, "alternatives": [], "requirements": {}, "text": "Paddington's hat sits on the workbench. The hole is sewn up, and a bright new red ribbon goes round it." },
-    { "id": "cl_judy_sketch", "truth_id": "t_hat_mended", "kind": "object", "where": { "type": "location", "id": "l_judy_room" }, "alternatives": [], "requirements": { "truths": ["t_hat_at_gruber"] }, "text": "Judy's drawing book has a picture of the hat with a red ribbon. It says: Present for P. Mr Gruber will mend the hole." },
+    { "id": "cl_gruber_tag", "object_id": "o_counter_tag", "truth_id": "t_hat_at_gruber", "kind": "object", "where": { "type": "location", "id": "l_gruber_shop" }, "alternatives": [], "requirements": {}, "text": "A paper tag on the counter says: Paddington's hat. Ready by two o'clock." },
+    { "id": "cl_workbench_hat", "object_id": "o_workbench", "truth_id": "t_hat_mended", "kind": "object", "where": { "type": "location", "id": "l_gruber_backroom" }, "alternatives": [], "requirements": {}, "text": "Paddington's hat sits on the workbench. The hole is sewn up, and a bright new red ribbon goes round it." },
+    { "id": "cl_judy_sketch", "object_id": "o_judy_notebook", "truth_id": "t_hat_mended", "kind": "object", "where": { "type": "location", "id": "l_judy_room" }, "alternatives": [], "requirements": { "truths": ["t_hat_at_gruber"] }, "text": "Judy's drawing book has a picture of the hat with a red ribbon. It says: Present for P. Mr Gruber will mend the hole." },
     { "id": "cl_gruber_explains", "truth_id": "t_hat_mended", "kind": "spoken", "where": { "type": "character", "id": "c_mr_gruber" }, "alternatives": [], "requirements": { "truths": ["t_hat_at_gruber"] }, "text": "Mr Gruber is mending the hat and adding a new red ribbon, as a present." },
-    { "id": "cl_oven_smell", "truth_id": "t_marmalade_cake", "kind": "place", "where": { "type": "location", "id": "l_kitchen" }, "alternatives": [], "requirements": {}, "text": "The oven is warm. It smells of hot oranges and sugar. The bin is full of orange peel." },
+    { "id": "cl_oven_smell", "object_id": "o_peel_bin", "truth_id": "t_marmalade_cake", "kind": "place", "where": { "type": "location", "id": "l_kitchen" }, "alternatives": [], "requirements": {}, "text": "The oven is warm. It smells of hot oranges and sugar. The bin is full of orange peel." },
     { "id": "cl_barnaby_oranges", "truth_id": "t_marmalade_cake", "kind": "spoken", "where": { "type": "character", "id": "c_barnaby" }, "alternatives": [], "requirements": {}, "text": "Barnaby sold Mrs Bird lots of oranges and sugar for a giant cake." },
     { "id": "cl_penny_bandstand", "truth_id": "t_party_in_park", "kind": "spoken", "where": { "type": "character", "id": "c_mrs_penny" }, "alternatives": [], "requirements": {}, "text": "Mrs Penny must keep the bandstand free at three o'clock for a party." },
-    { "id": "cl_jonathan_list", "truth_id": "t_party_in_park", "kind": "object", "where": { "type": "location", "id": "l_bus_stop" }, "alternatives": [], "requirements": {}, "text": "A list on the bench, in Jonathan's writing: Twenty balloons. Take them to the park bandstand at two. Do NOT tell P!" },
-    { "id": "cl_shed_banner", "truth_id": "t_birthday", "kind": "object", "where": { "type": "location", "id": "l_shed" }, "alternatives": [], "requirements": { "truths": ["t_party_in_park"] }, "text": "Under the sheet is a long banner. In big red and yellow letters it says: HAPPY BIRTHDAY, PADDINGTON!" },
+    { "id": "cl_jonathan_list", "object_id": "o_bus_bench", "truth_id": "t_party_in_park", "kind": "object", "where": { "type": "location", "id": "l_bus_stop" }, "alternatives": [], "requirements": {}, "text": "A list on the bench, in Jonathan's writing: Twenty balloons. Take them to the park bandstand at two. Do NOT tell P!" },
+    { "id": "cl_shed_banner", "object_id": "o_covered_banner", "truth_id": "t_birthday", "kind": "object", "where": { "type": "location", "id": "l_shed" }, "alternatives": [], "requirements": { "truths": ["t_party_in_park"] }, "text": "Under the sheet is a long banner. In big red and yellow letters it says: HAPPY BIRTHDAY, PADDINGTON!" },
     { "id": "cl_lucy_postcard", "truth_id": "t_birthday", "kind": "spoken", "where": { "type": "character", "id": "c_mrs_brown" }, "alternatives": [], "requirements": { "goal_states": ["gs_mrs_brown_flowers"] }, "text": "Mrs Brown shows a postcard from Aunt Lucy in Peru: Happy summer birthday, dear Paddington!" },
-    { "id": "cl_open_window", "kind": "place", "where": { "type": "location", "id": "l_hall" }, "alternatives": [], "requirements": {}, "text": "The hall window is wide open. A few leaves have blown in. Did the wind take the hat?" },
-    { "id": "cl_curry_hat_fence", "kind": "object", "where": { "type": "location", "id": "l_curry_garden" }, "alternatives": [], "requirements": {}, "text": "A brown hat hangs on Mr Curry's fence. It looks a bit like Paddington's hat." },
+    { "id": "cl_open_window", "object_id": "o_hall_window", "kind": "place", "where": { "type": "location", "id": "l_hall" }, "alternatives": [], "requirements": {}, "text": "The hall window is wide open. A few leaves have blown in. Did the wind take the hat?" },
+    { "id": "cl_curry_hat_fence", "object_id": "o_curry_hat", "kind": "object", "where": { "type": "location", "id": "l_curry_garden" }, "alternatives": [], "requirements": {}, "text": "A brown hat hangs on Mr Curry's fence. It looks a bit like Paddington's hat." },
     { "id": "cl_sticky_fingers", "kind": "spoken", "where": { "type": "character", "id": "c_jonathan" }, "alternatives": [], "requirements": {}, "text": "Jonathan has sticky orange fingers. Did he eat the marmalade?" }
   ],
   "items": [
@@ -542,7 +542,8 @@
     { "id": "i_flowers", "name": "Bunch of flowers", "description": "Bright yellow, red and blue flowers from the market.", "icon_recipe": "small bunch of colourful flowers", "visual": { "icon": "flower" }, "key": false, "purpose": "Give them to Mrs Brown for the table." }
   ],
   "visual_requests": [
-    { "name": "Marmalade bread sandwich", "description": "Two slices of bread with orange marmalade inside, cut in half.", "suggested_category": "food" }
+    { "name": "Marmalade bread sandwich", "description": "Two slices of bread with orange marmalade inside, cut in half.", "suggested_category": "food" },
+    { "name": "Sheet", "description": "A large white sheet thrown over something big, as a cover.", "suggested_category": "clothing" }
   ],
   "locations": [
     {
@@ -571,7 +572,7 @@
           "#..............#",
           "################"
         ],
-        "placements": { "obj:o_bed": [2, 2], "obj:o_bedside_table": [4, 2], "obj:o_magnifying_glass": [8, 5], "item:i_sandwich": [11, 6] },
+        "placements": { "obj:o_bed": [12, 2], "obj:o_bedside_table": [5, 2], "obj:o_magnifying_glass": [11, 6], "item:i_sandwich": [6, 7] },
         "decor": [{ "icon": "painting", "x": 7, "y": 2 }, { "icon": "mirror", "x": 10, "y": 2 }, { "icon": "flower", "x": 1, "y": 9 }, { "icon": "chair", "x": 13, "y": 9 }]
       }
     },
@@ -605,7 +606,7 @@
           "#................................#",
           "##########1#######################"
         ],
-        "placements": { "obj:o_hat_peg": [30, 2], "obj:o_hall_window": [17, 2], "obj:o_letter_box": [32, 4], "char:c_mrs_brown": [22, 3], "clue:cl_empty_peg": [10, 8], "clue:cl_open_window": [6, 5] },
+        "placements": { "obj:o_hat_peg": [14, 2], "obj:o_hall_window": [19, 2], "obj:o_letter_box": [22, 3], "char:c_mrs_brown": [10, 8] },
         "decor": [{ "icon": "lamp_stand", "x": 3, "y": 2 }, { "icon": "painting", "x": 8, "y": 2 }, { "icon": "lamp_stand", "x": 27, "y": 2 }, { "icon": "chair", "x": 5, "y": 8 }, { "icon": "chair", "x": 28, "y": 8 }, { "icon": "urn", "x": 32, "y": 8 }, { "icon": "flower", "x": 1, "y": 3 }]
       }
     },
@@ -637,7 +638,7 @@
           "#......................#",
           "########################"
         ],
-        "placements": { "obj:o_marmalade_shelf": [5, 2], "obj:o_oven": [17, 2], "obj:o_peel_bin": [21, 5], "char:c_mrs_bird": [18, 9], "clue:cl_empty_shelf": [13, 6], "clue:cl_oven_smell": [9, 7] },
+        "placements": { "obj:o_marmalade_shelf": [13, 9], "obj:o_oven": [21, 3], "obj:o_peel_bin": [4, 11], "char:c_mrs_bird": [18, 9] },
         "decor": [{ "icon": "stool", "x": 9, "y": 9 }, { "icon": "stool", "x": 14, "y": 9 }, { "icon": "barrel", "x": 22, "y": 10 }, { "icon": "basket", "x": 1, "y": 11 }, { "icon": "painting", "x": 22, "y": 2 }]
       }
     },
@@ -679,7 +680,13 @@
       "required_characters": ["c_mr_brown"],
       "objects": [
         { "id": "o_covered_banner", "name": "Covered banner", "description": "Something long and big, hidden under an old sheet.", "visual": { "icon": "painting" } },
-        { "id": "o_paint_bucket", "name": "Paint bucket", "description": "A bucket of bright red paint.", "visual": { "icon": "bucket", "accent": "#D83A2E" } }
+        { "id": "o_paint_bucket", "name": "Paint bucket", "description": "A bucket of bright red paint.", "visual": { "icon": "bucket", "accent": "#D83A2E" } },
+        {
+          "id": "cl_shed_sheet",
+          "name": "Shed sheet",
+          "description": "Something big is hidden under a sheet. Mr Brown stands in front of it.",
+          "visual": { "icon": "generic_prop" }
+        }
       ],
       "doors": [],
       "area": {
@@ -698,7 +705,7 @@
           "#.............#",
           "###############"
         ],
-        "placements": { "obj:o_covered_banner": [6, 2], "obj:o_paint_bucket": [5, 5], "char:c_mr_brown": [12, 6], "clue:cl_shed_sheet": [10, 3], "clue:cl_shed_banner": [2, 4] },
+        "placements": { "obj:o_covered_banner": [4, 2], "obj:o_paint_bucket": [12, 5], "obj:cl_shed_sheet": [3, 6], "char:c_mr_brown": [7, 6] },
         "decor": [{ "icon": "stool", "x": 1, "y": 4 }]
       }
     },
@@ -727,7 +734,7 @@
           "#................#",
           "########1#########"
         ],
-        "placements": { "obj:o_bus_ticket": [8, 4], "obj:o_judy_notebook": [4, 7], "obj:o_bookshelf": [15, 8], "char:c_judy": [3, 4], "clue:cl_judy_ticket": [15, 5], "clue:cl_judy_sketch": [10, 7] },
+        "placements": { "obj:o_bus_ticket": [5, 6], "obj:o_judy_notebook": [10, 7], "obj:o_bookshelf": [15, 2], "char:c_judy": [11, 4] },
         "decor": [{ "icon": "mirror", "x": 8, "y": 2 }, { "icon": "chair", "x": 1, "y": 6 }]
       }
     },
@@ -795,7 +802,7 @@
           "#,,,,,,,,,,,,,,,,,,,,,,,#",
           "#########################"
         ],
-        "placements": { "obj:o_curry_hat": [3, 2], "obj:o_curry_roses": [6, 11], "char:c_mr_curry": [21, 10], "clue:cl_curry_hat_fence": [4, 3] },
+        "placements": { "obj:o_curry_hat": [10, 5], "obj:o_curry_roses": [6, 11], "char:c_mr_curry": [21, 10] },
         "decor": [{ "icon": "bench", "x": 9, "y": 14 }, { "icon": "bench", "x": 22, "y": 2 }]
       }
     },
@@ -825,7 +832,7 @@
           "T,,,T,,,,,,T,,,*,T*,*,,,T,,,,,,,*,,T",
           "TTTTTTTTTTTTTTTT2TTTTTTTTTTTTTTTTTTT"
         ],
-        "placements": { "obj:o_bus_sign": [14, 3], "obj:o_bus_bench": [27, 3], "item:i_newspaper": [28, 8], "clue:cl_jonathan_list": [18, 3] },
+        "placements": { "obj:o_bus_sign": [27, 3], "obj:o_bus_bench": [14, 3], "item:i_newspaper": [28, 8] },
         "decor": [{ "icon": "lamp_post", "x": 5, "y": 3 }, { "icon": "barrel", "x": 8, "y": 2 }, { "icon": "crate", "x": 22, "y": 3 }, { "icon": "lamp_post", "x": 10, "y": 10 }]
       }
     },
@@ -892,7 +899,7 @@
           "#....................#",
           "######################"
         ],
-        "placements": { "obj:o_counter_tag": [12, 6], "obj:o_old_clock": [19, 2], "obj:o_teapot": [13, 6], "char:c_mr_gruber": [12, 4], "clue:cl_gruber_tag": [5, 3] },
+        "placements": { "obj:o_counter_tag": [5, 3], "obj:o_old_clock": [11, 2], "obj:o_teapot": [13, 8], "char:c_mr_gruber": [5, 11] },
         "decor": [{ "icon": "display_stand", "x": 3, "y": 2 }, { "icon": "display_stand", "x": 5, "y": 2 }, { "icon": "display_stand", "x": 7, "y": 2 }, { "icon": "painting", "x": 14, "y": 2 }, { "icon": "urn", "x": 19, "y": 4 }, { "icon": "crate", "x": 1, "y": 12 }, { "icon": "barrel", "x": 20, "y": 12 }]
       }
     },
@@ -921,7 +928,7 @@
           "#..................#",
           "####################"
         ],
-        "placements": { "obj:o_workbench": [5, 2], "obj:o_sewing_basket": [9, 2], "clue:cl_workbench_hat": [6, 6] },
+        "placements": { "obj:o_workbench": [5, 2], "obj:o_sewing_basket": [7, 5] },
         "decor": [{ "icon": "stool", "x": 1, "y": 3 }, { "icon": "candle", "x": 17, "y": 2 }]
       }
     },
@@ -958,7 +965,7 @@
           "#,,,,,,,,,,,,,,,,,:,,,,,,,,,,,,,,,,,#",
           "##################1##################"
         ],
-        "placements": { "obj:o_park_sign": [2, 8], "obj:o_duck_pond": [8, 9], "char:c_mrs_penny": [7, 11] },
+        "placements": { "obj:o_park_sign": [35, 7], "obj:o_duck_pond": [11, 7], "char:c_mrs_penny": [6, 15] },
         "decor": [{ "icon": "bench", "x": 34, "y": 17 }, { "icon": "lamp_post", "x": 35, "y": 10 }, { "icon": "bench", "x": 29, "y": 17 }, { "icon": "lamp_post", "x": 23, "y": 2 }]
       }
     },
@@ -996,7 +1003,7 @@
           "#,,,,,,,,,,,,,,,,,:,,,,,,,,,,,,,,,,,#",
           "#####################################"
         ],
-        "placements": { "obj:o_party_table": [18, 10], "obj:o_birthday_banner": [14, 2] },
+        "placements": { "obj:o_party_table": [2, 18], "obj:o_birthday_banner": [16, 2] },
         "decor": [{ "icon": "bench", "x": 12, "y": 8 }, { "icon": "bench", "x": 24, "y": 8 }, { "icon": "bench", "x": 12, "y": 12 }, { "icon": "bench", "x": 24, "y": 12 }, { "icon": "lamp_post", "x": 15, "y": 5 }, { "icon": "lamp_post", "x": 21, "y": 5 }]
       }
     }

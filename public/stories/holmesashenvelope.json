@@ -1986,6 +1986,7 @@
   "clues": [
     {
       "id": "cl_wren_docket",
+      "object_id": "cl_wren_docket",
       "truth_id": "t_wren_discovered",
       "kind": "object",
       "where": {
@@ -2014,6 +2015,7 @@
     },
     {
       "id": "cl_mortuary_fibres",
+      "object_id": "cl_mortuary_fibres",
       "truth_id": "t_scene_staged",
       "kind": "object",
       "where": {
@@ -2026,6 +2028,7 @@
     },
     {
       "id": "cl_river_drag",
+      "object_id": "cl_river_drag",
       "truth_id": "t_scene_staged",
       "kind": "place",
       "where": {
@@ -2038,6 +2041,7 @@
     },
     {
       "id": "cl_wax_initials",
+      "object_id": "cl_wax_initials",
       "truth_id": "t_fane_killed_wren",
       "kind": "object",
       "where": {
@@ -2086,6 +2090,7 @@
     },
     {
       "id": "cl_unpaid_vouchers",
+      "object_id": "cl_unpaid_vouchers",
       "truth_id": "t_diversion_for_ward",
       "kind": "object",
       "where": {
@@ -2098,6 +2103,7 @@
     },
     {
       "id": "cl_token_register",
+      "object_id": "cl_token_register",
       "truth_id": "t_fane_alibi_false",
       "kind": "object",
       "where": {
@@ -2114,6 +2120,7 @@
     },
     {
       "id": "cl_cab_entry",
+      "object_id": "cl_cab_entry",
       "truth_id": "t_fane_alibi_false",
       "kind": "object",
       "where": {
@@ -2126,6 +2133,7 @@
     },
     {
       "id": "cl_duplicate_key",
+      "object_id": "cl_duplicate_key",
       "truth_id": "t_fane_access",
       "kind": "object",
       "where": {
@@ -2138,6 +2146,7 @@
     },
     {
       "id": "cl_relief_columns",
+      "object_id": "cl_relief_columns",
       "truth_id": "t_fane_diverted",
       "kind": "object",
       "where": {
@@ -2166,6 +2175,7 @@
     },
     {
       "id": "cl_envelope_proof",
+      "object_id": "cl_envelope_proof",
       "truth_id": "t_envelope_decoy",
       "kind": "object",
       "where": {
@@ -2182,6 +2192,7 @@
     },
     {
       "id": "cl_press_archive",
+      "object_id": "cl_press_archive",
       "truth_id": "t_envelope_decoy",
       "kind": "object",
       "where": {
@@ -2214,6 +2225,7 @@
     },
     {
       "id": "cl_ada_receipt",
+      "object_id": "cl_ada_receipt",
       "truth_id": "t_duplicate_ledger",
       "kind": "object",
       "where": {
@@ -2238,6 +2250,7 @@
     },
     {
       "id": "cl_planting_trace",
+      "object_id": "cl_planting_trace",
       "truth_id": "t_silas_framed",
       "kind": "object",
       "where": {
@@ -2427,7 +2440,7 @@
           "#...................#",
           "##########2##########"
         ],
-        "placements": { "obj:cl_lestrade_keylog": [2, 5], "char:c_lestrade": [9, 8] },
+        "placements": { "obj:cl_lestrade_keylog": [7, 10], "char:c_lestrade": [16, 6] },
         "decor": [{ "icon": "bookshelf", "x": 11, "y": 2 }, { "icon": "painting", "x": 17, "y": 2 }, { "icon": "grandfather_clock", "x": 6, "y": 2 }, { "icon": "chair", "x": 1, "y": 10 }, { "icon": "chair", "x": 19, "y": 8 }]
       }
     },
@@ -2443,11 +2456,6 @@
         "c_watson"
       ],
       "objects": [
-        {
-          "id": "i_wren_docket",
-          "name": "Wren's pocket docket",
-          "description": "A narrow book of figures and notes."
-        },
         {
           "id": "cl_wren_docket",
           "name": "Pocket docket",
@@ -2495,7 +2503,7 @@
           "#.......................#",
           "#########################"
         ],
-        "placements": { "obj:i_wren_docket": [17, 8], "obj:cl_wren_docket": [4, 5], "obj:cl_mortuary_fibres": [6, 12], "obj:cl_unpaid_vouchers": [12, 11], "item:i_wren_docket": [20, 6], "char:c_watson": [17, 4], "clue:cl_wren_docket": [12, 7], "clue:cl_mortuary_fibres": [22, 11], "clue:cl_unpaid_vouchers": [9, 10] },
+        "placements": { "obj:cl_wren_docket": [2, 8], "obj:cl_mortuary_fibres": [3, 3], "obj:cl_unpaid_vouchers": [20, 3], "item:i_wren_docket": [8, 5], "char:c_watson": [22, 8] },
         "decor": [{ "icon": "bed", "x": 1, "y": 12 }, { "icon": "bed", "x": 23, "y": 7 }, { "icon": "bed", "x": 23, "y": 5 }, { "icon": "bed", "x": 1, "y": 4 }, { "icon": "painting", "x": 5, "y": 2 }]
       }
     },
@@ -2550,7 +2558,7 @@
           "#~~~~~~~~~~~=~~~~~~~~~=~~~~~~~~#",
           "################################"
         ],
-        "placements": { "obj:cl_river_drag": [29, 11], "char:c_lestrade": [16, 6], "clue:cl_river_drag": [26, 5] },
+        "placements": { "obj:cl_river_drag": [29, 11], "char:c_lestrade": [16, 6] },
         "decor": [{ "icon": "barrel", "x": 3, "y": 2 }, { "icon": "crate", "x": 24, "y": 2 }, { "icon": "sack", "x": 22, "y": 2 }, { "icon": "lamp_post", "x": 30, "y": 4 }, { "icon": "barrel", "x": 1, "y": 5 }, { "icon": "stone", "x": 19, "y": 9 }, { "icon": "crate", "x": 21, "y": 5 }, { "icon": "barrel", "x": 26, "y": 8 }]
       }
     },
@@ -2566,11 +2574,6 @@
         "c_holmes"
       ],
       "objects": [
-        {
-          "id": "i_charred_envelope",
-          "name": "Charred envelope",
-          "description": "A blackened envelope with a trace of printing ink."
-        },
         {
           "id": "cl_wax_initials",
           "name": "Fund seal",
@@ -2605,7 +2608,7 @@
           "#....................#",
           "######################"
         ],
-        "placements": { "obj:i_charred_envelope": [16, 9], "obj:cl_wax_initials": [5, 8], "item:i_charred_envelope": [9, 3], "char:c_holmes": [18, 4], "clue:cl_wax_initials": [2, 9] },
+        "placements": { "obj:cl_wax_initials": [8, 9], "item:i_charred_envelope": [9, 6], "char:c_holmes": [3, 8] },
         "decor": [{ "icon": "bookshelf", "x": 13, "y": 2 }, { "icon": "painting", "x": 16, "y": 2 }, { "icon": "grandfather_clock", "x": 3, "y": 2 }, { "icon": "chair", "x": 20, "y": 9 }]
       }
     },
@@ -2660,7 +2663,7 @@
           "#......................#",
           "###########1############"
         ],
-        "placements": { "obj:cl_duplicate_key": [7, 8], "obj:cl_relief_columns": [14, 8], "char:c_vale": [21, 4], "clue:cl_duplicate_key": [5, 5], "clue:cl_relief_columns": [20, 9] },
+        "placements": { "obj:cl_duplicate_key": [13, 6], "obj:cl_relief_columns": [3, 6], "char:c_vale": [13, 3] },
         "decor": [{ "icon": "bookshelf", "x": 17, "y": 2 }, { "icon": "painting", "x": 15, "y": 2 }, { "icon": "chair", "x": 22, "y": 4 }, { "icon": "chair", "x": 1, "y": 6 }]
       }
     },
@@ -2676,13 +2679,7 @@
         "c_shaw",
         "c_crane"
       ],
-      "objects": [
-        {
-          "id": "i_ward_receipt",
-          "name": "Ward supply receipt",
-          "description": "A dated record of delivered supplies."
-        }
-      ],
+      "objects": [],
       "doors": [
         {
           "id": "d_fever_ward_relief_office",
@@ -2715,7 +2712,7 @@
           "#......................#",
           "###########1############"
         ],
-        "placements": { "obj:i_ward_receipt": [15, 11], "item:i_ward_receipt": [19, 13], "char:c_shaw": [12, 3], "char:c_crane": [19, 8] },
+        "placements": { "item:i_ward_receipt": [21, 5], "char:c_shaw": [5, 11], "char:c_crane": [15, 9] },
         "decor": [{ "icon": "bed", "x": 22, "y": 13 }, { "icon": "bed", "x": 1, "y": 4 }, { "icon": "bed", "x": 1, "y": 7 }, { "icon": "painting", "x": 15, "y": 2 }]
       }
     },
@@ -2773,13 +2770,7 @@
       "role": "A proof is collected here and matched against Long-version records later.",
       "hub": false,
       "required_characters": [],
-      "objects": [
-        {
-          "id": "i_press_proof",
-          "name": "Press proof",
-          "description": "A public notice proof with a flaw in its headline."
-        }
-      ],
+      "objects": [],
       "doors": [
         {
           "id": "d_print_archive_fleet_street_press",
@@ -2809,7 +2800,7 @@
           "#..................#",
           "####################"
         ],
-        "placements": { "obj:i_press_proof": [8, 10], "item:i_press_proof": [17, 3] },
+        "placements": { "item:i_press_proof": [7, 9] },
         "decor": [{ "icon": "bookshelf", "x": 13, "y": 2 }, { "icon": "bookshelf", "x": 16, "y": 2 }, { "icon": "bookshelf", "x": 8, "y": 2 }, { "icon": "bookshelf", "x": 2, "y": 2 }, { "icon": "stool", "x": 18, "y": 9 }]
       }
     },
@@ -2859,7 +2850,7 @@
           "T,,,T,,,**,,,,,,,*,,,,,*,T,,,,T,,,T",
           "TTTTTTTTTTTTTTTT2TTTTTTTTTTTTTTTTTT"
         ],
-        "placements": { "obj:cl_cab_entry": [19, 4], "char:c_lestrade": [28, 9], "clue:cl_cab_entry": [32, 3] },
+        "placements": { "obj:cl_cab_entry": [19, 4], "char:c_lestrade": [28, 9] },
         "decor": [{ "icon": "lamp_post", "x": 28, "y": 2 }, { "icon": "barrel", "x": 3, "y": 3 }, { "icon": "crate", "x": 32, "y": 2 }, { "icon": "bench", "x": 23, "y": 3 }, { "icon": "lamp_post", "x": 33, "y": 5 }]
       }
     },
@@ -2907,7 +2898,7 @@
           "#............#",
           "######2#######"
         ],
-        "placements": { "obj:cl_silas_pump_grease": [3, 5], "char:c_silas": [8, 4] },
+        "placements": { "obj:cl_silas_pump_grease": [2, 6], "char:c_silas": [10, 3] },
         "decor": [{ "icon": "stool", "x": 12, "y": 6 }]
       }
     },
@@ -2923,11 +2914,6 @@
         "c_silas"
       ],
       "objects": [
-        {
-          "id": "i_ferry_token",
-          "name": "Brass ferry token",
-          "description": "A worn token recovered beside the register."
-        },
         {
           "id": "cl_token_register",
           "name": "Ferry register",
@@ -2968,7 +2954,7 @@
           "#........................~~~~~#",
           "###############2###############"
         ],
-        "placements": { "obj:i_ferry_token": [19, 4], "obj:cl_token_register": [11, 12], "item:i_ferry_token": [5, 11], "char:c_silas": [20, 15], "clue:cl_token_register": [6, 8] },
+        "placements": { "obj:cl_token_register": [19, 4], "item:i_ferry_token": [11, 12], "char:c_silas": [5, 11] },
         "decor": [{ "icon": "barrel", "x": 18, "y": 16 }, { "icon": "crate", "x": 1, "y": 15 }, { "icon": "sack", "x": 2, "y": 4 }, { "icon": "stone", "x": 10, "y": 12 }, { "icon": "crate", "x": 17, "y": 10 }, { "icon": "barrel", "x": 14, "y": 14 }]
       }
     },
@@ -3023,7 +3009,7 @@
           "#...........................#",
           "#############################"
         ],
-        "placements": { "obj:cl_planting_trace": [17, 4], "char:c_lestrade": [8, 13], "char:c_silas": [18, 13], "clue:cl_planting_trace": [21, 10] },
+        "placements": { "obj:cl_planting_trace": [17, 4], "char:c_lestrade": [8, 13], "char:c_silas": [18, 13] },
         "decor": [{ "icon": "crate", "x": 8, "y": 2 }, { "icon": "barrel", "x": 25, "y": 2 }, { "icon": "cart_wheel", "x": 11, "y": 2 }, { "icon": "crate", "x": 22, "y": 10 }, { "icon": "barrel", "x": 12, "y": 4 }]
       }
     },
@@ -3065,7 +3051,7 @@
           "#.................#",
           "###################"
         ],
-        "placements": { "char:c_silas": [8, 4] },
+        "placements": { "char:c_silas": [8, 7] },
         "decor": [{ "icon": "candle", "x": 5, "y": 2 }]
       }
     },
@@ -3111,7 +3097,7 @@
           "#........................#",
           "##########################"
         ],
-        "placements": { "char:c_ada": [8, 5] },
+        "placements": { "char:c_ada": [12, 6] },
         "decor": [{ "icon": "grandfather_clock", "x": 11, "y": 2 }, { "icon": "painting", "x": 7, "y": 2 }]
       }
     },
@@ -3156,7 +3142,7 @@
           "#........................#",
           "##########################"
         ],
-        "placements": { "char:c_nora": [11, 9] },
+        "placements": { "char:c_nora": [15, 9] },
         "decor": [{ "icon": "grandfather_clock", "x": 16, "y": 2 }, { "icon": "painting", "x": 14, "y": 2 }, { "icon": "display_stand", "x": 5, "y": 2 }]
       }
     },
@@ -3201,7 +3187,7 @@
           "#...................#",
           "#####################"
         ],
-        "placements": { "char:c_nora": [11, 3] },
+        "placements": { "char:c_nora": [5, 5] },
         "decor": [{ "icon": "bookshelf", "x": 18, "y": 2 }, { "icon": "painting", "x": 7, "y": 2 }, { "icon": "grandfather_clock", "x": 15, "y": 2 }, { "icon": "chair", "x": 1, "y": 10 }, { "icon": "chair", "x": 19, "y": 9 }]
       }
     },
@@ -3251,7 +3237,7 @@
           "#...............................#",
           "################1################"
         ],
-        "placements": { "char:c_lestrade": [17, 5], "char:c_vale": [8, 8] },
+        "placements": { "char:c_lestrade": [4, 6], "char:c_vale": [12, 11] },
         "decor": [{ "icon": "painting", "x": 29, "y": 2 }, { "icon": "statue", "x": 6, "y": 2 }, { "icon": "lamp_stand", "x": 19, "y": 2 }, { "icon": "bench", "x": 1, "y": 9 }, { "icon": "chair", "x": 31, "y": 8 }, { "icon": "bench", "x": 1, "y": 13 }]
       }
     },
@@ -3304,7 +3290,7 @@
           "#....................#",
           "##########1###########"
         ],
-        "placements": { "obj:cl_ada_receipt": [19, 3], "char:c_ada": [3, 5], "clue:cl_ada_receipt": [17, 12] },
+        "placements": { "obj:cl_ada_receipt": [16, 9], "char:c_ada": [16, 6] },
         "decor": [{ "icon": "bookshelf", "x": 17, "y": 2 }, { "icon": "painting", "x": 14, "y": 2 }, { "icon": "grandfather_clock", "x": 7, "y": 2 }, { "icon": "chair", "x": 20, "y": 11 }]
       }
     },
@@ -3360,7 +3346,7 @@
           "#..........................#",
           "#############1##############"
         ],
-        "placements": { "obj:cl_envelope_proof": [16, 11], "char:c_holmes": [13, 5], "char:c_kit": [16, 5], "clue:cl_envelope_proof": [8, 14] },
+        "placements": { "obj:cl_envelope_proof": [21, 11], "char:c_holmes": [12, 7], "char:c_kit": [8, 3] },
         "decor": [{ "icon": "bookshelf", "x": 25, "y": 7 }, { "icon": "bookshelf", "x": 10, "y": 2 }, { "icon": "bookshelf", "x": 21, "y": 7 }, { "icon": "bookshelf", "x": 17, "y": 2 }, { "icon": "bookshelf", "x": 6, "y": 2 }, { "icon": "chair", "x": 9, "y": 6 }]
       }
     },
@@ -3413,7 +3399,7 @@
           "#...................#",
           "##########1##########"
         ],
-        "placements": { "obj:cl_press_archive": [10, 5], "char:c_lestrade": [4, 3], "clue:cl_press_archive": [15, 6] },
+        "placements": { "obj:cl_press_archive": [12, 8], "char:c_lestrade": [5, 12] },
         "decor": [{ "icon": "bookshelf", "x": 7, "y": 2 }, { "icon": "painting", "x": 12, "y": 2 }, { "icon": "chair", "x": 1, "y": 4 }, { "icon": "chair", "x": 1, "y": 6 }]
       }
     },
@@ -3429,13 +3415,7 @@
         "c_pembroke",
         "c_ada"
       ],
-      "objects": [
-        {
-          "id": "i_duplicate_ledger",
-          "name": "Duplicate ledger",
-          "description": "Wren's copy of the Relief Fund accounts."
-        }
-      ],
+      "objects": [],
       "doors": [
         {
           "id": "d_pembroke_chambers_record_vault",
@@ -3466,7 +3446,7 @@
           "#.......................#",
           "#########################"
         ],
-        "placements": { "obj:i_duplicate_ledger": [3, 11], "item:i_duplicate_ledger": [11, 4], "char:c_pembroke": [9, 11], "char:c_ada": [14, 4] },
+        "placements": { "item:i_duplicate_ledger": [11, 3], "char:c_pembroke": [13, 6], "char:c_ada": [12, 10] },
         "decor": [{ "icon": "bookshelf", "x": 14, "y": 2 }, { "icon": "painting", "x": 2, "y": 2 }, { "icon": "grandfather_clock", "x": 21, "y": 2 }, { "icon": "chair", "x": 1, "y": 4 }, { "icon": "chair", "x": 23, "y": 10 }]
       }
     },
@@ -3512,7 +3492,7 @@
           "      #..............#",
           "      ################"
         ],
-        "placements": { "char:c_vale": [2, 5] },
+        "placements": { "char:c_vale": [19, 8] },
         "decor": [{ "icon": "painting", "x": 11, "y": 2 }, { "icon": "mirror", "x": 9, "y": 2 }, { "icon": "chair", "x": 7, "y": 11 }]
       }
     },
@@ -3561,7 +3541,7 @@
           "#..................................#",
           "####################################"
         ],
-        "placements": { "char:c_ada": [5, 10], "char:c_hudson": [12, 7], "char:c_crane": [27, 7] },
+        "placements": { "char:c_ada": [8, 7], "char:c_hudson": [3, 4], "char:c_crane": [12, 5] },
         "decor": [{ "icon": "painting", "x": 19, "y": 2 }, { "icon": "statue", "x": 28, "y": 2 }, { "icon": "lamp_stand", "x": 14, "y": 2 }, { "icon": "bench", "x": 1, "y": 3 }, { "icon": "chair", "x": 1, "y": 11 }]
       }
     },

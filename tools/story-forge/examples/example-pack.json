@@ -211,14 +211,14 @@
   ],
   "clues": [
     { "id": "cl_mira_talk", "truth_id": "t_missing", "kind": "spoken", "where": { "type": "character", "id": "c_mira" }, "alternatives": [], "requirements": {}, "text": "Mira says the lantern's hook on the square is empty this morning." },
-    { "id": "cl_notice_board", "truth_id": "t_missing", "kind": "place", "where": { "type": "location", "id": "l_square" }, "alternatives": [], "requirements": {}, "text": "A festival notice with a gap where the lantern should hang." },
+    { "id": "cl_notice_board", "object_id": "o_notice_board", "truth_id": "t_missing", "kind": "place", "where": { "type": "location", "id": "l_square" }, "alternatives": [], "requirements": {}, "text": "A festival notice with a gap where the lantern should hang." },
     { "id": "cl_pip_saw", "truth_id": "t_night", "kind": "spoken", "where": { "type": "character", "id": "c_pip" }, "alternatives": [], "requirements": {}, "text": "Pip saw a tall figure carry a glow up the tower stairs." },
-    { "id": "cl_library_log", "truth_id": "t_night", "kind": "object", "where": { "type": "location", "id": "l_library" }, "alternatives": [], "requirements": {}, "text": "The key log shows the tower key was out all night." },
+    { "id": "cl_library_log", "object_id": "o_key_log", "truth_id": "t_night", "kind": "object", "where": { "type": "location", "id": "l_library" }, "alternatives": [], "requirements": {}, "text": "The key log shows the tower key was out all night." },
     { "id": "cl_oswin_ledger", "truth_id": "t_taker", "kind": "spoken", "where": { "type": "character", "id": "c_oswin" }, "alternatives": [], "requirements": { "goal_states": ["gs_oswin_book"] }, "text": "Oswin, now friendly, names Hollis in the key log." },
-    { "id": "cl_shard_match", "truth_id": "t_taker", "kind": "item_combination", "where": { "type": "location", "id": "l_clocktower" }, "alternatives": [], "requirements": { "items": ["i_glass_shard"] }, "text": "The glass shard fits the lantern frame on the tower bench." },
+    { "id": "cl_shard_match", "object_id": "cl_shard_match", "truth_id": "t_taker", "kind": "item_combination", "where": { "type": "location", "id": "l_clocktower" }, "alternatives": [], "requirements": { "items": ["i_glass_shard"] }, "text": "The glass shard fits the lantern frame on the tower bench." },
     { "id": "cl_hollis_confess", "truth_id": "t_motive", "kind": "spoken", "where": { "type": "character", "id": "c_hollis" }, "alternatives": [], "requirements": { "truths": ["t_taker"] }, "text": "Hollis admits he wanted to repair the crack in secret." },
-    { "id": "cl_workbench", "truth_id": "t_motive", "kind": "object", "where": { "type": "location", "id": "l_clocktower" }, "alternatives": [], "requirements": { "items": ["i_tower_key"] }, "text": "Fish glue and tiny brushes lie beside the half-mended lantern." },
-    { "id": "cl_flour_prints", "kind": "place", "where": { "type": "location", "id": "l_bakery" }, "alternatives": [], "requirements": {}, "text": "Floury footprints lead out of the bakery towards the square." }
+    { "id": "cl_workbench", "object_id": "o_workbench", "truth_id": "t_motive", "kind": "object", "where": { "type": "location", "id": "l_clocktower" }, "alternatives": [], "requirements": { "items": ["i_tower_key"] }, "text": "Fish glue and tiny brushes lie beside the half-mended lantern." },
+    { "id": "cl_flour_prints", "object_id": "cl_flour_prints", "kind": "place", "where": { "type": "location", "id": "l_bakery" }, "alternatives": [], "requirements": {}, "text": "Floury footprints lead out of the bakery towards the square." }
   ],
   "items": [
     { "id": "i_overdue_book", "name": "Overdue book", "description": "A dusty book of tower clock repairs, three weeks late.", "icon_recipe": "small blue book with a ribbon", "key": false, "found_at": { "type": "location", "id": "l_bakery" }, "purpose": "Return it to Oswin." },
@@ -258,33 +258,39 @@
           "T..................................T",
           "TTTTTTTTTTTTTTTTT2TTTTTTTTTTTTTTTTTT"
         ],
-        "placements": { "obj:o_notice_board": [16, 2], "clue:cl_notice_board": [3, 10] },
+        "placements": { "obj:o_notice_board": [16, 2] },
         "decor": [{ "icon": "fountain", "x": 18, "y": 9 }, { "icon": "lamp_post", "x": 18, "y": 2 }, { "icon": "bench", "x": 3, "y": 2 }, { "icon": "lamp_post", "x": 11, "y": 2 }, { "icon": "bench", "x": 23, "y": 2 }, { "icon": "bench", "x": 1, "y": 14 }]
       }
     },
-    { "id": "l_bakery", "name": "Mira's Bakery", "biome": "village interior", "mood": "cosy and sweet-smelling", "palette": "golden browns", "role": "Where the first clue and the book are.", "hub": false, "required_characters": ["c_mira"], "objects": [{ "id": "o_dough_bin", "name": "Dough bin", "description": "A large bin of rising dough." }], "doors": [], "area": {
-      "description": "Golden loaves cool on racks and flour hangs in the air. The dough bin breathes quietly in the corner.",
-      "doors": [{ "to": "l_square", "label": "Out to the square", "hint": "Back to the festival bustle." }],
-      "biome": "building", "palette": "kitchen", "floor": "tiles", "wall": "plaster",
-      "map": [
-        " ####################### ",
-        "#########################",
-        "#.......................#",
-        "#.......................#",
-        "#..CCCCCCCCC............#",
-        "#..........C............#",
-        "#..........C............#",
-        "1.......................#",
-        "#.......................#",
-        "#.......................#",
-        "#.......................#",
-        "#.......................#",
-        "#.......................#",
-        "#########################"
-      ],
-      "placements": { "obj:o_dough_bin": [13, 2], "item:i_overdue_book": [14, 6], "char:c_mira": [3, 7], "clue:cl_flour_prints": [2, 4] },
-      "decor": [{ "icon": "stove", "x": 19, "y": 2 }, { "icon": "painting", "x": 22, "y": 2 }, { "icon": "stool", "x": 23, "y": 9 }]
-    } },
+    { "id": "l_bakery", "name": "Mira's Bakery", "biome": "village interior", "mood": "cosy and sweet-smelling", "palette": "golden browns", "role": "Where the first clue and the book are.", "hub": false, "required_characters": ["c_mira"], "objects": [{ "id": "o_dough_bin", "name": "Dough bin", "description": "A large bin of rising dough." },
+      {
+        "id": "cl_flour_prints",
+        "name": "Flour prints",
+        "description": "Floury footprints lead out of the bakery towards the square.",
+        "visual": { "icon": "newspaper" }
+      }], "doors": [], "area": {
+        "description": "Golden loaves cool on racks and flour hangs in the air. The dough bin breathes quietly in the corner.",
+        "doors": [{ "to": "l_square", "label": "Out to the square", "hint": "Back to the festival bustle." }],
+        "biome": "building", "palette": "kitchen", "floor": "tiles", "wall": "plaster",
+        "map": [
+          " ####################### ",
+          "#########################",
+          "#.......................#",
+          "#.......................#",
+          "#..CCCCCCCCC............#",
+          "#..........C............#",
+          "#..........C............#",
+          "1.......................#",
+          "#.......................#",
+          "#.......................#",
+          "#.......................#",
+          "#.......................#",
+          "#.......................#",
+          "#########################"
+        ],
+        "placements": { "obj:o_dough_bin": [9, 12], "obj:cl_flour_prints": [12, 8], "item:i_overdue_book": [18, 11], "char:c_mira": [5, 10] },
+        "decor": [{ "icon": "stove", "x": 19, "y": 2 }, { "icon": "painting", "x": 22, "y": 2 }, { "icon": "stool", "x": 23, "y": 9 }]
+      } },
     { "id": "l_garden", "name": "Herb Garden", "biome": "garden", "mood": "quiet and dewy", "palette": "greens and lilac", "role": "Pip watches from here; a glass shard is hidden here.", "hub": false, "required_characters": ["c_pip"], "objects": [{ "id": "o_flowerbed", "name": "Flowerbed", "description": "Neat rows of herbs and daisies." }], "doors": [], "area": {
       "description": "Dew beads on neat rows of herbs and daisies. Somewhere among the lilac, small eyes are watching.",
       "doors": [{ "to": "l_square", "label": "Back to the square", "hint": "The gate swings back to the cobbles." }],
@@ -330,32 +336,38 @@
         "#........................#",
         "############1#############"
       ],
-      "placements": { "obj:o_key_log": [7, 12], "char:c_oswin": [23, 11], "clue:cl_library_log": [20, 7] },
+      "placements": { "obj:o_key_log": [20, 13], "char:c_oswin": [7, 12] },
       "decor": [{ "icon": "bookshelf", "x": 21, "y": 2 }, { "icon": "bookshelf", "x": 23, "y": 2 }, { "icon": "bookshelf", "x": 17, "y": 2 }, { "icon": "bookshelf", "x": 19, "y": 2 }, { "icon": "bookshelf", "x": 13, "y": 2 }, { "icon": "chair", "x": 19, "y": 4 }, { "icon": "table", "x": 7, "y": 4 }]
     } },
-    { "id": "l_clocktower", "name": "Clock Tower", "biome": "tower interior", "mood": "ticking and secretive", "palette": "brass and slate", "role": "Where Hollis works and the truth is found.", "hub": false, "required_characters": ["c_hollis"], "objects": [{ "id": "o_workbench", "name": "Workbench", "description": "A cluttered bench of tiny tools." }], "doors": [], "area": {
-      "description": "Great gears tick slowly overhead, throwing striped shadows. A workbench is scattered with glass and tiny tools.",
-      "doors": [{ "to": "l_library", "label": "Down the stair", "hint": "Back down to the quiet books." }],
-      "biome": "building", "palette": "workshop", "floor": "boards", "wall": "wood",
-      "map": [
-        "    ##########    ",
-        "   #####1######   ",
-        "  ##..........##  ",
-        " ##............## ",
-        "##..............##",
-        "#................#",
-        "#.....RRRRRR.....#",
-        "#.....RRRRRR.....#",
-        "#.....RRRRRR.....#",
-        "#.....RRRRRR.....#",
-        "##..............##",
-        " ##............## ",
-        "  ##..........##  ",
-        "   ############   "
-      ],
-      "placements": { "obj:o_workbench": [5, 12], "char:c_hollis": [6, 5], "clue:cl_shard_match": [11, 6], "clue:cl_workbench": [12, 11] },
-      "decor": [{ "icon": "stool", "x": 1, "y": 7 }, { "icon": "crate", "x": 16, "y": 7 }, { "icon": "barrel", "x": 15, "y": 10 }, { "icon": "lamp_stand", "x": 2, "y": 4 }]
-    } }
+    { "id": "l_clocktower", "name": "Clock Tower", "biome": "tower interior", "mood": "ticking and secretive", "palette": "brass and slate", "role": "Where Hollis works and the truth is found.", "hub": false, "required_characters": ["c_hollis"], "objects": [{ "id": "o_workbench", "name": "Workbench", "description": "A cluttered bench of tiny tools." },
+      {
+        "id": "cl_shard_match",
+        "name": "Shard match",
+        "description": "The glass shard fits the lantern frame on the tower bench.",
+        "visual": { "icon": "matchbox" }
+      }], "doors": [], "area": {
+        "description": "Great gears tick slowly overhead, throwing striped shadows. A workbench is scattered with glass and tiny tools.",
+        "doors": [{ "to": "l_library", "label": "Down the stair", "hint": "Back down to the quiet books." }],
+        "biome": "building", "palette": "workshop", "floor": "boards", "wall": "wood",
+        "map": [
+          "    ##########    ",
+          "   #####1######   ",
+          "  ##..........##  ",
+          " ##............## ",
+          "##..............##",
+          "#................#",
+          "#.....RRRRRR.....#",
+          "#.....RRRRRR.....#",
+          "#.....RRRRRR.....#",
+          "#.....RRRRRR.....#",
+          "##..............##",
+          " ##............## ",
+          "  ##..........##  ",
+          "   ############   "
+        ],
+        "placements": { "obj:o_workbench": [10, 2], "obj:cl_shard_match": [5, 3], "char:c_hollis": [14, 4] },
+        "decor": [{ "icon": "stool", "x": 1, "y": 7 }, { "icon": "crate", "x": 16, "y": 7 }, { "icon": "barrel", "x": 15, "y": 10 }, { "icon": "lamp_stand", "x": 2, "y": 4 }]
+      } }
   ],
   "twists": [
     { "id": "tw_gentle_taker", "description": "The lantern was not stolen. It was taken for repair by someone gentle.", "setup_clues": ["cl_pip_saw"], "payoff_trigger": { "truths": ["t_motive"] } }

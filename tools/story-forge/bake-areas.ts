@@ -300,7 +300,6 @@ function processPack(file: string): void {
   }
   pack.cast.forEach((c) => names.set(c.id, c.name));
   pack.items.forEach((i) => names.set(i.id, i.name));
-  pack.clues.forEach((c) => names.set(c.id, "clue"));
 
   const results: (AuthoredArea | null)[] = [];
   let changed = 0;
@@ -370,7 +369,9 @@ function processPack(file: string): void {
   if (JSON.stringify(before) !== JSON.stringify(after)) throw new Error(`${file}: rewriting changed more than the area blocks.`);
   // every written map must parse
   for (const l of after.locations) parseAreaMap(l.area!.map);
-  if (updated !== original) writeFileSync(path, updated);
+  // the area blocks are written with LF; give the whole file the line ends it already has
+  const eol = original.includes("\r\n") ? "\r\n" : "\n";
+  if (updated !== original) writeFileSync(path, updated.replace(/\r?\n/g, eol));
   say(`${pack.identity.id}: ${changed} area(s) ${changed ? "written" : "unchanged"} (${pack.locations.length} locations).`);
 }
 

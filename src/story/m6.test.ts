@@ -50,9 +50,9 @@ describe("items and doors", () => {
     const client = await makeClient();
     const story = new StorySession(pack, view, client);
     let area = await story.start();
-    const openingClue = area.entities?.find((entity) => entity.kind === "clue" && entity.packId === "cl_notice_board");
+    const openingClue = area.entities?.find((entity) => entity.clueIds?.includes("cl_notice_board"));
     expect(openingClue).toBeDefined();
-    story.examineClue(openingClue!);
+    story.examineClues(openingClue!);
     const toLibrary = area.doors.find((door) => door.targetAreaId === "l_library")!;
     area = (await story.enterDoor(area.id, toLibrary.id)).area;
 

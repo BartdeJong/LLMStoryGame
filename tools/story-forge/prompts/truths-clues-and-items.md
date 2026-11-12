@@ -15,6 +15,13 @@ without one; they are confirmed as soon as a clue is found. Twist
 `description` text is shown to the player once as a reveal, so write it for
 the player after the payoff.
 
+For every clue that can be found at a location (`where` or an `alternatives`
+entry of type `location`), set `object_id` to the id of the location object the
+player examines to find it. Name that object in the locations part, with the
+same id as `object_id`, at that location. Several clues may share one object. A
+clue told only by a character has no `object_id`. Items are not also listed
+under a location's `objects`: an item found at a location is that object.
+
 For every item, include `visual: { "icon": "<catalog-id>" }` selected by name
 from `icon-catalog.md`; optional `accent` may be a palette color slot or a `#RRGGBB` color and optional
 `states` must use known state names. If no glyph fits, do not choose a near
