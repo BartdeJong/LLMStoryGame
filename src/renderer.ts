@@ -4,6 +4,9 @@ import type { Position } from "./camera";
 import {
   DEFAULT_CHARACTER_RECIPE,
   getCharacterSprite,
+  getSpriteCanvas,
+  IDLE_POSE,
+  type SpriteSpec,
   getAshenObjectSprite,
   getIconCanvas,
   getTileCanvas,
@@ -14,7 +17,17 @@ import {
   type StoryVisualTheme,
   type TileType,
 } from "./art";
-import { getGlyph, getVisualCanvas } from "./art/glyphs";
+import {
+  BIG_FURNITURE_SCALE,
+  canEnlarge,
+  getGlyph,
+  getVisualCanvas,
+  glyphBottomRow,
+  isBigFurniture,
+  isWallMounted,
+  wallCropRows,
+} from "./art/glyphs";
+import { RUG_EDGE, mix } from "./art/surfaceTiles";
 import { REFERENCE_VIEW_HEIGHT, REFERENCE_VIEW_WIDTH, computeViewLayout } from "./viewport";
 
 // Extra ambient specks keep the density of the original 320x180 view on bigger screens.
@@ -41,6 +54,51 @@ export interface EntityPresentation {
   animateCharacters: boolean;
   // Signs for the doors of the area; only those whose door is in view are shown.
   doorSigns?: readonly DoorSign[];
+  // Pack ids of the clues the player has already found; their markers turn into a quiet check.
+  foundClueIds?: ReadonlySet<string>;
+  // How the player looks (identity.player.sprite of the story pack).
+  playerSprite?: SpriteSpec;
+}
+
+// Magnifier drawn on clue spots: o outline, l lens, h handle.
+const MAGNIFIER = [
+  ".oooo....",
+  "olllllo..",
+  "ollllllo.",
+  "ollllllo.",
+  "ollllllo.",
+  ".oooooo..",
+  ".....hho.",
+  "......hho",
+  ".......oo",
+];
+const GOLD = "#f2a81d";
+const CHECK = ["......o", ".....oo", "o...oo.", "oo.oo..", ".ooo...", "..o...."];
+
+const silhouettes = new WeakMap<HTMLCanvasElement, Map<string, HTMLCanvasElement>>();
+
+function silhouette(source: HTMLCanvasElement, color: string): HTMLCanvasElement {
+  let byColor = silhouettes.get(source);
+  if (!byColor) silhouettes.set(source, (byColor = new Map()));
+  let canvas = byColor.get(color);
+  if (!canvas) {
+    canvas = document.createElement("canvas");
+    canvas.width = source.width;
+    canvas.height = source.height;
+    const context = canvas.getContext("2d")!;
+    context.drawImage(source, 0, 0);
+    context.globalCompositeOperation = "source-in";
+    context.fillStyle = color;
+    context.fillRect(0, 0, canvas.width, canvas.height);
+    byColor.set(color, canvas);
+  }
+  return canvas;
+}
+
+function hashId(text: string): number {
+  let hash = 0;
+  for (let index = 0; index < text.length; index += 1) hash = (hash * 31 + text.charCodeAt(index)) >>> 0;
+  return hash;
 }
 
 const artTiles: Record<Tile, TileType> = {
@@ -54,6 +112,32 @@ const artTiles: Record<Tile, TileType> = {
   [Tile.Door]: "door",
   [Tile.Flowers]: "flowers",
   [Tile.Bridge]: "bridge",
+  [Tile.Void]: "void",
+  [Tile.Rug]: "rug",
+  [Tile.Counter]: "counter",
+};
+
+type FloorStyleName = NonNullable<Area["style"]>["floor"];
+type WallStyleName = NonNullable<Area["style"]>["wall"];
+
+const BIOME_FLOOR: Record<Area["biome"], FloorStyleName> = {
+  building: "boards",
+  cave: "dirt",
+  ruins: "flagstone",
+  village: "cobble",
+  meadow: "grass",
+  forest: "grass",
+  shore: "sand",
+};
+
+const BIOME_WALL: Record<Area["biome"], WallStyleName> = {
+  building: "plaster",
+  cave: "rock",
+  ruins: "stone",
+  village: "brick",
+  meadow: "hedge",
+  forest: "hedge",
+  shore: "fence",
 };
 
 const doorTiles: Record<DoorKind, TileType> = {
@@ -67,6 +151,8 @@ export class Renderer {
   private readonly context: CanvasRenderingContext2D;
   private readonly storyTheme: StoryVisualTheme;
   private label: HTMLElement | null = null;
+  private frameWorld: Area | null = null;
+  private readonly busyCache = new WeakMap<Area, Set<string>>();
   private readonly doorSignLabels: { element: HTMLElement; width: number; height: number; scale: number }[] = [];
   private resizeObserver: ResizeObserver | null = null;
   private viewWidthPx = REFERENCE_VIEW_WIDTH;
@@ -138,7 +224,7 @@ export class Renderer {
     const context = this.context;
     const viewWidth = this.viewWidthPx;
     const viewHeight = this.viewHeightPx;
-    context.fillStyle = "#17251d";
+    context.fillStyle = world.style ? mix(PALETTES[world.palette].ink, "#000000", 0.35) : "#17251d";
     context.fillRect(0, 0, viewWidth, viewHeight);
 
     const firstColumn = Math.floor(camera.x / TILE_SIZE);
@@ -158,8 +244,8 @@ export class Renderer {
 
         const screenX = offsetX + column * TILE_SIZE;
         const screenY = offsetY + row * TILE_SIZE;
-        this.drawTile(world.palette, ground, tileX, tileY, screenX, screenY);
         const feature = world.layers.feature[tileY]?.[tileX];
+        if (ground !== Tile.Void) this.drawGround(world, ground, tileX, tileY, screenX, screenY);
         if (feature !== undefined && feature !== Tile.Grass) {
           const door = feature === Tile.Door ? doors.get(`${tileX},${tileY}`) : undefined;
           if (door) {
@@ -168,13 +254,21 @@ export class Renderer {
               screenX,
               screenY,
             );
+          } else if (feature === Tile.Wall) {
+            this.drawWall(world, tileX, tileY, screenX, screenY);
           } else {
             this.drawTile(world.palette, feature, tileX, tileY, screenX, screenY);
           }
         }
+        if (feature !== Tile.Wall && feature !== Tile.Door && ground !== Tile.Void && ground !== Tile.Water) {
+          this.drawWallShadow(world, tileX, tileY, screenX, screenY);
+        }
       }
     }
 
+    this.drawDecor(world, camera);
+
+    this.frameWorld = world;
     for (const entity of world.entities ?? []) this.drawEntity(world.palette, entity, camera, presentation);
     this.drawPlayer(
       world.palette,
@@ -182,6 +276,7 @@ export class Renderer {
       Math.round(player.y - camera.y),
       playerDirection,
       playerMoving,
+      presentation?.playerSprite,
     );
     this.drawAtmosphere(world);
     this.drawStoryAtmosphere(context);
@@ -197,14 +292,146 @@ export class Renderer {
     this.context.drawImage(getTileCanvas(palette, artTiles[tile], seed, shimmer), x, y);
   }
 
+  // Plain floor follows the area's floor style; rugs get borders on the sides that face bare floor.
+  private drawGround(world: Area, ground: Tile, tileX: number, tileY: number, x: number, y: number): void {
+    const seed = `${tileX},${tileY}`;
+    if (ground === Tile.Floor) {
+      const style = world.style?.floor ?? BIOME_FLOOR[world.biome];
+      this.context.drawImage(getTileCanvas(world.palette, `floor-${style}`, seed), x, y);
+    } else if (ground === Tile.Rug) {
+      const rows = world.layers.ground;
+      const isRug = (dx: number, dy: number) => rows[tileY + dy]?.[tileX + dx] === Tile.Rug;
+      const edges = (isRug(0, -1) ? 0 : RUG_EDGE.north)
+        | (isRug(1, 0) ? 0 : RUG_EDGE.east)
+        | (isRug(0, 1) ? 0 : RUG_EDGE.south)
+        | (isRug(-1, 0) ? 0 : RUG_EDGE.west);
+      const floor = world.style?.floor ?? BIOME_FLOOR[world.biome];
+      this.context.drawImage(getTileCanvas(world.palette, `floor-${floor}`, seed), x, y);
+      this.context.drawImage(getTileCanvas(world.palette, "rug", 0, 0, edges), x, y);
+    } else {
+      this.drawTile(world.palette, ground, tileX, tileY, x, y);
+    }
+  }
+
+  // The front of a wall (lighter, with skirting) shows when you could stand below it; otherwise its dark top.
+  private drawWall(world: Area, tileX: number, tileY: number, x: number, y: number): void {
+    const style = world.style?.wall ?? BIOME_WALL[world.biome];
+    const belowGround = world.layers.ground[tileY + 1]?.[tileX];
+    const belowFeature = world.layers.feature[tileY + 1]?.[tileX];
+    const top = belowGround === undefined || belowGround === Tile.Void || belowFeature === Tile.Wall;
+    const kind: TileType = top ? `wall-top-${style}` : `wall-face-${style}`;
+    this.context.drawImage(getTileCanvas(world.palette, kind, `${tileX},${tileY}`), x, y);
+  }
+
+  // Soft shadow on the floor below and to the right of a wall.
+  private drawWallShadow(world: Area, tileX: number, tileY: number, x: number, y: number): void {
+    const features = world.layers.feature;
+    const context = this.context;
+    if (features[tileY - 1]?.[tileX] === Tile.Wall) {
+      context.fillStyle = "rgba(24, 14, 18, 0.30)";
+      context.fillRect(x, y, TILE_SIZE, 3);
+      context.fillStyle = "rgba(24, 14, 18, 0.14)";
+      context.fillRect(x, y + 3, TILE_SIZE, 2);
+    }
+    if (features[tileY]?.[tileX - 1] === Tile.Wall) {
+      context.fillStyle = "rgba(24, 14, 18, 0.18)";
+      context.fillRect(x, y, 2, TILE_SIZE);
+    }
+  }
+
+  private drawDecor(world: Area, camera: Position): void {
+    for (const item of world.decor ?? []) {
+      const x = Math.round(item.x * TILE_SIZE - camera.x);
+      const y = Math.round(item.y * TILE_SIZE - camera.y);
+      if (x < -TILE_SIZE || y < -TILE_SIZE || x > this.viewWidthPx || y > this.viewHeightPx) continue;
+      try {
+        const sprite = getVisualCanvas({ icon: item.icon }, world.palette, undefined, false, `${item.x},${item.y}`);
+        this.drawProp(world, item.icon, "", item, sprite, x, y);
+      } catch {
+        // An unknown glyph id leaves the spot empty rather than breaking the frame.
+      }
+    }
+  }
+
+  // Tiles that hold something (entities, decor, doors); big furniture steps back to 16px next to them.
+  private busyTiles(world: Area): Set<string> {
+    let busy = this.busyCache.get(world);
+    if (!busy) {
+      busy = new Set<string>();
+      for (const entity of world.entities ?? []) busy.add(`${entity.x},${entity.y}`);
+      for (const item of world.decor ?? []) busy.add(`${item.x},${item.y}`);
+      for (const door of world.doors) busy.add(`${door.x},${door.y}`);
+      this.busyCache.set(world, busy);
+    }
+    return busy;
+  }
+
+  // Draws a prop the way it reads best: hung on the wall face above it, larger as furniture, or as a plain glyph.
+  // Returns the box it covered so callers can add highlights.
+  private drawProp(
+    world: Area,
+    icon: string,
+    name: string,
+    tile: { x: number; y: number },
+    sprite: HTMLCanvasElement,
+    x: number,
+    y: number,
+    outline?: { color: string; alpha: number },
+    lift = 0,
+  ): void {
+    const context = this.context;
+    const paint = (dx: number, dy: number, dw: number, dh: number, sx = 0, sy = 0, sw = 16, sh = 16): void => {
+      if (outline && outline.alpha > 0) {
+        const tint = silhouette(sprite, outline.color);
+        context.save();
+        context.globalAlpha = outline.alpha;
+        for (const [ox, oy] of [[-1, 0], [1, 0], [0, -1], [0, 1]] as const) {
+          context.drawImage(tint, sx, sy, sw, sh, dx + ox, dy + oy, dw, dh);
+        }
+        context.restore();
+      }
+      context.drawImage(sprite, sx, sy, sw, sh, dx, dy, dw, dh);
+    };
+    if (world.layers.feature[tile.y - 1]?.[tile.x] === Tile.Wall && isWallMounted(icon, name)) {
+      const rows = wallCropRows(icon);
+      paint(x, y - TILE_SIZE + 2 - lift, TILE_SIZE, rows, 0, 0, 16, rows);
+      return;
+    }
+    this.drawObjectShadow(x, y);
+    const busy = this.busyTiles(world);
+    if (isBigFurniture(icon) && canEnlarge(tile.x, tile.y, (tx, ty) => busy.has(`${tx},${ty}`))) {
+      const size = Math.round(TILE_SIZE * BIG_FURNITURE_SCALE);
+      const bottom = Math.round((glyphBottomRow(icon) + 1) * BIG_FURNITURE_SCALE);
+      paint(x - (size - TILE_SIZE) / 2, y + TILE_SIZE - bottom - 1 - lift, size, size);
+      return;
+    }
+    paint(x, y - lift, TILE_SIZE, TILE_SIZE);
+  }
+
   private drawEntity(palette: PaletteName, entity: AreaEntity, camera: Position, presentation?: EntityPresentation): void {
     const character = presentation?.characters.get(entity.id);
     const x = Math.round((character?.x ?? entity.x) * TILE_SIZE - camera.x);
     const y = Math.round((character?.y ?? entity.y) * TILE_SIZE - camera.y);
     if (x < -TILE_SIZE || y < -TILE_SIZE || x > this.viewWidthPx || y > this.viewHeightPx) return;
     const objectSprite = entity.packId ? getAshenObjectSprite(entity.packId, palette) : null;
-    if (!entity.character) this.drawObjectShadow(x, y);
-    if (entity.character) {
+    if (entity.kind === "clue") {
+      this.drawClueMarker(entity, x, y, camera, presentation);
+      return;
+    }
+    const useVisual = !!entity.visual && (!entity.visualInferred || !objectSprite);
+    if (!entity.character && !useVisual) this.drawObjectShadow(x, y);
+    if (entity.sprite) {
+      // Character sprites are 16x24 and stand with their feet on the bottom of the tile.
+      const animate = presentation?.animateCharacters !== false
+        && document.documentElement.dataset.reducedMotion !== "true";
+      const pose = !animate
+        ? 0
+        : character?.moving
+          ? Math.floor(performance.now() / 150) % 4
+          : Math.floor(performance.now() / 650) % 2 === 0 ? 0 : IDLE_POSE;
+      this.context.drawImage(getSpriteCanvas(entity.sprite, character?.direction ?? "down", pose), x, y - 8);
+      if (presentation?.talkMarkerIds.has(entity.id)) this.drawTalkMarker(x, y - 6, palette);
+    } else if (entity.character) {
       const animate = presentation?.animateCharacters !== false
         && document.documentElement.dataset.reducedMotion !== "true";
       const frame = !animate
@@ -217,12 +444,107 @@ export class Renderer {
     } else if (entity.visual && (!entity.visualInferred || !objectSprite)) {
       const openId = `${entity.visual.icon}_open`;
       const visual = entity.opened && getGlyph(openId) ? { ...entity.visual, icon: openId } : entity.visual;
-      this.context.drawImage(getVisualCanvas(visual, palette, entity.icon, entity.visualInferred, entity.id), x, y);
+      const sprite = getVisualCanvas(visual, palette, entity.icon, entity.visualInferred, entity.id);
+      const reduced = document.documentElement.dataset.reducedMotion === "true";
+      const time = reduced ? 0 : performance.now() / 1000 + (hashId(entity.id) % 50);
+      let outline: { color: string; alpha: number } | undefined;
+      let lift = 0;
+      if (entity.kind === "object") {
+        // A soft rim that swells for a moment every few seconds.
+        const swell = reduced ? 0 : Math.max(0, Math.sin((time % 4.5) / 4.5 * Math.PI * 2 - Math.PI / 2) - 0.4);
+        outline = { color: GOLD, alpha: 0.55 + swell * 0.45 };
+      } else if (entity.kind === "key") {
+        // Things you can take hop now and then and twinkle.
+        const phase = reduced ? 1 : (time % 1.8) / 1.8;
+        lift = phase < 0.22 ? Math.round(Math.sin((phase / 0.22) * Math.PI) * 2) : 0;
+      }
+      if (this.frameWorld) this.drawProp(this.frameWorld, visual.icon, entity.name, entity, sprite, x, y, outline, lift);
+      else this.context.drawImage(sprite, x, y);
+      if (entity.kind === "key") this.drawSparkle(x + 12, y + 1, time * 2.2, GOLD, reduced);
     } else if (objectSprite) {
       this.context.drawImage(objectSprite, x, y);
     } else if (entity.icon) {
       this.context.drawImage(getIconCanvas(entity.icon, palette), x, y);
     }
+  }
+
+  private drawSparkle(cx: number, cy: number, phase: number, color: string, still: boolean, reach = 2): void {
+    const context = this.context;
+    const size = still ? reach : Math.max(0, Math.round(reach * (0.5 + 0.5 * Math.sin(phase * 2))));
+    context.fillStyle = "#fffbe6";
+    context.fillRect(cx, cy, 1, 1);
+    context.fillStyle = color;
+    for (let step = 1; step <= size; step += 1) {
+      context.fillRect(cx - step, cy, 1, 1);
+      context.fillRect(cx + step, cy, 1, 1);
+      context.fillRect(cx, cy - step, 1, 1);
+      context.fillRect(cx, cy + step, 1, 1);
+    }
+  }
+
+  // A bobbing magnifier in a soft glow marks a clue; once found it dims to a small check.
+  // Next to a related object the marker floats over that object instead of bare floor.
+  private drawClueMarker(
+    clue: AreaEntity,
+    x: number,
+    y: number,
+    camera: Position,
+    presentation?: EntityPresentation,
+  ): void {
+    const context = this.context;
+    const reduced = document.documentElement.dataset.reducedMotion === "true";
+    const time = reduced ? 0 : performance.now() / 1000;
+    const found = !!clue.packId && presentation?.foundClueIds?.has(clue.packId) === true;
+    const near = (this.frameWorld?.entities ?? []).filter((other) => other.kind === "object" || other.kind === "key")
+      .find((other) => Math.abs(other.x - clue.x) + Math.abs(other.y - clue.y) === 1);
+    const cx = (near ? Math.round(near.x * TILE_SIZE - camera.x) : x) + TILE_SIZE / 2;
+    const baseY = (near ? Math.round(near.y * TILE_SIZE - camera.y) : y) + TILE_SIZE / 2;
+    if (found) {
+      context.save();
+      context.globalAlpha = 0.65;
+      context.fillStyle = "rgba(20, 28, 22, 0.55)";
+      context.beginPath();
+      context.arc(cx, baseY - 3, 5, 0, Math.PI * 2);
+      context.fill();
+      CHECK.forEach((row, dy) => [...row].forEach((pixel, dx) => {
+        if (pixel === ".") return;
+        context.fillStyle = "#cfe8c0";
+        context.fillRect(cx - 3 + dx, baseY - 6 + dy, 1, 1);
+      }));
+      context.restore();
+      return;
+    }
+    const bob = Math.round(Math.sin(time * 3.2) * 1.5);
+    const my = baseY - (near ? 19 : 13) + bob;
+    const pulse = reduced ? 0.5 : 0.5 + 0.5 * Math.sin(time * 2.4);
+    const centerY = my + 4.5;
+    context.save();
+    // A dark badge with a gold rim reads on both light and dark floors.
+    context.strokeStyle = `rgba(255, 214, 102, ${0.3 + pulse * 0.4})`;
+    context.lineWidth = 1;
+    context.beginPath();
+    context.arc(cx, centerY, 8 + pulse * 2, 0, Math.PI * 2);
+    context.stroke();
+    context.fillStyle = "rgba(34, 24, 28, 0.88)";
+    context.beginPath();
+    context.arc(cx, centerY, 7, 0, Math.PI * 2);
+    context.fill();
+    context.strokeStyle = GOLD;
+    context.beginPath();
+    context.arc(cx, centerY, 7, 0, Math.PI * 2);
+    context.stroke();
+    // A little tail pointing down to the spot.
+    context.fillStyle = GOLD;
+    context.fillRect(cx - 1, centerY + 7, 3, 1);
+    context.fillRect(cx, centerY + 8, 1, 1);
+    context.restore();
+    const colors: Record<string, string> = { o: "#fff4c2", l: "#6fb7cf", h: GOLD };
+    MAGNIFIER.forEach((row, dy) => [...row].forEach((pixel, dx) => {
+      if (pixel === ".") return;
+      context.fillStyle = colors[pixel]!;
+      context.fillRect(cx - 4 + dx, my + dy, 1, 1);
+    }));
+    this.drawSparkle(cx + 8, my - 2, time * 2.6, GOLD, reduced, 2);
   }
 
   private drawTalkMarker(x: number, y: number, palette: PaletteName): void {
@@ -266,10 +588,14 @@ export class Renderer {
     }
   }
 
-  private drawPlayer(palette: PaletteName, x: number, y: number, direction: Direction, moving: boolean): void {
+  private drawPlayer(palette: PaletteName, x: number, y: number, direction: Direction, moving: boolean, sprite?: SpriteSpec): void {
     const frame = moving && document.documentElement.dataset.reducedMotion !== "true"
       ? Math.floor(performance.now() / 180)
       : 0;
+    if (sprite) {
+      this.context.drawImage(getSpriteCanvas(sprite, direction, frame % 4), x - 8, y - 16);
+      return;
+    }
     this.context.drawImage(
       getCharacterSprite(DEFAULT_CHARACTER_RECIPE, palette, direction, frame),
       x - 10,
@@ -420,7 +746,9 @@ export class Renderer {
     const context = this.context;
     const light = world.biome === "cave" || world.biome === "ruins"
       ? "rgba(133, 148, 196, 0.10)"
-      : world.biome === "shore"
+      : world.biome === "building"
+        ? "rgba(255, 214, 140, 0.06)"
+        : world.biome === "shore"
         ? "rgba(142, 214, 224, 0.09)"
         : "rgba(255, 224, 157, 0.09)";
     const viewWidth = this.viewWidthPx;
@@ -435,9 +763,13 @@ export class Renderer {
       Math.hypot(viewWidth, viewHeight) * 0.627,
     );
     vignette.addColorStop(0, light);
-    vignette.addColorStop(1, "rgba(18, 27, 24, 0.13)");
+    vignette.addColorStop(1, world.biome === "building" ? "rgba(60, 30, 14, 0.07)" : "rgba(18, 27, 24, 0.13)");
     context.fillStyle = vignette;
     context.fillRect(0, 0, viewWidth, viewHeight);
+    if (world.palette === "underwater") {
+      context.fillStyle = "rgba(40, 150, 165, 0.14)";
+      context.fillRect(0, 0, viewWidth, viewHeight);
+    }
 
     if (document.documentElement.dataset.reducedMotion === "true") return;
     if (world.biome === "meadow" || world.biome === "village" || world.biome === "forest") {

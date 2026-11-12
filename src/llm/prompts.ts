@@ -1,8 +1,8 @@
-import { PALETTE_COLOR_SLOTS, PALETTE_NAMES, BODY_SHAPES, CHARACTER_FEATURES, ICON_SHAPES } from "../art";
+import { PALETTE_COLOR_SLOTS, BODY_SHAPES, CHARACTER_FEATURES, ICON_SHAPES } from "../art";
 import type { JSONRequest } from "./types";
 import { Priority } from "./types";
-import { areaBriefSchema, BIOMES, characterSchema, dialogueTurnSchema, OBJECT_KINDS } from "./shapes";
-import type { AreaBriefOutput, CharacterOutput, DialogueTurnOutput } from "./shapes";
+import { characterSchema, dialogueTurnSchema } from "./shapes";
+import type { CharacterOutput, DialogueTurnOutput } from "./shapes";
 
 export const SYSTEM =
   "You are the narrator of a cozy mystery exploration game. Write warm, gentle, short text. English only. " +
@@ -15,22 +15,6 @@ export const DIALOGUE_SYSTEM =
 export const recipeHelp =
   `sprite_recipe: {body: ${BODY_SHAPES.join("|")}, bodyColor/accentColor/skinColor: ${PALETTE_COLOR_SLOTS.join("|")}, feature: ${CHARACTER_FEATURES.join("|")}}. ` +
   `icon_recipe: {shape: ${ICON_SHAPES.join("|")}, primaryColor/secondaryColor: ${PALETTE_COLOR_SLOTS.join("|")}}.`;
-
-export function areaBriefRequest(priority: Priority = Priority.Area): JSONRequest<AreaBriefOutput> {
-  return {
-    priority,
-    system: SYSTEM,
-    tag: "area",
-    schema: areaBriefSchema,
-    maxTokens: 900,
-    prompt:
-      "Describe one location: the old lighthouse keeper's garden on a misty shore, where a prized lantern went missing. " +
-      `Keys: name, biome (${BIOMES.join("|")}), mood, palette (${PALETTE_NAMES.join("|")}), description (2 sentences), ` +
-      `characters (1-2: name, species, sprite_recipe, personality, goal, secret), ` +
-      `objects (2-3: kind (${OBJECT_KINDS.join("|")}), name, description, icon_recipe, contents), ` +
-      `clue (null or {truth_id, where, text}), doors (1-3: label, hint). ${recipeHelp}`,
-  };
-}
 
 export function characterRequest(priority: Priority = Priority.Area): JSONRequest<CharacterOutput> {
   return {

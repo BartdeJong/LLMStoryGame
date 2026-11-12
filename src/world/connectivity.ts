@@ -16,9 +16,12 @@ export function isWalkable(area: Area, x: number, y: number): boolean {
   const ground = area.layers.ground[y]?.[x];
   const feature = area.layers.feature[y]?.[x];
   return ground !== Tile.Water
+    && ground !== Tile.Void
     && feature !== Tile.Tree
     && feature !== Tile.Wall
-    && feature !== Tile.Rock;
+    && feature !== Tile.Rock
+    && feature !== Tile.Counter
+    && !(area.decor?.some((item) => item.x === x && item.y === y) ?? false);
 }
 
 export function reachableTiles(area: Area, origin: GridPoint = area.entry): Set<string> {

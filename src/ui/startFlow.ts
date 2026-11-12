@@ -163,7 +163,7 @@ export async function startGame(shell: HTMLElement, root: HTMLElement, useMock: 
     root.replaceChildren(note("Setting the scene..."));
     try {
       const story = new StorySession(pack, view, client);
-      const startArea = await story.start();
+      const startArea = story.start();
       const persistence = { repository: saves, slotId, timePlayedMs: 0 };
       if (view.definition.opening) {
         mountStoryOpeningScreen(root, story, () => startSession(story, startArea, persistence));
@@ -177,7 +177,7 @@ export async function startGame(shell: HTMLElement, root: HTMLElement, useMock: 
   const beginLoadedGame = async (save: GameSave): Promise<void> => {
     const pack = await loadPackForSave(save);
     const view = getLengthView(pack, save.length);
-    const story = new StorySession(pack, view, client, undefined, save.worldSeed);
+    const story = new StorySession(pack, view, client, save.worldSeed);
     story.restoreSave(save);
     const startArea = story.getArea(save.player.areaId);
     startSession(story, startArea, {

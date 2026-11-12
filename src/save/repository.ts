@@ -16,66 +16,6 @@ function isStringArray(value: unknown): value is string[] {
   return Array.isArray(value) && value.every((item) => typeof item === "string");
 }
 
-function isTileLayer(value: unknown): value is number[][] {
-  return Array.isArray(value) && value.every((row) =>
-    Array.isArray(row) && row.every((tile) => Number.isInteger(tile) && tile >= 0 && tile <= 9));
-}
-
-function isBrief(value: unknown): value is JsonRecord & { locationId: string } {
-  if (!isRecord(value) || typeof value.locationId !== "string" || typeof value.name !== "string"
-    || typeof value.biome !== "string" || typeof value.mood !== "string"
-    || typeof value.palette !== "string" || typeof value.description !== "string"
-    || !Array.isArray(value.characters) || !Array.isArray(value.objects)
-    || !Array.isArray(value.clues) || !Array.isArray(value.doors)
-    || (value.source !== "llm" && value.source !== "fallback")) return false;
-  return value.characters.every((character) => isRecord(character)
-    && (character.castId === null || typeof character.castId === "string")
-    && typeof character.name === "string" && typeof character.species === "string"
-    && typeof character.personality === "string" && typeof character.goal === "string"
-    && typeof character.secret === "string" && isRecord(character.recipe)
-    && typeof character.required === "boolean")
-    && value.objects.every((object) => isRecord(object)
-      && (object.packId === null || typeof object.packId === "string")
-      && typeof object.kind === "string" && typeof object.name === "string"
-      && typeof object.description === "string" && isRecord(object.icon)
-      && isStringArray(object.contents) && typeof object.required === "boolean"
-      && typeof object.keyItem === "boolean")
-    && value.clues.every((clue) => isRecord(clue) && typeof clue.id === "string"
-      && (clue.truthId === null || typeof clue.truthId === "string")
-      && typeof clue.where === "string" && typeof clue.text === "string")
-    && value.doors.every((door) => isRecord(door) && typeof door.to === "string"
-      && typeof door.label === "string" && typeof door.hint === "string");
-}
-
-function isArea(value: unknown): value is JsonRecord & { id: string } {
-  const entry = isRecord(value) ? value.entry : undefined;
-  if (!isRecord(value) || typeof value.id !== "string" || typeof value.name !== "string"
-    || !("seed" in value) || typeof value.biome !== "string" || typeof value.mood !== "string"
-    || typeof value.palette !== "string" || !Number.isInteger(value.width) || Number(value.width) <= 0
-    || !Number.isInteger(value.height) || Number(value.height) <= 0
-    || !isRecord(value.layers) || !isTileLayer(value.layers.ground) || !isTileLayer(value.layers.feature)
-    || !isRecord(entry) || !Number.isFinite(entry.x) || !Number.isFinite(entry.y)
-    || !Array.isArray(value.doors) || !Array.isArray(value.spawnPoints) || !Array.isArray(value.entities)) return false;
-  const width = Number(value.width);
-  const height = Number(value.height);
-  const entryX = Number(entry.x);
-  const entryY = Number(entry.y);
-  return value.layers.ground.length === height && value.layers.feature.length === height
-    && value.layers.ground.every((row) => row.length === width)
-    && value.layers.feature.every((row) => row.length === width)
-    && Number.isInteger(entryX) && Number.isInteger(entryY)
-    && entryX >= 0 && entryX < width && entryY >= 0 && entryY < height
-    && value.doors.every((door) => isRecord(door) && typeof door.id === "string"
-      && typeof door.label === "string" && Number.isFinite(door.x) && Number.isFinite(door.y)
-      && (door.targetAreaId === undefined || typeof door.targetAreaId === "string"))
-    && value.spawnPoints.every((point) => isRecord(point) && typeof point.id === "string"
-      && typeof point.kind === "string" && Number.isFinite(point.x) && Number.isFinite(point.y))
-    && value.entities.every((entity) => isRecord(entity) && typeof entity.id === "string"
-      && ["character", "object", "clue", "key"].includes(String(entity.kind)) && typeof entity.name === "string"
-      && typeof entity.description === "string" && typeof entity.required === "boolean"
-      && Number.isFinite(entity.x) && Number.isFinite(entity.y));
-}
-
 function isCharacterMemory(value: unknown): boolean {
   return isRecord(value) && Number.isInteger(value.visits) && Number(value.visits) >= 0 && isStringArray(value.askedAbout);
 }
@@ -100,18 +40,11 @@ function isStoryState(value: unknown): value is JsonRecord & {
     && typeof value.summary === "string"
     && isRecord(value.characterMemory)
     && Object.values(value.characterMemory).every(isCharacterMemory)
-    && Number.isInteger(value.areasSinceSummary);
-}
-
-type SavedAreaRecord = JsonRecord & {
-  area: JsonRecord & { id: string };
-  brief: JsonRecord & { locationId: string };
-};
-
-function isSavedArea(value: unknown): value is SavedAreaRecord {
-  return isRecord(value) && isArea(value.area) && isBrief(value.brief)
-    && typeof value.brief.locationId === "string"
-    && value.area.id === value.brief.locationId;
+    && Number.isInteger(value.areasSinceSummary)
+    // The progress log arrived after version 6 and is optional, so older saves load without it.
+    && (value.progressLog === undefined || (Array.isArray(value.progressLog) && value.progressLog.every((entry) =>
+      isRecord(entry) && typeof entry.id === "string" && ["clue", "truth", "item"].includes(String(entry.kind))
+      && Number.isFinite(entry.at))));
 }
 
 function isSaveMetadata(value: unknown): value is SaveMetadata {
@@ -125,17 +58,16 @@ function isValidSave(value: unknown): value is GameSave {
   if (!isRecord(value)) return false;
   const player = value.player;
   const state = value.storyState;
-  const areas = value.areas;
+  const areaIds = value.areaIds;
   if (value.formatVersion !== SAVE_FORMAT_VERSION
     || typeof value.slotId !== "string" || value.slotId.length === 0
     || !isSaveMetadata(value.metadata) || typeof value.worldSeed !== "string"
     || typeof value.packId !== "string" || !Number.isInteger(value.packVersion)
     || !LENGTH_IDS.includes(value.length as (typeof LENGTH_IDS)[number])
-    || !isStoryState(state) || !Array.isArray(areas)
+    || !isStoryState(state) || !isStringArray(areaIds)
     || !isRecord(player) || typeof player.areaId !== "string"
     || !Number.isFinite(player.x) || !Number.isFinite(player.y)) return false;
-  if (!areas.every(isSavedArea)) return false;
-  return areas.some((entry) => entry.area.id === player.areaId)
+  return areaIds.includes(player.areaId)
     && state.packId === value.packId
     && state.packVersion === value.packVersion
     && state.length === value.length
@@ -202,6 +134,18 @@ function migrateV4(value: JsonRecord): JsonRecord {
   };
 }
 
+// Areas are rebuilt from the story pack now, so only which areas were visited is kept. Saved tiles and briefs are dropped.
+function migrateV5(value: JsonRecord): JsonRecord {
+  const { areas, ...rest } = value;
+  const areaIds = Array.isArray(areas)
+    ? areas.flatMap((entry) => {
+      const area = isRecord(entry) && isRecord(entry.area) ? entry.area : undefined;
+      return typeof area?.id === "string" ? [area.id] : [];
+    })
+    : [];
+  return { ...rest, formatVersion: 6, areaIds };
+}
+
 export function normalizeSave(value: unknown): GameSave {
   if (!isRecord(value) || !Number.isInteger(value.formatVersion)) {
     throw new Error("This file is not a valid game save.");
@@ -211,6 +155,7 @@ export function normalizeSave(value: unknown): GameSave {
   if (migrated.formatVersion === 2) migrated = migrateV2(migrated);
   if (migrated.formatVersion === 3) migrated = migrateV3(migrated);
   if (migrated.formatVersion === 4) migrated = migrateV4(migrated);
+  if (migrated.formatVersion === 5) migrated = migrateV5(migrated);
   if (migrated.formatVersion !== SAVE_FORMAT_VERSION) {
     throw new Error(`Save format version ${String(value.formatVersion)} is not supported.`);
   }

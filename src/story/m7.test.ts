@@ -13,7 +13,6 @@ import { solveLength } from "./solver";
 import { writeEnding } from "./ending";
 import { StorySession } from "./storySession";
 import { answerDeduction, openDeductions } from "./deduction";
-import { parseCharacterRecipe } from "./recipes";
 import type { LengthId, StoryPack } from "./types";
 import { validateStoryPack } from "./validate";
 
@@ -207,7 +206,7 @@ describe("M7 pacing and ending simulations", () => {
     }
   }
 
-  it("uses distinctive Victorian sprites for the Sherlock cast in-game", async () => {
+  it("draws the Sherlock cast in-game from their authored sprite specs", async () => {
     const pack = loadPack(holmes);
     const view = getLengthView(pack, "short");
     const story = new StorySession(pack, view, await makeClient());
@@ -218,11 +217,11 @@ describe("M7 pacing and ending simulations", () => {
     for (const entity of characters) {
       const member = pack.cast.find((candidate) => candidate.id === entity.packId);
       expect(member).toBeDefined();
-      expect(entity.character).toEqual(parseCharacterRecipe(member!.sprite_recipe));
+      expect(entity.sprite).toEqual(member!.sprite);
     }
-    expect(characters.map((entity) => entity.character?.feature)).toEqual([
+    expect(characters.map((entity) => entity.sprite?.headwear?.style)).toEqual([
       "deerstalker",
-      "moustache",
+      undefined,
       "bonnet",
     ]);
   });

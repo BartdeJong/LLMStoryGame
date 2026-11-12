@@ -2,6 +2,9 @@
 // (a unit test checks that the example pack passes the schema).
 
 import type { GlyphCategory, VisualSpec } from "../art/glyphs";
+import type { PaletteName } from "../art/palettes";
+import type { SpriteSpec } from "../art/spriteSpec";
+import type { Biome, FloorStyle, WallStyle } from "../world/types";
 
 export const LENGTH_IDS = ["short", "medium", "long"] as const;
 export type LengthId = (typeof LENGTH_IDS)[number];
@@ -19,6 +22,14 @@ export interface Requirement {
   truths?: string[];
 }
 
+// Who the player is in this story, and how the player looks on screen and in dialogue.
+export interface PlayerCharacter {
+  name: string;
+  species: string;
+  description: string;
+  sprite: SpriteSpec;
+}
+
 export interface Identity {
   id: string;
   version: number;
@@ -28,6 +39,7 @@ export interface Identity {
   tone: string;
   themes: string[];
   content_notes: string[];
+  player: PlayerCharacter;
 }
 
 export interface StyleExample {
@@ -97,7 +109,7 @@ export interface CastMember {
   secret: string;
   motivations: string[];
   relationships: Relationship[];
-  sprite_recipe: string;
+  sprite: SpriteSpec; // layered look of the character (src/art/spriteSpec.ts)
   home_location: string;
   knows_truths: string[];
   goal_states: GoalState[];
@@ -171,6 +183,29 @@ export interface VisualRequest {
   suggested_category: GlyphCategory;
 }
 
+// Pre-written surface for a location, so the game does not have to generate it while the player waits.
+export interface AreaDoorText {
+  to: string; // a neighbouring location id (doors work in both directions)
+  label: string; // at most 4 words, shown on the sign
+  hint: string;
+}
+
+// Everything about a place is baked into the pack ahead of time (Story Forge bake step); nothing is
+// generated while the game runs. Map format: src/world/mapLegend.ts.
+export interface AuthoredArea {
+  description: string; // 1-2 sentences shown on arrival
+  doors: AreaDoorText[]; // map digit n is doors[n - 1]
+  biome: Biome; // drives door look, lighting and ambience
+  palette: PaletteName;
+  floor: FloorStyle;
+  wall: WallStyle;
+  map: string[];
+  // Tile for each story thing that can appear here, keyed by pack id: location object, item found here,
+  // required character, or clue found here. Things missing from the current length are not placed.
+  placements: Record<string, [number, number]>;
+  decor: { icon: string; x: number; y: number }[];
+}
+
 export interface Location {
   id: string;
   name: string;
@@ -182,6 +217,7 @@ export interface Location {
   required_characters: string[];
   objects: WorldObject[];
   doors: Door[];
+  area?: AuthoredArea;
 }
 
 export interface Twist {

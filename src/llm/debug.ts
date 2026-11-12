@@ -4,7 +4,7 @@ import type { PromptKind, Sample } from "./benchmark";
 import { LLMClient } from "./client";
 import { LLM_CONFIG } from "./config";
 import { MockBackend } from "./mock";
-import { areaBriefRequest, characterRequest, dialogueTurnRequest } from "./prompts";
+import { characterRequest, dialogueTurnRequest } from "./prompts";
 import { checkSupport } from "./support";
 import { Priority } from "./types";
 import type { LoadResult } from "./types";
@@ -77,7 +77,7 @@ export async function mountLLMDebugScreen(): Promise<void> {
     reportText = formatReport({ modelId, backend: useMock ? "mock" : "webllm", loadTimeMs: loadResult.loadTimeMs, fromCache: loadResult.fromCache, samples, userAgent: navigator.userAgent });
     results.textContent = reportText;
     samplesBox.replaceChildren();
-    for (const kind of ["area", "character", "dialogue"] as const) {
+    for (const kind of ["character", "dialogue"] as const) {
       const last = samples.filter((sample) => sample.kind === kind).slice(-2);
       if (last.length === 0) continue;
       const details = el("details");
@@ -98,8 +98,7 @@ export async function mountLLMDebugScreen(): Promise<void> {
       status.textContent = "Loading model...";
       loadResult = useMock ? await client.load(modelId) : await runModelSetup(setup, client, modelId);
       setup.replaceChildren();
-      const prompts: [PromptKind, () => ReturnType<typeof areaBriefRequest> | ReturnType<typeof characterRequest> | ReturnType<typeof dialogueTurnRequest>][] = [
-        ["area", () => areaBriefRequest(Priority.Low)],
+      const prompts: [PromptKind, () => ReturnType<typeof characterRequest> | ReturnType<typeof dialogueTurnRequest>][] = [
         ["character", () => characterRequest(Priority.Low)],
         ["dialogue", () => dialogueTurnRequest(Priority.Low)],
       ];

@@ -4,7 +4,10 @@ import {
   CHARACTER_FEATURES,
   DEFAULT_CHARACTER_RECIPE,
   DIRECTIONS,
+  FLOOR_ART_STYLES,
   ICON_SHAPES,
+  RUG_EDGE,
+  WALL_ART_STYLES,
   PALETTE_COLOR_SLOTS,
   PALETTE_NAMES,
   PALETTES,
@@ -74,7 +77,7 @@ describe("art painters", () => {
   });
 
   it("defines cozy palettes with eight to twelve colors", () => {
-    expect(PALETTE_NAMES).toHaveLength(8);
+    expect(PALETTE_NAMES.length).toBeGreaterThanOrEqual(8);
     for (const paletteName of PALETTE_NAMES) {
       expect(Object.keys(PALETTES[paletteName])).toHaveLength(10);
     }
@@ -87,6 +90,26 @@ describe("art painters", () => {
       expect(canvas.height).toBe(16);
       expect(commandsOf(canvas).length).toBeGreaterThan(0);
     }
+  });
+
+  it("has art for every floor style, wall style, rug, counter and void", () => {
+    for (const style of FLOOR_ART_STYLES) expect(TILE_TYPES).toContain(`floor-${style}`);
+    for (const style of WALL_ART_STYLES) {
+      expect(TILE_TYPES).toContain(`wall-top-${style}`);
+      expect(TILE_TYPES).toContain(`wall-face-${style}`);
+    }
+    for (const tile of ["void", "rug", "counter"] as const) expect(TILE_TYPES).toContain(tile);
+    for (const paletteName of PALETTE_NAMES) {
+      const floor = commandsOf(paintTile(paletteName, "floor-boards", 1));
+      const wall = commandsOf(paintTile(paletteName, "wall-face-plaster", 1));
+      expect(floor[0]!.color).not.toBe(wall[0]!.color);
+    }
+  });
+
+  it("draws rug borders only on the requested sides", () => {
+    expect(commandsOf(paintTile("cottage", "rug", 0, 0, 0))).not.toEqual(
+      commandsOf(paintTile("cottage", "rug", 0, 0, RUG_EDGE.north)),
+    );
   });
 
   it("uses two distinct shimmer frames for water", () => {

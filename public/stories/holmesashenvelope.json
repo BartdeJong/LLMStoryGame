@@ -17,7 +17,13 @@
       "Murder and a fatal head injury, described without lingering detail.",
       "A body, blood evidence, institutional poverty, and financial betrayal.",
       "No sexual violence, harm to children, hate content, or graphic gore."
-    ]
+    ],
+    "player": {
+      "name": "Newcomer",
+      "species": "human",
+      "description": "A young newcomer in a worn coat, a red scarf and a newsboy cap, who helps Holmes.",
+      "sprite": {"species":"human","height":"short","girth":"slim","skin":"#e0b494","hair":{"style":"messy","color":"#6a4a2a"},"outfit":{"style":"coat","color":"#6a5a4a","trim":"#b8a37a","legs":"#3a3a40"},"headwear":{"style":"flat-cap","color":"#6a6a5a"},"accessories":[{"kind":"scarf","color":"#a83a3a"},{"kind":"notebook","color":"#c9b48a"}]}
+    }
   },
   "style_guide": {
     "narrator_voice": "Second person, present tense, restrained and atmospheric; dialogue fields contain only first-person spoken words.",
@@ -95,7 +101,7 @@
           "relation": "police counterpart"
         }
       ],
-      "sprite_recipe": "body=tall; bodyColor=ink; accentColor=earth; skinColor=skin; feature=deerstalker; walkFrames=2",
+      "sprite": {"species":"human","height":"tall","girth":"slim","skin":"#e8c4a4","hair":{"style":"short","color":"#2a2220"},"outfit":{"style":"cape","color":"#5a5448","trim":"#2c2824","legs":"#3a3a3a"},"headwear":{"style":"deerstalker","color":"#8a7a5a"},"accessories":[{"kind":"pipe","color":"#4a2f1c"},{"kind":"spyglass","color":"#c9a24a"}]},
       "home_location": "l_baker_street",
       "knows_truths": [
         "t_scene_staged",
@@ -237,7 +243,7 @@
           "relation": "medical colleague"
         }
       ],
-      "sprite_recipe": "body=tall; bodyColor=earth; accentColor=cream; skinColor=skin; feature=moustache; walkFrames=2",
+      "sprite": {"species":"human","height":"average","girth":"stout","skin":"#e6bf9d","hair":{"style":"short","color":"#8a6a3a"},"outfit":{"style":"suit","color":"#6a4e3a","trim":"#efe8d8","legs":"#4a3a30"},"accessories":[{"kind":"moustache","color":"#7a5a30"},{"kind":"medical-bag","color":"#3a2a22"}]},
       "home_location": "l_baker_street",
       "knows_truths": [
         "t_wren_discovered",
@@ -379,7 +385,7 @@
           "relation": "former helpful acquaintance"
         }
       ],
-      "sprite_recipe": "body=small; bodyColor=cream; accentColor=earth; skinColor=skin; feature=bonnet; walkFrames=2",
+      "sprite": {"species":"human","height":"short","girth":"stout","skin":"#efcaa7","hair":{"style":"bun","color":"#8a7a6e"},"outfit":{"style":"dress","color":"#6a4a72","trim":"#d8cfe0"},"headwear":{"style":"bonnet","color":"#f0ece4","trim":"#c9c2d0"},"accessories":[{"kind":"shawl","color":"#9a8aa8"},{"kind":"basket","color":"#b8843c"}]},
       "home_location": "l_baker_street",
       "knows_truths": [
         "t_diversion_for_ward",
@@ -519,7 +525,7 @@
           "relation": "fund treasurer under inquiry"
         }
       ],
-      "sprite_recipe": "body=tall; bodyColor=shadow; accentColor=ink; skinColor=skin; feature=bowler; walkFrames=2",
+      "sprite": {"species":"human","height":"average","girth":"average","skin":"#e2b896","hair":{"style":"short","color":"#4a3a30"},"outfit":{"style":"coat","color":"#3a3f4a","trim":"#c9a24a","legs":"#2a2a30"},"headwear":{"style":"bowler","color":"#2b2b30","trim":"#1a1a1f"},"accessories":[{"kind":"moustache","color":"#4a3a30"},{"kind":"notebook","color":"#5a4630"}]},
       "home_location": "l_scotland_yard",
       "knows_truths": [
         "t_scene_staged",
@@ -661,7 +667,7 @@
           "relation": "solicitor"
         }
       ],
-      "sprite_recipe": "body=tall; bodyColor=cream; accentColor=ink; skinColor=skin; feature=monocle; walkFrames=2",
+      "sprite": {"species":"human","height":"tall","girth":"slim","skin":"#ecd0b4","hair":{"style":"short","color":"#2e2a2a"},"outfit":{"style":"suit","color":"#cfc6a8","trim":"#f4f0e6","legs":"#b8b094"},"accessories":[{"kind":"monocle","color":"#d8b44a"},{"kind":"bowtie","color":"#8a2f3a"},{"kind":"cane","color":"#2a2a30"}]},
       "home_location": "l_relief_office",
       "knows_truths": [
         "t_wren_discovered",
@@ -810,7 +816,7 @@
           "relation": "solicitor who received a parcel"
         }
       ],
-      "sprite_recipe": "body=small; bodyColor=accent; accentColor=cream; skinColor=skin; feature=headscarf; walkFrames=2",
+      "sprite": {"species":"human","height":"short","girth":"slim","skin":"#efc9a8","hair":{"style":"bun","color":"#3a2a2a"},"outfit":{"style":"dress","color":"#3a3550","trim":"#cfc6d8"},"headwear":{"style":"headscarf","color":"#7a3a3a","trim":"#d9b4b4"},"accessories":[{"kind":"shawl","color":"#6a5a6e"},{"kind":"locket","color":"#cfcfd8"}]},
       "home_location": "l_relief_office",
       "knows_truths": [
         "t_wren_discovered",
@@ -949,7 +955,7 @@
           "relation": "distrusted employer"
         }
       ],
-      "sprite_recipe": "body=round; bodyColor=shadow; accentColor=earth; skinColor=skin; feature=flat-cap; walkFrames=2",
+      "sprite": {"species":"human","height":"average","girth":"stout","skin":"#d9a885","hair":{"style":"messy","color":"#7a7468"},"outfit":{"style":"coat","color":"#3e4a58","trim":"#c9a24a","legs":"#2f2f35"},"headwear":{"style":"flat-cap","color":"#4a4a3e"},"accessories":[{"kind":"beard","color":"#8a8478"},{"kind":"lantern","color":"#e3b341"}]},
       "home_location": "l_dock_watch_hut",
       "knows_truths": [
         "t_scene_staged",
@@ -1090,7 +1096,7 @@
           "relation": "fund treasurer"
         }
       ],
-      "sprite_recipe": "body=tall; bodyColor=cream; accentColor=accent; skinColor=skin; feature=glasses; walkFrames=2",
+      "sprite": {"species":"human","height":"tall","girth":"slim","skin":"#eac6a6","hair":{"style":"bun","color":"#4a2f24"},"outfit":{"style":"coat","color":"#e8e4d8","trim":"#8a8f98","legs":"#3a3a46"},"accessories":[{"kind":"glasses","color":"#2c2326"},{"kind":"book","color":"#4a6a8a"}]},
       "home_location": "l_fever_ward",
       "knows_truths": [
         "t_diversion_for_ward",
@@ -1231,7 +1237,7 @@
           "relation": "official inquiry contact"
         }
       ],
-      "sprite_recipe": "body=small; bodyColor=water; accentColor=ink; skinColor=skin; feature=veil; walkFrames=2",
+      "sprite": {"species":"human","height":"short","girth":"slim","skin":"#f0cfb0","hair":{"style":"bun","color":"#7a4a2a"},"outfit":{"style":"dress","color":"#4a6a8a","trim":"#e8ecf2"},"headwear":{"style":"veil-hat","color":"#2f4a6b","trim":"#cfd8e8"},"accessories":[{"kind":"notebook","color":"#e8dfc4"},{"kind":"nametag"}]},
       "home_location": "l_telegraph_office",
       "knows_truths": [
         "t_fane_alibi_false",
@@ -1371,7 +1377,7 @@
           "relation": "occasional client"
         }
       ],
-      "sprite_recipe": "body=round; bodyColor=earth; accentColor=accent; skinColor=skin; feature=cravat; walkFrames=3",
+      "sprite": {"species":"human","height":"average","girth":"average","skin":"#e9c19c","hair":{"style":"messy","color":"#b06a2a"},"outfit":{"style":"shirt","color":"#d8d0b8","trim":"#b8b098","legs":"#4a4a52"},"accessories":[{"kind":"apron","color":"#3a3a44"},{"kind":"bowtie","color":"#c0392b"},{"kind":"freckles"}]},
       "home_location": "l_fleet_street_press",
       "knows_truths": [
         "t_envelope_decoy",
@@ -1510,7 +1516,7 @@
           "relation": "investigator seeking evidence"
         }
       ],
-      "sprite_recipe": "body=tall; bodyColor=shadow; accentColor=cream; skinColor=skin; feature=top-hat; walkFrames=2",
+      "sprite": {"species":"human","height":"tall","girth":"average","skin":"#e5bd9a","hair":{"style":"short","color":"#9a9a9a"},"outfit":{"style":"suit","color":"#34343e","trim":"#f1ede2","legs":"#2a2a32"},"headwear":{"style":"top-hat","color":"#1c1c22","trim":"#6a6a74"},"accessories":[{"kind":"beard","color":"#9a9a9a"},{"kind":"umbrella","color":"#2a2a30"}]},
       "home_location": "l_pembroke_chambers",
       "knows_truths": [
         "t_duplicate_ledger",
@@ -1651,7 +1657,7 @@
           "relation": "neighborly ally"
         }
       ],
-      "sprite_recipe": "body=round; bodyColor=cream; accentColor=water; skinColor=skin; feature=none; walkFrames=2",
+      "sprite": {"species":"human","height":"average","girth":"stout","skin":"#eac9aa","hair":{"style":"bun","color":"#9a9a9e"},"outfit":{"style":"dress","color":"#6a8ac0","trim":"#e8ecf4"},"headwear":{"style":"headscarf","color":"#f0f0f4","trim":"#7a9ac8"},"accessories":[{"kind":"apron","color":"#f4f1ea"},{"kind":"nametag"}]},
       "home_location": "l_fever_ward",
       "knows_truths": [
         "t_diversion_for_ward",
@@ -2348,7 +2354,30 @@
           "id": "d_baker_street_scotland_yard",
           "to": "l_scotland_yard"
         }
-      ]
+      ],
+      "area": {
+        "description": "Gaslight flickers over a cluttered sitting room, and rain ticks at the panes. Papers, a violin case and cold tea crowd every surface.",
+        "doors": [{ "to": "l_scotland_yard", "label": "Hail a cab", "hint": "Lestrade's office keeps the official record." }],
+        "biome": "building", "palette": "parlour", "floor": "carpet", "wall": "plaster",
+        "map": [
+          " ######################## ",
+          "##########################",
+          "#........................#",
+          "#..................CCC...#",
+          "#........RRRRRRRR........#",
+          "#........RRRRRRRR........#",
+          "#........RRRRRRRR........#",
+          "#........RRRRRRRR........#",
+          "#..........CC............1",
+          "#....................@...#",
+          "#........................#",
+          "#........................#",
+          "#........................#",
+          "##########################"
+        ],
+        "placements": { "obj:cl_watson_inquest": [18, 4], "obj:cl_ward_appeal": [7, 10], "char:c_holmes": [4, 8], "char:c_watson": [19, 7], "char:c_hudson": [8, 5] },
+        "decor": [{ "icon": "stove", "x": 13, "y": 2 }, { "icon": "bookshelf", "x": 3, "y": 2 }, { "icon": "bookshelf", "x": 4, "y": 2 }, { "icon": "bookshelf", "x": 5, "y": 2 }, { "icon": "painting", "x": 23, "y": 2 }, { "icon": "chair", "x": 9, "y": 5 }, { "icon": "chair", "x": 16, "y": 5 }, { "icon": "flower", "x": 1, "y": 11 }, { "icon": "lamp_stand", "x": 24, "y": 11 }]
+      }
     },
     {
       "id": "l_scotland_yard",
@@ -2377,7 +2406,30 @@
           "id": "d_scotland_yard_st_barts_mortuary",
           "to": "l_st_barts_mortuary"
         }
-      ]
+      ],
+      "area": {
+        "description": "Clerks move briskly between shelves of buff folders under hard lamplight. A constable watches the door with folded arms.",
+        "doors": [{ "to": "l_baker_street", "label": "Back to Baker Street", "hint": "Home, and Holmes's pipe smoke." }, { "to": "l_st_barts_mortuary", "label": "To the mortuary", "hint": "The body was taken to Bart's." }],
+        "biome": "building", "palette": "office", "floor": "tiles", "wall": "plaster",
+        "map": [
+          " ################### ",
+          "#####################",
+          "#...................#",
+          "#...................#",
+          "#.....CCC...........#",
+          "#...................#",
+          "#.....RRRRRRRR......#",
+          "1.....RRRRRRRR......#",
+          "#.....RRRRRRRR......#",
+          "#.....RRRRRRRR......#",
+          "#...................#",
+          "#...................#",
+          "#...................#",
+          "##########2##########"
+        ],
+        "placements": { "obj:cl_lestrade_keylog": [2, 5], "char:c_lestrade": [9, 8] },
+        "decor": [{ "icon": "bookshelf", "x": 11, "y": 2 }, { "icon": "painting", "x": 17, "y": 2 }, { "icon": "grandfather_clock", "x": 6, "y": 2 }, { "icon": "chair", "x": 1, "y": 10 }, { "icon": "chair", "x": 19, "y": 8 }]
+      }
     },
     {
       "id": "l_st_barts_mortuary",
@@ -2421,7 +2473,31 @@
           "id": "d_st_barts_mortuary_blackfriars_stairs",
           "to": "l_blackfriars_stairs"
         }
-      ]
+      ],
+      "area": {
+        "description": "White tiles and a single lamp make the room cold and still. Rain streaks the high window above a tray of a dead man's pockets.",
+        "doors": [{ "to": "l_scotland_yard", "label": "Back to the Yard", "hint": "Records and Lestrade's scepticism." }, { "to": "l_blackfriars_stairs", "label": "To the river", "hint": "Where the body was found." }],
+        "biome": "building", "palette": "office", "floor": "tiles", "wall": "plaster",
+        "map": [
+          " ####################### ",
+          "############1############",
+          "#.......................#",
+          "#.......................#",
+          "#.......................#",
+          "#.......................#",
+          "#.......................#",
+          "2..RRRRRRRRRRRRRRRRRRRR.#",
+          "#.RRRRRRRRRRRRRRRRRRRRR.#",
+          "#.......................#",
+          "#.......................#",
+          "#.......................#",
+          "#.......................#",
+          "#.......................#",
+          "#########################"
+        ],
+        "placements": { "obj:i_wren_docket": [17, 8], "obj:cl_wren_docket": [4, 5], "obj:cl_mortuary_fibres": [6, 12], "obj:cl_unpaid_vouchers": [12, 11], "item:i_wren_docket": [20, 6], "char:c_watson": [17, 4], "clue:cl_wren_docket": [12, 7], "clue:cl_mortuary_fibres": [22, 11], "clue:cl_unpaid_vouchers": [9, 10] },
+        "decor": [{ "icon": "bed", "x": 1, "y": 12 }, { "icon": "bed", "x": 23, "y": 7 }, { "icon": "bed", "x": 23, "y": 5 }, { "icon": "bed", "x": 1, "y": 4 }, { "icon": "painting", "x": 5, "y": 2 }]
+      }
     },
     {
       "id": "l_blackfriars_stairs",
@@ -2450,7 +2526,33 @@
           "id": "d_blackfriars_stairs_wren_countinghouse",
           "to": "l_wren_countinghouse"
         }
-      ]
+      ],
+      "area": {
+        "description": "Worn stone steps run down into brown water and slick silt. The tide has left a dark line on the wall, and the river smells of coal.",
+        "doors": [{ "to": "l_st_barts_mortuary", "label": "Back to Bart's", "hint": "The hospital and its cold room." }, { "to": "l_wren_countinghouse", "label": "Up the lane", "hint": "Wren kept his books nearby." }],
+        "biome": "shore", "palette": "shore", "floor": "flagstone", "wall": "rock",
+        "map": [
+          " ############################## ",
+          "################################",
+          "#..........#######.............#",
+          "#..........#######.............#",
+          "#..............................#",
+          "#......................C.......#",
+          "#..............................#",
+          "#..............................#",
+          "2....C......C..................1",
+          "#..........==........==........#",
+          "#~~........==~~......==~~~.....#",
+          "#~~~~....~~==~~~~...~==~~~~~...#",
+          "#~~~~~~~~~~==~~~~~~~~==~~~~~~~~#",
+          "#~~~~~~~~~~==~~~~~~~~==~~~~~~~~#",
+          "#~~~~~~~~~~==~~~~~~~~==~~~~~~~~#",
+          "#~~~~~~~~~~~=~~~~~~~~~=~~~~~~~~#",
+          "################################"
+        ],
+        "placements": { "obj:cl_river_drag": [29, 11], "char:c_lestrade": [16, 6], "clue:cl_river_drag": [26, 5] },
+        "decor": [{ "icon": "barrel", "x": 3, "y": 2 }, { "icon": "crate", "x": 24, "y": 2 }, { "icon": "sack", "x": 22, "y": 2 }, { "icon": "lamp_post", "x": 30, "y": 4 }, { "icon": "barrel", "x": 1, "y": 5 }, { "icon": "stone", "x": 19, "y": 9 }, { "icon": "crate", "x": 21, "y": 5 }, { "icon": "barrel", "x": 26, "y": 8 }]
+      }
     },
     {
       "id": "l_wren_countinghouse",
@@ -2484,7 +2586,28 @@
           "id": "d_wren_countinghouse_relief_office",
           "to": "l_relief_office"
         }
-      ]
+      ],
+      "area": {
+        "description": "A narrow office of ledgers and dry paper, the stove long cold. A chair lies on its side, and ash lies in the grate.",
+        "doors": [{ "to": "l_blackfriars_stairs", "label": "Down to the river", "hint": "The steps are a short walk away." }, { "to": "l_relief_office", "label": "To the Fund office", "hint": "Wren's employers keep their books there." }],
+        "biome": "building", "palette": "office", "floor": "boards", "wall": "plaster",
+        "map": [
+          " #################### ",
+          "##########2###########",
+          "#....................#",
+          "#....................#",
+          "#.....CCC.....CCC....#",
+          "#......RRRRRRRR......#",
+          "#......RRRRRRRR......1",
+          "#......RRRRRRRR......#",
+          "#......RRRRRRRR......#",
+          "#....................#",
+          "#....................#",
+          "######################"
+        ],
+        "placements": { "obj:i_charred_envelope": [16, 9], "obj:cl_wax_initials": [5, 8], "item:i_charred_envelope": [9, 3], "char:c_holmes": [18, 4], "clue:cl_wax_initials": [2, 9] },
+        "decor": [{ "icon": "bookshelf", "x": 13, "y": 2 }, { "icon": "painting", "x": 16, "y": 2 }, { "icon": "grandfather_clock", "x": 3, "y": 2 }, { "icon": "chair", "x": 20, "y": 9 }]
+      }
     },
     {
       "id": "l_relief_office",
@@ -2518,7 +2641,28 @@
           "id": "d_relief_office_fever_ward",
           "to": "l_fever_ward"
         }
-      ]
+      ],
+      "area": {
+        "description": "Polished desks and framed charters give the office a respectable face. The air smells of ink, and a clerk keeps glancing at the key board.",
+        "doors": [{ "to": "l_wren_countinghouse", "label": "To the countinghouse", "hint": "Back to the scene in the lane." }, { "to": "l_fever_ward", "label": "To the fever ward", "hint": "Where the Fund's money ought to go." }],
+        "biome": "building", "palette": "office", "floor": "boards", "wall": "plaster",
+        "map": [
+          " ###################### ",
+          "###########2############",
+          "#......................#",
+          "#......................#",
+          "#......CCC.....CCC.....#",
+          "#.......RRRRRRRRR......#",
+          "#.......RRRRRRRRR......#",
+          "#.......RRRRRRRRR......#",
+          "#.......RRRRRRRRR......#",
+          "#......................#",
+          "#......................#",
+          "###########1############"
+        ],
+        "placements": { "obj:cl_duplicate_key": [7, 8], "obj:cl_relief_columns": [14, 8], "char:c_vale": [21, 4], "clue:cl_duplicate_key": [5, 5], "clue:cl_relief_columns": [20, 9] },
+        "decor": [{ "icon": "bookshelf", "x": 17, "y": 2 }, { "icon": "painting", "x": 15, "y": 2 }, { "icon": "chair", "x": 22, "y": 4 }, { "icon": "chair", "x": 1, "y": 6 }]
+      }
     },
     {
       "id": "l_fever_ward",
@@ -2548,7 +2692,32 @@
           "id": "d_fever_ward_fleet_street_press",
           "to": "l_fleet_street_press"
         }
-      ]
+      ],
+      "area": {
+        "description": "Long rows of narrow beds stand under tall windows, and nurses move quietly between them. Carbolic and broth scent the warm air.",
+        "doors": [{ "to": "l_relief_office", "label": "To the Fund office", "hint": "Back to the ledgers and charters." }, { "to": "l_fleet_street_press", "label": "To Fleet Street", "hint": "The presses never quite stop." }],
+        "biome": "building", "palette": "office", "floor": "tiles", "wall": "plaster",
+        "map": [
+          " ###################### ",
+          "########################",
+          "#......................#",
+          "#......................#",
+          "#......................#",
+          "#......................#",
+          "#......................#",
+          "#.RRRRRRRRRRRRRRRRRRRR.#",
+          "#.RRRRRRRRRRRRRRRRRRR..2",
+          "#......................#",
+          "#......................#",
+          "#......................#",
+          "#......................#",
+          "#......................#",
+          "#......................#",
+          "###########1############"
+        ],
+        "placements": { "obj:i_ward_receipt": [15, 11], "item:i_ward_receipt": [19, 13], "char:c_shaw": [12, 3], "char:c_crane": [19, 8] },
+        "decor": [{ "icon": "bed", "x": 22, "y": 13 }, { "icon": "bed", "x": 1, "y": 4 }, { "icon": "bed", "x": 1, "y": 7 }, { "icon": "painting", "x": 15, "y": 2 }]
+      }
     },
     {
       "id": "l_fleet_street_press",
@@ -2569,7 +2738,31 @@
           "id": "d_fleet_street_press_print_archive",
           "to": "l_print_archive"
         }
-      ]
+      ],
+      "area": {
+        "description": "Iron presses stand idle under hanging proofs and cold lamps. Ink stains the boards, and stray type glints in the cracks.",
+        "doors": [{ "to": "l_fever_ward", "label": "Back to the ward", "hint": "The hospital on the hill." }, { "to": "l_print_archive", "label": "Archive stair", "hint": "Old proofs are stored below." }],
+        "biome": "building", "palette": "office", "floor": "boards", "wall": "plaster",
+        "map": [
+          " ###################### ",
+          "########################",
+          "#......................#",
+          "#......................#",
+          "#......CCC.....CCC.....#",
+          "#......................#",
+          "#......................#",
+          "1.......RRRRRRRRR......2",
+          "#.......RRRRRRRRR......#",
+          "#.......RRRRRRRRR......#",
+          "#.......RRRRRRRRR......#",
+          "#.......RRRRRRRRR......#",
+          "#......................#",
+          "#......................#",
+          "########################"
+        ],
+        "placements": {  },
+        "decor": [{ "icon": "bookshelf", "x": 9, "y": 2 }, { "icon": "painting", "x": 6, "y": 2 }, { "icon": "grandfather_clock", "x": 12, "y": 2 }, { "icon": "chair", "x": 1, "y": 11 }, { "icon": "chair", "x": 22, "y": 12 }]
+      }
     },
     {
       "id": "l_print_archive",
@@ -2596,7 +2789,29 @@
           "id": "d_print_archive_cab_stand",
           "to": "l_cab_stand"
         }
-      ]
+      ],
+      "area": {
+        "description": "Dry stacks of old proofs rise to the low ceiling in tied bundles. Dust floats in a single shaft of grey light.",
+        "doors": [{ "to": "l_fleet_street_press", "label": "Up to the pressroom", "hint": "Back among the idle presses." }, { "to": "l_cab_stand", "label": "Out to the cabs", "hint": "The rank by the bridge." }],
+        "biome": "building", "palette": "office", "floor": "boards", "wall": "wood",
+        "map": [
+          " ################## ",
+          "####################",
+          "#..................#",
+          "#..................#",
+          "#.....CCC..........#",
+          "#..................#",
+          "1..................2",
+          "#..................#",
+          "#..................#",
+          "#..................#",
+          "#..................#",
+          "#..................#",
+          "####################"
+        ],
+        "placements": { "obj:i_press_proof": [8, 10], "item:i_press_proof": [17, 3] },
+        "decor": [{ "icon": "bookshelf", "x": 13, "y": 2 }, { "icon": "bookshelf", "x": 16, "y": 2 }, { "icon": "bookshelf", "x": 8, "y": 2 }, { "icon": "bookshelf", "x": 2, "y": 2 }, { "icon": "stool", "x": 18, "y": 9 }]
+      }
     },
     {
       "id": "l_cab_stand",
@@ -2625,7 +2840,28 @@
           "id": "d_cab_stand_dock_watch_hut",
           "to": "l_dock_watch_hut"
         }
-      ]
+      ],
+      "area": {
+        "description": "Hansom cabs wait in a dripping line, their horses steaming. A driver checks a battered fare book under a lamp.",
+        "doors": [{ "to": "l_print_archive", "label": "Back to the archive", "hint": "The press stacks off Fleet Street." }, { "to": "l_dock_watch_hut", "label": "Down to the docks", "hint": "A watchman's hut above the quay." }],
+        "biome": "village", "palette": "dusk", "floor": "cobble", "wall": "brick",
+        "map": [
+          " ################################# ",
+          "T#################################T",
+          "T..#####..####......#####.........T",
+          "T.................................T",
+          "T.................................T",
+          "T.................................T",
+          "1.................................T",
+          "T.................................T",
+          "T.................................T",
+          "T,,,,.....,,**.....,,,,.....,,,*..T",
+          "T,,,T,,,**,,,,,,,*,,,,,*,T,,,,T,,,T",
+          "TTTTTTTTTTTTTTTT2TTTTTTTTTTTTTTTTTT"
+        ],
+        "placements": { "obj:cl_cab_entry": [19, 4], "char:c_lestrade": [28, 9], "clue:cl_cab_entry": [32, 3] },
+        "decor": [{ "icon": "lamp_post", "x": 28, "y": 2 }, { "icon": "barrel", "x": 3, "y": 3 }, { "icon": "crate", "x": 32, "y": 2 }, { "icon": "bench", "x": 23, "y": 3 }, { "icon": "lamp_post", "x": 33, "y": 5 }]
+      }
     },
     {
       "id": "l_dock_watch_hut",
@@ -2654,7 +2890,26 @@
           "id": "d_dock_watch_hut_ferry_landing",
           "to": "l_ferry_landing"
         }
-      ]
+      ],
+      "area": {
+        "description": "A sooty hut with a small stove and one smeared window over the quay. A tin of pump grease sits by the door.",
+        "doors": [{ "to": "l_cab_stand", "label": "Back to the cabs", "hint": "Back towards the bridge." }, { "to": "l_ferry_landing", "label": "Ferry landing", "hint": "The south-bank crossing." }],
+        "biome": "building", "palette": "workshop", "floor": "boards", "wall": "wood",
+        "map": [
+          " ############ ",
+          "######1#######",
+          "#............#",
+          "#............#",
+          "#............#",
+          "#............#",
+          "#............#",
+          "#............#",
+          "#............#",
+          "######2#######"
+        ],
+        "placements": { "obj:cl_silas_pump_grease": [3, 5], "char:c_silas": [8, 4] },
+        "decor": [{ "icon": "stool", "x": 12, "y": 6 }]
+      }
     },
     {
       "id": "l_ferry_landing",
@@ -2688,7 +2943,34 @@
           "id": "d_ferry_landing_warehouse_yard",
           "to": "l_warehouse_yard"
         }
-      ]
+      ],
+      "area": {
+        "description": "Fog hangs over the landing stage, and the ferry bell clangs now and then. A clerk guards the register in a wooden booth.",
+        "doors": [{ "to": "l_dock_watch_hut", "label": "To the watch hut", "hint": "Silas keeps his post there." }, { "to": "l_warehouse_yard", "label": "Warehouse yard", "hint": "An empty yard behind the quay." }],
+        "biome": "shore", "palette": "shore", "floor": "deck", "wall": "rock",
+        "map": [
+          " ############################# ",
+          "###############1###############",
+          "#.......................~~~~~~#",
+          "#........................~~~~~#",
+          "#........................~~~~~#",
+          "####......................~~~~#",
+          "####......................~~~~#",
+          "####.......C...........==.===~#",
+          "####...................==.====#",
+          "####.....................~~~~~#",
+          "#...................C....~~~~~#",
+          "#.......................~~~~~~#",
+          "#......................======~#",
+          "#......................=======#",
+          "#.....C.................~~~~~~#",
+          "#........................~~~~~#",
+          "#........................~~~~~#",
+          "###############2###############"
+        ],
+        "placements": { "obj:i_ferry_token": [19, 4], "obj:cl_token_register": [11, 12], "item:i_ferry_token": [5, 11], "char:c_silas": [20, 15], "clue:cl_token_register": [6, 8] },
+        "decor": [{ "icon": "barrel", "x": 18, "y": 16 }, { "icon": "crate", "x": 1, "y": 15 }, { "icon": "sack", "x": 2, "y": 4 }, { "icon": "stone", "x": 10, "y": 12 }, { "icon": "crate", "x": 17, "y": 10 }, { "icon": "barrel", "x": 14, "y": 14 }]
+      }
     },
     {
       "id": "l_warehouse_yard",
@@ -2718,7 +3000,32 @@
           "id": "d_warehouse_yard_warehouse_loft",
           "to": "l_warehouse_loft"
         }
-      ]
+      ],
+      "area": {
+        "description": "Puddles fill the ruts of an empty, exposed yard. Bales and broken crates lean against blackened brick.",
+        "doors": [{ "to": "l_ferry_landing", "label": "To the ferry", "hint": "Back to the foggy landing." }, { "to": "l_warehouse_loft", "label": "Loft ladder", "hint": "An old workroom above the yard." }],
+        "biome": "village", "palette": "dusk", "floor": "dirt", "wall": "brick",
+        "map": [
+          " ########################### ",
+          "##############1##############",
+          "#...........................#",
+          "#...........................#",
+          "#.....CC....................#",
+          "#...........................#",
+          "#...........................#",
+          "#...........................#",
+          "2.........CC................#",
+          "#....CC.........CC..........#",
+          "#.........CC................#",
+          "#............CC.CC..........#",
+          "#...........................#",
+          "#...........................#",
+          "#...........................#",
+          "#############################"
+        ],
+        "placements": { "obj:cl_planting_trace": [17, 4], "char:c_lestrade": [8, 13], "char:c_silas": [18, 13], "clue:cl_planting_trace": [21, 10] },
+        "decor": [{ "icon": "crate", "x": 8, "y": 2 }, { "icon": "barrel", "x": 25, "y": 2 }, { "icon": "cart_wheel", "x": 11, "y": 2 }, { "icon": "crate", "x": 22, "y": 10 }, { "icon": "barrel", "x": 12, "y": 4 }]
+      }
     },
     {
       "id": "l_warehouse_loft",
@@ -2741,7 +3048,26 @@
           "id": "d_warehouse_loft_pawnshop",
           "to": "l_pawnshop"
         }
-      ]
+      ],
+      "area": {
+        "description": "Long abandoned, the loft holds dusty benches and a coil of rotting rope. Pigeons shuffle in the rafters.",
+        "doors": [{ "to": "l_warehouse_yard", "label": "Down to the yard", "hint": "Back to the wet cobbles." }, { "to": "l_pawnshop", "label": "To Bell Lane", "hint": "A narrow lane of small shops." }],
+        "biome": "building", "palette": "workshop", "floor": "boards", "wall": "wood",
+        "map": [
+          " ################# ",
+          "###################",
+          "#.................#",
+          "#.................#",
+          "#....CCC..........#",
+          "2.................1",
+          "#.................#",
+          "#.................#",
+          "#.................#",
+          "###################"
+        ],
+        "placements": { "char:c_silas": [8, 4] },
+        "decor": [{ "icon": "candle", "x": 5, "y": 2 }]
+      }
     },
     {
       "id": "l_pawnshop",
@@ -2764,7 +3090,30 @@
           "id": "d_pawnshop_clockmaker",
           "to": "l_clockmaker"
         }
-      ]
+      ],
+      "area": {
+        "description": "A narrow shop behind a grille, crowded with watches, boots and pledged rings. Every ticket is filed with care.",
+        "doors": [{ "to": "l_warehouse_loft", "label": "Back to the docks", "hint": "The old warehouse by the river." }, { "to": "l_clockmaker", "label": "To the clockmaker", "hint": "Rook's shop is a few doors down." }],
+        "biome": "building", "palette": "shop", "floor": "boards", "wall": "wood",
+        "map": [
+          " ######################## ",
+          "##########################",
+          "#........................#",
+          "#........................#",
+          "#............CCCCCCCCCC..#",
+          "#............C...........#",
+          "#.......RRRRRRRRRR.......#",
+          "2.......RRRRRRRRRR.......1",
+          "#.......RRRRRRRRRR.......#",
+          "#.......RRRRRRRRRR.......#",
+          "#........................#",
+          "#........................#",
+          "#........................#",
+          "##########################"
+        ],
+        "placements": { "char:c_ada": [8, 5] },
+        "decor": [{ "icon": "grandfather_clock", "x": 11, "y": 2 }, { "icon": "painting", "x": 7, "y": 2 }]
+      }
     },
     {
       "id": "l_clockmaker",
@@ -2787,7 +3136,29 @@
           "id": "d_clockmaker_telegraph_office",
           "to": "l_telegraph_office"
         }
-      ]
+      ],
+      "area": {
+        "description": "A hundred clocks tick slightly out of step along the walls. Tiny gears lie in neat rows on a felt-topped bench.",
+        "doors": [{ "to": "l_pawnshop", "label": "Back down Bell Lane", "hint": "The pawnbroker's grille." }, { "to": "l_telegraph_office", "label": "To the telegraph", "hint": "Where the time was recorded." }],
+        "biome": "building", "palette": "shop", "floor": "boards", "wall": "wood",
+        "map": [
+          " ######################## ",
+          "##########################",
+          "#........................#",
+          "#........................#",
+          "#..CCCCCCCCCC............#",
+          "#...........C............#",
+          "2.......RRRRRRRRRR.......1",
+          "#.......RRRRRRRRRR.......#",
+          "#.......RRRRRRRRRR.......#",
+          "#.......RRRRRRRRRR.......#",
+          "#........................#",
+          "#........................#",
+          "##########################"
+        ],
+        "placements": { "char:c_nora": [11, 9] },
+        "decor": [{ "icon": "grandfather_clock", "x": 16, "y": 2 }, { "icon": "painting", "x": 14, "y": 2 }, { "icon": "display_stand", "x": 5, "y": 2 }]
+      }
     },
     {
       "id": "l_telegraph_office",
@@ -2810,7 +3181,29 @@
           "id": "d_telegraph_office_charing_cross_hall",
           "to": "l_charing_cross_hall"
         }
-      ]
+      ],
+      "area": {
+        "description": "Brass sounders chatter while clerks copy messages onto thin forms. A big wall clock rules the room.",
+        "doors": [{ "to": "l_clockmaker", "label": "To the clockmaker", "hint": "Rook's ticking shop." }, { "to": "l_charing_cross_hall", "label": "To the station", "hint": "The booking hall at Charing Cross." }],
+        "biome": "building", "palette": "office", "floor": "boards", "wall": "plaster",
+        "map": [
+          " ################### ",
+          "##########2##########",
+          "#...................#",
+          "#...................#",
+          "#.....CCC...........#",
+          "#...................#",
+          "#.....RRRRRRRR......1",
+          "#.....RRRRRRRR......#",
+          "#.....RRRRRRRR......#",
+          "#.....RRRRRRRR......#",
+          "#...................#",
+          "#...................#",
+          "#####################"
+        ],
+        "placements": { "char:c_nora": [11, 3] },
+        "decor": [{ "icon": "bookshelf", "x": 18, "y": 2 }, { "icon": "painting", "x": 7, "y": 2 }, { "icon": "grandfather_clock", "x": 15, "y": 2 }, { "icon": "chair", "x": 1, "y": 10 }, { "icon": "chair", "x": 19, "y": 9 }]
+      }
     },
     {
       "id": "l_charing_cross_hall",
@@ -2834,7 +3227,33 @@
           "id": "d_charing_cross_hall_parcels_office",
           "to": "l_parcels_office"
         }
-      ]
+      ],
+      "area": {
+        "description": "Steam and voices fill the booking hall, and porters shove past with trunks. A great timetable board hangs above the ticket windows.",
+        "doors": [{ "to": "l_telegraph_office", "label": "To the telegraph", "hint": "Back to the chattering sounders." }, { "to": "l_parcels_office", "label": "Parcels counter", "hint": "Packages, receipts and labels." }],
+        "biome": "building", "palette": "office", "floor": "tiles", "wall": "plaster",
+        "map": [
+          " ############################### ",
+          "################2################",
+          "#...............................#",
+          "#...............................#",
+          "#...............................#",
+          "#...............................#",
+          "#...............................#",
+          "#...............................#",
+          "#.RRRRRRRRRRRRRRRRRRRRRRRRRRRRR.#",
+          "#.RRRRRRRRRRRRRRRRRRRRRRRRRRRRR.#",
+          "#...............................#",
+          "#...............................#",
+          "#...............................#",
+          "#...............................#",
+          "#...............................#",
+          "#...............................#",
+          "################1################"
+        ],
+        "placements": { "char:c_lestrade": [17, 5], "char:c_vale": [8, 8] },
+        "decor": [{ "icon": "painting", "x": 29, "y": 2 }, { "icon": "statue", "x": 6, "y": 2 }, { "icon": "lamp_stand", "x": 19, "y": 2 }, { "icon": "bench", "x": 1, "y": 9 }, { "icon": "chair", "x": 31, "y": 8 }, { "icon": "bench", "x": 1, "y": 13 }]
+      }
     },
     {
       "id": "l_parcels_office",
@@ -2863,7 +3282,31 @@
           "id": "d_parcels_office_british_museum",
           "to": "l_british_museum"
         }
-      ]
+      ],
+      "area": {
+        "description": "Labelled parcels fill the shelves from floor to ceiling. A clerk stamps receipts without looking up.",
+        "doors": [{ "to": "l_charing_cross_hall", "label": "Back to the hall", "hint": "The crowded booking hall." }, { "to": "l_british_museum", "label": "To the museum", "hint": "The great reading room." }],
+        "biome": "building", "palette": "office", "floor": "boards", "wall": "plaster",
+        "map": [
+          " #################### ",
+          "##########2###########",
+          "#....................#",
+          "#....................#",
+          "#.....CCC.....CCC....#",
+          "#....................#",
+          "#....................#",
+          "#......RRRRRRRR......#",
+          "#......RRRRRRRR......#",
+          "#......RRRRRRRR......#",
+          "#......RRRRRRRR......#",
+          "#......RRRRRRRR......#",
+          "#....................#",
+          "#....................#",
+          "##########1###########"
+        ],
+        "placements": { "obj:cl_ada_receipt": [19, 3], "char:c_ada": [3, 5], "clue:cl_ada_receipt": [17, 12] },
+        "decor": [{ "icon": "bookshelf", "x": 17, "y": 2 }, { "icon": "painting", "x": 14, "y": 2 }, { "icon": "grandfather_clock", "x": 7, "y": 2 }, { "icon": "chair", "x": 20, "y": 11 }]
+      }
     },
     {
       "id": "l_british_museum",
@@ -2893,7 +3336,33 @@
           "id": "d_british_museum_record_vault",
           "to": "l_record_vault"
         }
-      ]
+      ],
+      "area": {
+        "description": "Under the great dome, readers bend over desks in a ring of quiet. Attendants carry bound volumes on soft feet.",
+        "doors": [{ "to": "l_parcels_office", "label": "To the station", "hint": "Back to the parcels counter." }, { "to": "l_record_vault", "label": "To the record vault", "hint": "Where the city keeps its papers." }],
+        "biome": "building", "palette": "parlour", "floor": "carpet", "wall": "wood",
+        "map": [
+          " ##################         ",
+          "#############2######        ",
+          "#..................#        ",
+          "#..................#        ",
+          "#..................#        ",
+          "#..................######## ",
+          "#..................#########",
+          "#........RRRRRRRRRR........#",
+          "#........RRRRRRRRRR........#",
+          "#........RRRRRRRRRR........#",
+          "#........RRRRRRRRRR........#",
+          "#........RRRRRRRRRR........#",
+          "#........RRRRRRRRRR........#",
+          "#..........................#",
+          "#..........................#",
+          "#..........................#",
+          "#############1##############"
+        ],
+        "placements": { "obj:cl_envelope_proof": [16, 11], "char:c_holmes": [13, 5], "char:c_kit": [16, 5], "clue:cl_envelope_proof": [8, 14] },
+        "decor": [{ "icon": "bookshelf", "x": 25, "y": 7 }, { "icon": "bookshelf", "x": 10, "y": 2 }, { "icon": "bookshelf", "x": 21, "y": 7 }, { "icon": "bookshelf", "x": 17, "y": 2 }, { "icon": "bookshelf", "x": 6, "y": 2 }, { "icon": "chair", "x": 9, "y": 6 }]
+      }
     },
     {
       "id": "l_record_vault",
@@ -2922,7 +3391,31 @@
           "id": "d_record_vault_pembroke_chambers",
           "to": "l_pembroke_chambers"
         }
-      ]
+      ],
+      "area": {
+        "description": "Iron shelves of ledgers run back into the dark under a low arch. Everything is numbered, dated and dusty.",
+        "doors": [{ "to": "l_british_museum", "label": "Back to the museum", "hint": "The quiet reading room." }, { "to": "l_pembroke_chambers", "label": "To the chambers", "hint": "A solicitor's rooms near the Inns." }],
+        "biome": "building", "palette": "office", "floor": "flagstone", "wall": "stone",
+        "map": [
+          " ################### ",
+          "#####################",
+          "#...................#",
+          "#...................#",
+          "#.....CCC...........#",
+          "#...................#",
+          "#...................#",
+          "#.....RRRRRRRR......2",
+          "#.....RRRRRRRR......#",
+          "#.....RRRRRRRR......#",
+          "#.....RRRRRRRR......#",
+          "#.....RRRRRRRR......#",
+          "#...................#",
+          "#...................#",
+          "##########1##########"
+        ],
+        "placements": { "obj:cl_press_archive": [10, 5], "char:c_lestrade": [4, 3], "clue:cl_press_archive": [15, 6] },
+        "decor": [{ "icon": "bookshelf", "x": 7, "y": 2 }, { "icon": "painting", "x": 12, "y": 2 }, { "icon": "chair", "x": 1, "y": 4 }, { "icon": "chair", "x": 1, "y": 6 }]
+      }
     },
     {
       "id": "l_pembroke_chambers",
@@ -2952,7 +3445,30 @@
           "id": "d_pembroke_chambers_hampstead_house",
           "to": "l_hampstead_house"
         }
-      ]
+      ],
+      "area": {
+        "description": "Law books and deed boxes line a tidy, panelled room. Every paper sits squared to the edge of the desk.",
+        "doors": [{ "to": "l_record_vault", "label": "Back to the vault", "hint": "The city's dusty records." }, { "to": "l_hampstead_house", "label": "Cab to Hampstead", "hint": "A long ride north." }],
+        "biome": "building", "palette": "office", "floor": "boards", "wall": "plaster",
+        "map": [
+          " ####################### ",
+          "#########################",
+          "#.......................#",
+          "#.......................#",
+          "#......CCC......CCC.....#",
+          "#.......................#",
+          "#.......RRRRRRRRR.......#",
+          "1.......RRRRRRRRR.......2",
+          "#.......RRRRRRRRR.......#",
+          "#.......RRRRRRRRR.......#",
+          "#.......................#",
+          "#.......................#",
+          "#.......................#",
+          "#########################"
+        ],
+        "placements": { "obj:i_duplicate_ledger": [3, 11], "item:i_duplicate_ledger": [11, 4], "char:c_pembroke": [9, 11], "char:c_ada": [14, 4] },
+        "decor": [{ "icon": "bookshelf", "x": 14, "y": 2 }, { "icon": "painting", "x": 2, "y": 2 }, { "icon": "grandfather_clock", "x": 21, "y": 2 }, { "icon": "chair", "x": 1, "y": 4 }, { "icon": "chair", "x": 23, "y": 10 }]
+      }
     },
     {
       "id": "l_hampstead_house",
@@ -2975,7 +3491,30 @@
           "id": "d_hampstead_house_church_hall",
           "to": "l_church_hall"
         }
-      ]
+      ],
+      "area": {
+        "description": "A severe, well-kept house with polished floors and few comforts. Nothing in the study is out of place.",
+        "doors": [{ "to": "l_pembroke_chambers", "label": "Back to the city", "hint": "The solicitor's chambers." }, { "to": "l_church_hall", "label": "To the parish hall", "hint": "St Jude's, where the parish meets." }],
+        "biome": "building", "palette": "parlour", "floor": "carpet", "wall": "plaster",
+        "map": [
+          " #################### ",
+          "######################",
+          "#....................#",
+          "#....................#",
+          "#....................#",
+          "#....................#",
+          "#......RRRRRRRR......#",
+          "1......RRRRRRRR......2",
+          "#......RRRRRRRR......#",
+          "#######RRRRRRRR......#",
+          "      #..............#",
+          "      #..............#",
+          "      #..............#",
+          "      ################"
+        ],
+        "placements": { "char:c_vale": [2, 5] },
+        "decor": [{ "icon": "painting", "x": 11, "y": 2 }, { "icon": "mirror", "x": 9, "y": 2 }, { "icon": "chair", "x": 7, "y": 11 }]
+      }
     },
     {
       "id": "l_church_hall",
@@ -3000,7 +3539,31 @@
           "id": "d_church_hall_relief_committee",
           "to": "l_relief_committee"
         }
-      ]
+      ],
+      "area": {
+        "description": "Trestle tables and stacked chairs fill a draughty hall. Tea urns steam, and people speak in low voices.",
+        "doors": [{ "to": "l_hampstead_house", "label": "To Hampstead", "hint": "Back to the severe house." }, { "to": "l_relief_committee", "label": "Committee room", "hint": "Where the Fund will hear the truth." }],
+        "biome": "building", "palette": "office", "floor": "tiles", "wall": "plaster",
+        "map": [
+          " ################################## ",
+          "####################################",
+          "#..................................#",
+          "#..................................#",
+          "#..................................#",
+          "#..................................#",
+          "#..................................#",
+          "1..RRRRRRRRRRRRRRRRRRRRRRRRRRRRRR..2",
+          "#.RRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR.#",
+          "#..................................#",
+          "#..................................#",
+          "#..................................#",
+          "#..................................#",
+          "#..................................#",
+          "####################################"
+        ],
+        "placements": { "char:c_ada": [5, 10], "char:c_hudson": [12, 7], "char:c_crane": [27, 7] },
+        "decor": [{ "icon": "painting", "x": 19, "y": 2 }, { "icon": "statue", "x": 28, "y": 2 }, { "icon": "lamp_stand", "x": 14, "y": 2 }, { "icon": "bench", "x": 1, "y": 3 }, { "icon": "chair", "x": 1, "y": 11 }]
+      }
     },
     {
       "id": "l_relief_committee",
@@ -3030,7 +3593,32 @@
           "id": "d_relief_committee_church_hall",
           "to": "l_church_hall"
         }
-      ]
+      ],
+      "area": {
+        "description": "A long table under a heavy chandelier, every chair filled. The room waits in a stifled hush.",
+        "doors": [{ "to": "l_church_hall", "label": "Back to the hall", "hint": "The parish hall and its tea urns." }],
+        "biome": "building", "palette": "office", "floor": "carpet", "wall": "wood",
+        "map": [
+          " ############################## ",
+          "################################",
+          "#..............................#",
+          "#..............................#",
+          "#..............................#",
+          "#..............................#",
+          "#.....RRRRRRRRRRRRRRRRRRRR.....#",
+          "#.....RRRRRRRRRRRRRRRRRRRR.....#",
+          "#.....RRRRCCCCCCCCCCCCRRRR.....#",
+          "#.....RRRRCCCCCCCCCCCCRRRR.....#",
+          "#.....RRRRRRRRRRRRRRRRRRRR.....#",
+          "#.....RRRRRRRRRRRRRRRRRRRR.....#",
+          "#..............................#",
+          "1..............................#",
+          "#..............................#",
+          "################################"
+        ],
+        "placements": { "char:c_holmes": [23, 12], "char:c_watson": [26, 6], "char:c_hudson": [29, 11], "char:c_lestrade": [13, 5], "char:c_vale": [22, 6], "char:c_ada": [8, 11], "char:c_silas": [10, 4], "char:c_shaw": [9, 7], "char:c_nora": [24, 3], "char:c_kit": [3, 10], "char:c_pembroke": [2, 13], "char:c_crane": [3, 3] },
+        "decor": [{ "icon": "painting", "x": 6, "y": 2 }, { "icon": "bookshelf", "x": 15, "y": 2 }, { "icon": "bookshelf", "x": 16, "y": 2 }, { "icon": "painting", "x": 25, "y": 2 }, { "icon": "lamp_stand", "x": 1, "y": 2 }, { "icon": "lamp_stand", "x": 30, "y": 2 }, { "icon": "flower", "x": 30, "y": 14 }, { "icon": "flower", "x": 1, "y": 14 }]
+      }
     }
   ],
   "twists": [

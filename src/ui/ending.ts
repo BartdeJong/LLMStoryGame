@@ -1,5 +1,6 @@
 import type { EndingChoice, EndingScene } from "../story/ending";
 import { activateGamepadFocus } from "../input/focus";
+import { formatPlayTime, type CaseRecap } from "../story/progress";
 
 function el<K extends keyof HTMLElementTagNameMap>(tag: K, className: string, text = ""): HTMLElementTagNameMap[K] {
   const node = document.createElement(tag);
@@ -46,6 +47,7 @@ export function mountEndingScreen(
   ending: EndingScene,
   onNewStory: () => void,
   onBackToTitle: () => void,
+  recap?: CaseRecap & { timePlayedMs?: number },
 ): void {
   enableScreenScrolling();
   root.replaceChildren();
@@ -57,6 +59,7 @@ export function mountEndingScreen(
     el("h2", "ending-subtitle", "Epilogue"),
     el("p", "ending-epilogue", ending.epilogue),
   );
+  if (recap) screen.append(recapSection(recap));
   const actions = el("div", "ending-actions");
   const newStory = el("button", "llm-button", "New story");
   newStory.type = "button";
@@ -69,6 +72,34 @@ export function mountEndingScreen(
   root.append(screen);
   title.dataset.padHint = "B";
   activateGamepadFocus(screen, { onBack: onBackToTitle });
+}
+
+function recapSection(recap: CaseRecap & { timePlayedMs?: number }): HTMLElement {
+  const section = el("section", "ending-recap");
+  section.setAttribute("aria-label", "How you solved it");
+  section.append(el("h2", "ending-subtitle", "How you solved it"));
+  if (recap.truths.length > 0) {
+    const list = el("ol", "ending-recap-truths");
+    for (const truth of recap.truths) {
+      const item = el("li", "ending-recap-truth");
+      item.append(el("span", "ending-recap-text", truth.text));
+      if (truth.clue) item.append(el("span", "ending-recap-clue", `Revealed by: ${truth.clue}`));
+      list.append(item);
+    }
+    section.append(list);
+  }
+  const facts = el("ul", "ending-recap-facts");
+  const fact = (label: string, value: string): void => {
+    const row = el("li", "ending-recap-fact");
+    row.append(el("strong", "", `${label}: `), value);
+    facts.append(row);
+  };
+  fact("People met", recap.people.length > 0 ? recap.people.join(", ") : "none");
+  fact("Items found", recap.items.length > 0 ? recap.items.join(", ") : "none");
+  if (recap.optionalCluesTotal > 0) fact("Optional clues", `${recap.optionalCluesFound} of ${recap.optionalCluesTotal}`);
+  if (recap.timePlayedMs !== undefined) fact("Time played", formatPlayTime(recap.timePlayedMs));
+  section.append(facts);
+  return section;
 }
 
 function enableScreenScrolling(): void {

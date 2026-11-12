@@ -7,6 +7,7 @@ import {
   createSeededRandom,
 } from "../art";
 import type { CharacterRecipe, IconRecipe, PaletteColorSlot, PaletteName } from "../art";
+import type { SpriteSpec } from "../art/spriteSpec";
 import type { Biome } from "../world/types";
 
 function pairs(text: string | undefined): Map<string, string> {
@@ -71,6 +72,18 @@ export function seededCharacterRecipe(seed: string): CharacterRecipe {
     feature: choose(CHARACTER_FEATURES),
     walkFrames: 2,
   };
+}
+
+// The coarse body shape of a layered sprite. Characters are drawn from their sprite spec; the shape only picks the voice.
+export function recipeFromSprite(spec: SpriteSpec, seed: string): CharacterRecipe {
+  const body = spec.species === "moth"
+    ? "floaty"
+    : spec.height === "tall"
+      ? "tall"
+      : spec.height === "tiny" || spec.height === "short"
+        ? "small"
+        : "round";
+  return { ...seededCharacterRecipe(seed), body };
 }
 
 export function inferIconShape(name: string, description = ""): IconRecipe["shape"] | null {

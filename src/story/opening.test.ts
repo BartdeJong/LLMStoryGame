@@ -3,8 +3,6 @@ import example from "../../public/stories/example.json";
 import lanterntide from "../../public/stories/lanterntide.json";
 import { LLMClient } from "../llm/client";
 import { MockBackend } from "../llm/mock";
-import { buildLocationSlice } from "./slice";
-import { buildGuard, fallbackBrief } from "./briefs";
 import { getLengthView } from "./loader";
 import { StorySession } from "./storySession";
 import type { StoryPack } from "./types";
@@ -48,11 +46,6 @@ describe("story openings and objectives", () => {
     );
     expect(story.currentBeat.id).toBe("b_short_arrival");
     const firstObjective = story.currentBeat.objective;
-    const fallback = fallbackBrief(
-      buildLocationSlice(pack, view, story.startLocationId),
-      buildGuard(pack),
-    );
-    expect(fallback.source).toBe("fallback");
     expect(story.currentBeat.objective).toBe(firstObjective);
 
     story.state.truthsFound.push(...(story.currentBeat.must_find.truths ?? []));

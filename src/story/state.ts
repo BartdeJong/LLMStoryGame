@@ -11,6 +11,14 @@ export interface CharacterMemory {
   askedAbout: string[]; // subject keys: "<type>:<id>"
 }
 
+// One step of the player's progress, in the order it happened. Old saves have no log.
+export type ProgressKind = "clue" | "truth" | "item";
+export interface ProgressEntry {
+  kind: ProgressKind;
+  id: string;
+  at: number; // epoch milliseconds
+}
+
 export interface StoryState {
   packId: string;
   packVersion: number;
@@ -32,6 +40,17 @@ export interface StoryState {
   collectedEntities: string[]; // world entity ids already taken, so repeat pickups cannot duplicate
   summary: string;
   areasSinceSummary: number;
+  progressLog?: ProgressEntry[]; // clues, truths and items in the order they were found
+}
+
+export function progressLogOf(state: StoryState): readonly ProgressEntry[] {
+  return Array.isArray(state.progressLog)
+    ? state.progressLog.filter((entry) => typeof entry?.id === "string" && typeof entry.kind === "string")
+    : [];
+}
+
+function logProgress(state: StoryState, kind: ProgressKind, id: string): void {
+  (state.progressLog ??= []).push({ kind, id, at: Date.now() });
 }
 
 export function createStoryState(view: LengthView): StoryState {
@@ -65,6 +84,7 @@ export function hasItem(state: StoryState, itemId: string): boolean {
 export function giveItem(state: StoryState, itemId: string): boolean {
   if (hasItem(state, itemId)) return false;
   state.itemsHeld.push(itemId);
+  logProgress(state, "item", itemId);
   return true;
 }
 
@@ -99,12 +119,14 @@ export function markVisited(state: StoryState, locationId: string): boolean {
 export function addTruth(state: StoryState, truthId: string): boolean {
   if (state.truthsFound.includes(truthId)) return false;
   state.truthsFound.push(truthId);
+  logProgress(state, "truth", truthId);
   return true;
 }
 
 export function markClueFound(state: StoryState, clueId: string): boolean {
   if (state.cluesFound.includes(clueId)) return false;
   state.cluesFound.push(clueId);
+  logProgress(state, "clue", clueId);
   return true;
 }
 

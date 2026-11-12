@@ -1,4 +1,5 @@
 import { activateGamepadFocus } from "../input/focus";
+import { fillPips, progressLabel, type HudProgress } from "./objectiveHud";
 
 export interface JournalFact {
   readonly importance: "Core" | "Side";
@@ -26,6 +27,7 @@ export interface JournalRuledOut {
 export interface JournalExtras {
   readonly questions: readonly JournalQuestion[];
   readonly ruledOut: readonly JournalRuledOut[];
+  readonly progress?: Pick<HudProgress, "truthsFound" | "truthsTotal">;
 }
 
 export interface StoryJournal {
@@ -93,6 +95,12 @@ export function createStoryJournal(
     option.textContent = label;
     filter.append(option);
   }
+  const progressLine = el("div", "journal-progress");
+  const progressText = el("p", "journal-progress-text");
+  const progressPips = el("span", "hud-pips");
+  progressPips.setAttribute("aria-hidden", "true");
+  progressLine.append(progressText, progressPips);
+  progressLine.hidden = true;
   const status = el("p", "journal-status");
   status.setAttribute("aria-live", "polite");
 
@@ -125,7 +133,7 @@ export function createStoryJournal(
   const requestsList = el("div", "journal-list");
   const requestsEmpty = el("p", "inventory-empty");
   requestsEmpty.textContent = "No one has asked you to find anything yet.";
-  panel.append(title, search, filter, status,
+  panel.append(title, progressLine, search, filter, status,
     questionsHeading, questionsList, questionsEmpty,
     factsHeading, factsList, factsEmpty,
     evidenceHeading, evidenceList, evidenceEmpty,
@@ -194,6 +202,12 @@ export function createStoryJournal(
       status.textContent = message;
     },
     render(facts, evidence, requests, extras = { questions: [], ruledOut: [] }) {
+      const progress = extras.progress;
+      progressLine.hidden = !progress || progress.truthsTotal === 0;
+      if (progress && progress.truthsTotal > 0) {
+        progressText.textContent = progressLabel({ ...progress, leadNumber: 0, leadTotal: 0 });
+        fillPips(progressPips, progress.truthsFound, progress.truthsTotal);
+      }
       questionsList.replaceChildren();
       questionsEmpty.hidden = extras.questions.length > 0;
       for (const question of extras.questions) {

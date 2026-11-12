@@ -118,9 +118,12 @@ export function mountPauseMenu(
       if (!soundEffects.muted) soundEffects.play("dialogue");
     });
   }
+  const controls = document.createElement("p");
+  controls.className = "llm-screen-note pause-controls";
+  controls.textContent = "Move: WASD or arrows. Interact: E or Space. Map: M. Journal: J. Inventory: I. Pause: Escape. On touch screens, tap a person, clue, item, or doorway to walk there, or drag on the left to steer.";
   panel.append(title, resume, save);
   if (changeAISettings) panel.append(changeAISettings);
-  panel.append(exportSave, importSave, file, titleButton, preferences, status);
+  panel.append(exportSave, importSave, file, titleButton, preferences, controls, status);
   overlay.append(panel);
   root.append(overlay);
   activateGamepadFocus(overlay, { onBack: actions.onResume });

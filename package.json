@@ -11,6 +11,7 @@
     "test": "vitest run",
     "validate-stories": "node tools/story-forge/validate-stories.mjs",
     "story-readthrough": "node tools/story-forge/read-through.mjs",
+    "bake-areas": "node tools/story-forge/run-visual-tool.mjs bake-areas",
     "icon-catalog": "node tools/story-forge/run-visual-tool.mjs icon-catalog",
     "icon-lint": "node tools/story-forge/run-visual-tool.mjs icon-lint",
     "visual-report": "node tools/story-forge/run-visual-tool.mjs visual-report",

@@ -1,5 +1,5 @@
 // Checks data against the JSON Schema subset used by tools/story-forge/schema/story-pack.schema.json.
-// Supported: type, enum, const, required, properties, additionalProperties (boolean), items,
+// Supported: type, enum, const, required, properties, additionalProperties (boolean or a schema for the values), items,
 // minItems, maxItems, minLength, maxLength, pattern, minimum, and local "#/$defs/..." references.
 
 export interface SchemaIssue {
@@ -84,6 +84,8 @@ export function checkSchema(data: unknown, root: Node): SchemaIssue[] {
         if (props[key]) visit(entry, props[key], joinPath(path, key));
         else if (schema.additionalProperties === false) {
           issues.push({ path: joinPath(path, key), message: "unknown field (not allowed by the schema)" });
+        } else if (schema.additionalProperties && typeof schema.additionalProperties === "object") {
+          visit(entry, schema.additionalProperties as Node, joinPath(path, key));
         }
       }
     }

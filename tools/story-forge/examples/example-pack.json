@@ -8,7 +8,13 @@
     "setting": "Pebblebrook, a tiny hillside village that lights one big paper lantern every full moon.",
     "tone": "Warm, gentle and a little funny.",
     "themes": ["kindness", "pride", "forgiveness"],
-    "content_notes": ["No violence. Mild worry only."]
+    "content_notes": ["No violence. Mild worry only."],
+    "player": {
+      "name": "Visitor",
+      "species": "human",
+      "description": "A young visitor to Pebblebrook in a green coat and a yellow woolly hat.",
+      "sprite": {"species":"human","height":"short","girth":"average","skin":"#e9bc94","hair":{"style":"messy","color":"#3c2a24"},"outfit":{"style":"coat","color":"#3f7f6a","trim":"#e3b341","legs":"#3a3a4a"},"headwear":{"style":"woolly-hat","color":"#d9a441","trim":"#c0392b"},"accessories":[{"kind":"satchel","color":"#8a5a32"}]}
+    }
   },
   "style_guide": {
     "narrator_voice": "A friendly storyteller using short, cosy sentences.",
@@ -30,7 +36,7 @@
       "secret": "She saw a light in the clock tower but thought nothing of it.",
       "motivations": ["keep the village happy"],
       "relationships": [{ "cast_id": "c_hollis", "relation": "old friend" }], "reactions": [{ "id": "r_mira_book", "about": { "type": "item", "id": "i_overdue_book" }, "text": "That book turned up under my flour sacks. Do take it back to Oswin, dear." }],
-      "sprite_recipe": "round woman, flour-white apron, brown bun hair",
+      "sprite": {"species":"human","height":"average","girth":"stout","skin":"#ebc19a","hair":{"style":"bun","color":"#6b4428"},"outfit":{"style":"dress","color":"#b85c5c","trim":"#f0e0c8"},"accessories":[{"kind":"apron","color":"#f6f2e8"}]},
       "home_location": "l_bakery",
       "knows_truths": ["t_missing"],
       "goal_states": [],
@@ -70,7 +76,7 @@
       "secret": "He keeps a spare tower key and a log of who borrows it.",
       "motivations": ["order", "being thanked"],
       "relationships": [{ "cast_id": "c_hollis", "relation": "lends him the tower key" }], "reactions": [{ "id": "r_oswin_book", "about": { "type": "item", "id": "i_overdue_book" }, "text": "My overdue book! Hand it over and the key log is yours to read." }],
-      "sprite_recipe": "small brown owl with round glasses",
+      "sprite": {"species":"owl","height":"short","girth":"average","skin":"#8a6a4a","accent":"#e0cfa8","outfit":{"style":"waistcoat","color":"#5a6a8a","trim":"#e8e0d0"},"accessories":[{"kind":"glasses","color":"#3a2a20"},{"kind":"book","color":"#7a3030"}]},
       "home_location": "l_library",
       "knows_truths": ["t_night", "t_taker"],
       "goal_states": [
@@ -118,7 +124,7 @@
       "secret": "She sat on the garden wall all night and watched the tower.",
       "motivations": ["attention", "naps"],
       "relationships": [],
-      "sprite_recipe": "small orange tabby with a white tail tip",
+      "sprite": {"species":"cat","height":"short","girth":"slim","skin":"#e08a3a","accent":"#fff1e0","accessories":[{"kind":"locket","color":"#e3b341"}]},
       "home_location": "l_garden",
       "knows_truths": ["t_night"],
       "goal_states": [],
@@ -158,7 +164,7 @@
       "secret": "He borrowed the Moon Lantern to mend a crack and could not finish in time.",
       "motivations": ["pride", "fear of letting people down"],
       "relationships": [{ "cast_id": "c_oswin", "relation": "borrows his books" }], "reactions": [{ "id": "r_hollis_shard", "about": { "type": "clue", "id": "cl_shard_match" }, "text": "That shard is from the lantern. I took it to mend the crack, and I should have said so.", "requires": { "truths": ["t_taker"] }, "clue_id": "cl_hollis_confess" }],
-      "sprite_recipe": "tall thin man, grey cardigan, thick spectacles",
+      "sprite": {"species":"human","height":"tall","girth":"slim","skin":"#e6b894","hair":{"style":"short","color":"#6d6d6d"},"outfit":{"style":"cardigan","color":"#8a8f98","trim":"#d8d2c0","legs":"#4a4538"},"accessories":[{"kind":"glasses","color":"#2c2326"},{"kind":"notebook","color":"#5a4630"}]},
       "home_location": "l_clocktower",
       "knows_truths": ["t_taker", "t_motive"],
       "goal_states": [
@@ -227,12 +233,129 @@
         { "id": "d_square_bakery", "to": "l_bakery" },
         { "id": "d_square_garden", "to": "l_garden" },
         { "id": "d_square_library", "to": "l_library" }
-      ]
+      ],
+      "area": {
+        "description": "Bunting crosses the cobbles above stalls half set up for the festival. Neighbours murmur by the notice board, glancing at an empty hook.",
+        "doors": [{ "to": "l_bakery", "label": "Bakery door", "hint": "Warm bread smells drift out." }, { "to": "l_garden", "label": "Garden gate", "hint": "A low gate between herb beds." }, { "to": "l_library", "label": "Library steps", "hint": "An owl is carved above the door." }],
+        "biome": "village", "palette": "village", "floor": "cobble", "wall": "brick",
+        "map": [
+          " ################################## ",
+          "T##################################T",
+          "T..................................T",
+          "T..................................T",
+          "T..................................T",
+          "T.......T...................T......T",
+          "T..................................T",
+          "T...............,,,,*..............T",
+          "T.............,,*,,,*,,............T",
+          "3.............**,,,***,..........@.1",
+          "T.............,,,,**,,,............T",
+          "T...............,,,,,..............T",
+          "T..................................T",
+          "T.......T...................T......T",
+          "T..................................T",
+          "T..................................T",
+          "T..................................T",
+          "TTTTTTTTTTTTTTTTT2TTTTTTTTTTTTTTTTTT"
+        ],
+        "placements": { "obj:o_notice_board": [16, 2], "clue:cl_notice_board": [3, 10] },
+        "decor": [{ "icon": "fountain", "x": 18, "y": 9 }, { "icon": "lamp_post", "x": 18, "y": 2 }, { "icon": "bench", "x": 3, "y": 2 }, { "icon": "lamp_post", "x": 11, "y": 2 }, { "icon": "bench", "x": 23, "y": 2 }, { "icon": "bench", "x": 1, "y": 14 }]
+      }
     },
-    { "id": "l_bakery", "name": "Mira's Bakery", "biome": "village interior", "mood": "cosy and sweet-smelling", "palette": "golden browns", "role": "Where the first clue and the book are.", "hub": false, "required_characters": ["c_mira"], "objects": [{ "id": "o_dough_bin", "name": "Dough bin", "description": "A large bin of rising dough." }], "doors": [] },
-    { "id": "l_garden", "name": "Herb Garden", "biome": "garden", "mood": "quiet and dewy", "palette": "greens and lilac", "role": "Pip watches from here; a glass shard is hidden here.", "hub": false, "required_characters": ["c_pip"], "objects": [{ "id": "o_flowerbed", "name": "Flowerbed", "description": "Neat rows of herbs and daisies." }], "doors": [] },
-    { "id": "l_library", "name": "Owl Library", "biome": "village interior", "mood": "hushed and dusty", "palette": "deep blues and wood", "role": "Oswin and the key log; the way to the tower.", "hub": false, "required_characters": ["c_oswin"], "objects": [{ "id": "o_key_log", "name": "Key log", "description": "A ledger of who borrowed which key." }], "doors": [{ "id": "d_library_tower", "to": "l_clocktower", "lock": { "items": ["i_tower_key"] } }] },
-    { "id": "l_clocktower", "name": "Clock Tower", "biome": "tower interior", "mood": "ticking and secretive", "palette": "brass and slate", "role": "Where Hollis works and the truth is found.", "hub": false, "required_characters": ["c_hollis"], "objects": [{ "id": "o_workbench", "name": "Workbench", "description": "A cluttered bench of tiny tools." }], "doors": [] }
+    { "id": "l_bakery", "name": "Mira's Bakery", "biome": "village interior", "mood": "cosy and sweet-smelling", "palette": "golden browns", "role": "Where the first clue and the book are.", "hub": false, "required_characters": ["c_mira"], "objects": [{ "id": "o_dough_bin", "name": "Dough bin", "description": "A large bin of rising dough." }], "doors": [], "area": {
+      "description": "Golden loaves cool on racks and flour hangs in the air. The dough bin breathes quietly in the corner.",
+      "doors": [{ "to": "l_square", "label": "Out to the square", "hint": "Back to the festival bustle." }],
+      "biome": "building", "palette": "kitchen", "floor": "tiles", "wall": "plaster",
+      "map": [
+        " ####################### ",
+        "#########################",
+        "#.......................#",
+        "#.......................#",
+        "#..CCCCCCCCC............#",
+        "#..........C............#",
+        "#..........C............#",
+        "1.......................#",
+        "#.......................#",
+        "#.......................#",
+        "#.......................#",
+        "#.......................#",
+        "#.......................#",
+        "#########################"
+      ],
+      "placements": { "obj:o_dough_bin": [13, 2], "item:i_overdue_book": [14, 6], "char:c_mira": [3, 7], "clue:cl_flour_prints": [2, 4] },
+      "decor": [{ "icon": "stove", "x": 19, "y": 2 }, { "icon": "painting", "x": 22, "y": 2 }, { "icon": "stool", "x": 23, "y": 9 }]
+    } },
+    { "id": "l_garden", "name": "Herb Garden", "biome": "garden", "mood": "quiet and dewy", "palette": "greens and lilac", "role": "Pip watches from here; a glass shard is hidden here.", "hub": false, "required_characters": ["c_pip"], "objects": [{ "id": "o_flowerbed", "name": "Flowerbed", "description": "Neat rows of herbs and daisies." }], "doors": [], "area": {
+      "description": "Dew beads on neat rows of herbs and daisies. Somewhere among the lilac, small eyes are watching.",
+      "doors": [{ "to": "l_square", "label": "Back to the square", "hint": "The gate swings back to the cobbles." }],
+      "biome": "meadow", "palette": "park", "floor": "grass", "wall": "hedge",
+      "map": [
+        " ######################## ",
+        "############1#############",
+        "#,,,,,,,,,,,:,,,,,,,,,,,,#",
+        "#,,,,,,,,,,,:,,,,,,,,,,,,#",
+        "#,,,***T,,,,:,,,,,***,,,,#",
+        "#,,,***,,,,,:,,,,,***,,T,#",
+        "#,,,,,,,,,:::::::,,,,,,,,#",
+        "#,,,,,,,,,:::::::,,,,,,,,#",
+        "#,,,,,,,,,:::::::,,,,,,,,#",
+        "#,,,***,,,,,,,,,,,***,,,,#",
+        "#,,T***,,,,,,,,,,,***,,,,#",
+        "#,,,,,,,,,,,,,,,,,,,,,,,,#",
+        "#,,,,,,,,,,,,,,,,,,,,,,,,#",
+        "##########################"
+      ],
+      "placements": { "obj:o_flowerbed": [4, 4], "item:i_glass_shard": [3, 7], "char:c_pip": [7, 10] },
+      "decor": [{ "icon": "bench", "x": 6, "y": 2 }, { "icon": "bench", "x": 1, "y": 11 }, { "icon": "bench", "x": 18, "y": 2 }]
+    } },
+    { "id": "l_library", "name": "Owl Library", "biome": "village interior", "mood": "hushed and dusty", "palette": "deep blues and wood", "role": "Oswin and the key log; the way to the tower.", "hub": false, "required_characters": ["c_oswin"], "objects": [{ "id": "o_key_log", "name": "Key log", "description": "A ledger of who borrowed which key." }], "doors": [{ "id": "d_library_tower", "to": "l_clocktower", "lock": { "items": ["i_tower_key"] } }], "area": {
+      "description": "Tall shelves of blue-bound books hush every footstep. A heavy ledger rests open on the front desk.",
+      "doors": [{ "to": "l_clocktower", "label": "Tower stair", "hint": "A narrow stair, and a locked door." }, { "to": "l_square", "label": "Front steps", "hint": "Out into the daylight." }],
+      "biome": "building", "palette": "parlour", "floor": "carpet", "wall": "wood",
+      "map": [
+        " ######################## ",
+        "##########################",
+        "#........................#",
+        "#........................#",
+        "#........................#",
+        "#........................#",
+        "#........................#",
+        "#.......RRRRRRRRRR.......#",
+        "#.......RRRRRRRRRR.......2",
+        "#.......RRRRRRRRRR.......#",
+        "#.......RRRRRRRRRR.......#",
+        "#.......RRRRRRRRRR.......#",
+        "#........................#",
+        "#........................#",
+        "#........................#",
+        "############1#############"
+      ],
+      "placements": { "obj:o_key_log": [7, 12], "char:c_oswin": [23, 11], "clue:cl_library_log": [20, 7] },
+      "decor": [{ "icon": "bookshelf", "x": 21, "y": 2 }, { "icon": "bookshelf", "x": 23, "y": 2 }, { "icon": "bookshelf", "x": 17, "y": 2 }, { "icon": "bookshelf", "x": 19, "y": 2 }, { "icon": "bookshelf", "x": 13, "y": 2 }, { "icon": "chair", "x": 19, "y": 4 }, { "icon": "table", "x": 7, "y": 4 }]
+    } },
+    { "id": "l_clocktower", "name": "Clock Tower", "biome": "tower interior", "mood": "ticking and secretive", "palette": "brass and slate", "role": "Where Hollis works and the truth is found.", "hub": false, "required_characters": ["c_hollis"], "objects": [{ "id": "o_workbench", "name": "Workbench", "description": "A cluttered bench of tiny tools." }], "doors": [], "area": {
+      "description": "Great gears tick slowly overhead, throwing striped shadows. A workbench is scattered with glass and tiny tools.",
+      "doors": [{ "to": "l_library", "label": "Down the stair", "hint": "Back down to the quiet books." }],
+      "biome": "building", "palette": "workshop", "floor": "boards", "wall": "wood",
+      "map": [
+        "    ##########    ",
+        "   #####1######   ",
+        "  ##..........##  ",
+        " ##............## ",
+        "##..............##",
+        "#................#",
+        "#.....RRRRRR.....#",
+        "#.....RRRRRR.....#",
+        "#.....RRRRRR.....#",
+        "#.....RRRRRR.....#",
+        "##..............##",
+        " ##............## ",
+        "  ##..........##  ",
+        "   ############   "
+      ],
+      "placements": { "obj:o_workbench": [5, 12], "char:c_hollis": [6, 5], "clue:cl_shard_match": [11, 6], "clue:cl_workbench": [12, 11] },
+      "decor": [{ "icon": "stool", "x": 1, "y": 7 }, { "icon": "crate", "x": 16, "y": 7 }, { "icon": "barrel", "x": 15, "y": 10 }, { "icon": "lamp_stand", "x": 2, "y": 4 }]
+    } }
   ],
   "twists": [
     { "id": "tw_gentle_taker", "description": "The lantern was not stolen. It was taken for repair by someone gentle.", "setup_clues": ["cl_pip_saw"], "payoff_trigger": { "truths": ["t_motive"] } }

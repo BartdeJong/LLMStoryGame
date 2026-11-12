@@ -25,6 +25,9 @@ import { inputMode, type InputMode } from "./input/mode";
 import { mountEndingChoiceScreen, mountEndingScreen } from "./ui/ending";
 import { mountPauseMenu } from "./ui/pause";
 import { createObjectiveHud, type ObjectiveHud } from "./ui/objectiveHud";
+import { createProgressToasts, shorten, type ProgressToasts } from "./ui/progressToast";
+import { buildRecap, caseProgress } from "./story/progress";
+import { progressLogOf } from "./story/state";
 import { createStoryJournal, type JournalFact, type JournalQuestion, type JournalRequest, type StoryJournal } from "./ui/storyJournal";
 import { createCaseOverlay, type CaseOverlay } from "./ui/caseOverlay";
 import {
@@ -94,8 +97,6 @@ function actionPrompt(mode: InputMode, text: string): string {
   return `E · ${text}`;
 }
 const CHARACTER_STEPS = [[1, 0], [-1, 0], [0, 1], [0, -1]] as const;
-// The fog never lifts faster than this, so quick arrivals still feel like a transition.
-const MIN_FOG_MS = 150;
 const SPECULATION_DELAY_MS = 3000;
 
 interface CharacterMotionState extends CharacterRenderState {
@@ -133,6 +134,8 @@ export class Game {
   private caseOffered = false;
   private casePresented = false;
   private readonly objectiveHud: ObjectiveHud;
+  private readonly toasts: ProgressToasts;
+  private seenProgress: number;
   private readonly worldMap: WorldMap;
   private transitioning = false;
   private running = false;
@@ -206,8 +209,15 @@ export class Game {
     this.interactionPrompt = interactionPrompt;
     const hud = canvas.parentElement?.querySelector<HTMLElement>(".game-hud");
     if (!hud) throw new Error("The game page is missing its HUD.");
-    this.objectiveHud = createObjectiveHud(hud);
+    this.objectiveHud = createObjectiveHud(hud, this.message);
+    const toastBox = shell.querySelector<HTMLElement>("#progress-toasts");
+    if (!toastBox) throw new Error("The game page is missing its progress toasts.");
+    this.toasts = createProgressToasts(toastBox);
+    this.seenProgress = progressLogOf(this.story.state).length;
     this.refreshObjective();
+    const arrival = this.story.getBrief(startArea.id)?.description ?? "";
+    this.objectiveHud.showArrival(persistence.player ? arrival : `${arrival} ${exploreHint(inputMode)}`.trim());
+    if (this.locationLabel) this.locationLabel.onclick = () => this.objectiveHud.showArrival(this.story.getBrief(this.areaId)?.description ?? "");
     this.renderer = new Renderer(canvas, this.story.pack.identity.id);
     const floatingStick = shell.querySelector<HTMLElement>("#floating-stick");
     this.input = new InputController(joystick, actionButton, () => {
@@ -219,7 +229,7 @@ export class Game {
     this.caseOverlay = createCaseOverlay(shell, () => this.presentCaseFromButton());
     this.worldMap = createWorldMap(
       shell,
-      () => this.story.getSavedAreas().map(({ area }) => area),
+      () => this.story.getAreas(),
       () => this.areaId,
       {
         getCell: (areaId) => this.story.getMapCell(areaId),
@@ -392,7 +402,8 @@ export class Game {
     for (const element of this.storyJournal.elements) element.remove();
     this.caseOverlay.close();
     for (const element of this.caseOverlay.elements) element.remove();
-    this.objectiveHud.element.remove();
+    this.objectiveHud.destroy();
+    this.toasts.clear();
     this.pauseOverlay?.remove();
     this.pauseOverlay = null;
   }
@@ -428,20 +439,72 @@ export class Game {
       packVersion: this.story.pack.identity.version,
       length: this.story.view.length,
       storyState: structuredClone(this.story.state),
-      areas: structuredClone(this.story.getSavedAreas()),
+      areaIds: this.story.getAreaIds(),
       player: { areaId: this.areaId, x: this.player.x, y: this.player.y },
     };
     let succeeded = false;
-    this.saveStatus.textContent = "Saving…";
+    this.setSaveStatus("saving", "Saving…");
     const write = (): Promise<void> => this.persistence.repository.save(save).then(() => {
       succeeded = true;
-      this.saveStatus.textContent = "Saved just now";
+      this.setSaveStatus("saved", "Saved just now");
     });
     this.saveQueue = this.saveQueue.then(write, write).catch((error: unknown) => {
-      this.saveStatus.textContent = "Save failed";
+      this.setSaveStatus("failed", "Save failed");
       this.message.textContent = `Could not save your game: ${error instanceof Error ? error.message : String(error)}`;
     });
     return this.saveQueue.then(() => succeeded);
+  }
+
+  private saveStatusTimer = 0;
+
+  // A tiny icon in the HUD bar; the words are only for screen readers.
+  private setSaveStatus(state: "saving" | "saved" | "failed", text: string): void {
+    window.clearTimeout(this.saveStatusTimer);
+    this.saveStatus.dataset.state = state;
+    this.saveStatus.textContent = text;
+    if (state === "saved") {
+      this.saveStatusTimer = window.setTimeout(() => {
+        this.saveStatus.textContent = "";
+        delete this.saveStatus.dataset.state;
+      }, 2500);
+    }
+  }
+
+  // Announces what the player just found. It reads the progress log, so every way of finding something is covered.
+  private celebrateProgress(solvedTruthId?: string): void {
+    const log = progressLogOf(this.story.state);
+    if (log.length <= this.seenProgress) {
+      this.seenProgress = log.length;
+      return;
+    }
+    const fresh = log.slice(this.seenProgress);
+    this.seenProgress = log.length;
+    const pack = this.story.pack;
+    let sound: "clue" | "item" | "truth" | "deduction" = "clue";
+    const rank = { clue: 0, item: 1, truth: 2, deduction: 3 } as const;
+    for (const entry of fresh) {
+      let kind: "clue" | "item" | "truth" | "deduction" = entry.kind;
+      let label = "";
+      let text = "";
+      if (entry.kind === "clue") {
+        label = "New clue";
+        text = pack.clues.find((clue) => clue.id === entry.id)?.text ?? "";
+      } else if (entry.kind === "item") {
+        const item = pack.items.find((candidate) => candidate.id === entry.id);
+        label = item?.key ? "Key item" : "Item found";
+        text = item?.name ?? entry.id;
+      } else {
+        const truth = pack.truths.find((candidate) => candidate.id === entry.id);
+        kind = entry.id === solvedTruthId ? "deduction" : "truth";
+        label = kind === "deduction" ? "Deduction solved" : "Truth confirmed";
+        text = truth?.text ?? "";
+      }
+      if (rank[kind] > rank[sound]) sound = kind;
+      this.toasts.show(kind, label, shorten(text));
+    }
+    soundEffects.play(sound);
+    this.refreshObjective();
+    this.refreshJournal();
   }
 
   private syncAudio(): void {
@@ -471,6 +534,7 @@ export class Game {
 
     this.playerMoving = false;
     this.syncAudio();
+    this.celebrateProgress();
     this.frameCount += 1;
     if (this.frameCount % 20 === 0) this.announceUnlockedDoors();
     if (!this.isInteractive) this.walk = null;
@@ -492,8 +556,10 @@ export class Game {
       {
         characters: this.characterRenderStates(world),
         talkMarkerIds: this.talkMarkerIds(world),
+        foundClueIds: new Set(this.story.state.cluesFound),
         animateCharacters: !reducedMotion && !this.paused && !this.transitioning && !this.inDialogue && !this.worldMap.isOpen,
         doorSigns: this.doorSigns(world),
+        playerSprite: this.story.pack.identity.player?.sprite,
       },
     );
     this.animationFrame = requestAnimationFrame(this.frame);
@@ -504,7 +570,7 @@ export class Game {
     if (this.transitioning) return;
     const opened: string[] = [];
     const newAreas: string[] = [];
-    for (const { area } of this.story.getSavedAreas()) {
+    for (const area of this.story.getAreas()) {
       for (const door of area.doors) {
         if (!door.targetAreaId) continue;
         const key = `${area.id}>${door.id}`;
@@ -567,7 +633,7 @@ export class Game {
         soundEffects.playFootstep(this.groundUnderPlayer());
         this.lastFootstepAt = performance.now();
       }
-      if (steering) this.message.textContent = exploreHint(inputMode);
+      if (steering) this.objectiveHud.dismissArrival();
     }
     if (this.walk) this.watchWalkProgress(delta, movement.x !== 0 || movement.y !== 0 ? this.playerMoving : true);
   }
@@ -964,8 +1030,8 @@ export class Game {
   private examine(entity: AreaEntity): void {
     const clue = this.story.examineClue(entity);
     if (clue !== null) {
-      soundEffects.play("clue");
       this.message.textContent = `Clue: ${clue}`;
+      this.celebrateProgress();
       this.refreshJournal();
       void this.saveProgress();
       void this.maybeFinish();
@@ -986,8 +1052,8 @@ export class Game {
       if (!result) {
         this.message.textContent = `${entity.name}. ${entity.description}`;
       } else if (result.given) {
-        soundEffects.play("item");
         this.message.textContent = `You take the ${result.item.name}. ${entity.description}`;
+        this.celebrateProgress();
         this.refreshInventory();
         void this.saveProgress();
         void this.maybeFinish();
@@ -1070,11 +1136,17 @@ export class Game {
     });
     const ruledOut = ruledOutHerrings(pack, this.story.state)
       .map((herring) => ({ description: herring.description, resolution: herring.resolution }));
-    this.storyJournal.render(facts, evidence, requests, { questions, ruledOut });
+    const progress = caseProgress(this.story.view, this.story.state);
+    this.storyJournal.render(facts, evidence, requests, { questions, ruledOut, progress });
   }
 
   private refreshObjective(): void {
-    this.objectiveHud.update(this.story.currentBeat, this.story.currentBeatWaitsOnDeduction());
+    const progress = caseProgress(this.story.view, this.story.state);
+    this.objectiveHud.update(this.story.currentBeat, this.story.currentBeatWaitsOnDeduction(), {
+      ...progress,
+      leadNumber: this.story.view.beats.indexOf(this.story.currentBeat) + 1,
+      leadTotal: this.story.view.beats.length,
+    });
   }
 
   private answerQuestion(truthId: string, answer: string): void {
@@ -1094,7 +1166,7 @@ export class Game {
       return;
     }
     this.deductionMisses.delete(truthId);
-    soundEffects.play("deduction");
+    this.celebrateProgress(truthId);
     this.refreshObjective();
     this.refreshJournal();
     const ruled = result.ruledOut.map((herring) => `Ruled out: ${herring.resolution}`).join(" ");
@@ -1140,7 +1212,8 @@ export class Game {
       speculate: getPrepareRepliesInAdvance(),
       greetings: this.greetings,
     });
-    this.dialogueBox.open(name, this.dialogueHandlers());
+    const player = this.story.pack.identity.player;
+    this.dialogueBox.open(name, this.dialogueHandlers(), { character: character.sprite, player: player?.sprite, playerName: player?.name });
     this.dialogueBox.setBusy(true);
     await this.runDialogueTurn(this.conversation.start());
   }
@@ -1275,9 +1348,7 @@ export class Game {
       soundEffects.play("goal");
       notices.push("Goal completed.");
     }
-    if (effects.revealedClue) soundEffects.play("clue");
     if (effects.givenItem) {
-      soundEffects.play("item");
       const item = this.story.pack.items.find((candidate) => candidate.id === effects.givenItem);
       notices.push(`Received: ${item?.name ?? effects.givenItem}.`);
       this.refreshInventory();
@@ -1294,9 +1365,8 @@ export class Game {
         this.transitionOpacity = step / 6;
         await pause(25);
       }
-      // The fog stays up until the brief and map are ready.
       this.greetings.cancelAll();
-      const [transition] = await Promise.all([this.story.enterDoor(this.areaId, door.id), pause(MIN_FOG_MS)]);
+      const transition = this.story.enterDoor(this.areaId, door.id);
       this.areaId = transition.area.id;
       this.prefetchGreetings();
       this.player.x = transition.spawn.x * TILE_SIZE + TILE_SIZE / 2;
@@ -1304,7 +1374,7 @@ export class Game {
       this.ensureAreaSolidity(transition.area, [transition.spawn]);
       this.refreshObjective();
       const description = this.story.getBrief(transition.area.id)?.description;
-      this.message.textContent = description ?? `You arrive at ${transition.area.name}.`;
+      this.objectiveHud.showArrival(description ?? `You arrive at ${transition.area.name}.`);
       if (this.locationLabel) this.locationLabel.textContent = transition.area.name.toLocaleUpperCase();
       this.refreshInventory();
       await this.saveProgress();
@@ -1364,6 +1434,10 @@ export class Game {
         () => {
           this.stop();
           this.onBackToTitle();
+        },
+        {
+          ...buildRecap(this.story.pack, this.story.view, this.story.state),
+          timePlayedMs: this.persistence.timePlayedMs + Math.max(0, Date.now() - this.startedAt),
         },
       );
     };

@@ -13,20 +13,35 @@
     <main id="game-shell" aria-label="Cozy Mystery game">
       <canvas id="game" width="320" height="180" aria-label="Game world" role="img"></canvas>
       <div class="game-hud">
-        <p class="location-label">MEADOW CROSSING</p>
-        <p id="game-message" aria-live="polite">Explore the area and look for clues.</p>
-        <p id="save-status" class="save-status" role="status" aria-live="polite"></p>
-        <details class="controls-guide">
-          <summary>Controls &amp; tips</summary>
-          <p>Move: WASD or arrow keys. Interact: E or Space. Map: M. Journal: J. Inventory: I. Pause: Escape.</p>
-          <p>On touch screens, tap a person, clue, item, or doorway to walk there, or touch and drag on the left of the screen to steer. A acts on whatever is nearby.</p>
-        </details>
+        <div class="hud-bar">
+          <button type="button" class="location-label" title="Read about this area again">MEADOW CROSSING</button>
+          <button type="button" class="hud-lead" aria-expanded="false" aria-controls="hud-details">
+            <span class="hud-lead-title"></span>
+            <span class="hud-pips" aria-hidden="true"></span>
+            <span class="hud-count" aria-hidden="true"></span>
+            <span class="hud-chevron" aria-hidden="true"></span>
+          </button>
+          <span id="save-status" class="save-status" role="status" aria-live="polite"></span>
+        </div>
+        <div id="hud-details" class="hud-details" hidden>
+          <p class="hud-progress"></p>
+          <div class="hud-lead-body"></div>
+          <details class="controls-guide">
+            <summary>Controls &amp; tips</summary>
+            <p>Move: WASD or arrow keys. Interact: E or Space. Map: M. Journal: J. Inventory: I. Pause: Escape.</p>
+            <p>On touch screens, tap a person, clue, item, or doorway to walk there, or touch and drag on the left of the screen to steer. A acts on whatever is nearby.</p>
+          </details>
+        </div>
         <div class="gamepad-hints" aria-hidden="true">
           <span data-gamepad-action="A">Interact</span>
           <span data-gamepad-action="Y">Backpack</span>
           <span data-gamepad-action="X">Journal</span>
           <span data-gamepad-action="Menu">Pause</span>
         </div>
+      </div>
+      <div class="hud-notices">
+        <p id="game-message" class="game-caption" aria-live="polite"></p>
+        <div id="progress-toasts" class="progress-toasts" role="status" aria-live="polite"></div>
       </div>
       <p id="interaction-prompt" class="interaction-prompt" role="status" aria-live="polite" hidden></p>
       <div id="floating-stick" class="floating-stick" aria-hidden="true" hidden>

@@ -8,7 +8,13 @@
     "setting": "Windsor Gardens in London, on a warm and sunny summer Saturday. Paddington Bear lives at number 32 with the Brown family.",
     "tone": "Happy, bright and funny. Every secret is a kind one.",
     "themes": ["friendship", "kindness", "happy surprises"],
-    "content_notes": ["No danger, no crime and no sad moments.", "Simple English with short sentences."]
+    "content_notes": ["No danger, no crime and no sad moments.", "Simple English with short sentences."],
+    "player": {
+      "name": "Paddington Bear",
+      "species": "bear",
+      "description": "A small bear from darkest Peru, in a blue duffle coat, with his old suitcase. Today his old hat is missing.",
+      "sprite": {"species":"bear","height":"short","girth":"stout","skin":"#7b4a2a","accent":"#c99a66","outfit":{"style":"duffle-coat","color":"#2d57a6","trim":"#a8743c","legs":"#7b4a2a"},"accessories":[{"kind":"suitcase","color":"#8a5a32"}]}
+    }
   },
   "style_guide": {
     "narrator_voice": "A happy, friendly storyteller. Use very short sentences and simple, common words. The player is Paddington Bear.",
@@ -37,7 +43,7 @@
       "reactions": [
         { "id": "r_mrs_brown_flowers", "about": { "type": "item", "id": "i_flowers" }, "text": "Oh, what lovely flowers! Are they for me, Paddington? Thank you!" }
       ],
-      "sprite_recipe": "kind woman with brown hair, a blue summer dress and a yellow cardigan",
+      "sprite": {"species":"human","height":"average","girth":"average","skin":"#f0c8a0","hair":{"style":"bob","color":"#6a4328"},"outfit":{"style":"dress","color":"#5b8fd0","trim":"#f2f0e6"},"accessories":[{"kind":"shawl","color":"#f0cf4a"}]},
       "home_location": "l_hall",
       "knows_truths": ["t_marmalade_gone", "t_birthday"],
       "goal_states": [
@@ -90,7 +96,7 @@
       "reactions": [
         { "id": "r_mrs_bird_oven", "about": { "type": "clue", "id": "cl_oven_smell" }, "text": "There is nothing in that oven for you, young bear. Not yet, anyway." }
       ],
-      "sprite_recipe": "tall woman with grey hair in a bun, a white apron and a wooden spoon",
+      "sprite": {"species":"human","height":"tall","girth":"average","skin":"#efc9a4","hair":{"style":"bun","color":"#aeb0b6"},"outfit":{"style":"dress","color":"#3b4a6b","trim":"#d9d4c8"},"accessories":[{"kind":"apron","color":"#f4f1e6"},{"kind":"spoon","color":"#c99a5a"}]},
       "home_location": "l_kitchen",
       "knows_truths": ["t_marmalade_gone", "t_marmalade_cake", "t_birthday"],
       "goal_states": [],
@@ -136,7 +142,7 @@
       "reactions": [
         { "id": "r_jonathan_list", "about": { "type": "clue", "id": "cl_jonathan_list" }, "text": "Oh no, you found my list! I dropped it at the bus stop. Please forget you saw it!" }
       ],
-      "sprite_recipe": "boy with messy brown hair, a striped T-shirt and sticky orange fingers",
+      "sprite": {"species":"human","height":"tiny","girth":"average","skin":"#f2c9a2","hair":{"style":"messy","color":"#6b4326"},"outfit":{"style":"striped","color":"#d9473b","trim":"#f4efe2","legs":"#4a5a86"},"accessories":[{"kind":"freckles"},{"kind":"ball"}]},
       "home_location": "l_back_garden",
       "knows_truths": ["t_hat_missing", "t_party_in_park", "t_birthday"],
       "goal_states": [],
@@ -179,7 +185,7 @@
         { "cast_id": "c_mrs_brown", "relation": "his wife" },
         { "cast_id": "c_mrs_penny", "relation": "asked her to keep the bandstand free" }
       ],
-      "sprite_recipe": "man with a small moustache, rolled-up shirt sleeves and red paint on his nose",
+      "sprite": {"species":"human","height":"average","girth":"average","skin":"#efc29c","hair":{"style":"short","color":"#4a3322"},"outfit":{"style":"shirt","color":"#e8e4d6","trim":"#c9c2b0","legs":"#5a5a6a"},"accessories":[{"kind":"moustache","color":"#4a3322"},{"kind":"belt","color":"#4a3326"}]},
       "home_location": "l_shed",
       "knows_truths": ["t_party_in_park", "t_birthday"],
       "goal_states": [],
@@ -225,7 +231,7 @@
       "reactions": [
         { "id": "r_judy_ticket", "about": { "type": "clue", "id": "cl_judy_ticket" }, "text": "Oh! My bus ticket. I just went for a little ride. That is all, Paddington!" }
       ],
-      "sprite_recipe": "girl with long brown hair in a red hair band, a green dress and a notebook",
+      "sprite": {"species":"human","height":"short","girth":"slim","skin":"#f0c6a0","hair":{"style":"long","color":"#6b4326"},"outfit":{"style":"dress","color":"#4aa064","trim":"#e9f0c8"},"accessories":[{"kind":"notebook","color":"#c33a45"}]},
       "home_location": "l_judy_room",
       "knows_truths": ["t_judy_took_hat", "t_hat_at_gruber", "t_hat_mended", "t_birthday"],
       "goal_states": [],
@@ -270,7 +276,7 @@
       "reactions": [
         { "id": "r_curry_paper", "about": { "type": "item", "id": "i_newspaper" }, "text": "My newspaper! Where did you find it, bear? Well. Hmph. Thank you." }
       ],
-      "sprite_recipe": "grumpy old man with bushy grey eyebrows, a brown cardigan and a brown gardening hat",
+      "sprite": {"species":"human","height":"average","girth":"average","skin":"#e6b894","hair":{"style":"balding","color":"#a8a8a8"},"outfit":{"style":"cardigan","color":"#7a5334","trim":"#d8d2c0","legs":"#4a4a3a"},"headwear":{"style":"straw-hat","color":"#a8864f","trim":"#6a4a2a"},"accessories":[{"kind":"brows","color":"#b8b8b8"}]},
       "home_location": "l_curry_garden",
       "knows_truths": ["t_judy_took_hat"],
       "goal_states": [
@@ -323,7 +329,7 @@
       "reactions": [
         { "id": "r_barnaby_sandwich", "about": { "type": "item", "id": "i_sandwich" }, "text": "A marmalade sandwich? For me? Oh, you kind bear! I am so hungry." }
       ],
-      "sprite_recipe": "round, smiling man with a flat cap, a green apron and an orange in his hand",
+      "sprite": {"species":"human","height":"average","girth":"stout","skin":"#e9b78f","hair":{"style":"short","color":"#8a5a2a"},"outfit":{"style":"shirt","color":"#f0ece0","trim":"#d8d0bc","legs":"#5a4a3a"},"headwear":{"style":"flat-cap","color":"#6e5a3c"},"accessories":[{"kind":"apron","color":"#3f8a4a"},{"kind":"orange","color":"#f08a24"}]},
       "home_location": "l_market",
       "knows_truths": ["t_hat_at_gruber", "t_marmalade_cake"],
       "goal_states": [
@@ -377,7 +383,7 @@
       "reactions": [
         { "id": "r_gruber_buns", "about": { "type": "item", "id": "i_currant_buns" }, "text": "Currant buns! Wonderful, Paddington. I will make the cocoa right away." }
       ],
-      "sprite_recipe": "small old man with white hair, round glasses and a brown waistcoat",
+      "sprite": {"species":"human","height":"short","girth":"average","skin":"#e8bd98","hair":{"style":"balding","color":"#e8e6e2"},"outfit":{"style":"waistcoat","color":"#7a5434","trim":"#efe8d8","legs":"#4a4a52"},"accessories":[{"kind":"glasses","color":"#3a2a20"},{"kind":"cane","color":"#5a3a24"}]},
       "home_location": "l_gruber_shop",
       "knows_truths": ["t_hat_at_gruber", "t_hat_mended"],
       "goal_states": [
@@ -426,7 +432,7 @@
       "relationships": [
         { "cast_id": "c_mr_brown", "relation": "he asked her to keep the bandstand free" }
       ],
-      "sprite_recipe": "cheerful woman in a green park uniform and cap, holding a broom",
+      "sprite": {"species":"human","height":"average","girth":"average","skin":"#d9a577","hair":{"style":"ponytail","color":"#8a4a2a"},"outfit":{"style":"uniform","color":"#2f6b45","trim":"#e3b341","legs":"#2a3a2e"},"headwear":{"style":"peaked-cap","color":"#2f6b45","trim":"#e3b341"},"accessories":[{"kind":"broom","color":"#b8934a"}]},
       "home_location": "l_park_gate",
       "knows_truths": ["t_party_in_park"],
       "goal_states": [],
@@ -547,7 +553,27 @@
         { "id": "o_bedside_table", "name": "Bedside table", "description": "A little table with a drawer. Paddington keeps his sandwich here.", "visual": { "icon": "bedside_table" } },
         { "id": "o_magnifying_glass", "name": "Magnifying glass", "description": "Paddington's detective magnifying glass.", "visual": { "icon": "magnifying_glass" } }
       ],
-      "doors": [{ "id": "d_bedroom_hall", "to": "l_hall" }]
+      "doors": [{ "id": "d_bedroom_hall", "to": "l_hall" }],
+      "area": {
+        "description": "Sun comes in at the window and makes the blue blanket warm. There are crumbs on the floor, and the room smells a little of marmalade.",
+        "doors": [{ "to": "l_hall", "label": "Down to the hall", "hint": "The stairs go down to the front door." }],
+        "biome": "building", "palette": "cottage", "floor": "boards", "wall": "plaster",
+        "map": [
+          " ############## ",
+          "################",
+          "#..............#",
+          "#..............#",
+          "#....RRRRRR....#",
+          "#....RRRRRR....#",
+          "#....RRRRRR....1",
+          "#...........@..#",
+          "#..............#",
+          "#..............#",
+          "################"
+        ],
+        "placements": { "obj:o_bed": [2, 2], "obj:o_bedside_table": [4, 2], "obj:o_magnifying_glass": [8, 5], "item:i_sandwich": [11, 6] },
+        "decor": [{ "icon": "painting", "x": 7, "y": 2 }, { "icon": "mirror", "x": 10, "y": 2 }, { "icon": "flower", "x": 1, "y": 9 }, { "icon": "chair", "x": 13, "y": 9 }]
+      }
     },
     {
       "id": "l_hall", "name": "The Hall", "biome": "house interior", "mood": "bright and busy", "palette": "cream walls and a red carpet", "role": "Home hub. The empty hat peg and the open window.", "hub": true,
@@ -561,7 +587,27 @@
         { "id": "d_hall_kitchen", "to": "l_kitchen" },
         { "id": "d_hall_judy", "to": "l_judy_room" },
         { "id": "d_hall_street", "to": "l_windsor_gardens" }
-      ]
+      ],
+      "area": {
+        "description": "The hall is bright, with cream walls and a long red carpet. Coats hang by the front door, but one peg is empty.",
+        "doors": [{ "to": "l_kitchen", "label": "Kitchen door", "hint": "Something smells warm and sweet in there." }, { "to": "l_judy_room", "label": "Judy's door", "hint": "A neat door with a little name card." }, { "to": "l_windsor_gardens", "label": "Front door", "hint": "Out to the sunny street." }, { "to": "l_bedroom", "label": "Up to my room", "hint": "The stairs go up to Paddington's room." }],
+        "biome": "building", "palette": "cottage", "floor": "boards", "wall": "plaster",
+        "map": [
+          " ################################ ",
+          "########################2#########",
+          "#................................#",
+          "#................................#",
+          "#................................#",
+          "#.RRRRRRRRRRRRRRRRRRRRRRRRRRRRRR.#",
+          "4.RRRRRRRRRRRRRRRRRRRRRRRRRRRRRR.3",
+          "#................................#",
+          "#................................#",
+          "#................................#",
+          "##########1#######################"
+        ],
+        "placements": { "obj:o_hat_peg": [30, 2], "obj:o_hall_window": [17, 2], "obj:o_letter_box": [32, 4], "char:c_mrs_brown": [22, 3], "clue:cl_empty_peg": [10, 8], "clue:cl_open_window": [6, 5] },
+        "decor": [{ "icon": "lamp_stand", "x": 3, "y": 2 }, { "icon": "painting", "x": 8, "y": 2 }, { "icon": "lamp_stand", "x": 27, "y": 2 }, { "icon": "chair", "x": 5, "y": 8 }, { "icon": "chair", "x": 28, "y": 8 }, { "icon": "urn", "x": 32, "y": 8 }, { "icon": "flower", "x": 1, "y": 3 }]
+      }
     },
     {
       "id": "l_kitchen", "name": "The Kitchen", "biome": "house interior", "mood": "warm and sweet-smelling", "palette": "orange and white tiles", "role": "Mrs Bird works here. The marmalade is gone and the oven is warm.", "hub": false,
@@ -571,7 +617,29 @@
         { "id": "o_oven", "name": "Warm cooking stove", "description": "The oven is warm. Something sweet is baking.", "visual": { "icon": "stove" } },
         { "id": "o_peel_bin", "name": "Peel storage bin", "description": "A bin full of orange peel.", "visual": { "icon": "storage_bin" } }
       ],
-      "doors": [{ "id": "d_kitchen_garden", "to": "l_back_garden" }]
+      "doors": [{ "id": "d_kitchen_garden", "to": "l_back_garden" }],
+      "area": {
+        "description": "The kitchen has orange and white tiles, and the oven is warm. It smells of sugar and oranges, but the marmalade shelf is bare.",
+        "doors": [{ "to": "l_back_garden", "label": "Garden door", "hint": "Birds sing outside the glass door." }, { "to": "l_hall", "label": "Back to the hall", "hint": "The door back to the red carpet." }],
+        "biome": "building", "palette": "kitchen", "floor": "tiles", "wall": "plaster",
+        "map": [
+          " ###################### ",
+          "##################2#####",
+          "#......................#",
+          "#..CCCCCCC..CCCCCCCCC..#",
+          "#C.....................#",
+          "#C.....................#",
+          "#C.....................#",
+          "#C.....................#",
+          "#.........CCCC.........#",
+          "1......................#",
+          "#......................#",
+          "#......................#",
+          "########################"
+        ],
+        "placements": { "obj:o_marmalade_shelf": [5, 2], "obj:o_oven": [17, 2], "obj:o_peel_bin": [21, 5], "char:c_mrs_bird": [18, 9], "clue:cl_empty_shelf": [13, 6], "clue:cl_oven_smell": [9, 7] },
+        "decor": [{ "icon": "stool", "x": 9, "y": 9 }, { "icon": "stool", "x": 14, "y": 9 }, { "icon": "barrel", "x": 22, "y": 10 }, { "icon": "basket", "x": 1, "y": 11 }, { "icon": "painting", "x": 22, "y": 2 }]
+      }
     },
     {
       "id": "l_back_garden", "name": "The Back Garden", "biome": "garden", "mood": "green, sunny and full of birdsong", "palette": "grass green and sky blue", "role": "Jonathan blows up balloons here.", "hub": false,
@@ -580,7 +648,31 @@
         { "id": "o_garden_table", "name": "Garden table", "description": "A wooden table with a balloon pump on it.", "visual": { "icon": "table" } },
         { "id": "o_flowerbed", "name": "Flowerbed", "description": "Rows of bright red and yellow flowers.", "visual": { "icon": "flower" } }
       ],
-      "doors": [{ "id": "d_garden_shed", "to": "l_shed" }]
+      "doors": [{ "id": "d_garden_shed", "to": "l_shed" }],
+      "area": {
+        "description": "The grass is green and the sky is very blue. Birds sing in the hedge, and a few balloons bob by the table.",
+        "doors": [{ "to": "l_shed", "label": "Garden shed", "hint": "A small wooden shed. Someone is busy inside." }, { "to": "l_kitchen", "label": "Kitchen door", "hint": "Back into the warm kitchen." }],
+        "biome": "meadow", "palette": "park", "floor": "grass", "wall": "hedge",
+        "map": [
+          " ############################ ",
+          "##############################",
+          "#,,,,,,,,,,,,,,,,,,,,,,,,,,,,#",
+          "#,,,,,,,,,,T,,,,,,,,,,,,,,,,,#",
+          "#,,,***,,,,,,,,,,,,,,,***,,,,#",
+          "#,,T***,,,,,,,,,,,,,,,***,,,,#",
+          "#,,,,,,,,,,,,,,,T,,,,,,,,,,,,#",
+          "1::::::::::::::::::::::::::::2",
+          "#,,,,,,,,,,,:::::::,,,,,,,,,,#",
+          "#,,,,,,,,,,,:::::::,,~,,,,,,,#",
+          "#,,,***,,,,,,,,,,,,~~~~~*,,,,#",
+          "#,,,***,,,,,,,,,,,~~~~~~~,,,,#",
+          "#,,,,,,,,,,,,,,,,,,~~~~~,,,,,#",
+          "#,,,,,,,,,,,,,,,,,,,,~,,,,,,,#",
+          "##############################"
+        ],
+        "placements": { "obj:o_garden_table": [23, 2], "obj:o_flowerbed": [22, 5], "char:c_jonathan": [9, 12] },
+        "decor": [{ "icon": "bench", "x": 20, "y": 2 }, { "icon": "bench", "x": 7, "y": 2 }]
+      }
     },
     {
       "id": "l_shed", "name": "The Shed", "biome": "garden shed", "mood": "dusty, busy and smelling of paint", "palette": "brown wood and bright paint", "role": "Mr Brown hides a big banner under a sheet.", "hub": false,
@@ -589,7 +681,26 @@
         { "id": "o_covered_banner", "name": "Covered banner", "description": "Something long and big, hidden under an old sheet.", "visual": { "icon": "painting" } },
         { "id": "o_paint_bucket", "name": "Paint bucket", "description": "A bucket of bright red paint.", "visual": { "icon": "bucket", "accent": "#D83A2E" } }
       ],
-      "doors": []
+      "doors": [],
+      "area": {
+        "description": "The shed is dusty and smells of fresh paint. Tools hang on the wall, and something big hides under a white sheet.",
+        "doors": [{ "to": "l_back_garden", "label": "Out to the garden", "hint": "Back to the sunny grass." }],
+        "biome": "building", "palette": "workshop", "floor": "boards", "wall": "wood",
+        "map": [
+          " ############# ",
+          "###############",
+          "#.............#",
+          "#.............#",
+          "#.............#",
+          "#.............1",
+          "#.............#",
+          "#.............#",
+          "#.............#",
+          "###############"
+        ],
+        "placements": { "obj:o_covered_banner": [6, 2], "obj:o_paint_bucket": [5, 5], "char:c_mr_brown": [12, 6], "clue:cl_shed_sheet": [10, 3], "clue:cl_shed_banner": [2, 4] },
+        "decor": [{ "icon": "stool", "x": 1, "y": 4 }]
+      }
     },
     {
       "id": "l_judy_room", "name": "Judy's Room", "biome": "house interior", "mood": "neat, bright and full of books", "palette": "pink and pale green", "role": "Judy's room. A bus ticket and a drawing give her away.", "hub": false,
@@ -599,7 +710,26 @@
         { "id": "o_judy_notebook", "name": "Judy's drawing book", "description": "A book full of drawings.", "visual": { "icon": "book" } },
         { "id": "o_bookshelf", "name": "Bookshelf", "description": "A shelf full of story books.", "visual": { "icon": "bookshelf" } }
       ],
-      "doors": []
+      "doors": [],
+      "area": {
+        "description": "Judy's room is neat and bright, in pink and pale green. Books stand in tidy rows, and a desk sits by the window.",
+        "doors": [{ "to": "l_hall", "label": "Back to the hall", "hint": "The door out to the red carpet." }],
+        "biome": "building", "palette": "cottage", "floor": "boards", "wall": "plaster",
+        "map": [
+          " ################ ",
+          "##################",
+          "#................#",
+          "#................#",
+          "#................#",
+          "#.....RRRRRR.....#",
+          "#.....RRRRRR.....#",
+          "#.....RR.RRR.....#",
+          "#................#",
+          "########1#########"
+        ],
+        "placements": { "obj:o_bus_ticket": [8, 4], "obj:o_judy_notebook": [4, 7], "obj:o_bookshelf": [15, 8], "char:c_judy": [3, 4], "clue:cl_judy_ticket": [15, 5], "clue:cl_judy_sketch": [10, 7] },
+        "decor": [{ "icon": "mirror", "x": 8, "y": 2 }, { "icon": "chair", "x": 1, "y": 6 }]
+      }
     },
     {
       "id": "l_windsor_gardens", "name": "Windsor Gardens", "biome": "london street", "mood": "sunny and peaceful", "palette": "white houses and green trees", "role": "The street outside number 32. It leads to the bus stop, the park and Mr Curry's garden.", "hub": true,
@@ -612,7 +742,28 @@
         { "id": "d_street_curry", "to": "l_curry_garden" },
         { "id": "d_street_bus", "to": "l_bus_stop" },
         { "id": "d_street_park", "to": "l_park_gate" }
-      ]
+      ],
+      "area": {
+        "description": "White houses stand in a row under green trees. The street is quiet and sunny, and a lamp post stands by number 32.",
+        "doors": [{ "to": "l_curry_garden", "label": "Next door", "hint": "A very neat garden with a tall hedge." }, { "to": "l_bus_stop", "label": "To the buses", "hint": "Red buses stop at the end of the road." }, { "to": "l_park_gate", "label": "Park path", "hint": "Green trees and the sound of ducks." }, { "to": "l_hall", "label": "Number 32", "hint": "The blue front door of home." }],
+        "biome": "village", "palette": "london", "floor": "cobble", "wall": "brick",
+        "map": [
+          " ################################ ",
+          "T################2###############T",
+          "T..####.....#####...###..........T",
+          "T................................T",
+          "T................................T",
+          "T................................T",
+          "4................................3",
+          "T................................T",
+          "T................................T",
+          "T,,,,.....,,,,.....,,,,.....*,,,.T",
+          "T,,*T,,,,*T,,,,T,*,,T,*,,,*,,,,*,T",
+          "TTTTTTTTTTTTTTTT1TTTTTTTTTTTTTTTTT"
+        ],
+        "placements": { "obj:o_lamp_post": [30, 2], "obj:o_street_sign": [8, 2] },
+        "decor": [{ "icon": "barrel", "x": 11, "y": 2 }, { "icon": "crate", "x": 13, "y": 3 }, { "icon": "bench", "x": 28, "y": 2 }, { "icon": "barrel", "x": 21, "y": 3 }, { "icon": "bench", "x": 2, "y": 2 }]
+      }
     },
     {
       "id": "l_curry_garden", "name": "Mr Curry's Garden", "biome": "front garden", "mood": "very neat and a bit grumpy", "palette": "dark green hedge and red roses", "role": "Mr Curry looks for his newspaper. A brown hat hangs on his fence.", "hub": false,
@@ -621,7 +772,32 @@
         { "id": "o_curry_hat", "name": "Brown gardening hat", "description": "An old brown hat on the fence.", "visual": { "icon": "hat", "accent": "#7A5230" } },
         { "id": "o_curry_roses", "name": "Rose flowers", "description": "Neat rows of red roses.", "visual": { "icon": "flower", "accent": "#D83A2E" } }
       ],
-      "doors": []
+      "doors": [],
+      "area": {
+        "description": "The hedge is cut very straight, and red roses grow in neat rows. Not one leaf is out of place.",
+        "doors": [{ "to": "l_windsor_gardens", "label": "Out to the street", "hint": "Back to Windsor Gardens." }],
+        "biome": "meadow", "palette": "park", "floor": "grass", "wall": "hedge",
+        "map": [
+          " ####################### ",
+          "############1############",
+          "#,,,,,,,,,,,::,,,,,,,,,,#",
+          "#,,,,T,,,,,,,:,,,,~,,,,,#",
+          "#,,,***,,,,,,:,,~~~~~,,,#",
+          "#,,,***,,,,,T:,~~~~~~~,,#",
+          "#,,,,,,,,,,,,:,,~~~~~,,,#",
+          "#,,,,,,,,:::::::,,~,,,,,#",
+          "#,,,,,,,,:::::::,,,,,,,,#",
+          "#,,,,,,,,:::::::,,,,,,,,#",
+          "#,,,,,,,,,,,,,,,,,,,,,,,#",
+          "#,,,***,,,,,,,,,,***,,,,#",
+          "#,,,***,,,,,,,,,,***,,,,#",
+          "#,,,,,T,,,,,,,,,,,,,,,,,#",
+          "#,,,,,,,,,,,,,,,,,,,,,,,#",
+          "#########################"
+        ],
+        "placements": { "obj:o_curry_hat": [3, 2], "obj:o_curry_roses": [6, 11], "char:c_mr_curry": [21, 10], "clue:cl_curry_hat_fence": [4, 3] },
+        "decor": [{ "icon": "bench", "x": 9, "y": 14 }, { "icon": "bench", "x": 22, "y": 2 }]
+      }
     },
     {
       "id": "l_bus_stop", "name": "The Bus Stop", "biome": "london street", "mood": "breezy and bright", "palette": "red bus colours and grey stone", "role": "Mr Curry's newspaper and Jonathan's list blew or fell here.", "hub": false,
@@ -630,7 +806,28 @@
         { "id": "o_bus_sign", "name": "Bus stop sign", "description": "A red sign. The bus to Portobello Road stops here.", "visual": { "icon": "sign", "accent": "#D83A2E" } },
         { "id": "o_bus_bench", "name": "Bench", "description": "A wooden bench to wait for the bus.", "visual": { "icon": "bench" } }
       ],
-      "doors": [{ "id": "d_bus_market", "to": "l_market" }]
+      "doors": [{ "id": "d_bus_market", "to": "l_market" }],
+      "area": {
+        "description": "A red sign and a wooden bench stand by the road. The wind is breezy here, and bits of paper skip along the path.",
+        "doors": [{ "to": "l_market", "label": "Bus to the market", "hint": "The bus goes to Portobello Road." }, { "to": "l_windsor_gardens", "label": "Home street", "hint": "Back to the white houses." }],
+        "biome": "village", "palette": "london", "floor": "cobble", "wall": "brick",
+        "map": [
+          " ################################## ",
+          "T################1#################T",
+          "T..####...#####.....#####..###.....T",
+          "T..................................T",
+          "T..................................T",
+          "T..................................T",
+          "T..................................T",
+          "T..................................T",
+          "T..................................T",
+          "T**,*.....,,,,.....,,,,.....,,,,...T",
+          "T,,,T,,,,,,T,,,*,T*,*,,,T,,,,,,,*,,T",
+          "TTTTTTTTTTTTTTTT2TTTTTTTTTTTTTTTTTTT"
+        ],
+        "placements": { "obj:o_bus_sign": [14, 3], "obj:o_bus_bench": [27, 3], "item:i_newspaper": [28, 8], "clue:cl_jonathan_list": [18, 3] },
+        "decor": [{ "icon": "lamp_post", "x": 5, "y": 3 }, { "icon": "barrel", "x": 8, "y": 2 }, { "icon": "crate", "x": 22, "y": 3 }, { "icon": "lamp_post", "x": 10, "y": 10 }]
+      }
     },
     {
       "id": "l_market", "name": "Portobello Market", "biome": "street market", "mood": "busy, loud and happy", "palette": "bright fruit colours and striped awnings", "role": "Barnaby sells fruit and flowers here.", "hub": false,
@@ -639,7 +836,32 @@
         { "id": "o_fruit_basket", "name": "Fruit basket", "description": "A big basket of oranges and apples.", "visual": { "icon": "basket" } },
         { "id": "o_flower_bucket", "name": "Flower bucket", "description": "A bucket full of bright flowers.", "visual": { "icon": "flower", "accent": "#F2C230" } }
       ],
-      "doors": [{ "id": "d_market_gruber", "to": "l_gruber_shop" }]
+      "doors": [{ "id": "d_market_gruber", "to": "l_gruber_shop" }],
+      "area": {
+        "description": "Stalls with striped awnings sell fruit, flowers and old things. People call out prices, and everyone seems happy.",
+        "doors": [{ "to": "l_gruber_shop", "label": "Antique shop", "hint": "A shop with a little bell over the door." }, { "to": "l_bus_stop", "label": "Bus stop", "hint": "The bus goes back home from here." }],
+        "biome": "village", "palette": "market", "floor": "cobble", "wall": "brick",
+        "map": [
+          " ###################################### ",
+          "T######################################T",
+          "T......................................T",
+          "T......................................T",
+          "T......................................T",
+          "T...CCCC...CCCC...CCCC...CCCC...CCCC...T",
+          "T...CCCC...CCCC...CCCC...CCCC...CCCC...T",
+          "T......................................T",
+          "1......................................T",
+          "T......................................T",
+          "T..........CCCC..........CCCC...CCCC...T",
+          "T..........CCCC..........CCCC...CCCC...T",
+          "T......................................T",
+          "T......................................T",
+          "T......................................T",
+          "TTTTTTTTTTTTTTTTTTT2TTTTTTTTTTTTTTTTTTTT"
+        ],
+        "placements": { "obj:o_fruit_basket": [5, 4], "obj:o_flower_bucket": [23, 3], "char:c_barnaby": [22, 10] },
+        "decor": [{ "icon": "barrel", "x": 8, "y": 2 }, { "icon": "crate", "x": 13, "y": 2 }, { "icon": "sack", "x": 33, "y": 2 }, { "icon": "barrel", "x": 2, "y": 2 }, { "icon": "barrel", "x": 30, "y": 5 }, { "icon": "crate", "x": 30, "y": 13 }, { "icon": "barrel", "x": 18, "y": 12 }]
+      }
     },
     {
       "id": "l_gruber_shop", "name": "Mr Gruber's Shop", "biome": "antique shop", "mood": "quiet, cosy and full of old things", "palette": "dark wood and golden light", "role": "Mr Gruber's antique shop. A tag on the counter shows the hat is here.", "hub": false,
@@ -649,7 +871,30 @@
         { "id": "o_old_clock", "name": "Grandfather clock", "description": "A very old, tall clock. It is almost eleven.", "visual": { "icon": "grandfather_clock" } },
         { "id": "o_teapot", "name": "Old teapot", "description": "A pretty old teapot for sale.", "visual": { "icon": "teapot" } }
       ],
-      "doors": [{ "id": "d_gruber_backroom", "to": "l_gruber_backroom", "lock": { "goal_states": ["gs_gruber_cocoa"] } }]
+      "doors": [{ "id": "d_gruber_backroom", "to": "l_gruber_backroom", "lock": { "goal_states": ["gs_gruber_cocoa"] } }],
+      "area": {
+        "description": "The shop is quiet and full of old things in golden light. A big clock ticks slowly, and there is a tag on the counter.",
+        "doors": [{ "to": "l_gruber_backroom", "label": "Back room", "hint": "A small door behind the counter." }, { "to": "l_market", "label": "Out to the market", "hint": "Back to the busy stalls." }],
+        "biome": "building", "palette": "shop", "floor": "boards", "wall": "wood",
+        "map": [
+          " #################### ",
+          "######################",
+          "#....................#",
+          "#....................#",
+          "#....................#",
+          "#........CCCCCCCC....#",
+          "#...............C....#",
+          "#...............C....#",
+          "1...RRRRRR...........2",
+          "#...RRRRRR...........#",
+          "#...RRRRRR...........#",
+          "#....................#",
+          "#....................#",
+          "######################"
+        ],
+        "placements": { "obj:o_counter_tag": [12, 6], "obj:o_old_clock": [19, 2], "obj:o_teapot": [13, 6], "char:c_mr_gruber": [12, 4], "clue:cl_gruber_tag": [5, 3] },
+        "decor": [{ "icon": "display_stand", "x": 3, "y": 2 }, { "icon": "display_stand", "x": 5, "y": 2 }, { "icon": "display_stand", "x": 7, "y": 2 }, { "icon": "painting", "x": 14, "y": 2 }, { "icon": "urn", "x": 19, "y": 4 }, { "icon": "crate", "x": 1, "y": 12 }, { "icon": "barrel", "x": 20, "y": 12 }]
+      }
     },
     {
       "id": "l_gruber_backroom", "name": "Mr Gruber's Back Room", "biome": "workshop", "mood": "small, warm and tidy", "palette": "brown wood and red thread", "role": "Mr Gruber mends Paddington's hat here.", "hub": false,
@@ -658,7 +903,27 @@
         { "id": "o_workbench", "name": "Workbench table", "description": "A wooden workbench with Paddington's hat on it.", "visual": { "icon": "table", "accent": "#7A5230" } },
         { "id": "o_sewing_basket", "name": "Sewing basket", "description": "A basket with needles, thread and red ribbon.", "visual": { "icon": "basket", "accent": "#D83A2E" } }
       ],
-      "doors": []
+      "doors": [],
+      "area": {
+        "description": "The back room is small, warm and tidy. Reels of red thread sit by a lamp on the workbench.",
+        "doors": [{ "to": "l_gruber_shop", "label": "Into the shop", "hint": "Back to the ticking clock." }],
+        "biome": "building", "palette": "workshop", "floor": "boards", "wall": "wood",
+        "map": [
+          " ################## ",
+          "####################",
+          "#..................#",
+          "#..................#",
+          "#.....CCC..........#",
+          "#..................1",
+          "#..................#",
+          "#..................#",
+          "#..................#",
+          "#..................#",
+          "####################"
+        ],
+        "placements": { "obj:o_workbench": [5, 2], "obj:o_sewing_basket": [9, 2], "clue:cl_workbench_hat": [6, 6] },
+        "decor": [{ "icon": "stool", "x": 1, "y": 3 }, { "icon": "candle", "x": 17, "y": 2 }]
+      }
     },
     {
       "id": "l_park_gate", "name": "The Park Gate", "biome": "park", "mood": "green, sunny and full of ducks", "palette": "bright green grass and blue pond", "role": "Mrs Penny the park keeper knows about the bandstand.", "hub": false,
@@ -667,7 +932,35 @@
         { "id": "o_park_sign", "name": "Park sign", "description": "A sign at the gate: Please keep the park tidy.", "visual": { "icon": "sign", "accent": "#3A8A3A" } },
         { "id": "o_duck_pond", "name": "Duck pond fountain", "description": "A little pond with a fountain and happy ducks.", "visual": { "icon": "fountain" } }
       ],
-      "doors": [{ "id": "d_park_bandstand", "to": "l_bandstand" }]
+      "doors": [{ "id": "d_park_bandstand", "to": "l_bandstand" }],
+      "area": {
+        "description": "Tall green gates open onto bright grass and a blue pond. Ducks paddle and quack near the fountain.",
+        "doors": [{ "to": "l_bandstand", "label": "Bandstand path", "hint": "You can hear music and see balloons." }, { "to": "l_windsor_gardens", "label": "Back to the street", "hint": "Home is just down the road." }],
+        "biome": "meadow", "palette": "park", "floor": "grass", "wall": "fence",
+        "map": [
+          " ################################### ",
+          "#####################################",
+          "#,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,#",
+          "#,,,,,,,,,,,,,,,T,,,,,,,,,,,,,,,,,,,#",
+          "#,,,,,,,,,,,*,,,,,,,,*,,,,,,,,,,,,,,#",
+          "#,,,:::::::::::::::::::::::::::::,,,#",
+          "#,,,:,,,,,,,,,,,,,,,,,,,,,,,,,,T:,,,#",
+          "#,,,:,,,,,,,,~,,,,,,,,,,,,,,,,,,:,,,#",
+          "#,,,:,,,,,~~~~~~~,,,,,,,,,,,,,,,:,,,#",
+          "2::::,T,,~~~~~~~~~::,,,,,,,,,,,,:,,,#",
+          "#,,,:,,,~~~~~~~~~~~:,,T,,,,,,,,,:,,,#",
+          "#,,,:,,,,~~~~~~~~~,:,,,,,,,,,,,,:,,,#",
+          "#,,,:,T,,,~~~~~~~,,:,,,,,*,,*,,,:,,,#",
+          "#,,,:,,*,,,,,~,,,,,:,,,,,,,,,,,,:,,,#",
+          "#,T,:::::::::::::::::::::::::::::,,,#",
+          "#,,,,,,,,,,,,,,,,,:,,,,,T,,,,,,,*,,,#",
+          "#,,,,,,,,,,,,,,,,,:T,,,,,,,,,,,,,,,,#",
+          "#,,,,,,,,,,,,,,,,,:,,,,,,,,,,,,,,,,,#",
+          "##################1##################"
+        ],
+        "placements": { "obj:o_park_sign": [2, 8], "obj:o_duck_pond": [8, 9], "char:c_mrs_penny": [7, 11] },
+        "decor": [{ "icon": "bench", "x": 34, "y": 17 }, { "icon": "lamp_post", "x": 35, "y": 10 }, { "icon": "bench", "x": 29, "y": 17 }, { "icon": "lamp_post", "x": 23, "y": 2 }]
+      }
     },
     {
       "id": "l_bandstand", "name": "The Bandstand", "biome": "park", "mood": "bright, happy and full of balloons", "palette": "white bandstand, red balloons and yellow bunting", "role": "Finale. The surprise birthday party.", "hub": false,
@@ -676,7 +969,36 @@
         { "id": "o_party_table", "name": "Party table", "description": "A long table with a giant marmalade cake.", "visual": { "icon": "table", "accent": "#F2C230" } },
         { "id": "o_birthday_banner", "name": "Birthday banner", "description": "A big banner: HAPPY BIRTHDAY, PADDINGTON!", "visual": { "icon": "painting", "accent": "#D83A2E" } }
       ],
-      "doors": []
+      "doors": [],
+      "area": {
+        "description": "A white bandstand stands in the sun, with yellow bunting and red balloons. A long table waits under the trees.",
+        "doors": [{ "to": "l_park_gate", "label": "Back to the gate", "hint": "The path back past the duck pond." }],
+        "biome": "meadow", "palette": "park", "floor": "grass", "wall": "fence",
+        "map": [
+          " ################################### ",
+          "##################1##################",
+          "#,,,,,,,,,,,,,,,,,:,,,,,,,,,,,,,,,,,#",
+          "#,,,,,,,T,,,,,,,,,:,,,,,,,,,,T,,,,,,#",
+          "#,,,T,,,,,,,,,,,,,:,,,,,,,,,,,,,,,,,#",
+          "#,,,,,,,,,,,,,,,,,:,,,,,,,,,,,,,,T,,#",
+          "#,,,,,,,,,**,,,,,,:,,,,,,**,,,,,,,,,#",
+          "#,,,,,,,,,,,,,,,RRRRR,,,,,,,,,,,,,,,#",
+          "#,*,,,,,,,,,,,RRRRRRRRR,,,,,,,,,,,,,#",
+          "#,,,,,,,,,,,,RRRRRRRRRRR,,,,,,,,,,*,#",
+          "#,,,,,,,,,,,RRRRRRRRRRRRR,,,,,,,,,,,#",
+          "#,,,,,,,,,,,,RRRRRRRRRRR,,,,,,,,,,,,#",
+          "#,,T,,,,,,,,,,RRRRRRRRR,,,,,,,,,,,,,#",
+          "#,,,,,,,,,,,,,,,RRRRR,,,,,,,,,,,,T,,#",
+          "#,,,,,,,,,,,,,,,,,:,,,,,,,,,,,,,,,,,#",
+          "#,,,,,,,,**,,,,,,,:,,,,,,,,**,,,,,,,#",
+          "#,,,,,,,,,,,T,,,,,:,,,,,,T,,,,,,,,,,#",
+          "#,,,,,T,,,,,,,,,,,:,,,,,,,,,,,T,,,,,#",
+          "#,,,,,,,,,,,,,,,,,:,,,,,,,,,,,,,,,,,#",
+          "#####################################"
+        ],
+        "placements": { "obj:o_party_table": [18, 10], "obj:o_birthday_banner": [14, 2] },
+        "decor": [{ "icon": "bench", "x": 12, "y": 8 }, { "icon": "bench", "x": 24, "y": 8 }, { "icon": "bench", "x": 12, "y": 12 }, { "icon": "bench", "x": 24, "y": 12 }, { "icon": "lamp_post", "x": 15, "y": 5 }, { "icon": "lamp_post", "x": 21, "y": 5 }]
+      }
     }
   ],
   "twists": [

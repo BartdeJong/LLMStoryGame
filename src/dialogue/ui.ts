@@ -5,6 +5,8 @@ import { activateGamepadFocus } from "../input/focus";
 import { inputMode } from "../input/mode";
 import { isReducedMotion } from "../ui/preferences";
 import { getVisualViewportBottomInset } from "./visualViewport";
+import { getSpriteCanvas } from "../art/characterSprites";
+import type { SpriteSpec } from "../art/spriteSpec";
 import type { SubjectRef } from "../story/types";
 import type { AskEntry, AskOptions } from "./askAbout";
 
@@ -20,9 +22,28 @@ export interface DialogueHandlers {
   getAskOptions?(): AskOptions;
 }
 
+// Sprites shown beside the speaker's name and on the player's lines.
+export interface DialoguePortraits {
+  character?: SpriteSpec;
+  player?: SpriteSpec;
+  playerName?: string;
+}
+
+// A crisp, enlarged copy of a character sprite for the page (the cached canvas cannot be reused in two places).
+function portraitCanvas(spec: SpriteSpec, className: string): HTMLCanvasElement {
+  const source = getSpriteCanvas(spec, "down", 0);
+  const canvas = document.createElement("canvas");
+  canvas.width = source.width;
+  canvas.height = source.height;
+  canvas.className = className;
+  canvas.setAttribute("aria-hidden", "true");
+  canvas.getContext("2d")?.drawImage(source, 0, 0);
+  return canvas;
+}
+
 export interface DialogueBox {
   readonly element: HTMLElement;
-  open(characterName: string, handlers?: DialogueHandlers): void;
+  open(characterName: string, handlers?: DialogueHandlers, portraits?: DialoguePortraits): void;
   close(): void;
   showPlayerReply(text: string, kind?: "intent"): void;
   showThinking(): void;
@@ -42,6 +63,9 @@ export function createDialogueBox(container: HTMLElement): DialogueBox {
   const box = el("section", "dialogue-box");
   box.hidden = true;
 
+  const header = el("div", "dialogue-header");
+  const portrait = el("div", "dialogue-portrait");
+  portrait.hidden = true;
   const speaker = el("p", "dialogue-speaker");
   const thinking = el("p", "dialogue-thinking");
   thinking.hidden = true;
@@ -91,7 +115,10 @@ export function createDialogueBox(container: HTMLElement): DialogueBox {
   leaveButton.textContent = "Leave";
   controls.append(askButton, switchButton, leaveButton);
 
-  box.append(speaker, thinking, log, skipButton, notice, replySection, controls);
+  const headerText = el("div", "dialogue-header-text");
+  headerText.append(speaker, thinking);
+  header.append(portrait, headerText);
+  box.append(header, log, skipButton, notice, replySection, controls);
   container.append(box);
 
   const visualViewport = window.visualViewport;
@@ -172,6 +199,7 @@ export function createDialogueBox(container: HTMLElement): DialogueBox {
   let currentChoices: string[] = [];
   let currentGives: { itemId: string; label: string }[] = [];
   let activeCharacterName = "";
+  let playerPortrait: SpriteSpec | undefined;
   let turns: { speaker: "player" | "character"; text: string; kind?: "intent" }[] = [];
   let showAllTurns = false;
   let open = false;
@@ -330,6 +358,10 @@ export function createDialogueBox(container: HTMLElement): DialogueBox {
       const text = el("p", "dialogue-bubble-text");
       text.textContent = turn.text;
       bubble.append(label, text);
+      if (turn.speaker === "player" && playerPortrait) {
+        bubble.classList.add("dialogue-bubble-with-portrait");
+        bubble.append(portraitCanvas(playerPortrait, "dialogue-player-portrait"));
+      }
       log.append(bubble);
     });
     log.scrollTop = scrollToLatest ? log.scrollHeight : 0;
@@ -340,9 +372,13 @@ export function createDialogueBox(container: HTMLElement): DialogueBox {
     get isOpen() {
       return open;
     },
-    open(name: string, handlers?: DialogueHandlers) {
+    open(name: string, handlers?: DialogueHandlers, portraits?: DialoguePortraits) {
       open = true;
       activeCharacterName = name;
+      playerPortrait = portraits?.player;
+      portrait.replaceChildren();
+      portrait.hidden = !portraits?.character;
+      if (portraits?.character) portrait.append(portraitCanvas(portraits.character, "dialogue-portrait-canvas"));
       currentHandlers = handlers ?? null;
       box.hidden = false;
       speaker.textContent = name;

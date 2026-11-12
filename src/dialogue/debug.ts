@@ -449,7 +449,7 @@ export async function mountDialogueDebugScreen(): Promise<void> {
       const view = getLengthView(selectedPack, lengthSelect.value as LengthId);
       const character = selectedCharacter();
       const setup = selectedState();
-      const story = new StorySession(selectedPack, view, client, 0);
+      const story = new StorySession(selectedPack, view, client);
       for (const truthId of setup.truthsFound) addTruth(story.state, truthId);
       for (const itemId of setup.itemsHeld) giveItem(story.state, itemId);
       const location = selectedPack.locations.find((entry) => entry.id === character.home_location);

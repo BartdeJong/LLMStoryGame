@@ -81,12 +81,25 @@ body {
   opacity: 0.75;
 }
 
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* A slim bar: area name, current lead, case pips. Tapping the lead opens the details. */
 .game-hud {
   position: absolute;
   top: max(14px, env(safe-area-inset-top));
-  left: max(14px, env(safe-area-inset-left));
-  max-width: min(70vw, 360px);
-  padding: 8px 12px;
+  left: max(16px, env(safe-area-inset-left));
+  z-index: 3;
+  max-width: min(70vw, 400px);
   border: 2px solid var(--story-frame, #536a4c);
   border-radius: 6px;
   background: var(--story-panel, rgb(23 37 29 / 88%));
@@ -101,31 +114,230 @@ body {
   line-height: 1.35;
 }
 
+.hud-bar {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  min-height: 34px;
+  padding: 0 4px 0 2px;
+}
+
+.hud-bar button {
+  min-height: 32px;
+  padding: 0 8px;
+  border: 0;
+  color: inherit;
+  background: transparent;
+  font: inherit;
+  cursor: pointer;
+  pointer-events: auto;
+  -webkit-tap-highlight-color: transparent;
+}
+
 .location-label {
+  flex: 0 1 auto;
+  min-width: 0;
+  max-width: 45%;
+  overflow: hidden;
   color: var(--story-accent, #e7cd84);
   font-size: 10px !important;
   font-weight: 800;
   letter-spacing: 0.12em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-#game-message {
-  margin-top: 3px;
+.hud-lead {
+  display: flex;
+  flex: 1 1 auto;
+  min-width: 0;
+  align-items: center;
+  gap: 8px;
+  border-left: 1px solid var(--story-frame, #536a4c) !important;
+  font-size: 12px;
+  text-align: left;
+}
+
+.hud-lead-title {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.hud-pips {
+  display: inline-flex;
+  flex: 0 0 auto;
+  gap: 3px;
+}
+
+.hud-pips:empty {
+  display: none;
+}
+
+.hud-pip {
+  width: 7px;
+  height: 7px;
+  border: 1.5px solid var(--story-accent, #e7cd84);
+  border-radius: 50%;
+}
+
+.hud-pip.is-on {
+  background: var(--story-accent, #e7cd84);
+}
+
+.hud-count {
+  display: none;
+  flex: 0 0 auto;
+  color: var(--story-accent, #e7cd84);
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.hud-count:empty {
+  display: none !important;
+}
+
+.hud-chevron {
+  flex: 0 0 auto;
+  width: 6px;
+  height: 6px;
+  margin: 0 2px 3px;
+  border-right: 2px solid var(--story-accent, #e7cd84);
+  border-bottom: 2px solid var(--story-accent, #e7cd84);
+  transform: rotate(45deg);
+  transition: transform 0.15s;
+}
+
+.game-hud.is-expanded .hud-chevron {
+  margin-bottom: -2px;
+  transform: rotate(225deg);
+}
+
+.hud-details {
+  max-height: min(52dvh, 360px);
+  padding: 6px 12px 10px;
+  overflow-y: auto;
+  border-top: 1px solid var(--story-frame, #536a4c);
+  pointer-events: auto;
+}
+
+.hud-details[hidden] {
+  display: none;
+}
+
+.hud-progress {
+  color: var(--story-accent, #e7cd84);
+  font-weight: 700;
+}
+
+.hud-progress[hidden] {
+  display: none;
+}
+
+/* Captions and toasts share one column under the bar, so they never cover each other. */
+.hud-notices {
+  position: absolute;
+  top: calc(max(14px, env(safe-area-inset-top)) + 48px);
+  left: 50%;
+  z-index: 2;
+  display: grid;
+  gap: 6px;
+  justify-items: center;
+  width: max-content;
+  max-width: min(calc(100vw - 32px), 440px);
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+/* The message line is a caption: a card that appears and fades away. */
+.game-caption {
+  display: none;
+  margin: 0;
+  padding: 8px 14px;
+  border: 2px solid var(--story-frame, #536a4c);
+  border-radius: 8px;
+  background: var(--story-panel, rgb(23 37 29 / 92%));
+  color: var(--story-text, #f5f0d7);
+  box-shadow: 0 3px 0 rgb(0 0 0 / 25%);
+  font-size: 12px;
+  line-height: 1.4;
+  text-align: center;
+}
+
+.game-caption.is-visible,
+.game-caption.is-leaving {
+  display: block;
+  pointer-events: auto;
+}
+
+.game-caption.is-visible {
+  animation: caption-in 0.3s ease-out both;
+}
+
+.game-caption.is-leaving {
+  animation: caption-out 0.4s ease-in forwards;
+}
+
+@keyframes caption-in {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes caption-out {
+  to {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
 }
 
 .save-status {
-  margin-top: 4px !important;
+  display: inline-grid;
+  flex: 0 0 auto;
+  width: 16px;
+  height: 16px;
+  place-items: center;
+  margin-left: 2px;
+  overflow: hidden;
   color: var(--story-muted, #b7c1a0);
-  font-size: 9px !important;
+  font-size: 0 !important;
 }
 
 .save-status:empty {
   display: none;
 }
 
+.save-status::before {
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.save-status[data-state="saving"]::before {
+  content: "\2026";
+}
+
+.save-status[data-state="saved"]::before {
+  content: "\2713";
+}
+
+.save-status[data-state="failed"]::before {
+  content: "!";
+  color: #ff9a8a;
+}
+
 .controls-guide {
-  margin-top: 5px;
+  margin-top: 8px;
   font-size: 10px;
-  pointer-events: auto;
 }
 
 .controls-guide summary {
@@ -142,32 +354,28 @@ body {
   font-size: 10px !important;
 }
 
-.objective-hud {
-  margin-top: 7px;
-  padding-top: 6px;
-  border-top: 1px solid var(--story-frame, #536a4c);
-}
-
-.objective-hud p {
+.objective-hud-heading,
+.objective-hud-text,
+.objective-hud-guidance {
   margin: 0;
   font-size: 11px;
   line-height: 1.35;
 }
 
 .objective-hud-heading {
+  margin-top: 6px;
   color: var(--story-accent, #e7cd84);
   font-size: 9px !important;
   font-weight: 800;
   letter-spacing: 0.1em;
 }
 
-.objective-hud-title {
-  margin-top: 2px !important;
-  font-weight: 700;
+.objective-hud-text {
+  margin-top: 2px;
 }
 
 .objective-hud-guidance {
-  margin-top: 2px !important;
+  margin-top: 2px;
   color: var(--story-muted, #d3ddc2);
 }
 
@@ -183,12 +391,176 @@ body {
   pointer-events: auto;
 }
 
+.hud-bar button:focus-visible,
 .objective-hud-toggle:focus-visible,
+.controls-guide summary:focus-visible,
 .journal-button:focus-visible,
 .pause-button:focus-visible,
 .inventory-button:focus-visible {
   outline: 2px solid #f5f0d7;
-  outline-offset: 3px;
+  outline-offset: 2px;
+}
+
+.progress-toasts {
+  display: grid;
+  gap: 6px;
+  justify-items: center;
+}
+
+.progress-toast {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 12px;
+  border: 2px solid var(--story-accent, #e7cd84);
+  border-radius: 18px;
+  background: var(--story-panel, rgb(23 37 29 / 94%));
+  color: var(--story-text, #fff4d1);
+  box-shadow: 0 3px 0 rgb(0 0 0 / 25%), 0 0 14px rgb(231 205 132 / 35%);
+  font-size: 12px;
+  line-height: 1.35;
+  animation: toast-in 0.45s cubic-bezier(0.2, 1.3, 0.4, 1) both, toast-out 0.5s ease-in 3.7s forwards;
+}
+
+.progress-toast-icon {
+  display: grid;
+  flex: 0 0 auto;
+  width: 20px;
+  height: 20px;
+  place-items: center;
+  border-radius: 50%;
+  color: #1a2a1f;
+  background: var(--story-accent, #e7cd84);
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.progress-toast-text strong {
+  color: var(--story-accent, #e7cd84);
+}
+
+.progress-toast-truth,
+.progress-toast-deduction {
+  border-width: 3px;
+}
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(-10px) scale(0.92);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes toast-out {
+  to {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+}
+
+.celebration-glow {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  background: radial-gradient(ellipse at 50% 45%, rgb(255 232 160 / 0%) 35%, rgb(255 226 140 / 38%) 100%);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.celebration-glow.is-glowing {
+  animation: celebration-glow 1.3s ease-out;
+}
+
+@keyframes celebration-glow {
+  0% {
+    opacity: 0;
+  }
+
+  25% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+  }
+}
+
+.journal-progress {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 10px;
+  margin-bottom: 8px;
+}
+
+.journal-progress[hidden] {
+  display: none;
+}
+
+.journal-progress-text {
+  margin: 0;
+  color: #e7cd84;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.journal-progress .hud-pip {
+  border-color: #e7cd84;
+}
+
+.journal-progress .hud-pip.is-on {
+  background: #e7cd84;
+}
+
+.ending-recap {
+  margin-top: 20px;
+  padding-top: 12px;
+  border-top: 1px solid #536a4c;
+  text-align: left;
+}
+
+.ending-recap .ending-subtitle {
+  text-align: center;
+}
+
+.ending-recap-truths {
+  margin: 12px 0;
+  padding-left: 1.4em;
+}
+
+.ending-recap-truth {
+  margin-bottom: 10px;
+}
+
+.ending-recap-text,
+.ending-recap-clue {
+  display: block;
+}
+
+.ending-recap-clue {
+  color: #b9c4a8;
+  font-size: 0.85rem;
+}
+
+.ending-recap-facts {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.9rem;
+}
+
+.ending-recap-fact {
+  margin-bottom: 4px;
+}
+
+.pause-controls {
+  margin-top: 12px;
+  font-size: 0.8rem;
 }
 
 .interaction-prompt {
@@ -989,6 +1361,65 @@ body.llm-debug-mode {
   text-transform: uppercase;
 }
 
+.dialogue-header {
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+}
+
+.dialogue-header-text {
+  min-width: 0;
+  flex: 1 1 auto;
+  padding-bottom: 4px;
+}
+
+.dialogue-portrait {
+  flex: none;
+  line-height: 0;
+}
+
+.dialogue-portrait[hidden] {
+  display: none;
+}
+
+.dialogue-portrait-canvas {
+  width: 64px;
+  height: 96px;
+  image-rendering: pixelated;
+}
+
+.dialogue-bubble-with-portrait {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  column-gap: 8px;
+  align-items: end;
+}
+
+.dialogue-bubble-with-portrait > .dialogue-bubble-label,
+.dialogue-bubble-with-portrait > .dialogue-bubble-text {
+  grid-column: 1;
+}
+
+.dialogue-player-portrait {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  width: 32px;
+  height: 48px;
+  image-rendering: pixelated;
+}
+
+@media (max-width: 600px), (max-height: 520px) {
+  .dialogue-portrait-canvas {
+    width: 48px;
+    height: 72px;
+  }
+}
+
+#game-shell[data-dialogue-viewport-compact="true"] .dialogue-portrait-canvas {
+  width: 32px;
+  height: 48px;
+}
+
 .dialogue-thinking {
   margin: 0 0 8px;
   color: #e7cd84;
@@ -1440,8 +1871,20 @@ body.llm-debug-mode {
 
 @media (max-width: 600px) {
   .game-hud {
-    max-width: min(calc(100vw - 106px), 360px);
-    padding: 7px 9px;
+    max-width: min(calc(100vw - 122px), 360px);
+  }
+
+  /* Below the journal button, which sits at the right edge. */
+  .hud-notices {
+    top: calc(max(14px, env(safe-area-inset-top)) + 100px);
+  }
+
+  .hud-lead .hud-pips {
+    display: none;
+  }
+
+  .hud-count {
+    display: inline;
   }
 
   .journal-panel {
@@ -1940,6 +2383,8 @@ html[data-high-contrast="true"] {
 }
 
 html[data-high-contrast="true"] .game-hud,
+html[data-high-contrast="true"] .game-caption,
+html[data-high-contrast="true"] .progress-toast,
 html[data-high-contrast="true"] .journal-panel,
 html[data-high-contrast="true"] .inventory-panel,
 html[data-high-contrast="true"] .dialogue-box,
@@ -1950,6 +2395,8 @@ html[data-high-contrast="true"] .pause-panel {
 }
 
 html[data-high-contrast="true"] .game-hud,
+html[data-high-contrast="true"] .game-caption,
+html[data-high-contrast="true"] .progress-toast,
 html[data-high-contrast="true"] .journal-entry-text,
 html[data-high-contrast="true"] .inventory-item-description,
 html[data-high-contrast="true"] .world-map-hint {
@@ -2005,10 +2452,18 @@ html[data-reduced-motion="true"] *::after {
 
 @media (pointer: coarse) {
   .game-hud p,
+  .hud-lead,
+  .game-caption,
+  .progress-toast,
   .controls-guide,
   .controls-guide p,
-  .objective-hud p {
+  .objective-hud-text,
+  .objective-hud-guidance {
     font-size: 14px !important;
+  }
+
+  .hud-bar button {
+    min-height: 40px;
   }
 
   .dialogue-bubble-text {
@@ -2066,9 +2521,13 @@ html[data-reduced-motion="true"] *::after {
 
 @media (pointer: coarse) {
   html[data-text-size="large"] .game-hud p,
+  html[data-text-size="large"] .hud-lead,
+  html[data-text-size="large"] .game-caption,
+  html[data-text-size="large"] .progress-toast,
   html[data-text-size="large"] .controls-guide,
   html[data-text-size="large"] .controls-guide p,
-  html[data-text-size="large"] .objective-hud p {
+  html[data-text-size="large"] .objective-hud-text,
+  html[data-text-size="large"] .objective-hud-guidance {
     font-size: 16px !important;
   }
 
@@ -2089,9 +2548,13 @@ html[data-reduced-motion="true"] *::after {
   }
 
   html[data-text-size="extra-large"] .game-hud p,
+  html[data-text-size="extra-large"] .hud-lead,
+  html[data-text-size="extra-large"] .game-caption,
+  html[data-text-size="extra-large"] .progress-toast,
   html[data-text-size="extra-large"] .controls-guide,
   html[data-text-size="extra-large"] .controls-guide p,
-  html[data-text-size="extra-large"] .objective-hud p {
+  html[data-text-size="extra-large"] .objective-hud-text,
+  html[data-text-size="extra-large"] .objective-hud-guidance {
     font-size: 18px !important;
   }
 

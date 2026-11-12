@@ -6,7 +6,7 @@ import { footstepFor, voiceBlipHz, voiceFor, type VoiceParams } from "./voiceRec
 
 export type SoundEffect =
   | "footstep" | "door" | "item" | "dialogue" | "ending" | "deduction"
-  | "clue" | "goal" | "locked" | "journal" | "map" | "wrong";
+  | "clue" | "truth" | "goal" | "locked" | "journal" | "map" | "wrong";
 
 const MUTED_KEY = "cozy-mystery.muted";
 const VOLUME_KEY = "cozy-mystery.volume";
@@ -15,11 +15,12 @@ const VOICES_KEY = "cozy-mystery.character-voices";
 
 const NOTES: Record<Exclude<SoundEffect, "footstep">, readonly [number, number, number][]> = {
   door: [[240, 0, 0.11], [180, 0.1, 0.15]],
-  item: [[660, 0, 0.13], [880, 0.1, 0.18]],
+  item: [[659, 0, 0.14], [880, 0.09, 0.16], [1175, 0.18, 0.34]],
   dialogue: [[520, 0, 0.055]],
   ending: [[523, 0, 0.2], [659, 0.18, 0.2], [784, 0.36, 0.34]],
-  deduction: [[587, 0, 0.12], [740, 0.1, 0.12], [988, 0.2, 0.26]],
-  clue: [[784, 0, 0.09], [1175, 0.08, 0.2]],
+  deduction: [[523, 0, 0.14], [659, 0.1, 0.14], [784, 0.2, 0.16], [1047, 0.3, 0.2], [1319, 0.4, 0.55]],
+  clue: [[784, 0, 0.1], [1047, 0.08, 0.12], [1319, 0.16, 0.34]],
+  truth: [[523, 0, 0.18], [659, 0.1, 0.18], [784, 0.2, 0.22], [1047, 0.3, 0.5]],
   goal: [[440, 0, 0.1], [554, 0.09, 0.1], [659, 0.18, 0.1], [880, 0.27, 0.3]],
   locked: [[150, 0, 0.07], [150, 0.1, 0.09]],
   journal: [[392, 0, 0.06], [523, 0.05, 0.09]],

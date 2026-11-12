@@ -65,6 +65,15 @@ describe("validator rejects broken packs", () => {
     expect(codes(pack)).toContain("ID_DUPLICATE");
   });
 
+  it("rejects area door signs that lead nowhere or name another place", () => {
+    const pack = fresh();
+    pack.locations[1].area!.doors.push({ to: "l_clocktower", label: "Tower", hint: "Up the stair." });
+    pack.locations[0].area!.doors[0]!.label = "Past Owl Library";
+    const codes = validateStoryPack(pack).errors.map((e) => e.code);
+    expect(codes).toContain("AREA_DOOR_NOT_NEIGHBOUR");
+    expect(codes).toContain("AREA_DOOR_MISLEADING");
+  });
+
   it("unreachable location (no door leads to it)", () => {
     const pack = fresh();
     pack.locations[0].doors = pack.locations[0].doors.filter((d) => d.to !== "l_garden");
@@ -139,10 +148,11 @@ describe("validator rejects broken packs", () => {
       ...pack.cast[2],
       id: "c_extra",
       name: "Extra",
+      sprite: { species: "fox", height: "tall", girth: "stout", skin: "#c0602a", outfit: { style: "robe", color: "#335577" }, headwear: { style: "top-hat", color: "#222222" } },
       goal_states: [],
       knowledge: pack.cast[2].knowledge.map(({ clue_id: _clue, truth_id: _truth, ...rest }) => rest),
     });
-    pack.items.push({ ...pack.items[2], id: "i_spare" });
+    pack.items.push({ ...pack.items[2], id: "i_spare", found_at: { type: "character", id: "c_mira" } });
     const report = validateStoryPack(pack);
     expect(report.ok).toBe(true);
     expect(report.warnings.filter((w) => !w.code.startsWith("VISUAL_")).map((w) => w.code).sort()).toEqual(["UNUSED_CAST", "UNUSED_ITEM"]);

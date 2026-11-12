@@ -1,10 +1,7 @@
 import type { LLMClient } from "../llm/client";
 import type { Area, AreaEntity, GridPoint } from "../world/types";
-import { doorSpawn } from "../world/session";
-import { buildStoryArea } from "./briefToMap";
-import type { StoryAreaBrief } from "./briefs";
+import { buildPackArea, doorSpawn, type StoryAreaBrief } from "./packArea";
 import type { LengthView } from "./loader";
-import { BriefService } from "./prefetch";
 import { findDoorLock, isRequirementMet, missingRequirementNames } from "./requirements";
 import { endingChoiceLabel, writeEnding } from "./ending";
 import { pickSummation, type SummationQuestion } from "./deduction";
@@ -12,12 +9,9 @@ import type { EndingChoice, EndingScene } from "./ending";
 import { createStoryState, giveItem, grantTruthsFromFoundClues, markClueFound, markCollected, markVisited, summaryDue } from "./state";
 import type { StoryState } from "./state";
 import { refreshSummary } from "./summary";
-import { parseCharacterRecipe } from "./recipes";
-import { layoutStoryWorld, storyDoorPoints, type LocationCell, type StoryWorldLayout } from "./worldLayout";
+import { layoutStoryWorld, type LocationCell, type StoryWorldLayout } from "./worldLayout";
 import type { Beat, CastMember, Ending, Item, StoryPack } from "./types";
-import type { GameSave, SavedArea } from "../save/types";
-
-const PREFETCH_DELAY_MS = 3000;
+import type { GameSave } from "../save/types";
 
 export interface CollectResult {
   item: Item;
@@ -28,28 +22,23 @@ export interface CollectResult {
 export interface StoryTransition {
   area: Area;
   spawn: GridPoint;
-  arrivedFromFog: boolean; // the brief was not ready, so the player waited in the fog
 }
 
-// Runtime glue: pack + length + LLM client -> areas the player can walk through.
+// Runtime glue: pack + length -> areas the player can walk through. Areas are built from the pack, never generated.
 export class StorySession {
   readonly state: StoryState;
-  readonly briefs: BriefService;
   private readonly areas = new Map<string, Area>();
   private readonly briefsByArea = new Map<string, StoryAreaBrief>();
   private readonly worldLayout: StoryWorldLayout;
   private summaryRunning = false;
-  private prefetchTimer: ReturnType<typeof setTimeout> | undefined;
 
   constructor(
     readonly pack: StoryPack,
     readonly view: LengthView,
     readonly client: LLMClient,
-    prefetchCap?: number,
     readonly worldSeed = `${pack.identity.id}:${pack.identity.version}`,
   ) {
     this.state = createStoryState(view);
-    this.briefs = new BriefService(client, pack, view, this.state, prefetchCap);
     this.worldLayout = layoutStoryWorld(pack, view);
   }
 
@@ -101,12 +90,13 @@ export class StorySession {
     return this.briefsByArea.get(areaId);
   }
 
-  getSavedAreas(): SavedArea[] {
-    return [...this.areas].map(([areaId, area]) => {
-      const brief = this.briefsByArea.get(areaId);
-      if (!brief) throw new Error(`Area "${areaId}" has no story brief to save.`);
-      return { area, brief };
-    });
+  // The areas the player has visited, as currently built (collected things already removed).
+  getAreas(): Area[] {
+    return [...this.areas.values()];
+  }
+
+  getAreaIds(): string[] {
+    return [...this.areas.keys()];
   }
 
   restoreSave(save: GameSave): void {
@@ -117,27 +107,10 @@ export class StorySession {
     Object.assign(this.state, save.storyState);
     this.areas.clear();
     this.briefsByArea.clear();
-    const characterRecipes = new Map(
-      this.pack.cast.flatMap((character) => {
-        const recipe = parseCharacterRecipe(character.sprite_recipe);
-        return recipe ? [[character.id, recipe] as const] : [];
-      }),
-    );
-    for (const savedArea of save.areas) {
-      const area = savedArea.area;
-      const entities = area.entities
-        ?.filter((entity) => !this.state.collectedEntities.includes(entity.id))
-        .map((entity) => {
-          const recipe = entity.packId ? characterRecipes.get(entity.packId) : undefined;
-          return recipe ? { ...entity, character: recipe } : entity;
-        });
-      this.areas.set(area.id, entities ? { ...area, entities } : area);
-      if (savedArea.brief) this.briefsByArea.set(savedArea.area.id, savedArea.brief);
+    for (const areaId of save.areaIds) {
+      if (!this.view.locations.some((location) => location.id === areaId)) continue;
+      this.buildArea(areaId);
     }
-  }
-
-  isReady(locationId: string): boolean {
-    return this.isLocationOpen(locationId) && (this.areas.has(locationId) || this.briefs.isReady(locationId));
   }
 
   isLocationOpen(locationId: string): boolean {
@@ -210,25 +183,23 @@ export class StorySession {
   }
 
   // Builds (once) and returns the start area.
-  async start(): Promise<Area> {
-    const area = await this.ensureArea(this.startLocationId);
+  start(): Area {
+    const area = this.ensureArea(this.startLocationId);
     this.onEntered(area);
     return area;
   }
 
-  async enterDoor(fromAreaId: string, doorId: string): Promise<StoryTransition> {
+  enterDoor(fromAreaId: string, doorId: string): StoryTransition {
     const door = this.getArea(fromAreaId).doors.find((candidate) => candidate.id === doorId);
     if (!door?.targetAreaId) throw new Error(`Area "${fromAreaId}" has no usable door "${doorId}".`);
     if (this.isDoorLocked(fromAreaId, doorId)) {
       throw new Error(this.describeDoorLock(fromAreaId, doorId) ?? "That path is not open yet.");
     }
-    clearTimeout(this.prefetchTimer);
-    const wasReady = this.isReady(door.targetAreaId);
-    const area = await this.ensureArea(door.targetAreaId);
+    const area = this.ensureArea(door.targetAreaId);
     const returnDoor = area.doors.find((candidate) => candidate.targetAreaId === fromAreaId);
     const spawn = returnDoor ? doorSpawn(area, returnDoor) : area.entry;
     this.onEntered(area);
-    return { area, spawn, arrivedFromFog: !wasReady };
+    return { area, spawn };
   }
 
   // Examining a clue spot records its truth. Returns the clue text, or null if the entity is not a clue.
@@ -245,7 +216,7 @@ export class StorySession {
     return entity.description;
   }
 
-  // The pack core for a character entity, or undefined for a minor LLM-invented extra (no core, no dialogue).
+  // The pack core for a character entity, or undefined for a non-cast entity (no core, no dialogue).
   getCharacter(entity: AreaEntity): CastMember | undefined {
     if (entity.kind !== "character" || !entity.packId) return undefined;
     return this.pack.cast.find((member) => member.id === entity.packId);
@@ -308,13 +279,18 @@ export class StorySession {
     return this.areas.get(door.targetAreaId)?.name ?? door.label;
   }
 
-  private async ensureArea(locationId: string): Promise<Area> {
+  private ensureArea(locationId: string): Area {
     if (!this.isLocationOpen(locationId)) throw new Error(`Location "${locationId}" is not open yet.`);
-    const existing = this.areas.get(locationId);
-    if (existing) return existing;
-    const brief = await this.briefs.request(locationId);
-    const doorPoints = storyDoorPoints(this.worldLayout, locationId, brief.doors.map((door) => door.to));
-    const area = buildStoryArea(brief, this.worldSeed, doorPoints);
+    return this.areas.get(locationId) ?? this.buildArea(locationId);
+  }
+
+  // Builds the area from the pack and leaves out the things the player has already picked up.
+  private buildArea(locationId: string): Area {
+    const { area: built, brief } = buildPackArea(this.pack, this.view, locationId);
+    const area: Area = {
+      ...built,
+      entities: built.entities?.filter((entity) => !this.state.collectedEntities.includes(entity.id)),
+    };
     this.areas.set(locationId, area);
     this.briefsByArea.set(locationId, brief);
     return area;
@@ -322,12 +298,6 @@ export class StorySession {
 
   private onEntered(area: Area): void {
     markVisited(this.state, area.id);
-    const neighbours = area.doors.map((door) => door.targetAreaId).filter((id): id is string => id !== undefined);
-    // Neighbour briefs start generating after the arrival settles, so the model does not compete with the first frames.
-    clearTimeout(this.prefetchTimer);
-    this.prefetchTimer = setTimeout(() => {
-      this.briefs.prefetch(neighbours.filter((id) => this.isLocationOpen(id) && !this.areas.has(id)));
-    }, PREFETCH_DELAY_MS);
     if (summaryDue(this.state) && !this.summaryRunning) {
       this.summaryRunning = true;
       void refreshSummary(this.client, this.pack, this.view, this.state).finally(() => { this.summaryRunning = false; });

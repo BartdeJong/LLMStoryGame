@@ -1,8 +1,7 @@
 import { doorPointsForBearings } from "../world/doorSlots";
 import type { GridPoint } from "../world/types";
 import type { LengthView } from "./loader";
-import { locationDoorTargets } from "./slice";
-import type { StoryPack } from "./types";
+import { LENGTH_IDS, type StoryPack } from "./types";
 
 // A location's place on the compass grid of the story world. Rows grow southwards, columns eastwards.
 export interface LocationCell {
@@ -25,11 +24,20 @@ function ring(radius: number): LocationCell[] {
     Math.hypot(a.column, a.row) - Math.hypot(b.column, b.row) || turn(a) - turn(b));
 }
 
-// Gives every location of a length its own cell, so that a door can face the place it leads to and the map can show
+// Every neighbour of a location in the whole pack. Doors work in both directions.
+function packNeighbours(pack: StoryPack, locationId: string): string[] {
+  const outgoing = pack.locations.find((location) => location.id === locationId)?.doors.map((door) => door.to) ?? [];
+  const incoming = pack.locations.filter((other) => other.doors.some((door) => door.to === locationId)).map((other) => other.id);
+  return [...new Set([...outgoing, ...incoming])].filter((id) => id !== locationId);
+}
+
+// Gives every location of the pack its own cell, so that a door can face the place it leads to and the map can show
 // places where they really are. Connected places end up next to each other wherever there is room.
-export function layoutStoryWorld(pack: StoryPack, view: LengthView): Map<string, LocationCell> {
-  const ids = view.locations.map((location) => location.id);
-  const neighbours = new Map(ids.map((id) => [id, locationDoorTargets(pack, view, id)]));
+// The layout is the same for every story length (it starts from the longest length's start location), because the
+// door sides are baked into the pack by Story Forge. `view` is accepted for older callers and ignored.
+export function layoutStoryWorld(pack: StoryPack, _view?: LengthView): Map<string, LocationCell> {
+  const ids = pack.locations.map((location) => location.id);
+  const neighbours = new Map(ids.map((id) => [id, packNeighbours(pack, id)]));
   const cells = new Map<string, LocationCell>();
   const taken = new Set<string>();
   const key = (column: number, row: number): string => `${column},${row}`;
@@ -79,7 +87,8 @@ export function layoutStoryWorld(pack: StoryPack, view: LengthView): Map<string,
   };
 
   const origin = { column: 0, row: 0 };
-  const first = ids.includes(view.startLocation) ? view.startLocation : ids[0];
+  const longest = [...LENGTH_IDS].reverse().map((id) => pack.lengths[id]).find((definition) => definition !== undefined);
+  const first = longest && ids.includes(longest.start_location) ? longest.start_location : ids[0];
   if (first !== undefined) spread(first, origin);
   for (const id of ids) {
     if (!cells.has(id)) spread(id, choose(id, origin));

@@ -7,7 +7,7 @@ npm install
 npm run dev
 ```
 
-Move with **WASD** or the **arrow keys**. Walk onto a path, cave opening, gate, or door to travel; you can also stand nearby and press **A**, **E**, or **Space**. Every exit that is in view carries a small sign: the name of the place behind it once you have been there, the exit's own label before that, and "(locked)" while you cannot use it. Exits face the place they lead to, so leaving by the east side of one area brings you in on the west side of the next. Press **M** for the map, **J** for the journal, **I** for inventory, and **Escape** to close a panel or pause. On a touch screen, tap a person, clue, item, or exit to walk there and use it; tap open ground to walk to it. Any movement or panel stops the walk. To steer by hand, touch and drag on the left half of the screen: a joystick appears under your thumb (a press that barely moves counts as a tap), and the **A** button works with your other thumb. The world fills the screen in either orientation.
+Move with **WASD** or the **arrow keys**. Walk onto a path, cave opening, gate, or door to travel; you can also stand nearby and press **A**, **E**, or **Space**. Every exit that is in view carries a small sign: the name of the place behind it once you have been there, the exit's own label before that, and "(locked)" while you cannot use it. Exits face the place they lead to, so leaving by the east side of one area brings you in on the west side of the next. Press **M** for the map, **J** for the journal, **I** for inventory, and **Escape** to close a panel or pause. On a touch screen, tap a person, clue, item, or exit to walk there and use it; tap open ground to walk to it. Any movement or panel stops the walk. To steer by hand, touch and drag on the left half of the screen: a joystick appears under your thumb (a press that barely moves counts as a tap), and the **A** button works with your other thumb. The world fills the screen in either orientation. The top-left bar shows the area name and your current lead with case progress (for example 3 of 9 core truths); tap the area name to read about the place again, or the lead to open its text, hint, and a controls reminder. New clues, key items, confirmed truths, and solved deductions get a chime and a short toast, and the ending shows a recap of how you solved the case.
 
 The **Map** button shows every explored area as a card, placed where the area lies in the world (north is up), and each area keeps its place as you explore. A card lists the area's exits: the arrow in front of an exit tells you which side of the area that exit is on, and the name after it is the area it leads to. Exits you have not used yet are marked as unexplored, and locked exits say what is still needed. Lines join the two ends of each path, with the paths from your current area in gold. A **Lead** tag marks the places, and the exits to unexplored places, that belong to your current lead, and a card names the people you have already talked to there. Choose a card to see the way there: the exits to take are numbered and stay marked until you arrive or choose the card again. The map highlights your current area and can center the view on it. Open **Journal** to search and filter discovered story facts, evidence, and character requests. A request only shows a finding place after a character has told you where to look. The inventory can also be searched.
 
@@ -17,6 +17,12 @@ Run `npm run preview` after building to test the production bundle locally.
 Run `npm test` for unit tests and `npm run validate-stories` to validate every
 story pack. Open `http://localhost:5173/?debug=art` to review procedural art,
 or `http://localhost:5173/?debug=world` to regenerate maps by biome and seed.
+
+Areas are never generated while you play. Every location in a story pack carries
+its finished map, door signs, style, decor and the tile of every person, object,
+item and clue (`location.area`); the game only reads it. The Story Forge bake
+step writes those blocks, and `npm run validate-stories` checks that every door,
+placement and decor tile is valid and reachable in every story length.
 
 ## Test character dialogue and save feedback
 

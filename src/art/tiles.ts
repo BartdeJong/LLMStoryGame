@@ -1,6 +1,18 @@
 import { createPixelCanvas } from "./canvas";
-import { PALETTES, type PaletteName } from "./palettes";
+import { PALETTES, SURFACES, type PaletteName } from "./palettes";
 import { createSeededRandom, type Seed } from "./random";
+import {
+  FLOOR_ART_STYLES,
+  WALL_ART_STYLES,
+  mix,
+  paintCounter,
+  paintFloor,
+  paintRug,
+  paintWallFace,
+  paintWallTop,
+  type FloorArtStyle,
+  type WallArtStyle,
+} from "./surfaceTiles";
 
 export const TILE_TYPES = [
   "grass",
@@ -17,6 +29,12 @@ export const TILE_TYPES = [
   "hatch",
   "flowers",
   "bridge",
+  "void",
+  "rug",
+  "counter",
+  ...FLOOR_ART_STYLES.map((style) => `floor-${style}` as const),
+  ...WALL_ART_STYLES.map((style) => `wall-top-${style}` as const),
+  ...WALL_ART_STYLES.map((style) => `wall-face-${style}` as const),
 ] as const;
 
 export type TileType = (typeof TILE_TYPES)[number];
@@ -28,9 +46,11 @@ export function paintTile(
   tile: TileType,
   seed: Seed = 0,
   frame = 0,
+  edges = 0,
 ): HTMLCanvasElement {
   const { canvas, context } = createPixelCanvas();
   const palette = PALETTES[paletteName];
+  const surface = SURFACES[paletteName];
   const random = createSeededRandom(`${seed}:${paletteName}:${tile}`);
   const pixel = (color: string, x: number, y: number, width = 1, height = 1) => {
     context.fillStyle = color;
@@ -42,7 +62,29 @@ export function paintTile(
     context.fillRect(0, 0, 16, 16);
   };
 
+  if (tile.startsWith("floor-")) {
+    paintFloor(tile.slice(6) as FloorArtStyle, palette, surface, random, pixel, ground);
+    return canvas;
+  }
+  if (tile.startsWith("wall-top-")) {
+    paintWallTop(tile.slice(9) as WallArtStyle, palette, surface, random, pixel, ground);
+    return canvas;
+  }
+  if (tile.startsWith("wall-face-")) {
+    paintWallFace(tile.slice(10) as WallArtStyle, palette, surface, random, pixel, ground);
+    return canvas;
+  }
+
   switch (tile) {
+    case "void":
+      ground(mix(palette.ink, "#000000", 0.35));
+      break;
+    case "rug":
+      paintRug(palette, surface, edges, pixel);
+      break;
+    case "counter":
+      paintCounter(palette, surface, random, pixel);
+      break;
     case "grass":
       ground(palette.leaf);
       for (let index = 0; index < 12; index += 1) {
@@ -77,7 +119,7 @@ export function paintTile(
       pixel(palette.leaf, 9, 3, 2, 2);
       break;
     case "rock":
-      ground(palette.leaf);
+      // Transparent background: drawn over whatever floor lies under it (grass, sand, cobble, dirt).
       pixel(palette.shadow, 3, 9, 10, 5);
       pixel(palette.ink, 4, 7, 8, 5);
       pixel(palette.cream, 5, 6, 6, 4);
@@ -102,8 +144,21 @@ export function paintTile(
       for (const x of [2, 9]) pixel(palette.cream, x, 4, 1, 3);
       for (const x of [7, 14]) pixel(palette.cream, x, 9, 1, 3);
       break;
+    case "hatch": {
+      paintWallFace("plaster", palette, surface, random, pixel, ground);
+      const wood = mix(palette.earth, "#000000", 0.18);
+      const panel = mix(wood, "#ffffff", 0.14);
+      pixel(mix(surface.trim, "#000000", 0.45), 2, 0, 12, 16);
+      pixel(surface.trim, 3, 1, 10, 15);
+      pixel(wood, 4, 2, 8, 14);
+      pixel(panel, 5, 3, 6, 5);
+      pixel(panel, 5, 9, 6, 5);
+      pixel(mix(wood, "#000000", 0.3), 5, 8, 6, 1);
+      pixel(palette.highlight, 10, 8, 1, 2);
+      pixel(mix(palette.ink, "#000000", 0.2), 4, 15, 8, 1);
+      break;
+    }
     case "door":
-    case "hatch":
       ground(palette.earth);
       pixel(palette.shadow, 2, 0, 12, 16);
       pixel(palette.cream, 4, 2, 8, 14);
@@ -150,15 +205,16 @@ export function paintTile(
       pixel(palette.cream, 13, 13);
       break;
     case "bridge":
-      ground(palette.water);
-      pixel(palette.shadow, 0, 0, 16, 2);
-      pixel(palette.shadow, 0, 14, 16, 2);
-      for (const y of [3, 7, 11]) {
-        pixel(palette.earth, 1, y, 14, 3);
-        pixel(palette.cream, 2, y, 12, 1);
+      // Wooden planks laid across, with dark rails along both edges.
+      ground(palette.earth);
+      for (const x of [0, 4, 8, 12]) {
+        pixel(palette.cream, x + 1, 2, 2, 12);
+        pixel(palette.shadow, x + 3, 2, 1, 12);
       }
-      pixel(palette.shadow, 4, 2, 2, 12);
-      pixel(palette.shadow, 10, 2, 2, 12);
+      pixel(palette.highlight, 2 + Math.floor(random() * 10), 4 + Math.floor(random() * 8));
+      pixel(palette.ink, 0, 0, 16, 2);
+      pixel(palette.shadow, 0, 2, 16, 1);
+      pixel(palette.ink, 0, 14, 16, 2);
       break;
   }
 
@@ -170,12 +226,13 @@ export function getTileCanvas(
   tile: TileType,
   seed: Seed = 0,
   frame = 0,
+  edges = 0,
 ): HTMLCanvasElement {
   const shimmerFrame = tile === "water" ? frame & 1 : 0;
-  const key = `${paletteName}:${tile}:${seed}:${shimmerFrame}`;
+  const key = `${paletteName}:${tile}:${seed}:${shimmerFrame}:${edges}`;
   let canvas = tileCache.get(key);
   if (!canvas) {
-    canvas = paintTile(paletteName, tile, seed, shimmerFrame);
+    canvas = paintTile(paletteName, tile, seed, shimmerFrame, edges);
     tileCache.set(key, canvas);
   }
   return canvas;

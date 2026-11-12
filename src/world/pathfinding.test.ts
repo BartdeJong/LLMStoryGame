@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { PLACEHOLDER_BRIEFS } from "./briefs";
+import example from "../story/fixtures/example-pack.json";
 import { isWalkable, reachableTiles } from "./connectivity";
-import { generateOutdoors, generateVillage } from "./generators";
+import { areaFromRows } from "./testArea";
 import { findPath, tilesWithinRange } from "./pathfinding";
 
 function grid(rows: readonly string[]) {
@@ -75,8 +75,9 @@ describe("findPath", () => {
     expect(findPath({ ...map, start: { x: 0, y: 0 }, goals: [{ x: 2, y: 0 }] })).toHaveLength(3);
   });
 
-  it("agrees with reachableTiles on generated areas", () => {
-    for (const area of [generateOutdoors(813, PLACEHOLDER_BRIEFS.forest), generateVillage(21, PLACEHOLDER_BRIEFS.village)]) {
+  it("agrees with reachableTiles on baked areas", () => {
+    for (const location of example.locations) {
+      const area = areaFromRows(location.area.map);
       const reachable = reachableTiles(area);
       const goals = area.doors.map((door) => ({ x: door.x, y: door.y }));
       for (const goal of goals) {

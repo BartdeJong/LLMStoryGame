@@ -62,8 +62,12 @@ export function footstepFor(ground: Tile | undefined): FootstepParams {
       return { noiseHz: 900, q: 1.1, toneHz: 90, seconds: 0.06, gain: 0.8 };
     case Tile.Water:
       return { noiseHz: 700, q: 0.5, toneHz: 0, seconds: 0.14, gain: 0.8 };
+    case Tile.Rug:
+      return { noiseHz: 700, q: 0.6, toneHz: 0, seconds: 0.08, gain: 0.45 };
     case Tile.Floor:
     case Tile.Wall:
+    case Tile.Counter:
+    case Tile.Void:
       return { noiseHz: 2600, q: 2.2, toneHz: 150, seconds: 0.04, gain: 0.7 };
     case Tile.Bridge:
       return { noiseHz: 1300, q: 1.6, toneHz: 200, seconds: 0.05, gain: 0.8 };

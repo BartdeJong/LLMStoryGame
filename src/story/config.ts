@@ -60,9 +60,10 @@ export const TEXT_LIMITS: Record<string, number> = {
   mood: 80,
   palette: 80,
   tone: 120,
-  sprite_recipe: 200,
   icon_recipe: 200,
   relation: 120,
+  label: 30, // area door signs
+  hint: 100,
 };
 export const DEFAULT_TEXT_LIMIT = 400;
 

@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { followCamera } from "./camera";
-import { PLACEHOLDER_BRIEFS, generateOutdoors } from "./world";
+import { areaFromRows } from "./world/testArea";
 
-const world = generateOutdoors(1, PLACEHOLDER_BRIEFS.meadow);
+const world = areaFromRows(Array.from({ length: 24 }, () => ".".repeat(40)));
 
 describe("followCamera", () => {
   it("clamps to the world edges when the view fits inside", () => {

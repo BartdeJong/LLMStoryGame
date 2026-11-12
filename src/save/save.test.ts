@@ -4,12 +4,14 @@ import example from "../../public/stories/example.json";
 import { LLMClient } from "../llm/client";
 import { MockBackend } from "../llm/mock";
 import { getLengthView } from "../story/loader";
+import { bakeSimple } from "../story/fixtures/bakeSimple";
 import { storyMockRespond } from "../story/mockResponder";
+import { buildPackArea } from "../story/packArea";
 import { StorySession } from "../story/storySession";
 import { loadPackForSave, SavePackError } from "./pack";
 import { normalizeSave, SaveRepository } from "./repository";
 import type { GameSave } from "./types";
-import { validateStoryPack } from "../story/validate";
+import type { StoryPack } from "../story/types";
 
 const repositories: SaveRepository[] = [];
 
@@ -35,7 +37,7 @@ function makeSave(): GameSave {
     areasSinceSummary: 1,
   };
   return {
-    formatVersion: 5,
+    formatVersion: 6,
     slotId: "slot-test",
     metadata: {
       storyTitle: "Test story",
@@ -48,47 +50,26 @@ function makeSave(): GameSave {
     packVersion: 3,
     length: "short",
     storyState,
-    areas: [{
-      area: {
-        id: "start",
-        seed: 12,
-        name: "Meadow",
-        biome: "meadow",
-        mood: "calm",
-        palette: "meadow",
-        width: 1,
-        height: 1,
-        layers: { ground: [[0]], feature: [[0]] },
-        entry: { x: 0, y: 0 },
-        spawnPoints: [],
-        doors: [],
-        entities: [{
-          id: "item:key",
-          kind: "key",
-          x: 0,
-          y: 0,
-          name: "Old key",
-          description: "A small brass key.",
-          required: true,
-          packId: "key",
-        }],
-      },
-      brief: {
-        locationId: "start",
-        name: "Meadow",
-        biome: "meadow",
-        mood: "calm",
-        palette: "meadow",
-        description: "The path begins here.",
-        characters: [],
-        objects: [],
-        clues: [],
-        doors: [],
-        source: "fallback",
-      },
-    }],
+    areaIds: ["start"],
     player: { areaId: "start", x: 18, y: 21 },
   };
+}
+
+// What a version 5 save held for each visited area: the whole built area and its brief.
+function legacyAreas(): unknown[] {
+  return [{
+    area: {
+      id: "start", seed: 12, name: "Meadow", biome: "meadow", mood: "calm", palette: "meadow", width: 1, height: 1,
+      layers: { ground: [[0]], feature: [[0]] }, entry: { x: 0, y: 0 }, spawnPoints: [], doors: [], entities: [],
+    },
+    brief: { locationId: "start", name: "Meadow", source: "fallback" },
+  }];
+}
+
+function withLegacyAreas(save: object): void {
+  const record = save as Record<string, unknown>;
+  delete record.areaIds;
+  record.areas = legacyAreas();
 }
 
 function createRepository(): SaveRepository {
@@ -121,39 +102,51 @@ describe("save persistence", () => {
     await expect(destination.get(save.slotId)).resolves.toEqual(save);
   });
 
-  it("restores saved areas, briefs, progress, and player location into a story session", () => {
-    const report = validateStoryPack(example);
-    if (!report.pack) throw new Error("The example story fixture is invalid.");
-    const pack = report.pack;
+  it("rebuilds the visited areas from the pack and leaves out what was collected", () => {
+    const pack = bakeSimple(example) as StoryPack;
     const view = getLengthView(pack, "short");
     const original = makeSave();
     const areaId = view.startLocation;
+    const collected = "obj:o_notice_board";
     const save: GameSave = {
       ...original,
       worldSeed: "resume-seed",
       packId: pack.identity.id,
       packVersion: pack.identity.version,
-      areas: original.areas.map(({ area, brief }) => ({
-        area: { ...area, id: areaId },
-        brief: { ...brief, locationId: areaId },
-      })),
+      areaIds: [areaId, "l_bakery", "not_in_this_story"],
       storyState: {
         ...original.storyState,
         packId: pack.identity.id,
         packVersion: pack.identity.version,
         visitedAreas: [areaId],
+        collectedEntities: [collected],
       },
       player: { ...original.player, areaId },
     };
     const client = new LLMClient(new MockBackend({ respond: storyMockRespond }));
-    const story = new StorySession(pack, view, client, undefined, save.worldSeed);
+    const story = new StorySession(pack, view, client, save.worldSeed);
 
     story.restoreSave(save);
 
     expect(story.state).toEqual(save.storyState);
-    expect(story.getSavedAreas()[0]?.area.entities).toEqual([]);
-    expect(story.getArea(areaId).entities).toEqual([]);
-    expect(story.getBrief(areaId)).toEqual(save.areas[0]?.brief);
+    expect(story.getAreaIds()).toEqual([areaId, "l_bakery"]);
+    expect(story.getArea(areaId).entities?.map((entity) => entity.id)).toEqual(["clue:cl_notice_board"]);
+    expect(story.getArea(areaId).layers).toEqual(buildPackArea(pack, view, areaId).area.layers);
+    expect(story.getBrief(areaId)?.description).toBe(pack.locations[0]!.area!.description);
+    expect(story.getArea("l_bakery").entities?.length).toBeGreaterThan(0);
+  });
+
+  it("migrates version 5 saves, keeping only which areas were visited", () => {
+    const legacy = JSON.parse(JSON.stringify(makeSave())) as Record<string, unknown>;
+    legacy.formatVersion = 5;
+    delete legacy.areaIds;
+    legacy.areas = legacyAreas();
+
+    const migrated = normalizeSave(legacy);
+
+    expect(migrated.formatVersion).toBe(6);
+    expect(migrated.areaIds).toEqual(["start"]);
+    expect("areas" in migrated).toBe(false);
   });
 
   it("migrates version 1 saves to the current format", async () => {
@@ -162,11 +155,12 @@ describe("save persistence", () => {
       metadata: Record<string, unknown>;
     };
     legacy.formatVersion = 1;
+    withLegacyAreas(legacy);
     delete legacy.metadata.timePlayedMs;
 
     const migrated = normalizeSave(legacy);
 
-    expect(migrated.formatVersion).toBe(5);
+    expect(migrated.formatVersion).toBe(6);
     expect(migrated.metadata.timePlayedMs).toBe(0);
   });
 
@@ -176,12 +170,13 @@ describe("save persistence", () => {
       storyState: Record<string, unknown>;
     };
     legacy.formatVersion = 2;
+    withLegacyAreas(legacy);
     delete legacy.storyState.needsRecorded;
     delete legacy.storyState.knowledgeTold;
 
     const migrated = normalizeSave(legacy);
 
-    expect(migrated.formatVersion).toBe(5);
+    expect(migrated.formatVersion).toBe(6);
     expect(migrated.storyState.needsRecorded).toEqual([]);
     expect(migrated.storyState.knowledgeTold).toEqual([]);
   });
@@ -192,13 +187,14 @@ describe("save persistence", () => {
       storyState: Record<string, unknown>;
     };
     legacy.formatVersion = 3;
+    withLegacyAreas(legacy);
     delete legacy.storyState.truthsReady;
     delete legacy.storyState.herringsRuledOut;
     delete legacy.storyState.twistsSeen;
 
     const migrated = normalizeSave(legacy);
 
-    expect(migrated.formatVersion).toBe(5);
+    expect(migrated.formatVersion).toBe(6);
     expect(migrated.storyState.truthsFound).toEqual(["truth"]);
     expect(migrated.storyState.truthsReady).toEqual([]);
     expect(migrated.storyState.herringsRuledOut).toEqual([]);
@@ -211,11 +207,12 @@ describe("save persistence", () => {
       storyState: Record<string, unknown>;
     };
     legacy.formatVersion = 4;
+    withLegacyAreas(legacy);
     delete legacy.storyState.characterMemory;
 
     const migrated = normalizeSave(legacy);
 
-    expect(migrated.formatVersion).toBe(5);
+    expect(migrated.formatVersion).toBe(6);
     expect(migrated.storyState.characterMemory).toEqual({ c_oswin: { visits: 1, askedAbout: [] } });
   });
 
@@ -227,6 +224,15 @@ describe("save persistence", () => {
     expect(() => normalizeSave({ ...save, storyState: { ...save.storyState, characterMemory: { c_oswin: { visits: "x" } } } })).toThrow();
   });
 
+  it("loads saves without a progress log and keeps one when present", () => {
+    const save = makeSave();
+    expect(save.storyState.progressLog).toBeUndefined();
+    expect(normalizeSave(JSON.parse(JSON.stringify(save))).storyState.progressLog).toBeUndefined();
+    save.storyState.progressLog = [{ kind: "clue", id: "clue", at: 5 }];
+    expect(normalizeSave(JSON.parse(JSON.stringify(save))).storyState.progressLog).toEqual(save.storyState.progressLog);
+    expect(() => normalizeSave({ ...save, storyState: { ...save.storyState, progressLog: [{ kind: "x" }] } })).toThrow();
+  });
+
   it("rejects invalid imported files before storing them", async () => {
     const repository = createRepository();
 
@@ -236,9 +242,7 @@ describe("save persistence", () => {
 
   it("explains when a save's story pack is missing or changed", async () => {
     const save = makeSave();
-    const report = validateStoryPack(example);
-    if (!report.pack) throw new Error("The example story fixture is invalid.");
-    const pack = report.pack;
+    const pack = bakeSimple(example) as StoryPack;
     await expect(loadPackForSave(save, async () => {
       throw new Error("story file was not found");
     })).rejects.toThrow(SavePackError);

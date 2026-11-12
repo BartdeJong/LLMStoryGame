@@ -10,7 +10,7 @@
     "identity": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["id", "version", "title", "logline", "setting", "tone", "themes", "content_notes"],
+      "required": ["id", "version", "title", "logline", "setting", "tone", "themes", "content_notes", "player"],
       "properties": {
         "id": { "$ref": "#/$defs/id" },
         "version": { "type": "integer", "minimum": 1 },
@@ -19,7 +19,8 @@
         "setting": { "$ref": "#/$defs/text" },
         "tone": { "$ref": "#/$defs/text" },
         "themes": { "$ref": "#/$defs/textList" },
-        "content_notes": { "type": "array", "items": { "$ref": "#/$defs/text" } }
+        "content_notes": { "type": "array", "items": { "$ref": "#/$defs/text" } },
+        "player": { "$ref": "#/$defs/playerCharacter" }
       }
     },
     "style_guide": {
@@ -65,6 +66,67 @@
     }
   },
   "$defs": {
+    "hexColor": { "type": "string", "pattern": "^#[0-9a-fA-F]{6}$" },
+    "playerCharacter": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "species", "description", "sprite"],
+      "properties": {
+        "name": { "$ref": "#/$defs/text" },
+        "species": { "$ref": "#/$defs/text" },
+        "description": { "$ref": "#/$defs/text" },
+        "sprite": { "$ref": "#/$defs/sprite" }
+      }
+    },
+    "sprite": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["species", "height", "girth", "skin"],
+      "properties": {
+        "species": { "type": "string", "enum": ["human", "bear", "dog", "cat", "fox", "mouse", "rabbit", "owl", "badger", "hedgehog", "otter", "frog", "sheep", "mole", "tortoise", "magpie", "crow", "wren", "heron", "moth"] },
+        "height": { "type": "string", "enum": ["tiny", "short", "average", "tall"] },
+        "girth": { "type": "string", "enum": ["slim", "average", "stout"] },
+        "skin": { "$ref": "#/$defs/hexColor" },
+        "accent": { "$ref": "#/$defs/hexColor" },
+        "hair": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["style", "color"],
+          "properties": { "style": { "type": "string", "enum": ["none", "short", "messy", "long", "bob", "bun", "ponytail", "curly", "balding", "pigtails", "mop"] }, "color": { "$ref": "#/$defs/hexColor" } }
+        },
+        "outfit": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["style", "color"],
+          "properties": {
+            "style": { "type": "string", "enum": ["none", "shirt", "jumper", "striped", "dress", "coat", "duffle-coat", "suit", "waistcoat", "uniform", "cape", "overalls", "cardigan", "robe", "smock"] },
+            "color": { "$ref": "#/$defs/hexColor" },
+            "trim": { "$ref": "#/$defs/hexColor" },
+            "legs": { "$ref": "#/$defs/hexColor" }
+          }
+        },
+        "headwear": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["style", "color"],
+          "properties": {
+            "style": { "type": "string", "enum": ["none", "deerstalker", "bowler", "top-hat", "flat-cap", "bonnet", "headscarf", "bush-hat", "police-helmet", "chef-hat", "captain-cap", "peaked-cap", "beret", "woolly-hat", "straw-hat", "hood", "veil-hat"] },
+            "color": { "$ref": "#/$defs/hexColor" },
+            "trim": { "$ref": "#/$defs/hexColor" }
+          }
+        },
+        "accessories": {
+          "type": "array",
+          "maxItems": 4,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["kind"],
+            "properties": { "kind": { "type": "string", "enum": ["glasses", "monocle", "moustache", "beard", "brows", "pipe", "freckles", "scarf", "bowtie", "apron", "shawl", "locket", "nametag", "belt", "satchel", "cane", "umbrella", "spoon", "broom", "notebook", "basket", "lantern", "suitcase", "orange", "book", "spyglass", "medical-bag", "flower", "ball"] }, "color": { "$ref": "#/$defs/hexColor" } }
+          }
+        }
+      }
+    },
     "id": { "type": "string", "pattern": "^[a-z][a-z0-9_]*$", "minLength": 1 },
     "text": { "type": "string", "minLength": 1 },
     "textList": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/text" } },
@@ -125,7 +187,7 @@
     "castMember": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["id", "name", "species", "personality", "goal", "secret", "motivations", "relationships", "sprite_recipe", "home_location", "knows_truths", "goal_states", "voice_notes", "greetings", "knowledge", "goal_hints", "deflections"],
+      "required": ["id", "name", "species", "personality", "goal", "secret", "motivations", "relationships", "sprite", "home_location", "knows_truths", "goal_states", "voice_notes", "greetings", "knowledge", "goal_hints", "deflections"],
       "properties": {
         "id": { "$ref": "#/$defs/id" },
         "name": { "$ref": "#/$defs/text" },
@@ -146,7 +208,7 @@
             }
           }
         },
-        "sprite_recipe": { "$ref": "#/$defs/text" },
+        "sprite": { "$ref": "#/$defs/sprite" },
         "home_location": { "$ref": "#/$defs/id" },
         "knows_truths": { "$ref": "#/$defs/idList" },
         "goal_states": { "type": "array", "items": { "$ref": "#/$defs/goalState" } },
@@ -291,6 +353,55 @@
               "id": { "$ref": "#/$defs/id" },
               "to": { "$ref": "#/$defs/id" },
               "lock": { "$ref": "#/$defs/requirement" }
+            }
+          }
+        },
+        "area": { "$ref": "#/$defs/area" }
+      }
+    },
+    "area": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["description", "doors", "biome", "palette", "floor", "wall", "map", "placements", "decor"],
+      "properties": {
+        "description": { "$ref": "#/$defs/text" },
+        "doors": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["to", "label", "hint"],
+            "properties": {
+              "to": { "$ref": "#/$defs/id" },
+              "label": { "$ref": "#/$defs/text" },
+              "hint": { "$ref": "#/$defs/text" }
+            }
+          }
+        },
+        "biome": { "enum": ["meadow", "forest", "shore", "cave", "building", "ruins", "village"] },
+        "palette": { "enum": ["meadow", "forest", "cave", "ruins", "shore", "village", "dusk", "mist", "cottage", "kitchen", "parlour", "shop", "workshop", "office", "london", "park", "market", "lighthouse", "underwater"] },
+        "floor": { "enum": ["boards", "tiles", "carpet", "flagstone", "cobble", "dirt", "grass", "sand", "deck"] },
+        "wall": { "enum": ["plaster", "brick", "wood", "stone", "hedge", "rock", "fence"] },
+        "map": { "type": "array", "items": { "type": "string" } },
+        "placements": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "array",
+            "items": { "type": "integer" },
+            "minItems": 2,
+            "maxItems": 2
+          }
+        },
+        "decor": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["icon", "x", "y"],
+            "properties": {
+              "icon": { "type": "string" },
+              "x": { "type": "integer" },
+              "y": { "type": "integer" }
             }
           }
         }

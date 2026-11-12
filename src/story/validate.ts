@@ -1,11 +1,15 @@
 import schemaJson from "../../tools/story-forge/schema/story-pack.schema.json";
+import { MIN_SPRITE_DIFFERENCES, spriteDifferences, validateSpriteSpec, type SpriteSpec } from "../art/spriteSpec";
 import { COMPLEXITY, DEFAULT_TEXT_LIMIT, DIALOGUE_LIMITS, TEXT_LIMITS, type Range } from "./config";
 import { narrationIssue } from "../dialogue/lineCleanup";
 import { checkSchema, joinPath } from "./jsonSchema";
 import { missingOf, orderedLocations, requirementEntries, solveLength, type SolveResult } from "./solver";
-import { LENGTH_IDS, type CastMember, type LengthDefinition, type LengthId, type Requirement, type SourceRef, type StoryPack } from "./types";
+import { LENGTH_IDS, type CastMember, type LengthDefinition, type LengthId, type Location, type Requirement, type SourceRef, type StoryPack } from "./types";
 import { GLYPH_STATES, getGlyph, resolveVisual, tokenizeVisualText } from "../art/glyphs";
 import { PALETTE_COLOR_SLOTS } from "../art";
+import { isWalkable, reachableTiles } from "../world/connectivity";
+import { MAP_MAX_HEIGHT, MAP_MAX_WIDTH, MAP_MIN_HEIGHT, MAP_MIN_WIDTH, parseAreaMap, type ParsedAreaMap } from "../world/mapLegend";
+import { Tile, type Area, type GridPoint } from "../world/types";
 
 export interface Issue {
   severity: "error" | "warning";
@@ -158,6 +162,7 @@ export function validateStoryPack(data: unknown): ValidationReport {
     });
   });
   pack.cast.forEach((c, i) => checkDialogueContent(pack, c, `cast[${i}]`, error));
+  checkSprites(pack, error);
   pack.truths.forEach((t, i) => {
     const owner = `truth "${t.id}"`;
     refs("truth", t.depends_on, `truths[${i}].depends_on`, owner);
@@ -310,8 +315,31 @@ export function validateStoryPack(data: unknown): ValidationReport {
   pack.items.forEach((x, i) => {
     if (!usedItems.has(x.id)) warn("UNUSED_ITEM", `items[${i}]`, `item "${x.id}" is never required by a door, clue, goal state, beat or twist.`);
   });
+  checkAuthoredAreas(pack, error, warn);
 
   return finish(pack);
+}
+
+// Every character and the player needs a valid sprite spec, and no two may look alike.
+function checkSprites(pack: StoryPack, error: Report): void {
+  const looks: { who: string; path: string; spec: SpriteSpec }[] = [];
+  const add = (who: string, path: string, spec: unknown): void => {
+    const problems = validateSpriteSpec(spec, `${path}.sprite`);
+    for (const problem of problems) error("SPRITE_INVALID", `${path}.sprite`, `${who}: ${problem}`);
+    if (problems.length === 0) looks.push({ who, path, spec: spec as SpriteSpec });
+  };
+  add(`the player "${pack.identity.player.name}"`, "identity.player", pack.identity.player.sprite);
+  pack.cast.forEach((c, i) => add(`cast member "${c.id}"`, `cast[${i}]`, c.sprite));
+  for (let a = 0; a < looks.length; a += 1) {
+    for (let b = a + 1; b < looks.length; b += 1) {
+      const first = looks[a]!;
+      const second = looks[b]!;
+      const differences = spriteDifferences(first.spec, second.spec);
+      if (differences < MIN_SPRITE_DIFFERENCES) {
+        error("SPRITE_TOO_SIMILAR", `${second.path}.sprite`, `${second.who} looks too much like ${first.who} (${differences} differences, at least ${MIN_SPRITE_DIFFERENCES} needed). Change the outfit, headwear, hair or colours.`);
+      }
+    }
+  }
 }
 
 function checkDialogueContent(pack: StoryPack, c: CastMember, p: string, error: Report): void {
@@ -384,6 +412,202 @@ function checkDialogueContent(pack: StoryPack, c: CastMember, p: string, error: 
       error("CLUE_NOT_TALKABLE", `clues[${j}]`, `clue "${clue.id}" is told by ${owner}, but none of their knowledge items has clue_id "${clue.id}".`);
     }
   });
+}
+
+const key = (x: number, y: number): string => `${x},${y}`;
+
+interface AreaCheckContext {
+  pack: StoryPack;
+  error: Report;
+  warn: Report;
+}
+
+// Everything about a place is baked into the pack: map, door signs, where each story thing stands, decor.
+// The game only reads it, so every mistake here must be caught before play.
+function checkAuthoredAreas(pack: StoryPack, error: Report, warn: Report): void {
+  const context: AreaCheckContext = { pack, error, warn };
+  pack.locations.forEach((l, i) => checkLocationArea(context, l, i));
+  for (const lengthId of LENGTH_IDS) {
+    const definition = pack.lengths[lengthId];
+    const start = definition && pack.locations.find((l) => l.id === definition.start_location);
+    if (!definition || !start?.area) continue;
+    const parsed = tryParseMap(start.area.map);
+    if (!parsed) continue;
+    const inLength = new Set(orderedLocations(definition));
+    const active = start.area.doors.some((d, index) => parsed.doorSlots.has(index + 1) && inLength.has(d.to));
+    if (!parsed.start && !active) {
+      error("AREA_START_NO_ENTRY", `locations[${pack.locations.indexOf(start)}].area.map`, `"${start.id}" starts the ${lengthId} length but has no "@" tile and no door to a place in that length.`);
+    }
+  }
+}
+
+function tryParseMap(rows: readonly string[]): ParsedAreaMap | undefined {
+  try {
+    return parseAreaMap(rows);
+  } catch {
+    return undefined;
+  }
+}
+
+function checkLocationArea({ pack, error, warn }: AreaCheckContext, l: Location, index: number): void {
+  const lower = (text: string): string => text.trim().toLowerCase();
+  const path = `locations[${index}].area`;
+  const a = l.area;
+  if (!a) {
+    error("AREA_MISSING", `locations[${index}]`, `location "${l.id}" has no "area" block. Run the Story Forge bake step to add the map, doors and placements.`);
+    return;
+  }
+
+  // ---- map ----
+  let parsed: ParsedAreaMap | undefined;
+  if (a.map.length < MAP_MIN_HEIGHT || a.map.length > MAP_MAX_HEIGHT) {
+    error("AREA_MAP_SIZE", `${path}.map`, `the map has ${a.map.length} rows; it needs ${MAP_MIN_HEIGHT} to ${MAP_MAX_HEIGHT}.`);
+  } else if (a.map.some((row) => row.length < MAP_MIN_WIDTH || row.length > MAP_MAX_WIDTH)) {
+    error("AREA_MAP_SIZE", `${path}.map`, `every map row must be ${MAP_MIN_WIDTH} to ${MAP_MAX_WIDTH} characters wide.`);
+  } else {
+    try {
+      parsed = parseAreaMap(a.map);
+    } catch (e) {
+      error("AREA_MAP_INVALID", `${path}.map`, e instanceof Error ? e.message : String(e));
+    }
+  }
+
+  // ---- doors ----
+  const neighbours = new Set([
+    ...l.doors.map((d) => d.to),
+    ...pack.locations.filter((o) => o.doors.some((d) => d.to === l.id)).map((o) => o.id),
+  ]);
+  const seen = new Set<string>();
+  a.doors.forEach((d, j) => {
+    const at = `${path}.doors[${j}]`;
+    if (!neighbours.has(d.to)) error("AREA_DOOR_NOT_NEIGHBOUR", `${at}.to`, `"${d.to}" is not connected to "${l.id}" by any door.`);
+    if (seen.has(d.to)) error("AREA_DOOR_DUPLICATE", `${at}.to`, `"${d.to}" already has a sign in this area.`);
+    seen.add(d.to);
+    if (d.label.trim().split(/\s+/).length > 4) warn("AREA_DOOR_LABEL_LONG", `${at}.label`, "door signs should be at most 4 words.");
+    const other = pack.locations.find((o) => o.id !== d.to && o.name.length > 2 && lower(d.label).includes(lower(o.name)));
+    if (other) error("AREA_DOOR_MISLEADING", `${at}.label`, `the sign names "${other.name}" but leads to "${d.to}".`);
+  });
+  for (const id of neighbours) {
+    if (!seen.has(id)) error("AREA_DOOR_MISSING", `${path}.doors`, `no door for the way to "${id}"; every neighbouring location needs one.`);
+  }
+  if (a.doors.length > 9) error("AREA_DOOR_COUNT", `${path}.doors`, "an area can have at most 9 doors (map digits 1 to 9).");
+  if (parsed) {
+    for (let n = 1; n <= a.doors.length; n += 1) {
+      if (!parsed.doorSlots.has(n)) error("AREA_DOOR_DIGIT_MISSING", `${path}.map`, `door ${n} (to "${a.doors[n - 1]!.to}") does not appear in the map.`);
+    }
+    for (const n of parsed.doorSlots.keys()) {
+      if (n > a.doors.length) error("AREA_DOOR_DIGIT_EXTRA", `${path}.map`, `the map has a door ${n}, but the area lists only ${a.doors.length} door(s).`);
+    }
+  }
+
+  // ---- placements ----
+  // A placement is keyed by the entity id ("obj:o_bin", "item:i_key", "char:c_mira", "clue:cl_notice") or, when the pack
+  // id is unique among the things at this location, by the plain pack id.
+  const things: { entityId: string; packId: string; kind: "object" | "item" | "character" | "clue" }[] = [
+    ...l.objects.map((o) => ({ entityId: `obj:${o.id}`, packId: o.id, kind: "object" as const })),
+    ...pack.items.filter((x) => x.found_at?.type === "location" && x.found_at.id === l.id)
+      .map((x) => ({ entityId: `item:${x.id}`, packId: x.id, kind: "item" as const })),
+    ...l.required_characters.map((id) => ({ entityId: `char:${id}`, packId: id, kind: "character" as const })),
+    ...pack.clues.filter((c) => [c.where, ...c.alternatives].some((w) => w.type === "location" && w.id === l.id))
+      .map((c) => ({ entityId: `clue:${c.id}`, packId: c.id, kind: "clue" as const })),
+  ];
+  const thingKinds = new Map<string, "object" | "item" | "character" | "clue">();
+  const resolved = new Map<string, number[]>();
+  const usedKeys = new Set<string>();
+  for (const thing of things) {
+    thingKinds.set(thing.entityId, thing.kind);
+    const shared = things.filter((other) => other.packId === thing.packId).length > 1;
+    const exact = a.placements[thing.entityId];
+    const plain = a.placements[thing.packId];
+    if (exact) {
+      resolved.set(thing.entityId, exact);
+      usedKeys.add(thing.entityId);
+    } else if (plain && !shared) {
+      resolved.set(thing.entityId, plain);
+      usedKeys.add(thing.packId);
+    } else if (plain && shared) {
+      usedKeys.add(thing.packId);
+      error("AREA_PLACEMENT_AMBIGUOUS", `${path}.placements.${thing.packId}`, `"${thing.packId}" names more than one thing at "${l.id}"; key each placement by its entity id (${things.filter((other) => other.packId === thing.packId).map((other) => `"${other.entityId}"`).join(", ")}).`);
+    } else {
+      error("AREA_PLACEMENT_MISSING", `${path}.placements`, `the ${thing.kind} "${thing.packId}" belongs at "${l.id}" but has no placement.`);
+    }
+  }
+  for (const id of Object.keys(a.placements)) {
+    if (!usedKeys.has(id)) error("AREA_PLACEMENT_UNKNOWN", `${path}.placements.${id}`, `"${id}" is not an object, item, character or clue that can appear at "${l.id}".`);
+  }
+  if (!parsed) return;
+
+  const base: Area = {
+    id: l.id, seed: l.id, name: l.name, biome: a.biome, mood: l.mood, palette: a.palette,
+    width: parsed.width, height: parsed.height, layers: parsed.layers, entry: parsed.start ?? { x: 0, y: 0 },
+    spawnPoints: [], doors: [],
+  };
+  const isDoor = (x: number, y: number): boolean => parsed.layers.feature[y]?.[x] === Tile.Door;
+  const tileOk = (x: number, y: number): boolean => isWalkable(base, x, y) && !isDoor(x, y);
+  const taken = new Map<string, string>();
+  const placed = new Map<string, GridPoint>();
+  for (const [id, point] of resolved) {
+    const at = `${path}.placements.${id}`;
+    const [x, y] = point;
+    if (x === undefined || y === undefined || x < 0 || y < 0 || x >= parsed.width || y >= parsed.height) {
+      error("AREA_PLACEMENT_OUT_OF_BOUNDS", at, `"${id}" is placed at ${x},${y}, outside the ${parsed.width}x${parsed.height} map.`);
+      continue;
+    }
+    if (!tileOk(x, y)) error("AREA_PLACEMENT_BLOCKED", at, `"${id}" is placed at ${x},${y}, which is not walkable floor (wall, void, counter, water, door or other solid tile).`);
+    const other = taken.get(key(x, y));
+    if (other) error("AREA_PLACEMENT_OVERLAP", at, `"${id}" and "${other}" are both placed at ${x},${y}.`);
+    else taken.set(key(x, y), id);
+    if (parsed.start && parsed.start.x === x && parsed.start.y === y) warn("AREA_PLACEMENT_ON_START", at, `"${id}" stands on the player's start tile.`);
+    placed.set(id, { x, y });
+  }
+
+  // ---- decor ----
+  const decorTiles = new Set<string>();
+  a.decor.forEach((d, j) => {
+    const at = `${path}.decor[${j}]`;
+    if (!getGlyph(d.icon)) error("AREA_DECOR_ICON_UNKNOWN", `${at}.icon`, `decor icon "${d.icon}" is not in the glyph catalog.`);
+    if (d.x < 0 || d.y < 0 || d.x >= parsed.width || d.y >= parsed.height) {
+      error("AREA_DECOR_OUT_OF_BOUNDS", at, `decor is at ${d.x},${d.y}, outside the map.`);
+      return;
+    }
+    if (!tileOk(d.x, d.y)) error("AREA_DECOR_BLOCKED", at, `decor at ${d.x},${d.y} is not on walkable floor.`);
+    const other = taken.get(key(d.x, d.y));
+    if (other) error("AREA_DECOR_ON_PLACEMENT", at, `decor at ${d.x},${d.y} covers "${other}".`);
+    if (decorTiles.has(key(d.x, d.y))) error("AREA_DECOR_OVERLAP", at, `two decor items at ${d.x},${d.y}.`);
+    decorTiles.add(key(d.x, d.y));
+  });
+
+  // ---- reachability, once per length that includes this place ----
+  for (const lengthId of LENGTH_IDS) {
+    const definition = pack.lengths[lengthId];
+    if (!definition) continue;
+    const inLength = new Set(orderedLocations(definition));
+    if (!inLength.has(l.id)) continue;
+    const layers = { ground: parsed.layers.ground.map((row) => [...row]), feature: parsed.layers.feature.map((row) => [...row]) };
+    const active: GridPoint[] = [];
+    for (const [number, point] of [...parsed.doorSlots].sort((x, y) => x[0] - y[0])) {
+      const target = a.doors[number - 1];
+      if (target && inLength.has(target.to)) active.push(point);
+      else layers.feature[point.y]![point.x] = Tile.Wall;
+    }
+    const origin = parsed.start ?? active[0];
+    if (!origin) continue; // a start location without entry is reported elsewhere
+    const area: Area = { ...base, layers, decor: a.decor };
+    const reachable = reachableTiles(area, origin);
+    const lengthCast = new Set(definition.cast);
+    const present = [...placed].filter(([id]) => thingKinds.get(id) !== "character" || lengthCast.has(id.slice("char:".length)));
+    const from = parsed.start ? "the start tile" : "the first door";
+    for (const point of active) {
+      if (!reachable.has(key(point.x, point.y))) {
+        error("AREA_UNREACHABLE", `${path}.map`, `in the ${lengthId} length the door at ${point.x},${point.y} cannot be reached from ${from}.`);
+      }
+    }
+    for (const [id, point] of present) {
+      if (!reachable.has(key(point.x, point.y))) {
+        error("AREA_UNREACHABLE", `${path}.placements.${id}`, `in the ${lengthId} length "${id}" at ${point.x},${point.y} cannot be reached from ${from}.`);
+      }
+    }
+  }
 }
 
 function checkTextLimits(value: unknown, path: string, key: string, error: Report): void {

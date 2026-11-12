@@ -17,7 +17,13 @@
       "No graphic violence.",
       "Fading and loss are gentle and reversible.",
       "Fog and dark water are mildly spooky only."
-    ]
+    ],
+    "player": {
+      "name": "Spark",
+      "species": "rabbit",
+      "description": "A young rabbit, an apprentice lighthouse keeper with a golden scarf and a half-sewn name tag.",
+      "sprite": {"species":"rabbit","height":"short","girth":"slim","skin":"#c9b8a8","accent":"#f4ece4","outfit":{"style":"jumper","color":"#4a8a8a","trim":"#f0e8d0"},"accessories":[{"kind":"scarf","color":"#e3b341"},{"kind":"nametag"}]}
+    }
   },
   "style_guide": {
     "narrator_voice": "Warm, second person, present tense. Short sentences, soft humour, lamp and tide imagery.",
@@ -102,7 +108,7 @@
           "relation": "good friend"
         }
       ],
-      "sprite_recipe": "body=round; bodyColor=earth; accentColor=cream; skinColor=skin; feature=none; walkFrames=2",
+      "sprite": {"species":"hedgehog","height":"short","girth":"stout","skin":"#8a6a4c","accent":"#e8d2b0","outfit":{"style":"jumper","color":"#d9a441","trim":"#f0e4cc"},"accessories":[{"kind":"scarf","color":"#c25a4a"},{"kind":"lantern","color":"#e3b341"}]},
       "home_location": "l_mothlight_base",
       "knows_truths": [
         "t_thirteen_berths",
@@ -281,7 +287,7 @@
           "relation": "wary of"
         }
       ],
-      "sprite_recipe": "body=tall; bodyColor=shadow; accentColor=cream; skinColor=skin; feature=hat; walkFrames=2",
+      "sprite": {"species":"badger","height":"tall","girth":"stout","skin":"#4a4a50","accent":"#f1efe8","outfit":{"style":"robe","color":"#5a3a6a","trim":"#c9a24a"},"accessories":[{"kind":"cane","color":"#5a3a24"},{"kind":"locket","color":"#e3b341"}]},
       "home_location": "l_council_hall",
       "knows_truths": [
         "t_wren_lit_lamp",
@@ -461,7 +467,7 @@
           "relation": "rival"
         }
       ],
-      "sprite_recipe": "body=small; bodyColor=ink; accentColor=highlight; skinColor=skin; feature=wings; walkFrames=3",
+      "sprite": {"species":"magpie","height":"short","girth":"slim","skin":"#26262c","accent":"#f4f4f6","outfit":{"style":"waistcoat","color":"#2f6a8a","trim":"#e3b341"},"headwear":{"style":"beret","color":"#c9445a","trim":"#e3b341"},"accessories":[{"kind":"spyglass","color":"#c9a24a"},{"kind":"satchel","color":"#8a5a32"}]},
       "home_location": "l_lost_found_shed",
       "knows_truths": [
         "t_side_spyglass"
@@ -618,7 +624,7 @@
           "relation": "grumbles at"
         }
       ],
-      "sprite_recipe": "body=tall; bodyColor=water; accentColor=cream; skinColor=skin; feature=glasses; walkFrames=2",
+      "sprite": {"species":"heron","height":"tall","girth":"slim","skin":"#8aa0b4","accent":"#eef2f4","outfit":{"style":"coat","color":"#3d5a7a","trim":"#cfd8e0"},"accessories":[{"kind":"glasses","color":"#2c2326"},{"kind":"notebook","color":"#e8dfc4"}]},
       "home_location": "l_foghorn_rock",
       "knows_truths": [
         "t_thirteen_berths",
@@ -793,7 +799,7 @@
           "relation": "follows him"
         }
       ],
-      "sprite_recipe": "body=small; bodyColor=earth; accentColor=water; skinColor=skin; feature=tail; walkFrames=4",
+      "sprite": {"species":"otter","height":"tiny","girth":"average","skin":"#8a5a3a","accent":"#e8cfa8","outfit":{"style":"overalls","color":"#4a7aa8","trim":"#e8e0d0"},"headwear":{"style":"woolly-hat","color":"#d9534a","trim":"#f2e8d0"},"accessories":[{"kind":"scarf","color":"#e3b341"}]},
       "home_location": "l_tidepool_steps",
       "knows_truths": [
         "t_oil_flows_to_deep",
@@ -951,7 +957,7 @@
           "relation": "neighbour"
         }
       ],
-      "sprite_recipe": "body=round; bodyColor=leaf; accentColor=earth; skinColor=skin; feature=hat; walkFrames=2",
+      "sprite": {"species":"tortoise","height":"short","girth":"stout","skin":"#6a8a4a","accent":"#8a6a3a","outfit":{"style":"dress","color":"#c9728a","trim":"#f6ecd8"},"headwear":{"style":"bonnet","color":"#f0e6d0","trim":"#c9728a"},"accessories":[{"kind":"apron","color":"#f4f1e6"},{"kind":"spoon","color":"#c99a5a"}]},
       "home_location": "l_bakery",
       "knows_truths": [
         "t_village_forgot",
@@ -1108,7 +1114,7 @@
           "relation": "deckhand"
         }
       ],
-      "sprite_recipe": "body=tall; bodyColor=accent; accentColor=cream; skinColor=skin; feature=hat; walkFrames=3",
+      "sprite": {"species":"fox","height":"tall","girth":"average","skin":"#d9672a","accent":"#f6efe0","outfit":{"style":"coat","color":"#2a4a7a","trim":"#e3b341"},"headwear":{"style":"captain-cap","color":"#2a4a7a","trim":"#2a4a7a"},"accessories":[{"kind":"belt","color":"#4a3326"},{"kind":"pipe","color":"#5a3a24"}]},
       "home_location": "l_kettle_quay",
       "knows_truths": [
         "t_hush_seven_years",
@@ -1269,7 +1275,7 @@
           "relation": "suspects"
         }
       ],
-      "sprite_recipe": "body=small; bodyColor=shadow; accentColor=leafLight; skinColor=skin; feature=glasses; walkFrames=2",
+      "sprite": {"species":"mouse","height":"tiny","girth":"slim","skin":"#9a9a9e","accent":"#f0c8c8","outfit":{"style":"cardigan","color":"#7a8a5a","trim":"#efe8d8"},"accessories":[{"kind":"glasses","color":"#2c2326"},{"kind":"book","color":"#8a3a3a"}]},
       "home_location": "l_archive",
       "knows_truths": [
         "t_wren_keeper",
@@ -1435,7 +1441,7 @@
           "relation": "suspected by"
         }
       ],
-      "sprite_recipe": "body=round; bodyColor=shadow; accentColor=earth; skinColor=skin; feature=none; walkFrames=2",
+      "sprite": {"species":"mole","height":"short","girth":"stout","skin":"#3f3a46","accent":"#e3a0a0","outfit":{"style":"overalls","color":"#7a5a3a","trim":"#cfc4aa"},"headwear":{"style":"flat-cap","color":"#8a6a4a"}},
       "home_location": "l_oil_press",
       "knows_truths": [
         "t_oil_from_memories",
@@ -1590,7 +1596,7 @@
           "relation": "former lamp-companion"
         }
       ],
-      "sprite_recipe": "body=floaty; bodyColor=highlight; accentColor=accent; skinColor=skin; feature=antenna; walkFrames=4",
+      "sprite": {"species":"moth","height":"short","girth":"slim","skin":"#f5e8a8","accent":"#bde8f0"},
       "home_location": "l_glow_moth_meadow",
       "knows_truths": [
         "t_player_was_spark",
@@ -1729,7 +1735,7 @@
           "relation": "neighbour"
         }
       ],
-      "sprite_recipe": "body=round; bodyColor=cream; accentColor=leafLight; skinColor=skin; feature=none; walkFrames=2",
+      "sprite": {"species":"sheep","height":"average","girth":"stout","skin":"#6a5a50","accent":"#f4efe4","outfit":{"style":"smock","color":"#4a7a9a","trim":"#f0e8d8"},"headwear":{"style":"headscarf","color":"#d9a441","trim":"#f0e8d8"},"accessories":[{"kind":"belt","color":"#7a5a3a"},{"kind":"flower","color":"#e07a9a"}]},
       "home_location": "l_sailmakers_loft",
       "knows_truths": [
         "t_thirteen_berths",
@@ -1883,7 +1889,7 @@
           "relation": "friend"
         }
       ],
-      "sprite_recipe": "body=tall; bodyColor=earth; accentColor=cream; skinColor=skin; feature=wings; walkFrames=2",
+      "sprite": {"species":"owl","height":"average","girth":"stout","skin":"#b89a7a","accent":"#f0e6d0","outfit":{"style":"robe","color":"#7a8aa8","trim":"#f0e6d0"},"accessories":[{"kind":"locket","color":"#e3b341"},{"kind":"book","color":"#4a3a6a"}]},
       "home_location": "l_bell_tower",
       "knows_truths": [
         "t_wren_lit_lamp"
@@ -2036,7 +2042,7 @@
           "relation": "deckhand to"
         }
       ],
-      "sprite_recipe": "body=tall; bodyColor=ink; accentColor=shadow; skinColor=skin; feature=tail; walkFrames=3",
+      "sprite": {"species":"crow","height":"tall","girth":"average","skin":"#2a2a34","accent":"#4a4a58","outfit":{"style":"striped","color":"#3a4a5a","trim":"#e8e8e0","legs":"#6a5a4a"},"headwear":{"style":"woolly-hat","color":"#a83a3a","trim":"#e8e0d0"},"accessories":[{"kind":"belt","color":"#5a3a24"}]},
       "home_location": "l_tallow_row",
       "knows_truths": [
         "t_wren_keeper",
@@ -2214,7 +2220,7 @@
           "relation": "lamp-companion"
         }
       ],
-      "sprite_recipe": "body=small; bodyColor=earth; accentColor=accent; skinColor=skin; feature=wings; walkFrames=3",
+      "sprite": {"species":"wren","height":"short","girth":"slim","skin":"#8a6a48","accent":"#e8d6b0","outfit":{"style":"jumper","color":"#3f8a8a","trim":"#f0e8d0"},"accessories":[{"kind":"lantern","color":"#e3b341"},{"kind":"scarf","color":"#d9534a"}]},
       "home_location": "l_wrens_lamp_room",
       "knows_truths": [
         "t_thirteen_berths",
@@ -3542,7 +3548,32 @@
           "id": "d_mooring_square",
           "to": "l_lantern_square"
         }
-      ]
+      ],
+      "area": {
+        "description": "Salt-worn steps lead up from the ferry, slick with weed. A brass bell hangs on a post and rings softly with each wave.",
+        "doors": [{ "to": "l_kettle_quay", "label": "Along the quay", "hint": "Steam and loud voices drift this way." }, { "to": "l_lantern_square", "label": "Up to the square", "hint": "Warm lamplight at the top of the hill." }],
+        "biome": "shore", "palette": "shore", "floor": "flagstone", "wall": "rock",
+        "map": [
+          " ############################ ",
+          "##############################",
+          "#~~~~~~~~~~=~~~~~~~~~=~~~~~~~#",
+          "#~~~~~~~~~==~~~~~~~~==~~~~~~~#",
+          "#~~~~~~~~~==~~~~~~~~==~~~~~~~#",
+          "#~~~~~~~~~==~~~~~~~~==~~~~~~~#",
+          "#~~~~....~==~~~~~...==~~~~~~.#",
+          "#~~..C....==~~~.....==.~~~...#",
+          "#.........==....C...==.....@.1",
+          "#............................#",
+          "#............................#",
+          "#............................#",
+          "#........C...................#",
+          "#.......#######..............#",
+          "#.......#######..............#",
+          "###############2##############"
+        ],
+        "placements": { "obj:o_ferry_bell": [18, 14] },
+        "decor": [{ "icon": "barrel", "x": 7, "y": 13 }, { "icon": "crate", "x": 1, "y": 10 }, { "icon": "sack", "x": 12, "y": 12 }, { "icon": "barrel", "x": 23, "y": 14 }, { "icon": "crate", "x": 25, "y": 14 }, { "icon": "stone", "x": 7, "y": 7 }, { "icon": "crate", "x": 4, "y": 9 }]
+      }
     },
     {
       "id": "l_kettle_quay",
@@ -3575,7 +3606,31 @@
           "id": "d_quay_wreck",
           "to": "l_wreck_pilchard"
         }
-      ]
+      ],
+      "area": {
+        "description": "Kettles whistle on the boat decks and nets dry on every rail. A captain's voice booms over the clatter of crates.",
+        "doors": [{ "to": "l_sailmakers_loft", "label": "Loft stairs", "hint": "Someone is humming up there." }, { "to": "l_reedbed_shallows", "label": "Reed path", "hint": "Planks lead out over the reeds." }, { "to": "l_wreck_pilchard", "label": "Old wreck", "hint": "A broken hull leans at the quay's end." }, { "to": "l_mooring_steps", "label": "Ferry steps", "hint": "Where the ferry lands." }],
+        "biome": "shore", "palette": "shore", "floor": "deck", "wall": "rock",
+        "map": [
+          " ############################### ",
+          "###############2#################",
+          "#...............#######.........#",
+          "#...............#######.........#",
+          "#.........C......C..............#",
+          "#.....................C.........#",
+          "#...............................#",
+          "4..........==.........==........3",
+          "#~~........==~~.......==~~......#",
+          "#~~~~....~~==~~~~...~~==~~~~....#",
+          "#~~~~~~~~~~==~~~~~~~~~==~~~~~~~~#",
+          "#~~~~~~~~~~==~~~~~~~~~==~~~~~~~~#",
+          "#~~~~~~~~~~==~~~~~~~~~==~~~~~~~~#",
+          "#~~~~~~~~~~~=~~~~~~~~~~=~~~~~~~~#",
+          "############1####################"
+        ],
+        "placements": { "obj:o_regatta_poster": [25, 2], "char:c_quay": [30, 4] },
+        "decor": [{ "icon": "barrel", "x": 7, "y": 2 }, { "icon": "crate", "x": 2, "y": 2 }, { "icon": "sack", "x": 20, "y": 4 }, { "icon": "lamp_post", "x": 16, "y": 4 }, { "icon": "barrel", "x": 29, "y": 2 }, { "icon": "stone", "x": 18, "y": 6 }, { "icon": "crate", "x": 3, "y": 6 }]
+      }
     },
     {
       "id": "l_sailmakers_loft",
@@ -3610,7 +3665,27 @@
           "id": "d_loft_square",
           "to": "l_lantern_square"
         }
-      ]
+      ],
+      "area": {
+        "description": "Sailcloth billows from the beams in the airy loft, and spools roll underfoot. A long banner is stretched across the worktable.",
+        "doors": [{ "to": "l_lantern_square", "label": "Square stairs", "hint": "A back stair to the lamplit square." }, { "to": "l_kettle_quay", "label": "Down to the quay", "hint": "The steamy, noisy harbour." }],
+        "biome": "building", "palette": "workshop", "floor": "boards", "wall": "wood",
+        "map": [
+          " ################ ",
+          "########2#########",
+          "#................#",
+          "#................#",
+          "#....CCC.........#",
+          "1................#",
+          "#................#",
+          "#................#",
+          "#................#",
+          "#................#",
+          "##################"
+        ],
+        "placements": { "obj:o_founders_banner": [3, 2], "obj:o_loft_worktable": [6, 5], "obj:o_loft_spool_basket": [16, 7], "char:c_yarrow": [12, 3], "clue:cl_banner_stars": [4, 8] },
+        "decor": [{ "icon": "stool", "x": 16, "y": 5 }, { "icon": "candle", "x": 5, "y": 2 }]
+      }
     },
     {
       "id": "l_lantern_square",
@@ -3650,7 +3725,35 @@
           "id": "d_square_oilpress",
           "to": "l_oil_press"
         }
-      ]
+      ],
+      "area": {
+        "description": "Twelve lanterns glow around the cobbled square as the evening comes on. Neighbours chat beside a notice board crowded with pins.",
+        "doors": [{ "to": "l_bakery", "label": "Bun shop", "hint": "It smells of warm currants." }, { "to": "l_council_hall", "label": "Hall steps", "hint": "Grand doors, a little cold." }, { "to": "l_tallow_row", "label": "Candle street", "hint": "Smoke and chatter down the lane." }, { "to": "l_oil_press", "label": "Press house", "hint": "A warm hum and a sticky doorstep." }, { "to": "l_mooring_steps", "label": "Down to the ferry", "hint": "The steps to the water." }, { "to": "l_sailmakers_loft", "label": "Loft stairs", "hint": "Up to the sailmaker." }],
+        "biome": "village", "palette": "village", "floor": "cobble", "wall": "brick",
+        "map": [
+          " ################################ ",
+          "###########3##########5###########",
+          "#................................#",
+          "#................................#",
+          "#................................#",
+          "#.......T.................T......#",
+          "#................R...............#",
+          "#.............RRRRRRR............#",
+          "#............RRRRRRRRR...........#",
+          "1....@......RRRRRRRRRRR..........6",
+          "#............RRRRRRRRR...........#",
+          "#.............RRRRRRR............#",
+          "#................R...............#",
+          "#.......T.................T......#",
+          "#................................#",
+          "#................................#",
+          "#................................#",
+          "#................................#",
+          "###########2##########4###########"
+        ],
+        "placements": { "obj:o_lamp_post": [14, 3], "obj:o_notice_board": [20, 2], "clue:cl_name_tag": [30, 11] },
+        "decor": [{ "icon": "fountain", "x": 17, "y": 9 }, { "icon": "bench", "x": 14, "y": 7 }, { "icon": "bench", "x": 20, "y": 7 }, { "icon": "bench", "x": 14, "y": 11 }, { "icon": "bench", "x": 20, "y": 11 }, { "icon": "barrel", "x": 2, "y": 3 }, { "icon": "crate", "x": 31, "y": 3 }, { "icon": "flower", "x": 2, "y": 16 }, { "icon": "flower", "x": 31, "y": 16 }]
+      }
     },
     {
       "id": "l_bakery",
@@ -3680,7 +3783,28 @@
           "description": "A sturdy table where warm buns cool beside the oven."
         }
       ],
-      "doors": []
+      "doors": [],
+      "area": {
+        "description": "Trays of buns cool by the window, always thirteen to a tray. Flour dusts every shelf, and the oven ticks with heat.",
+        "doors": [{ "to": "l_lantern_square", "label": "Out to the square", "hint": "Back under the lanterns." }],
+        "biome": "building", "palette": "kitchen", "floor": "tiles", "wall": "plaster",
+        "map": [
+          " #################### ",
+          "######################",
+          "#....................#",
+          "#....................#",
+          "#..CCCCCCCC..........#",
+          "#.........C..........#",
+          "#.........C..........1",
+          "#....................#",
+          "#....................#",
+          "#....................#",
+          "#....................#",
+          "######################"
+        ],
+        "placements": { "obj:o_bun_tray": [13, 7], "obj:o_bakery_flour_sack": [14, 4], "obj:o_bakery_cooling_rack": [18, 10], "char:c_granny": [2, 7] },
+        "decor": [{ "icon": "stove", "x": 19, "y": 2 }, { "icon": "stool", "x": 1, "y": 9 }]
+      }
     },
     {
       "id": "l_council_hall",
@@ -3719,7 +3843,32 @@
           "id": "d_hall_cellar",
           "to": "l_founders_cellar"
         }
-      ]
+      ],
+      "area": {
+        "description": "Tall windows let cold light onto a long, polished table. At the back, a study door is firmly shut.",
+        "doors": [{ "to": "l_archive", "label": "Records room", "hint": "Ledgers and copied lore." }, { "to": "l_founders_cellar", "label": "Cellar stairs", "hint": "Cool air rises from below." }, { "to": "l_lantern_square", "label": "Out to the square", "hint": "Back to the warm lamps." }],
+        "biome": "building", "palette": "ruins", "floor": "boards", "wall": "wood",
+        "map": [
+          " ################################ ",
+          "################3#################",
+          "#................................#",
+          "#................................#",
+          "#................................#",
+          "#................................#",
+          "#................................#",
+          "#.RRRRRRRRRRRRRRRRRRRRRRRRRRRRRR.#",
+          "1..RRRRRRRRRRRRRRRRRRRRRRRRRRRRR.#",
+          "#................................#",
+          "#...................##############",
+          "#...................#             ",
+          "#...................#             ",
+          "#...................#             ",
+          "#...................#             ",
+          "################2####             "
+        ],
+        "placements": { "obj:o_study_door": [6, 2], "obj:o_hall_council_table": [22, 9], "obj:o_hall_windows": [3, 2], "char:c_hobb": [24, 3], "clue:cl_hobb_locket": [3, 13], "clue:cl_study_locked": [21, 4] },
+        "decor": [{ "icon": "painting", "x": 19, "y": 2 }, { "icon": "statue", "x": 27, "y": 2 }, { "icon": "painting", "x": 23, "y": 2 }, { "icon": "bench", "x": 32, "y": 3 }, { "icon": "chair", "x": 19, "y": 10 }]
+      }
     },
     {
       "id": "l_archive",
@@ -3754,7 +3903,29 @@
           "id": "d_archive_tallow",
           "to": "l_tallow_row"
         }
-      ]
+      ],
+      "area": {
+        "description": "Shelves of faded ledgers stand in strict rows. A reading chair waits beside a desk lit by one careful lamp.",
+        "doors": [{ "to": "l_tallow_row", "label": "Side door", "hint": "Out onto a smoky street." }, { "to": "l_council_hall", "label": "Back to the hall", "hint": "The long council table." }],
+        "biome": "building", "palette": "office", "floor": "boards", "wall": "wood",
+        "map": [
+          " ######################## ",
+          "############1#############",
+          "#........................#",
+          "#........................#",
+          "#......CCC.......CCC.....#",
+          "#........................#",
+          "#........................2",
+          "#........................#",
+          "#........................#",
+          "#........................#",
+          "#........................#",
+          "#........................#",
+          "##########################"
+        ],
+        "placements": { "obj:o_ledger_desk": [18, 11], "obj:o_archive_bookshelf": [17, 5], "obj:o_archive_chair": [9, 3], "char:c_tamsin": [2, 6], "clue:cl_ledger_entry": [14, 7], "clue:cl_archive_recipe_copy": [7, 10], "clue:cl_archive_bell_copy": [6, 7] },
+        "decor": [{ "icon": "stool", "x": 1, "y": 8 }, { "icon": "stool", "x": 24, "y": 10 }]
+      }
     },
     {
       "id": "l_tallow_row",
@@ -3787,7 +3958,29 @@
           "id": "d_tallow_shed",
           "to": "l_lost_found_shed"
         }
-      ]
+      ],
+      "area": {
+        "description": "Candle smoke curls from every window along the narrow row. A small boat bumps against the wall where the lane meets the water.",
+        "doors": [{ "to": "l_mothlight_base", "label": "Lighthouse path", "hint": "The tall white tower ahead." }, { "to": "l_keepers_attic", "label": "Attic stair", "hint": "A steep stair to a little room." }, { "to": "l_lost_found_shed", "label": "Cluttered shed", "hint": "Something shiny glints inside." }, { "to": "l_lantern_square", "label": "Up to the square", "hint": "The twelve lanterns." }, { "to": "l_archive", "label": "Records door", "hint": "A side way into the archive." }],
+        "biome": "village", "palette": "village", "floor": "cobble", "wall": "brick",
+        "map": [
+          " ################################ ",
+          "T###############2################T",
+          "T..#####.....###.......###.......T",
+          "T................................T",
+          "T................................T",
+          "1................................T",
+          "T................................T",
+          "T................................T",
+          "T................................T",
+          "T................................T",
+          "3,,,,.....,,,,.....*,.,.~~~~~~~~.T",
+          "T*,,*,,,,,*,*,,,,T,,,,T,~~~~~~~~*T",
+          "TTTTTTTTTTT5TTTTTTTTT4TTTTTTTTTTTT"
+        ],
+        "placements": { "obj:o_boat_hook": [22, 9], "char:c_rook": [13, 8], "clue:cl_rook_midnight": [25, 9] },
+        "decor": [{ "icon": "lamp_post", "x": 25, "y": 3 }, { "icon": "barrel", "x": 6, "y": 3 }, { "icon": "crate", "x": 8, "y": 2 }, { "icon": "bench", "x": 23, "y": 3 }, { "icon": "lamp_post", "x": 11, "y": 2 }, { "icon": "lamp_post", "x": 30, "y": 2 }, { "icon": "reed_boat", "x": 23, "y": 10 }]
+      }
     },
     {
       "id": "l_oil_press",
@@ -3822,7 +4015,27 @@
           "id": "d_oilpress_tidepool",
           "to": "l_tidepool_steps"
         }
-      ]
+      ],
+      "area": {
+        "description": "A great wooden press creaks and hums, and the floor is a little sticky. Rows of bottles shine amber on the ink shelf.",
+        "doors": [{ "to": "l_tidepool_steps", "label": "Shore steps", "hint": "Splashing and laughter below." }, { "to": "l_lantern_square", "label": "Out to the square", "hint": "Back to the lamplight." }],
+        "biome": "building", "palette": "workshop", "floor": "boards", "wall": "wood",
+        "map": [
+          " ############## ",
+          "#######2########",
+          "#..............#",
+          "#..............#",
+          "#....CCC.......#",
+          "#..............1",
+          "#..............#",
+          "#..............#",
+          "#..............#",
+          "#..............#",
+          "################"
+        ],
+        "placements": { "obj:o_tally_ledger": [6, 8], "obj:o_ink_shelf": [13, 2], "obj:o_press_stool": [12, 9], "item:i_dusk_ink": [10, 5], "char:c_bramwell": [3, 7], "clue:cl_oil_tally_cold": [13, 6], "clue:cl_oil_tally_flow": [9, 8] },
+        "decor": [{ "icon": "table", "x": 1, "y": 7 }, { "icon": "table", "x": 1, "y": 4 }, { "icon": "candle", "x": 10, "y": 2 }]
+      }
     },
     {
       "id": "l_keepers_attic",
@@ -3855,7 +4068,26 @@
           "description": "A little table holds a chipped cup and a folded handkerchief."
         }
       ],
-      "doors": []
+      "doors": [],
+      "area": {
+        "description": "A snug room under the eaves with a small cot and a round window. An old coat hangs on the back of the door.",
+        "doors": [{ "to": "l_tallow_row", "label": "Down the stair", "hint": "Back to the candle-smoke street." }],
+        "biome": "building", "palette": "cottage", "floor": "boards", "wall": "plaster",
+        "map": [
+          " ############ ",
+          "##############",
+          "#............#",
+          "#............#",
+          "#............#",
+          "#....RRRRR...#",
+          "#....RRRRR...#",
+          "#....R.RRR...#",
+          "#............#",
+          "######1#######"
+        ],
+        "placements": { "obj:o_apprentice_cot": [12, 7], "obj:o_old_coat": [3, 7], "obj:o_attic_window": [11, 2], "obj:o_attic_bedside_table": [2, 2], "clue:cl_attic_initials": [8, 7], "clue:cl_attic_cot": [7, 3] },
+        "decor": [{ "icon": "painting", "x": 7, "y": 2 }, { "icon": "chair", "x": 1, "y": 5 }]
+      }
     },
     {
       "id": "l_lost_found_shed",
@@ -3885,7 +4117,26 @@
           "description": "A tin basin and a folded towel sit by the shed's little window."
         }
       ],
-      "doors": []
+      "doors": [],
+      "area": {
+        "description": "Shelves sag under buttons, keys, spoons and single gloves. Everything has been polished until it shines.",
+        "doors": [{ "to": "l_tallow_row", "label": "Out to the lane", "hint": "Back among the candles." }],
+        "biome": "building", "palette": "workshop", "floor": "boards", "wall": "wood",
+        "map": [
+          " ############## ",
+          "################",
+          "#..............#",
+          "#..............#",
+          "#..............#",
+          "#..............1",
+          "#..............#",
+          "#..............#",
+          "#..............#",
+          "################"
+        ],
+        "placements": { "obj:o_hoard_shelf": [11, 2], "obj:o_shed_peg_rail": [5, 2], "obj:o_shed_washbasin": [12, 6], "item:i_tallow_key": [2, 5], "char:c_pell": [9, 5] },
+        "decor": [{ "icon": "stool", "x": 1, "y": 6 }]
+      }
     },
     {
       "id": "l_mothlight_base",
@@ -3932,7 +4183,30 @@
           "id": "d_base_berth",
           "to": "l_berth_thirteen"
         }
-      ]
+      ],
+      "area": {
+        "description": "Thick white walls keep out the wind, and a stair spirals up into the glow. A keeper's chair sits by a row of hooks.",
+        "doors": [{ "to": "l_mothlight_lamp_room", "label": "Spiral stair", "hint": "Up to the flickering light." }, { "to": "l_bell_tower", "label": "Bell path", "hint": "A deep hum from the tower." }, { "to": "l_foghorn_rock", "label": "Causeway", "hint": "Out to the windy rock." }, { "to": "l_berth_thirteen", "label": "Far berth", "hint": "A quiet mooring past the others." }, { "to": "l_tallow_row", "label": "Back to the village", "hint": "The candle-smoke lane." }],
+        "biome": "building", "palette": "lighthouse", "floor": "flagstone", "wall": "stone",
+        "map": [
+          "    ########    ",
+          "   ####1#####   ",
+          "  ##........##  ",
+          " ##..........## ",
+          "##............##",
+          "2..............3",
+          "#....RRRRRR....#",
+          "#....RRRRRR....#",
+          "#....RRRRRR....#",
+          "4....RRRRRR....5",
+          "##............##",
+          " ##..........## ",
+          "  ##........##  ",
+          "   ##########   "
+        ],
+        "placements": { "obj:o_apprentice_hook": [2, 4], "obj:o_base_keeper_chair": [8, 12], "obj:o_base_oil_cupboard": [14, 7], "char:c_hester": [6, 7], "clue:cl_base_hook": [5, 4] },
+        "decor": [{ "icon": "barrel", "x": 11, "y": 2 }]
+      }
     },
     {
       "id": "l_mothlight_lamp_room",
@@ -3965,7 +4239,29 @@
           "id": "d_lamproom_roof",
           "to": "l_stargazers_roof"
         }
-      ]
+      ],
+      "area": {
+        "description": "The great lamp flickers inside its glass, throwing moth-shaped shadows. An ember bowl glows softly by the window.",
+        "doors": [{ "to": "l_stargazers_roof", "label": "Roof hatch", "hint": "Cold air and stars above." }, { "to": "l_mothlight_base", "label": "Down the stair", "hint": "Back to the keeper's chair." }],
+        "biome": "building", "palette": "lighthouse", "floor": "flagstone", "wall": "stone",
+        "map": [
+          "    ########    ",
+          "   ####1#####   ",
+          "  ##........##  ",
+          " ##..........## ",
+          "##............##",
+          "#..............#",
+          "#....RRRRRR....#",
+          "#....RRRRRR....#",
+          "#....RRRRRR....#",
+          "##...RRRRRR...##",
+          " ##..........## ",
+          "  ##........##  ",
+          "   ####2#####   "
+        ],
+        "placements": { "obj:o_ember_bowl": [13, 6], "obj:o_lamproom_oilcan": [10, 4], "obj:o_lamproom_window": [2, 4], "item:i_mothlight_ember": [5, 4], "clue:cl_lamp_room_flicker": [4, 9] },
+        "decor": [{ "icon": "stool", "x": 1, "y": 6 }, { "icon": "stool", "x": 14, "y": 7 }]
+      }
     },
     {
       "id": "l_stargazers_roof",
@@ -3983,7 +4279,28 @@
           "description": "A brass stand pointing at the dark tide."
         }
       ],
-      "doors": []
+      "doors": [],
+      "area": {
+        "description": "Wind tugs at your coat on the flat roof under a sky full of stars. A brass spyglass stands on its stand, pointed at the sea.",
+        "doors": [{ "to": "l_mothlight_lamp_room", "label": "Down the hatch", "hint": "Back into the lamp's glow." }],
+        "biome": "ruins", "palette": "dusk", "floor": "flagstone", "wall": "stone",
+        "map": [
+          " ################### ",
+          "#####################",
+          "#...................#",
+          "#...................#",
+          "#...................#",
+          "#....C......C.......#",
+          "#...................#",
+          "#######.............#",
+          "      #.............#",
+          "      #.............#",
+          "      #.............#",
+          "      ####1##########"
+        ],
+        "placements": { "obj:o_spyglass_stand": [15, 10], "clue:cl_spyglass_glow": [13, 4] },
+        "decor": []
+      }
     },
     {
       "id": "l_bell_tower",
@@ -4013,7 +4330,31 @@
           "description": "A small stool sits beside the bell ledger."
         }
       ],
-      "doors": []
+      "doors": [],
+      "area": {
+        "description": "Thirteen bells hang in the gloom, humming even when no one rings them. A ledger lies open on a stool by the ropes.",
+        "doors": [{ "to": "l_mothlight_base", "label": "Back to the lighthouse", "hint": "The white tower's foot." }],
+        "biome": "building", "palette": "ruins", "floor": "flagstone", "wall": "stone",
+        "map": [
+          "     ######     ",
+          "    ########    ",
+          "   ##......##   ",
+          "  ##........##  ",
+          " ##..........## ",
+          "##............##",
+          "#..............#",
+          "#....RRRRRR....1",
+          "#....RRRRRR....#",
+          "#....RRRRRR....#",
+          "##...RRRRRR...##",
+          " ##..RRRRRR..## ",
+          "  ##........##  ",
+          "   ##......##   ",
+          "    ########    "
+        ],
+        "placements": { "obj:o_bell_ledger": [9, 7], "obj:o_belltower_rope": [9, 10], "obj:o_belltower_stool": [9, 13], "char:c_ismay": [5, 3], "clue:cl_bell_ledger": [12, 8] },
+        "decor": [{ "icon": "crate", "x": 1, "y": 8 }, { "icon": "barrel", "x": 3, "y": 11 }, { "icon": "lamp_stand", "x": 12, "y": 11 }]
+      }
     },
     {
       "id": "l_berth_thirteen",
@@ -4041,7 +4382,32 @@
             ]
           }
         }
-      ]
+      ],
+      "area": {
+        "description": "Thirteen iron rings line the quiet stone berth, but only twelve boats ever tie up here. An empty lamp-stand waits at the edge.",
+        "doors": [{ "to": "l_deep_stair", "label": "Steps into the sea", "hint": "They glow, far below the water." }, { "to": "l_mothlight_base", "label": "Back to the lighthouse", "hint": "The keeper's warm base." }],
+        "biome": "shore", "palette": "shore", "floor": "deck", "wall": "rock",
+        "map": [
+          " ################################ ",
+          "##################################",
+          "#~~~~~~~~~~~~=~~~~~~~~~=~~~~~~~~~#",
+          "#~~~~~~~~~~~==~~~~~~~~==~~~~~~~~~#",
+          "#~~~~~~~~~~~==~~~~~~~~==~~~~~~~~~#",
+          "#~~~~~~~~~~~==~~~~~~~~==~~~~~~~~~#",
+          "#~~~~....~~~==~~~.C.~~==~~~~....~#",
+          "#~~........~==~.......==~~.......#",
+          "#...........==........==.........2",
+          "#................................#",
+          "#................................#",
+          "#.....C..........................#",
+          "#...........................C....#",
+          "#....#######.....................#",
+          "#....#######.....................#",
+          "################1#################"
+        ],
+        "placements": { "obj:o_empty_lamp_stand": [10, 7], "clue:cl_berth_empty": [9, 8] },
+        "decor": [{ "icon": "barrel", "x": 32, "y": 13 }, { "icon": "crate", "x": 6, "y": 12 }, { "icon": "sack", "x": 3, "y": 14 }, { "icon": "stone", "x": 13, "y": 13 }, { "icon": "crate", "x": 19, "y": 9 }, { "icon": "barrel", "x": 19, "y": 13 }]
+      }
     },
     {
       "id": "l_founders_cellar",
@@ -4064,7 +4430,28 @@
           "description": "A box of unsent letters tied with string."
         }
       ],
-      "doors": []
+      "doors": [],
+      "area": {
+        "description": "Cool, musty air and a low vaulted roof. Old books and a letter box sit on a shelf thick with dust.",
+        "doors": [{ "to": "l_council_hall", "label": "Up the stairs", "hint": "Back to the council table." }],
+        "biome": "building", "palette": "cave", "floor": "flagstone", "wall": "stone",
+        "map": [
+          " ####################### ",
+          "############1############",
+          "#.......................#",
+          "#.......................#",
+          "#.......................#",
+          "#.......................#",
+          "#.......................#",
+          "#.......................#",
+          "#.......................#",
+          "#.......................#",
+          "#.......................#",
+          "#########################"
+        ],
+        "placements": { "obj:o_recipe_book": [15, 9], "obj:o_letter_box": [16, 5], "clue:cl_founders_recipe": [9, 6], "clue:cl_hobb_letters": [10, 9], "clue:cl_chorus_rite": [22, 3] },
+        "decor": [{ "icon": "barrel", "x": 1, "y": 3 }]
+      }
     },
     {
       "id": "l_foghorn_rock",
@@ -4098,7 +4485,31 @@
           "id": "d_foghorn_meadow",
           "to": "l_glow_moth_meadow"
         }
-      ]
+      ],
+      "area": {
+        "description": "Wind roars over a bare rock where the foghorn grumbles. A barometer hangs crooked on the watch hut wall.",
+        "doors": [{ "to": "l_whisper_fog_edge", "label": "Into the fog", "hint": "Everything goes very quiet out there." }, { "to": "l_glow_moth_meadow", "label": "Meadow path", "hint": "Little lights twinkle in the grass." }, { "to": "l_mothlight_base", "label": "Causeway back", "hint": "To the lighthouse." }],
+        "biome": "shore", "palette": "mist", "floor": "sand", "wall": "rock",
+        "map": [
+          " ########################## ",
+          "############################",
+          "#~~~~~~~~~~~~~~~~~~~~~~~~~~#",
+          "#~~~~~~~~~~~~~~~~~~~~~~~~~~#",
+          "#~~~~~~~~~~~~~~~~~~~~~~~~~~#",
+          "#~~~~....~~~~~~~~...~~~~~~~#",
+          "#~~........~~~~........~~~.#",
+          "1..........................#",
+          "#..........................#",
+          "#..................#####...#",
+          "#..................#####...#",
+          "#..........................#",
+          "3..........................#",
+          "#..........................#",
+          "#############2##############"
+        ],
+        "placements": { "obj:o_barometer": [21, 11], "char:c_dorrin": [6, 5] },
+        "decor": [{ "icon": "stone", "x": 15, "y": 9 }, { "icon": "stone", "x": 13, "y": 9 }, { "icon": "shell", "x": 6, "y": 12 }, { "icon": "stone", "x": 8, "y": 11 }, { "icon": "shell", "x": 11, "y": 9 }, { "icon": "stone", "x": 18, "y": 6 }]
+      }
     },
     {
       "id": "l_whisper_fog_edge",
@@ -4116,7 +4527,30 @@
           "description": "A soft wall of whispering fog with pale lights in it."
         }
       ],
-      "doors": []
+      "doors": [],
+      "area": {
+        "description": "Grey fog muffles the waves until they only whisper. Now and then a pale light drifts just out of reach.",
+        "doors": [{ "to": "l_foghorn_rock", "label": "Back to the rock", "hint": "Follow the foghorn's grumble." }],
+        "biome": "shore", "palette": "shore", "floor": "sand", "wall": "rock",
+        "map": [
+          " ################################ ",
+          "##################################",
+          "#,,,,,,,,,,,,,*,,,,,,**,,,,*,,,,,#",
+          "#,**,,,,,,,,*,,,,,,,,,,,,,,,,,,,,#",
+          "#,,,..,,,*,,..,,,=,,..,,,*,*..,.,1",
+          "#~~.....,,.~~~~.,=.....~~~......*#",
+          "#~~~~....~~~~~~~~...~~~~~~~~....~#",
+          "#~~~~~~~~~~~~~~~~=~~~~~~~~~~~~~~~#",
+          "#~~~~~~~~~~~~~~~~=~~~~~~~~~~~~~~~#",
+          "#~~~~~~~~~~~~~~~~=~~~~~~~~~~~~~~~#",
+          "#~~~~~~~~~~~~~~~~=~~~~~~~~~~~~~~~#",
+          "#~~~~~~~~~~~~~~~~=~~~~~~~~~~~~~~~#",
+          "#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#",
+          "##################################"
+        ],
+        "placements": { "obj:o_fog_bank": [10, 5], "clue:cl_ghost_light": [22, 5] },
+        "decor": [{ "icon": "shell", "x": 30, "y": 4 }, { "icon": "stone", "x": 7, "y": 5 }, { "icon": "shell", "x": 20, "y": 4 }, { "icon": "stone", "x": 5, "y": 3 }, { "icon": "shell", "x": 7, "y": 3 }]
+      }
     },
     {
       "id": "l_glow_moth_meadow",
@@ -4141,7 +4575,33 @@
           "id": "d_meadow_reedbed",
           "to": "l_reedbed_shallows"
         }
-      ]
+      ],
+      "area": {
+        "description": "Soft grass sways under hundreds of glowing moths. The flowers here open only at dusk.",
+        "doors": [{ "to": "l_reedbed_shallows", "label": "Down to the reeds", "hint": "Squelchy ground ahead." }, { "to": "l_foghorn_rock", "label": "To the rock", "hint": "Wind and the foghorn." }],
+        "biome": "meadow", "palette": "meadow", "floor": "grass", "wall": "hedge",
+        "map": [
+          " TTTTTTTTTTTTTTTTTTTTTTTTTTTTT ",
+          "TTTTTTTTTTTTTTT2TTTTTTTTTTTTTTT",
+          "T,,,,,,,,,,,,,::,,,,,*,,,,,,,,T",
+          "T,,,o,,,,,,,*,:,,,*******,,,o,T",
+          "T,,,,,,,,*****:*,**********,,,T",
+          "T,,,,,,,******:**,***********,T",
+          "T,,,,,,,,*****:*,,,,,*,,,,*,,,T",
+          "T,,,,,,,,,,,*,:,,,,,,,T,,o,,,,T",
+          "1:::T,,,T,,,,,:T,,,*,,,,,,,T,,T",
+          "T,,:::::::::::::,*****,,,,,,,,T",
+          "T,,,,,,,,,,,,,,,,,,*,,,,,,,,,,T",
+          "T,,,,,,,,,,,,,,,,,,,,,,,,,,,,,T",
+          "T,,,,,,,,,,,,,,,,,,,,,,,,,,,,,T",
+          "T,,,,,,,,,,,,,,,,,,,,,,,,,,,,,T",
+          "T,,,,,,,T,,,,,,,,,,,,,,,,,,,,,T",
+          "T,,,,,,,,,,,,,,,,,,,,,,,,,,,,,T",
+          "TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT"
+        ],
+        "placements": { "obj:o_moth_flowers": [19, 5], "char:c_lumi": [28, 8] },
+        "decor": [{ "icon": "mushroom", "x": 9, "y": 10 }, { "icon": "stone", "x": 23, "y": 12 }, { "icon": "mushroom", "x": 19, "y": 14 }]
+      }
     },
     {
       "id": "l_reedbed_shallows",
@@ -4164,7 +4624,33 @@
           "id": "d_reedbed_kelp",
           "to": "l_kelp_garden"
         }
-      ]
+      ],
+      "area": {
+        "description": "Tall reeds rustle over still, ankle-deep water. A little reed boat is pulled up on the mud.",
+        "doors": [{ "to": "l_kelp_garden", "label": "Into the kelp", "hint": "Green fronds sway in the water." }, { "to": "l_kettle_quay", "label": "Plank path", "hint": "Back to the busy quay." }, { "to": "l_glow_moth_meadow", "label": "Up to the meadow", "hint": "Glowing moths on the bank." }],
+        "biome": "shore", "palette": "meadow", "floor": "grass", "wall": "rock",
+        "map": [
+          " TTTTTTTTTTTTTTTTTTTTTTTTTTTTT ",
+          "TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT",
+          "T,,,,,,,,,,,,,,,,,,,,,,,,,,,,,T",
+          "T,,,,,:::::::::::,,,,,,,,,,,,,T",
+          "T,,,:::T,,,T,T,*:,,,,,,,,,,*,,T",
+          "T,,,:T,~~~~~~~,,:,,,,,,,,,,,,,T",
+          "T,,::~~~~~~~~~~T::::::,*,,,,,,T",
+          "T,,:~~~~~~~~~~~~:,,*T::::,,,,,T",
+          "1:::~~~~~~~~~~~~::,,~~~~::::::3",
+          "T,,,~~~~~~~~~~~~~:,~~~~~~~,,,,T",
+          "T,,T~~~~~~~~~~~~,:~~~~~~~~,,,,T",
+          "T,,T~~~~~~~~~~~~::~~~~~~~~~,,,T",
+          "T,,,T~~~~~~~~~~,:T~~~~~~~~,,,,T",
+          "T,,,,TT~~~~~~~,,:,,~~~~~~~*,,,T",
+          "T,,,,,,TT,T,T,,,:,,,~~~~T,,,,,T",
+          "T,,,,,,,,,,,,,,::,,,T,,,,,,,,,T",
+          "TTTTTTTTTTTTTTT2TTTTTTTTTTTTTTT"
+        ],
+        "placements": { "obj:o_reed_boat": [26, 13] },
+        "decor": [{ "icon": "stone", "x": 23, "y": 4 }]
+      }
     },
     {
       "id": "l_kelp_garden",
@@ -4187,7 +4673,32 @@
           "id": "d_kelp_tidepool",
           "to": "l_tidepool_steps"
         }
-      ]
+      ],
+      "area": {
+        "description": "Long green kelp sways like a slow dance in the clear water. Thin amber threads drift down between the fronds.",
+        "doors": [{ "to": "l_tidepool_steps", "label": "Tidepool path", "hint": "Splashing, and a bright glow." }, { "to": "l_reedbed_shallows", "label": "Back to the reeds", "hint": "The rustling shallows." }],
+        "biome": "forest", "palette": "underwater", "floor": "sand", "wall": "rock",
+        "map": [
+          " TTTTTTTTTTTTTTTTTTTTTTTTTTT ",
+          "TTTTTTTTTTTTTTTTTTTTTTTTTTTTT",
+          "T,,,,,,,,,,,,,,,,,,,,,,,,,,,T",
+          "T,TT,,,,,,,,,,,,,,,,,,,,,,,,T",
+          "TTTTT,,o,,,,,,,TT,,,,TT,,,,,T",
+          "TTTTT,,,,TT,,,,TT,,,,T,,,,,,T",
+          "T,TT,,,,TTTT,,,,,,,*,,,,,,T,T",
+          "T,TT,,,,TTT,*,,,,,,,,,,,,TTTT",
+          "T,TT,,,,,T,,,,:,o,,,,,,,,TTTT",
+          "T,TTT,,,,,,o,,:,,,,,TTTTTT::2",
+          "T,,T,,,,,,,*,,:,,,,TTTTTTT:,T",
+          "T,,*,,,,,,,,,,:,,*,TTTTTTT:,T",
+          "T,,,,,,,,,,,,,:,,,,TTT,,T::,T",
+          "T,,,,,,,,,,,,,:,,,,TT:::::,,T",
+          "T,,,,,,,,,,,,,::::::::,,,,,,T",
+          "TTTTTTTTTTTTTT1TTTTTTTTTTTTTT"
+        ],
+        "placements": { "obj:o_amber_threads": [14, 7], "clue:cl_kelp_threads": [19, 8] },
+        "decor": [{ "icon": "stone", "x": 2, "y": 13 }, { "icon": "shell", "x": 12, "y": 3 }]
+      }
     },
     {
       "id": "l_tidepool_steps",
@@ -4207,7 +4718,31 @@
           "description": "A tidepool with a faint amber glow in its depths."
         }
       ],
-      "doors": []
+      "doors": [],
+      "area": {
+        "description": "Rock pools sparkle on wide stone steps, full of crabs and shells. One pool glows amber from somewhere deep below.",
+        "doors": [{ "to": "l_oil_press", "label": "Up to the press", "hint": "The humming press house." }, { "to": "l_kelp_garden", "label": "Into the kelp", "hint": "Swaying green water." }],
+        "biome": "shore", "palette": "shore", "floor": "sand", "wall": "rock",
+        "map": [
+          " ######################## ",
+          "############2#############",
+          "#*,,,,,,*,,,,,,,*,,,,,*,,#",
+          "#,,*..*,,,,,..,*,,,,..,,,#",
+          "#*......,,...~..,*......,#",
+          "#..........~~~~~.........#",
+          "#.........~~~~~~~........#",
+          "1..........~~~~~.........#",
+          "#...........~~~..........#",
+          "#.....~......~...........#",
+          "#.~~~~~~~~~..............#",
+          "#.....~..................#",
+          "#........................#",
+          "#........................#",
+          "##########################"
+        ],
+        "placements": { "obj:o_tidepool": [13, 3], "char:c_nim": [3, 7] },
+        "decor": [{ "icon": "shell", "x": 5, "y": 5 }, { "icon": "stone", "x": 19, "y": 6 }, { "icon": "shell", "x": 19, "y": 11 }, { "icon": "stone", "x": 7, "y": 5 }, { "icon": "shell", "x": 3, "y": 8 }, { "icon": "stone", "x": 11, "y": 12 }]
+      }
     },
     {
       "id": "l_wreck_pilchard",
@@ -4230,7 +4765,29 @@
           "description": "Old signalling mirrors in a battered chest."
         }
       ],
-      "doors": []
+      "doors": [],
+      "area": {
+        "description": "An old fishing boat lies on its side, timbers creaking in the swell. Scorch marks blacken the cabin wall.",
+        "doors": [{ "to": "l_kettle_quay", "label": "Back to the quay", "hint": "Out of the creaking hull." }],
+        "biome": "cave", "palette": "underwater", "floor": "boards", "wall": "wood",
+        "map": [
+          "   #####################         ",
+          "  #######################        ",
+          " ##.....................###      ",
+          "##.......................####    ",
+          "#..........................####  ",
+          "#............................### ",
+          "1..............................# ",
+          "#..............................# ",
+          "#............................### ",
+          "#..........................###   ",
+          "##.......................###     ",
+          " ##.....................##       ",
+          "  #######################        "
+        ],
+        "placements": { "obj:o_scorched_log": [12, 5], "obj:o_signal_mirrors": [27, 5], "item:i_brass_spyglass": [8, 10], "clue:cl_pilchard_log": [18, 6], "clue:cl_bad_luck_lamp": [16, 10] },
+        "decor": [{ "icon": "crate", "x": 3, "y": 2 }]
+      }
     },
     {
       "id": "l_deep_stair",
@@ -4253,7 +4810,37 @@
           "id": "d_stair_gallery",
           "to": "l_drowned_gallery"
         }
-      ]
+      ],
+      "area": {
+        "description": "Stone steps wind down through clear, quiet water. Small lanterns glow on each landing, and you can breathe just fine.",
+        "doors": [{ "to": "l_drowned_gallery", "label": "Further down", "hint": "Echoes and amber light below." }, { "to": "l_berth_thirteen", "label": "Up to the berth", "hint": "Back to the night air." }],
+        "biome": "cave", "palette": "underwater", "floor": "flagstone", "wall": "stone",
+        "map": [
+          " ######### ",
+          "#####2#####",
+          "#.........#",
+          "#...R.....#",
+          "#...RR....#",
+          "#...RR....#",
+          "#...RR....#",
+          "#...RR....#",
+          "#...RR....#",
+          "#...RR....#",
+          "#...RR....#",
+          "#...RR....#",
+          "#...RR....#",
+          "#...RR....#",
+          "#...RR....#",
+          "#...RR....#",
+          "#...RR....#",
+          "#...RR....#",
+          "#...R.....#",
+          "#.........#",
+          "#####1#####"
+        ],
+        "placements": { "obj:o_stair_lanterns": [7, 17] },
+        "decor": [{ "icon": "lamp_stand", "x": 9, "y": 16 }, { "icon": "lamp_stand", "x": 9, "y": 6 }, { "icon": "lamp_stand", "x": 1, "y": 4 }]
+      }
     },
     {
       "id": "l_drowned_gallery",
@@ -4280,7 +4867,36 @@
           "id": "d_gallery_lamp",
           "to": "l_drowned_lamp"
         }
-      ]
+      ],
+      "area": {
+        "description": "A long hall of arched windows, echoing like a seashell. Amber threads float in through the glass and drift onward.",
+        "doors": [{ "to": "l_memory_cistern", "label": "Humming door", "hint": "A low, steady hum behind it." }, { "to": "l_drowned_lamp", "label": "Toward the light", "hint": "Where the amber threads go." }, { "to": "l_deep_stair", "label": "Back up the stair", "hint": "The lanterns lead home." }],
+        "biome": "building", "palette": "underwater", "floor": "flagstone", "wall": "stone",
+        "map": [
+          " ########################## ",
+          "#############3##############",
+          "#..........................#",
+          "#..........................#",
+          "#..........................#",
+          "#..........................#",
+          "#..........................#",
+          "#..........................#",
+          "#..........................#",
+          "#.RRRRRRRRRRRRRRRRRRRRRRRR.#",
+          "#.RRRRRRRRRRRRRRRRRRRRRRR..1",
+          "#..........................#",
+          "#..........................#",
+          "#..........................#",
+          "#..........................#",
+          "#..........................#",
+          "#..........................#",
+          "#..........................#",
+          "#..........................#",
+          "#############2##############"
+        ],
+        "placements": { "obj:o_gallery_windows": [17, 2], "clue:cl_gallery_threads": [23, 17] },
+        "decor": [{ "icon": "statue", "x": 10, "y": 2 }, { "icon": "painting", "x": 22, "y": 2 }, { "icon": "statue", "x": 25, "y": 2 }, { "icon": "painting", "x": 8, "y": 2 }, { "icon": "statue", "x": 3, "y": 2 }, { "icon": "lamp_stand", "x": 26, "y": 5 }, { "icon": "statue", "x": 1, "y": 17 }, { "icon": "lamp_stand", "x": 1, "y": 6 }, { "icon": "statue", "x": 1, "y": 9 }, { "icon": "lamp_stand", "x": 26, "y": 15 }, { "icon": "statue", "x": 26, "y": 7 }]
+      }
     },
     {
       "id": "l_memory_cistern",
@@ -4303,7 +4919,30 @@
           "description": "A shelf holding a clear Empty Flask."
         }
       ],
-      "doors": []
+      "doors": [],
+      "area": {
+        "description": "A round stone basin hums in the stillness, ringed by empty shelves. A brass plaque shines on its rim.",
+        "doors": [{ "to": "l_drowned_gallery", "label": "Back to the gallery", "hint": "The hall of windows." }],
+        "biome": "building", "palette": "underwater", "floor": "flagstone", "wall": "stone",
+        "map": [
+          " #############       ",
+          "###############      ",
+          "#.............#      ",
+          "#.............#      ",
+          "#.............###### ",
+          "#.............#######",
+          "#...................#",
+          "1...................#",
+          "#...................#",
+          "#...................#",
+          "#...................#",
+          "#...................#",
+          "#...................#",
+          "#####################"
+        ],
+        "placements": { "obj:o_cistern_plaque": [14, 6], "obj:o_cistern_shelf": [11, 2], "item:i_empty_flask": [11, 10], "clue:cl_cistern_plaque": [15, 9], "clue:cl_flask_cistern": [2, 4] },
+        "decor": [{ "icon": "lamp_stand", "x": 6, "y": 2 }]
+      }
     },
     {
       "id": "l_drowned_lamp",
@@ -4336,7 +4975,28 @@
             ]
           }
         }
-      ]
+      ],
+      "area": {
+        "description": "A great lamp burns low and amber, nearly out of oil. Its warmth reaches through the water like a hand.",
+        "doors": [{ "to": "l_wrens_lamp_room", "label": "Small round door", "hint": "Someone is waiting inside." }, { "to": "l_drowned_gallery", "label": "Back to the gallery", "hint": "The echoing windows." }],
+        "biome": "building", "palette": "underwater", "floor": "flagstone", "wall": "stone",
+        "map": [
+          "    ##########    ",
+          "   #####2######   ",
+          "  ##..........##  ",
+          " ##............## ",
+          "##..............##",
+          "#.....RRRRRR.....#",
+          "#.....RRRRRR.....1",
+          "#.....RRRRRR.....#",
+          "##....RRRRRR....##",
+          " ##............## ",
+          "  ##..........##  ",
+          "   ############   "
+        ],
+        "placements": { "obj:o_thirteenth_light": [12, 9], "clue:cl_drowned_lamp_glow": [4, 6] },
+        "decor": [{ "icon": "urn", "x": 14, "y": 3 }]
+      }
     },
     {
       "id": "l_wrens_lamp_room",
@@ -4366,7 +5026,29 @@
           "description": "A round window looks out toward the quiet tide."
         }
       ],
-      "doors": []
+      "doors": [],
+      "area": {
+        "description": "A small, glowing room with a cot and a round window onto the dark sea. It feels like somebody has waited here a long time.",
+        "doors": [{ "to": "l_drowned_lamp", "label": "Back to the lamp", "hint": "The great amber light." }],
+        "biome": "building", "palette": "lighthouse", "floor": "flagstone", "wall": "stone",
+        "map": [
+          "    ######    ",
+          "   ########   ",
+          "  ##......##  ",
+          " ##........## ",
+          "##..........##",
+          "#....RRRRR...#",
+          "1....RRRRR...#",
+          "#....RRRRR...#",
+          "#....RRRRR...#",
+          "##..........##",
+          " ##........## ",
+          "  ##......##  ",
+          "   ########   "
+        ],
+        "placements": { "obj:o_wren_cot": [5, 2], "obj:o_wren_bedside_table": [7, 2], "obj:o_wren_window": [9, 2], "char:c_wren": [9, 8] },
+        "decor": [{ "icon": "urn", "x": 3, "y": 4 }, { "icon": "flower", "x": 10, "y": 8 }]
+      }
     }
   ],
   "twists": [

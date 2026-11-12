@@ -1,6 +1,6 @@
 import type { JSONResult } from "./types";
 
-export type PromptKind = "area" | "character" | "dialogue";
+export type PromptKind = "character" | "dialogue";
 
 export interface Sample {
   kind: PromptKind;
@@ -61,7 +61,7 @@ export function formatReport(options: { modelId: string; backend: string; loadTi
     `Load time: ${(options.loadTimeMs / 1000).toFixed(1)} s (${options.fromCache ? "from cache" : "downloaded"})`,
     `Device: ${options.userAgent}`,
   ];
-  for (const kind of ["area", "character", "dialogue"] as const) {
+  for (const kind of ["character", "dialogue"] as const) {
     const summary = summarize(options.samples.filter((sample) => sample.kind === kind));
     lines.push(
       "",
