@@ -1,5 +1,5 @@
 const CACHE_PREFIX = "cozy-mystery-shell-";
-const CACHE_NAME = `${CACHE_PREFIX}v10`;
+const CACHE_NAME = `${CACHE_PREFIX}v11`;
 const scopeUrl = new URL(self.registration.scope);
 
 self.addEventListener("install", (event) => {
@@ -62,22 +62,21 @@ self.addEventListener("fetch", (event) => {
 
   event.respondWith((async () => {
     const cache = await caches.open(CACHE_NAME);
-    if (event.request.mode === "navigate") {
-      const cachedShell = await cache.match(scopeUrl);
-      const update = fetch(event.request).then(async (response) => {
-        if (response.ok) {
-          try {
-            await cache.put(scopeUrl, response.clone());
-          } catch (error) {
-            console.warn("Could not update the cached app shell.", error);
-          }
-        }
+    // Page loads and the story list go to the network first so a new deploy shows on the next visit;
+    // the cached copy is only used when offline.
+    const networkFirst = event.request.mode === "navigate"
+      || requestUrl.pathname === new URL("stories/index.json", scopeUrl).pathname;
+    if (networkFirst) {
+      const cacheKey = event.request.mode === "navigate" ? scopeUrl : event.request;
+      try {
+        const response = await fetch(event.request);
+        if (response.ok) await cache.put(cacheKey, response.clone());
         return response;
-      }).catch(() => undefined);
-      if (cachedShell) return cachedShell;
-      const response = await update;
-      if (response) return response;
-      throw new Error("The app shell is not available offline.");
+      } catch {
+        const cachedCopy = await cache.match(cacheKey);
+        if (cachedCopy) return cachedCopy;
+        throw new Error("The app is not available offline.");
+      }
     }
     const cached = await cache.match(event.request);
     if (cached) return cached;
