@@ -1,5 +1,6 @@
 import type { EndingChoice, EndingScene } from "../story/ending";
 import { activateGamepadFocus } from "../input/focus";
+import type { CaseGrade } from "../story/grade";
 import { formatPlayTime, type CaseRecap } from "../story/progress";
 import { el } from "./dom";
 
@@ -35,13 +36,15 @@ export function mountEndingChoiceScreen(
   activateGamepadFocus(screen, { onBack });
 }
 
+export type RecapView = CaseRecap & { timePlayedMs?: number; grade?: CaseGrade };
+
 export function mountEndingScreen(
   root: HTMLElement,
   storyTitle: string,
   ending: EndingScene,
   onNewStory: () => void,
   onBackToTitle: () => void,
-  recap?: CaseRecap & { timePlayedMs?: number },
+  recap?: RecapView,
   epilogue?: { label: string; onJoin: () => Promise<void> },
 ): void {
   enableScreenScrolling();
@@ -84,10 +87,11 @@ export function mountEndingScreen(
   activateGamepadFocus(screen, { onBack: onBackToTitle });
 }
 
-function recapSection(recap: CaseRecap & { timePlayedMs?: number }): HTMLElement {
+function recapSection(recap: RecapView): HTMLElement {
   const section = el("section", "ending-recap");
   section.setAttribute("aria-label", "How you solved it");
   section.append(el("h2", "ending-subtitle", "How you solved it"));
+  if (recap.grade) section.append(gradeBlock(recap.grade));
   section.append(el("p", `ending-recap-result ending-recap-result-${recap.result.kind}`, recap.result.kind === "assisted"
     ? `${recap.result.label}: deductions were confirmed for you, so nothing counted as a mistake.`
     : recap.result.label));
@@ -135,10 +139,31 @@ function recapSection(recap: CaseRecap & { timePlayedMs?: number }): HTMLElement
     fact("Statements broken", `${statements.broken} of ${statements.broken + statements.standing}${standing}`);
   }
   if (statements.missedChallenges > 0) fact("Challenges that missed", String(statements.missedChallenges));
-  if (recap.optionalCluesTotal > 0) fact("Optional clues", `${recap.optionalCluesFound} of ${recap.optionalCluesTotal}`);
+  if (!recap.grade && recap.optionalCluesTotal > 0) fact("Optional clues", `${recap.optionalCluesFound} of ${recap.optionalCluesTotal}`);
   if (recap.timePlayedMs !== undefined) fact("Time played", formatPlayTime(recap.timePlayedMs));
   section.append(facts);
   return section;
+}
+
+function gradeBlock(grade: CaseGrade): HTMLElement {
+  const block = el("div", "ending-grade");
+  block.append(el("p", "ending-grade-title", grade.title));
+  const facts = el("ul", "ending-grade-facts");
+  const fact = (text: string): void => {
+    facts.append(el("li", "ending-grade-fact", text));
+  };
+  fact(`Clues found: ${grade.cluesFound} of ${grade.cluesTotal}`);
+  fact(`Deductions: ${grade.deductionsRight} right of ${grade.deductionsTotal}`);
+  fact(`Wrong answers: ${grade.wrongAnswers}`);
+  fact(`Hints used: ${grade.hintsUsed}`);
+  block.append(facts);
+  if (grade.missed.length > 0) {
+    block.append(el("p", "ending-grade-missed-heading", "You missed"));
+    const list = el("ul", "ending-grade-missed");
+    for (const line of grade.missed) list.append(el("li", "", line));
+    block.append(list);
+  }
+  return block;
 }
 
 function enableScreenScrolling(): void {

@@ -2,10 +2,11 @@ import { afterEach, describe, expect, it } from "vitest";
 import fixture from "../../public/stories/example.json";
 import holmesFixture from "../../public/stories/holmesashenvelope.json";
 import { setAssistedDeductions } from "./assist";
-import { PROOF_SLOTS } from "./config";
+import { EVIDENCE_OPTIONS, PROOF_SLOTS } from "./config";
 import { getLengthView } from "./loader";
-import { judgeAnswer, proofChoices, proofPieces, requiredCount, sanitizeShown } from "./proof";
+import { judgeAnswer, pickEvidenceOptions, proofChoices, proofPieces, requiredCount, sanitizeShown } from "./proof";
 import { solveLength } from "./solver";
+import { summationOptions } from "./deduction";
 import { createStoryState, giveItem, markClueFound } from "./state";
 import { challengeStatement } from "./statements";
 import type { StoryPack } from "./types";
@@ -129,5 +130,76 @@ describe("solving without a truth", () => {
     expect(withheld.truths.has("t_taker")).toBe(false);
     expect(withheld.clues.has("cl_hollis_confess")).toBe(false);
     expect(withheld.clues.has("cl_oswin_ledger")).toBe(true); // found, but never turned into the truth
+  });
+});
+
+describe("picking evidence options", () => {
+  const holding = (ids: string[], items: string[] = []) => {
+    const pack = fresh();
+    const view = getLengthView(pack);
+    const state = createStoryState(view);
+    for (const id of ids) markClueFound(state, id);
+    for (const id of items) giveItem(state, id);
+    const held = proofChoices(pack, state).map((choice) => choice.ref);
+    return { pack, view, state, held };
+  };
+  const allClues = ["cl_pip_saw", "cl_library_log", "cl_mira_talk", "cl_notice_board", "cl_flour_prints", "cl_oswin_ledger"];
+  const correct = [clue("cl_pip_saw"), clue("cl_library_log")];
+  const keyOf = (piece: { type: string; id: string }): string => `${piece.type}:${piece.id}`;
+
+  it("includes the held correct pieces and only held pieces", () => {
+    const { pack, view, state, held } = holding(allClues, ["i_overdue_book"]);
+    const picked = pickEvidenceOptions(pack, view, state, held, correct, "t_night", 2);
+    expect(picked).toContainEqual(clue("cl_pip_saw"));
+    expect(picked).toContainEqual(clue("cl_library_log"));
+    for (const piece of picked) expect(held.map(keyOf)).toContain(keyOf(piece));
+    expect(picked.map(keyOf)).not.toContain("clue:cl_hollis_confess");
+  });
+
+  it("stays small, with distractors, and is deterministic", () => {
+    const { pack, view, state, held } = holding(allClues, ["i_overdue_book"]);
+    const picked = pickEvidenceOptions(pack, view, state, held, correct, "t_night", 2);
+    expect(picked.length).toBeLessThanOrEqual(Math.max(EVIDENCE_OPTIONS.size, 2 + EVIDENCE_OPTIONS.minDistractors));
+    expect(picked.length - 2).toBeGreaterThanOrEqual(EVIDENCE_OPTIONS.minDistractors);
+    expect(pickEvidenceOptions(pack, view, state, held, correct, "t_night", 2)).toEqual(picked);
+  });
+
+  it("varies with the seed", () => {
+    const { pack, view, state, held } = holding(allClues, ["i_overdue_book"]);
+    const sets = new Set(["a", "b", "c", "d", "e", "f"].map((seed) =>
+      pickEvidenceOptions(pack, view, state, held, correct, seed, 2).map(keyOf).sort().join(",")));
+    expect(sets.size).toBeGreaterThan(1);
+  });
+
+  it("prefers related distractors (herring setup, same or earlier truth) over unrelated ones", () => {
+    const { pack, view, state, held } = holding(["cl_oswin_ledger", "cl_pip_saw", "cl_library_log", "cl_flour_prints", "cl_mira_talk"], ["i_overdue_book"]);
+    for (const seed of ["a", "b", "c", "d"]) {
+      const picked = pickEvidenceOptions(pack, view, state, held, [clue("cl_oswin_ledger"), clue("cl_shard_match")], seed);
+      expect(picked).toContainEqual(clue("cl_oswin_ledger"));
+      expect(picked).toContainEqual(clue("cl_flour_prints"));
+      expect(picked).not.toContainEqual(clue("cl_mira_talk"));
+      expect(picked).not.toContainEqual(item("i_overdue_book"));
+    }
+  });
+
+  it("offers only distractors when no correct piece is held", () => {
+    const { pack, view, state, held } = holding(["cl_mira_talk", "cl_notice_board", "cl_flour_prints"]);
+    const picked = pickEvidenceOptions(pack, view, state, held, correct, "t_night", 2);
+    expect(picked.length).toBe(3);
+    expect(picked.every((piece) => !correct.some((entry) => entry.id === piece.id))).toBe(true);
+    expect(pickEvidenceOptions(pack, view, state, [], correct, "t_night", 2)).toEqual([]);
+  });
+});
+
+describe("summation options per question", () => {
+  it("returns the right truth and three confirmed distractors", () => {
+    const pack = fresh();
+    const state = createStoryState(getLengthView(pack));
+    state.truthsFound.push(...pack.truths.map((truth) => truth.id));
+    const options = summationOptions(pack, state, { truthId: "t_taker" });
+    expect(options).toHaveLength(Math.min(4, pack.truths.length));
+    expect(options.map((option) => option.id)).toContain("t_taker");
+    expect(summationOptions(pack, state, { truthId: "t_taker" })).toEqual(options);
+    expect(summationOptions(pack, state).length).toBe(pack.truths.length);
   });
 });

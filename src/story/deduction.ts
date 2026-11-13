@@ -102,9 +102,15 @@ export function pickSummation(endings: readonly Ending[]): SummationQuestion[] |
   return ending?.summation?.map((entry) => ({ question: entry.question, truthId: entry.truth_id, proof: entry.proof })) ?? null;
 }
 
-export function summationOptions(pack: StoryPack, state: StoryState): { id: string; text: string }[] {
+// The conclusions offered for a finale question. Without a question: every confirmed truth. With one: the right
+// truth and up to three confirmed distractors, in a stable order that does not always put the right one first.
+export function summationOptions(pack: StoryPack, state: StoryState, question?: Pick<SummationQuestion, "truthId">): { id: string; text: string }[] {
   const confirmed = pack.truths
     .filter((truth) => state.truthsFound.includes(truth.id))
     .map((truth) => ({ id: truth.id, text: truth.text }));
-  return stableShuffle(confirmed, "summation", (option) => option.id);
+  if (!question) return stableShuffle(confirmed, "summation", (option) => option.id);
+  const seed = `summation:${question.truthId}`;
+  const correct = confirmed.filter((option) => option.id === question.truthId);
+  const others = stableShuffle(confirmed.filter((option) => option.id !== question.truthId), seed, (option) => option.id).slice(0, 3);
+  return stableShuffle([...correct, ...others], `${seed}:order`, (option) => option.id);
 }

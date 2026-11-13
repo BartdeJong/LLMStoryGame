@@ -321,6 +321,14 @@ describe("save persistence", () => {
     expect(() => normalizeSave({ ...save, storyState: { ...save.storyState, leadsSeen: [1] } })).toThrow();
   });
 
+  it("keeps hints seen, loads saves without them and rejects malformed ones", () => {
+    const save = makeSave();
+    expect(normalizeSave(JSON.parse(JSON.stringify(save))).storyState.hintsSeen).toBeUndefined();
+    save.storyState.hintsSeen = ["b_square:truth:t_missing#1", "finale#2"];
+    expect(normalizeSave(JSON.parse(JSON.stringify(save))).storyState.hintsSeen).toEqual(save.storyState.hintsSeen);
+    expect(() => normalizeSave({ ...save, storyState: { ...save.storyState, hintsSeen: [1] } })).toThrow();
+  });
+
   it("rejects invalid imported files before storing them", async () => {
     const repository = createRepository();
 

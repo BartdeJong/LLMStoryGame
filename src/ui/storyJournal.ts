@@ -25,6 +25,14 @@ export interface JournalQuestion {
   readonly evidence: readonly string[];
   readonly options: readonly string[];
   readonly proofSlots: number; // how many pieces of evidence can be shown with the answer; 0 = answered in one click
+  readonly evidenceChoices?: readonly ProofChoice[]; // a shorter list for this question; defaults to the extras' list
+}
+
+// The journal's hint box: offered after a while without progress, then shown at one of two tiers.
+export interface JournalHint {
+  readonly offered: boolean;
+  readonly shown?: { readonly tier: 1 | 2; readonly text: string };
+  readonly canClearer: boolean;
 }
 
 // How a confirmed truth's question was answered, keyed by the fact text.
@@ -55,6 +63,7 @@ export interface JournalExtras {
   readonly ruledOut: readonly JournalRuledOut[];
   readonly progress?: Pick<HudProgress, "truthsFound" | "truthsTotal">;
   readonly leads?: readonly JournalLead[];
+  readonly hint?: JournalHint;
 }
 
 export interface StoryJournal {
@@ -76,6 +85,7 @@ export interface StoryJournal {
 export function createStoryJournal(
   container: HTMLElement,
   onAnswer: (questionId: string, answer: string, evidence: EvidenceRef[]) => void = () => undefined,
+  onHint: (tier: 1 | 2) => void = () => undefined,
 ): StoryJournal {
   const feedback = new Map<string, string>();
   // The answer a player has picked but not yet given, with the evidence chosen so far. Not saved.
@@ -88,7 +98,10 @@ export function createStoryJournal(
   const badge = el("span", "journal-badge");
   badge.hidden = true;
   badge.setAttribute("aria-hidden", "true");
-  toggleButton.append(badge);
+  const hintBadge = el("span", "journal-hint-badge", "?");
+  hintBadge.hidden = true;
+  hintBadge.setAttribute("aria-hidden", "true");
+  toggleButton.append(badge, hintBadge);
   toggleButton.setAttribute("aria-label", "Story journal");
   toggleButton.dataset.padHint = "J";
 
@@ -129,6 +142,9 @@ export function createStoryJournal(
   progressLine.hidden = true;
   const status = el("p", "journal-status");
   status.setAttribute("aria-live", "polite");
+
+  const hintBox = el("div", "journal-hint");
+  hintBox.hidden = true;
 
   const questionsHeading = el("p", "journal-heading");
   questionsHeading.textContent = "Open questions";
@@ -171,7 +187,7 @@ export function createStoryJournal(
   const requestsList = el("div", "journal-list");
   const requestsEmpty = el("p", "inventory-empty");
   requestsEmpty.textContent = "No one has asked you to find anything yet.";
-  panel.append(title, progressLine, search, filter, status,
+  panel.append(title, progressLine, search, filter, status, hintBox,
     questionsHeading, questionsList, questionsEmpty,
     leadsHeading, leadsList, leadsEmpty,
     factsHeading, factsList, factsEmpty,
@@ -260,6 +276,7 @@ export function createStoryJournal(
         progressText.textContent = progressLabel({ ...progress, leadNumber: 0, leadTotal: 0 });
         fillPips(progressPips, progress.truthsFound, progress.truthsTotal);
       }
+      drawHint(extras.hint);
       questionsList.replaceChildren();
       questionsEmpty.hidden = extras.questions.length > 0;
       for (const id of [...pending.keys()]) {
@@ -298,11 +315,12 @@ export function createStoryJournal(
             draw();
           });
           const picker = createEvidencePicker({
-            choices: extras.evidenceChoices,
+            choices: question.evidenceChoices ?? extras.evidenceChoices,
             max: Math.min(question.proofSlots, PROOF_SLOTS),
             initial: chosen.evidence,
             onChange: (selected) => { chosen.evidence = selected; },
           });
+          chosen.evidence = picker.selected(); // a selection the shorter list dropped is not kept
           const give = el("button", "dialogue-choice journal-give", "Give this answer");
           give.type = "button";
           give.dataset.questionId = question.id;
@@ -474,14 +492,16 @@ export function createStoryJournal(
         requestsList.append(row);
       }
       const entryCount = facts.length + evidence.length + requests.length;
-      toggleButton.replaceChildren(`Journal · ${entryCount}`, badge);
+      const hintOffered = extras.hint?.offered === true && extras.hint.shown === undefined;
+      hintBadge.hidden = !hintOffered;
+      toggleButton.replaceChildren(`Journal · ${entryCount}`, badge, hintBadge);
       badge.hidden = extras.questions.length === 0;
       badge.textContent = String(extras.questions.length);
       toggleButton.setAttribute(
         "aria-label",
         `Story journal, ${entryCount} entries${extras.questions.length > 0
           ? `, ${extras.questions.length} open ${extras.questions.length === 1 ? "question" : "questions"}`
-          : ""}`,
+          : ""}${hintOffered ? ", a hint is available" : ""}`,
       );
       updateFilter();
       if (focusQuestion !== null) {
@@ -491,6 +511,26 @@ export function createStoryJournal(
         focusQuestion = null;
         target?.focus();
       }
+    }
+  }
+
+  function drawHint(hint: JournalHint | undefined): void {
+    hintBox.replaceChildren();
+    hintBox.hidden = !hint || !hint.offered;
+    if (!hint || !hint.offered) return;
+    if (!hint.shown) {
+      const ask = el("button", "dialogue-choice journal-hint-button", "Need a hint?");
+      ask.type = "button";
+      ask.addEventListener("click", () => onHint(1));
+      hintBox.append(ask);
+      return;
+    }
+    hintBox.append(el("p", "journal-hint-text", hint.shown.text));
+    if (hint.shown.tier === 1 && hint.canClearer) {
+      const more = el("button", "dialogue-choice journal-hint-button", "A clearer hint");
+      more.type = "button";
+      more.addEventListener("click", () => onHint(2));
+      hintBox.append(more);
     }
   }
 }

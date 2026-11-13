@@ -129,6 +129,11 @@ export class StorySession {
     });
   }
 
+  // Index of the furthest open beat; it only ever grows during a playthrough.
+  get currentBeatIndex(): number {
+    return this.openBeatCount() - 1;
+  }
+
   get currentBeat(): Beat {
     const beat = this.view.beats[this.openBeatCount() - 1];
     if (!beat) throw new Error(`Story "${this.pack.identity.id}" has no current beat.`);
@@ -160,6 +165,7 @@ export class StorySession {
       throw new Error("The save does not match this story session.");
     }
     delete this.state.leadsSeen; // a save without leads must not keep the ones from before
+    delete this.state.hintsSeen;
     Object.assign(this.state, save.storyState);
     this.lockTargets.clear();
     this.areas.clear();

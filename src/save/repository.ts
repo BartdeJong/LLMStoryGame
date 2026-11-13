@@ -48,7 +48,9 @@ function isStoryState(value: unknown): value is JsonRecord & {
       isRecord(entry) && typeof entry.id === "string" && ["clue", "truth", "item"].includes(String(entry.kind))
       && Number.isFinite(entry.at))))
     // Leads (explained locks) arrived later too and are optional.
-    && (value.leadsSeen === undefined || isStringArray(value.leadsSeen));
+    && (value.leadsSeen === undefined || isStringArray(value.leadsSeen))
+    // Hints taken (journal hints) are optional too.
+    && (value.hintsSeen === undefined || isStringArray(value.hintsSeen));
 }
 
 function isEvidence(value: unknown): boolean {

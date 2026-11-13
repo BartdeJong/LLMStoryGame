@@ -1,5 +1,6 @@
 import { activateGamepadFocus } from "../input/focus";
 import type { SummationQuestion } from "../story/deduction";
+import type { ChapterCard } from "../story/chapters";
 import type { ProofChoice } from "../story/proof";
 import type { AnswerOutcome } from "../story/state";
 import type { EvidenceRef } from "../story/statements";
@@ -19,8 +20,12 @@ export interface FinalCaseResult {
 // What the player can show with an answer, and how many pieces.
 export interface CaseProofOptions {
   choices: readonly ProofChoice[];
+  choicesFor?: (question: SummationQuestion) => readonly ProofChoice[]; // a shorter list for one question
   slots: number;
 }
+
+// The conclusions offered for one question.
+export type CaseOptions = (question: SummationQuestion) => readonly { id: string; text: string }[];
 
 export interface FinalCaseHandlers {
   startAt: number; // first unanswered question (answers survive a reload)
@@ -33,10 +38,11 @@ export interface CaseOverlay {
   readonly elements: readonly HTMLElement[];
   readonly isOpen: boolean;
   showReveal(description: string, onClose: () => void): void;
+  showChapter(card: ChapterCard, onClose: () => void): void;
   offerCase(onPresent: () => void): void;
   presentCase(
     questions: readonly SummationQuestion[],
-    options: readonly { id: string; text: string }[],
+    options: CaseOptions,
     proof: CaseProofOptions,
     judge: (question: SummationQuestion, answerTruthId: string, evidence: EvidenceRef[]) => AnswerOutcome,
     onSolved: () => void,
@@ -44,7 +50,7 @@ export interface CaseOverlay {
   // The finale with stakes: each question is answered once, with no feedback until all are answered.
   presentFinalCase(
     questions: readonly SummationQuestion[],
-    options: readonly { id: string; text: string }[],
+    options: CaseOptions,
     proof: CaseProofOptions,
     handlers: FinalCaseHandlers,
   ): void;
@@ -94,6 +100,7 @@ export function createCaseOverlay(container: HTMLElement, onCaseButton: () => vo
     step: string;
     question: string;
     said: string;
+    choices?: readonly ProofChoice[];
     proof: CaseProofOptions;
     initial?: readonly EvidenceRef[];
     note?: string;
@@ -103,7 +110,7 @@ export function createCaseOverlay(container: HTMLElement, onCaseButton: () => vo
     onGoOn?: () => void;
   }): void => {
     const content = card("Show your evidence");
-    const picker = createEvidencePicker({ choices: config.proof.choices, max: config.proof.slots, initial: config.initial });
+    const picker = createEvidencePicker({ choices: config.choices ?? config.proof.choices, max: config.proof.slots, initial: config.initial });
     const actions = el("div", "case-actions");
     actions.append(button(config.confirmLabel, () => config.onConfirm(picker.selected())));
     if (config.onGoOn) actions.append(button("Go on", config.onGoOn));
@@ -145,6 +152,48 @@ export function createCaseOverlay(container: HTMLElement, onCaseButton: () => vo
       content.append(el("h2", "case-title", "A twist!"), el("p", "case-text", description), actions);
       open(content);
     },
+    showChapter(chapter, onClose) {
+      const content = card(`Chapter ${chapter.number} of ${chapter.total}`);
+      content.classList.add("chapter-card");
+      content.setAttribute("aria-modal", "true");
+      const shownAt = performance.now();
+      const onKey = (event: KeyboardEvent): void => {
+        if (!["Enter", " ", "Escape"].includes(event.key)) return;
+        event.preventDefault();
+        event.stopPropagation(); // Escape must not also open the pause menu
+        // Keys still held from walking must not skip the card.
+        if (event.repeat || performance.now() - shownAt < 400) return;
+        finish();
+      };
+      let finished = false;
+      const finish = (): void => {
+        if (finished) return;
+        finished = true;
+        window.removeEventListener("keydown", onKey, true);
+        close();
+        onClose();
+      };
+      const actions = el("div", "case-actions");
+      actions.append(button("Continue", finish));
+      content.append(
+        el("p", "case-step", `Chapter ${chapter.number} of ${chapter.total}`),
+        el("h2", "case-title", chapter.title),
+        el("p", "case-text", chapter.text),
+      );
+      if (chapter.teaser) content.append(el("p", "case-text chapter-teaser", chapter.teaser));
+      content.append(actions);
+      open(content);
+      // A click on the dimmed backdrop (outside the card) or any key closes the card.
+      overlay?.addEventListener("click", (event) => {
+        if (event.target === overlay) finish();
+      });
+      window.addEventListener("keydown", onKey, true);
+      const previous = release;
+      release = () => {
+        window.removeEventListener("keydown", onKey, true);
+        previous?.();
+      };
+    },
     offerCase(onPresent) {
       const content = card("Present your case");
       const actions = el("div", "case-actions");
@@ -181,7 +230,7 @@ export function createCaseOverlay(container: HTMLElement, onCaseButton: () => vo
           el("h2", "case-title", question.question),
         );
         const actions = el("div", "case-actions");
-        for (const option of options) {
+        for (const option of options(question)) {
           actions.append(button(option.text, () => {
             if (option.id !== question.truthId) {
               showQuestion("Not quite. Look through your casebook and try again.");
@@ -207,6 +256,7 @@ export function createCaseOverlay(container: HTMLElement, onCaseButton: () => vo
           step: `Question ${index + 1} of ${questions.length}`,
           question: question.question,
           said: option.text,
+          choices: proof.choicesFor?.(question),
           proof,
           initial,
           note,
@@ -271,7 +321,7 @@ export function createCaseOverlay(container: HTMLElement, onCaseButton: () => vo
           el("p", "case-text", "Choose once; you will hear how you did when every question is answered."),
         );
         const actions = el("div", "case-actions");
-        for (const option of options) {
+        for (const option of options(question)) {
           actions.append(button(option.text, () => {
             if (!question.proof) {
               record(question, option.id, []);
@@ -282,6 +332,7 @@ export function createCaseOverlay(container: HTMLElement, onCaseButton: () => vo
                 step: `Question ${index + 1} of ${questions.length}`,
                 question: question.question,
                 said: option.text,
+                choices: proof.choicesFor?.(question),
                 proof,
                 initial,
                 confirmLabel: "Present this",

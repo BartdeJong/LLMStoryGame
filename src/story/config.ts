@@ -95,3 +95,25 @@ export const CASE_RESULT = {
 
 // How many pieces of evidence the player can show with one answer.
 export const PROOF_SLOTS = 3;
+
+// Evidence pickers show a short list instead of everything held: the correct pieces the player holds plus
+// distractors, at least `minDistractors` of them, `size` entries in all (src/story/proof.ts).
+export const EVIDENCE_OPTIONS = { size: 4, minDistractors: 2 };
+
+// Journal hints: offered after this long without progress (play time only), and a clearer one this long
+// after the first hint was shown.
+export const HINTS = { offerAfterMs: 240_000, clearerAfterMs: 60_000 };
+
+// The case grade shown on the ending screen (src/story/grade.ts).
+export const GRADE = {
+  clueWeight: 0.4,
+  answerWeight: 0.6,
+  hintPenalty: 5,
+  maxHintPenalty: 20,
+  tiers: [
+    { min: 90, title: "Master Detective" },
+    { min: 70, title: "Sharp Investigator" },
+    { min: 50, title: "Capable Sleuth" },
+    { min: 0, title: "Promising Apprentice" },
+  ],
+};

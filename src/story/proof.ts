@@ -1,7 +1,9 @@
 // Evidence-backed answers. The player picks a conclusion and shows up to PROOF_SLOTS items and clues; code
 // decides the outcome. Nothing here depends on the model.
 
-import { PROOF_SLOTS } from "./config";
+import { EVIDENCE_OPTIONS, PROOF_SLOTS } from "./config";
+import { stableShuffle } from "./deduction";
+import type { LengthView } from "./loader";
 import { evidenceList, holdsEvidence } from "./statements";
 import type { EvidenceRef } from "./statements";
 import type { AnswerOutcome, StoryState } from "./state";
@@ -59,4 +61,52 @@ export function proofChoices(pack: StoryPack, state: StoryState): ProofChoice[] 
     return clue ? [{ ref: { type: "clue", id }, label: clue.text, group: "clue" }] : [];
   });
   return [...items, ...clues];
+}
+
+const refKey = (ref: EvidenceRef): string => `${ref.type}:${ref.id}`;
+
+// A short, believable list for an evidence picker instead of everything held: the held pieces that really back the
+// answer (`correct`) plus distractors from what else is held, at least EVIDENCE_OPTIONS.minDistractors of them
+// whenever that many are held. Distractors that look related (setup clues of red herrings and twists, or clues of
+// the same or a prerequisite truth) come first. Only held pieces are ever returned; the choice is deterministic for
+// a seed. `required` pieces are always kept so the player can still meet the proof.
+export function pickEvidenceOptions(
+  pack: StoryPack,
+  view: LengthView | undefined,
+  state: StoryState,
+  heldPieces: readonly EvidenceRef[],
+  correct: readonly EvidenceRef[],
+  seed: string,
+  required = 1,
+): EvidenceRef[] {
+  const held = heldPieces.filter((piece) => holdsEvidence(state, piece));
+  const correctKeys = new Set(correct.map(refKey));
+  const heldCorrect = stableShuffle(held.filter((piece) => correctKeys.has(refKey(piece))), `${seed}:correct`, refKey)
+    .slice(0, Math.max(required, EVIDENCE_OPTIONS.size - EVIDENCE_OPTIONS.minDistractors));
+  const rest = held.filter((piece) => !correctKeys.has(refKey(piece)));
+
+  const herringIds = new Set(view?.definition.red_herrings ?? pack.red_herrings.map((herring) => herring.id));
+  const twistIds = new Set(view?.definition.twists ?? pack.twists.map((twist) => twist.id));
+  const setupClues = new Set([
+    ...pack.red_herrings.filter((herring) => herringIds.has(herring.id)).flatMap((herring) => herring.setup_clues),
+    ...pack.twists.filter((twist) => twistIds.has(twist.id)).flatMap((twist) => twist.setup_clues),
+  ]);
+  const relatedTruths = new Set<string>();
+  for (const piece of correct) {
+    const truthId = piece.type === "clue" ? pack.clues.find((clue) => clue.id === piece.id)?.truth_id : undefined;
+    if (!truthId) continue;
+    relatedTruths.add(truthId);
+    for (const id of pack.truths.find((truth) => truth.id === truthId)?.depends_on ?? []) relatedTruths.add(id);
+  }
+  const related = (piece: EvidenceRef): boolean => {
+    if (piece.type !== "clue") return false;
+    const clue = pack.clues.find((candidate) => candidate.id === piece.id);
+    return setupClues.has(piece.id) || (clue?.truth_id !== undefined && relatedTruths.has(clue.truth_id));
+  };
+  const tierA = stableShuffle(rest.filter(related), `${seed}:a`, refKey);
+  const tierB = stableShuffle(rest.filter((piece) => !related(piece)), `${seed}:b`, refKey);
+
+  const total = Math.max(EVIDENCE_OPTIONS.size, required + EVIDENCE_OPTIONS.minDistractors);
+  const distractors = [...tierA, ...tierB].slice(0, Math.max(0, total - heldCorrect.length));
+  return [...heldCorrect, ...distractors];
 }

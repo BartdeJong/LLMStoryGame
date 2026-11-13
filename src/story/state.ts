@@ -91,6 +91,7 @@ export interface StoryState {
   statementsHeard?: string[]; // statement ids the player has heard (save format 7)
   caseRecord?: CaseRecord; // answers and challenges (save format 7)
   leadsSeen?: string[]; // lock keys the player has met (src/story/locks.ts), for the journal's Leads
+  hintsSeen?: string[]; // "<targetKey>#1" / "#2": journal hints the player asked for (src/story/hints.ts)
   endingReached?: EndingScene; // set once the ending has played; the game then runs the epilogue
 }
 
@@ -108,6 +109,17 @@ export function leadsOf(state: StoryState): readonly string[] {
 export function rememberLead(state: StoryState, key: string): boolean {
   if (leadsOf(state).includes(key)) return false;
   (state.leadsSeen ??= []).push(key);
+  return true;
+}
+
+export function hintsOf(state: StoryState): readonly string[] {
+  return Array.isArray(state.hintsSeen) ? state.hintsSeen.filter((key) => typeof key === "string") : [];
+}
+
+// Returns true only the first time a hint is taken.
+export function rememberHint(state: StoryState, key: string): boolean {
+  if (hintsOf(state).includes(key)) return false;
+  (state.hintsSeen ??= []).push(key);
   return true;
 }
 

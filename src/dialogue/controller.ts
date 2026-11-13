@@ -1,11 +1,13 @@
 import type { LLMClient } from "../llm/client";
 import type { CharacterLineOutput } from "../llm/shapes";
 import type { JSONResult } from "../llm/types";
+import { pickEvidenceOptions } from "../story/proof";
 import { rememberAskedAbout, rememberKnowledge, rememberNeed, recordVisit } from "../story/state";
 import {
   challengeStatement,
   challengeableStatements,
   evidenceFits,
+  evidenceList,
   findStatement,
   holdsEvidence,
   isStatementBroken,
@@ -81,6 +83,8 @@ interface LineInput {
 export interface ChallengeOptions {
   statements: { id: string; topic: string; text: string }[];
   evidence: { subject: EvidenceRef; label: string }[];
+  // A shorter list per statement id: what really breaks it, if held, plus a few distractors. Falls back to `evidence`.
+  evidenceByStatement?: Record<string, { subject: EvidenceRef; label: string }[]>;
   locked: boolean; // a challenge already missed in this conversation
 }
 
@@ -256,11 +260,20 @@ export class ConversationController {
   // Heard, still-standing statements of this character, and everything the player could hold against them.
   challengeOptions(): ChallengeOptions {
     const ask = askOptions(this.pack, this.state, this.character);
+    const statements = challengeableStatements(this.state, this.character);
+    const evidence = [...ask.items, ...ask.evidence].flatMap((entry) =>
+      entry.subject.type === "cast" ? [] : [{ subject: entry.subject as EvidenceRef, label: entry.label }]);
+    const evidenceByStatement: Record<string, { subject: EvidenceRef; label: string }[]> = {};
+    for (const statement of statements) {
+      const picked = pickEvidenceOptions(this.pack, undefined, this.state, evidence.map((entry) => entry.subject),
+        evidenceList(statement.broken_by), statement.id);
+      evidenceByStatement[statement.id] = evidence.filter((entry) =>
+        picked.some((piece) => piece.type === entry.subject.type && piece.id === entry.subject.id));
+    }
     return {
-      statements: challengeableStatements(this.state, this.character)
-        .map((statement) => ({ id: statement.id, topic: statement.topic, text: statement.text })),
-      evidence: [...ask.items, ...ask.evidence].flatMap((entry) =>
-        entry.subject.type === "cast" ? [] : [{ subject: entry.subject as EvidenceRef, label: entry.label }]),
+      statements: statements.map((statement) => ({ id: statement.id, topic: statement.topic, text: statement.text })),
+      evidence,
+      evidenceByStatement,
       locked: this.challengeLocked,
     };
   }

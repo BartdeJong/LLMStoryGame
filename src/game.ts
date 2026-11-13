@@ -27,9 +27,13 @@ import { mountPauseMenu } from "./ui/pause";
 import { createObjectiveHud, type ObjectiveHud } from "./ui/objectiveHud";
 import { createProgressToasts, shorten, type ProgressToasts } from "./ui/progressToast";
 import { buildRecap, caseProgress } from "./story/progress";
-import { caseRecordOf, progressLogOf } from "./story/state";
-import { PROOF_SLOTS } from "./story/config";
-import { proofChoices } from "./story/proof";
+import { buildGrade } from "./story/grade";
+import { chapterCard, type ChapterCard } from "./story/chapters";
+import { hintFor, progressMark } from "./story/hints";
+import { caseRecordOf, hintsOf, progressLogOf, rememberHint } from "./story/state";
+import { HINTS, PROOF_SLOTS } from "./story/config";
+import { lockKeyKind } from "./story/locks";
+import { pickEvidenceOptions, proofChoices, proofPieces, requiredCount } from "./story/proof";
 import { answerSummation, finaleHasStakes, judgeSummation, markAssisted, nextSummationIndex, summationComplete } from "./story/caseRecord";
 import { findStatement, isStatementBroken, isStatementHeard, type EvidenceRef } from "./story/statements";
 import { createStoryJournal, type JournalFact, type JournalStatement, type JournalQuestion, type JournalRequest, type StoryJournal } from "./ui/storyJournal";
@@ -48,6 +52,7 @@ import { getMovementSpeed, getPrepareRepliesInAdvance } from "./ui/preferences";
 import type { EndingChoice, EndingScene } from "./story/ending";
 import type { StorySession } from "./story/storySession";
 import type { Beat, CastMember, SubjectRef } from "./story/types";
+import type { SummationQuestion } from "./story/deduction";
 import type { SpriteSpec } from "./art/spriteSpec";
 import type { SaveRepository } from "./save/repository";
 import { SAVE_FORMAT_VERSION } from "./save/types";
@@ -133,6 +138,17 @@ export class Game {
   private readonly storyJournal: StoryJournal;
   private readonly caseOverlay: CaseOverlay;
   private frameCount = 0;
+  // Chapter cards: the furthest chapter already shown (a reload never replays one) and the cards waiting their turn.
+  private chapterSeen: number;
+  private readonly chapterQueue: ChapterCard[] = [];
+  // Journal hints: play time without progress, the progress at the last check and which hint tier the player took.
+  private stuckMs = 0;
+  private lastMark = "";
+  private hintTier: 0 | 1 | 2 = 0;
+  private tierShownAtStuck = 0;
+  private lastHintKey: string | null = null;
+  private hintOfferedShown = false;
+  private hintClearerShown = false;
   private greetingTimer = 0;
   private caseOffered = false;
   private casePresented = false;
@@ -217,6 +233,10 @@ export class Game {
     if (!toastBox) throw new Error("The game page is missing its progress toasts.");
     this.toasts = createProgressToasts(toastBox);
     this.seenProgress = progressLogOf(this.story.state).length;
+    this.chapterSeen = this.story.currentBeatIndex;
+    this.lastMark = progressMark(this.story.state, this.story.currentBeatIndex);
+    this.restoreHintTier();
+    this.lastHintKey = this.currentHint()?.key ?? null;
     this.refreshObjective();
     const arrival = this.story.getBrief(startArea.id)?.description ?? "";
     this.objectiveHud.showArrival(persistence.player ? arrival : `${arrival} ${exploreHint(inputMode)}`.trim());
@@ -228,7 +248,11 @@ export class Game {
     }, floatingStick ? { canvas, stick: floatingStick, onTap: this.handleTap } : undefined);
     this.dialogueBox = createDialogueBox(shell);
     this.inventoryUI = createInventoryUI(shell);
-    this.storyJournal = createStoryJournal(shell, (id, answer, evidence) => this.answerQuestion(id, answer, evidence));
+    this.storyJournal = createStoryJournal(
+      shell,
+      (id, answer, evidence) => this.answerQuestion(id, answer, evidence),
+      (tier) => this.takeHint(tier),
+    );
     this.caseOverlay = createCaseOverlay(shell, () => this.presentCaseFromButton());
     this.worldMap = createWorldMap(
       shell,
@@ -552,14 +576,23 @@ export class Game {
 
   private readonly frame = (timestamp: number): void => {
     if (!this.running) return;
-    const delta = this.previousFrame === 0 ? 0 : Math.min((timestamp - this.previousFrame) / 1000, 0.05);
+    const elapsed = this.previousFrame === 0 ? 0 : timestamp - this.previousFrame;
+    const delta = Math.min(elapsed / 1000, 0.05);
     this.previousFrame = timestamp;
+    if (this.running && !this.paused && !this.transitioning && !this.inDialogue && !this.caseOverlay.isOpen && !this.ending && !this.worldMap.isOpen && !this.story.inEpilogue) {
+      this.stuckMs += Math.min(elapsed, 1000);
+    }
 
     this.playerMoving = false;
     this.syncAudio();
     this.celebrateProgress();
     this.frameCount += 1;
-    if (this.frameCount % 20 === 0) this.announceUnlocks();
+    if (this.frameCount % 20 === 0) {
+      this.announceUnlocks();
+      this.queueChapters();
+      this.updateHints();
+      this.showNextChapter();
+    }
     if (!this.isInteractive) this.walk = null;
     if (!this.paused) this.update(delta);
     const world = this.story.getArea(this.areaId);
@@ -599,12 +632,78 @@ export class Game {
       return;
     }
     soundEffects.play("door");
+    // A newly opened chapter gets its own card, so the message line only carries the other unlocks.
+    const lineText = unlocks.filter((unlock) => lockKeyKind(unlock.key) !== "beat").map((unlock) => unlock.text).join(" ");
     const unlockText = unlocks.map((unlock) => unlock.text).join(" ");
-    const text = [before, unlockText].filter(Boolean).join(" ");
-    if (this.dialogueBox.isOpen) this.dialogueBox.showNotice(text);
-    else this.message.textContent = text;
+    const text = [before, lineText].filter(Boolean).join(" ");
+    if (text) {
+      if (this.dialogueBox.isOpen) this.dialogueBox.showNotice(text);
+      else this.message.textContent = text;
+    }
     this.storyJournal.announce(unlockText);
     this.refreshJournal();
+  }
+
+  // Queues a card for every chapter that opened since the last check. Chapter 1 has the story opening instead.
+  private queueChapters(): void {
+    if (this.story.inEpilogue) return;
+    const current = this.story.currentBeatIndex;
+    while (this.chapterSeen < current) {
+      this.chapterSeen += 1;
+      this.chapterQueue.push(chapterCard(this.story.pack, this.story.view, this.chapterSeen));
+    }
+  }
+
+  private showNextChapter(): void {
+    if (this.chapterQueue.length === 0 || !this.running || this.paused || this.transitioning
+      || this.dialogueBox.isOpen || this.caseOverlay.isOpen || this.worldMap.isOpen || this.ending) return;
+    const card = this.chapterQueue.shift();
+    if (!card) return;
+    this.storyJournal.close();
+    this.inventoryUI.close();
+    this.caseOverlay.showChapter(card, () => { void this.maybeFinish(); });
+  }
+
+  // The hint the journal could give right now, or null (nothing to hint at, or the story is over).
+  private currentHint(): ReturnType<typeof hintFor> {
+    if (this.story.inEpilogue) return null;
+    return hintFor(this.story.pack, this.story.view, this.story.state, this.story.currentBeatIndex,
+      (id) => this.story.isLocationOpen(id));
+  }
+
+  // A reload keeps the hints taken for the current target, so they are offered again at once at the same tier.
+  private restoreHintTier(): void {
+    const hint = this.currentHint();
+    const taken = hintsOf(this.story.state);
+    this.hintTier = hint && taken.includes(`${hint.key}#2`) ? 2 : hint && taken.includes(`${hint.key}#1`) ? 1 : 0;
+    this.tierShownAtStuck = 0;
+  }
+
+  private updateHints(): void {
+    const mark = progressMark(this.story.state, this.story.currentBeatIndex);
+    const key = this.currentHint()?.key ?? null;
+    if (mark !== this.lastMark || key !== this.lastHintKey) {
+      this.lastMark = mark;
+      this.lastHintKey = key;
+      this.stuckMs = 0;
+      this.hintTier = 0;
+      this.tierShownAtStuck = 0;
+      this.refreshJournal();
+      return;
+    }
+    const offered = this.stuckMs >= HINTS.offerAfterMs;
+    const clearer = this.hintTier === 1 && this.stuckMs - this.tierShownAtStuck >= HINTS.clearerAfterMs;
+    if (offered !== this.hintOfferedShown || clearer !== this.hintClearerShown) this.refreshJournal();
+  }
+
+  private takeHint(tier: 1 | 2): void {
+    const hint = this.currentHint();
+    if (!hint || (tier === 2 && this.hintTier < 1)) return;
+    rememberHint(this.story.state, `${hint.key}#${tier}`);
+    this.hintTier = tier;
+    this.tierShownAtStuck = this.stuckMs;
+    this.refreshJournal();
+    void this.saveProgress();
   }
 
   private doorSigns(area: Area): DoorSign[] {
@@ -1153,11 +1252,18 @@ export class Game {
       }];
     });
     const pack = this.story.pack;
+    const allChoices = proofChoices(pack, this.story.state);
     const questions: JournalQuestion[] = openDeductions(pack, this.story.state).flatMap((truth) => {
       const deduction = truth.deduction;
       if (!deduction) return [];
       const options = deductionOptions(truth);
+      const picked = deduction.proof
+        ? pickEvidenceOptions(pack, this.story.view, this.story.state, allChoices.map((choice) => choice.ref),
+          proofPieces(deduction.proof), truth.id, requiredCount(deduction.proof))
+        : [];
       return [{
+        ...(deduction.proof ? { evidenceChoices: allChoices.filter((choice) =>
+          picked.some((piece) => piece.type === choice.ref.type && piece.id === choice.ref.id)) } : {}),
         id: truth.id,
         question: deduction.question,
         evidence: evidenceFor(pack, this.story.state, truth.id),
@@ -1180,7 +1286,21 @@ export class Game {
     const ruledOut = ruledOutHerrings(pack, this.story.state)
       .map((herring) => ({ description: herring.description, resolution: herring.resolution }));
     const progress = caseProgress(this.story.view, this.story.state);
-    this.storyJournal.render(facts, evidence, requests, { questions, ruledOut, progress, statements, judged, evidenceChoices: proofChoices(pack, this.story.state), leads: this.story.leads() });
+    const hint = this.currentHint();
+    const offered = hint !== null && (this.hintTier > 0 || this.stuckMs >= HINTS.offerAfterMs);
+    const canClearer = this.hintTier === 1 && this.stuckMs - this.tierShownAtStuck >= HINTS.clearerAfterMs;
+    this.hintOfferedShown = this.stuckMs >= HINTS.offerAfterMs;
+    this.hintClearerShown = canClearer;
+    this.storyJournal.render(facts, evidence, requests, {
+      questions, ruledOut, progress, statements, judged, evidenceChoices: allChoices, leads: this.story.leads(),
+      ...(hint ? {
+        hint: {
+          offered,
+          canClearer,
+          ...(this.hintTier === 1 || this.hintTier === 2 ? { shown: { tier: this.hintTier, text: this.hintTier === 1 ? hint.vague : hint.clear } } : {}),
+        },
+      } : {}),
+    });
   }
 
   private refreshObjective(): void {
@@ -1259,8 +1379,17 @@ export class Game {
     if (!questions) return;
     this.storyJournal.close();
     this.inventoryUI.close();
-    const options = summationOptions(this.story.pack, this.story.state);
-    const proof = { choices: proofChoices(this.story.pack, this.story.state), slots: PROOF_SLOTS };
+    const options = (question: SummationQuestion) => summationOptions(this.story.pack, this.story.state, question);
+    const allChoices = proofChoices(this.story.pack, this.story.state);
+    const proof = {
+      choices: allChoices,
+      slots: PROOF_SLOTS,
+      choicesFor: (question: SummationQuestion) => {
+        const picked = pickEvidenceOptions(this.story.pack, this.story.view, this.story.state, allChoices.map((choice) => choice.ref),
+          proofPieces(question.proof), `summation:${question.truthId}`, requiredCount(question.proof));
+        return allChoices.filter((choice) => picked.some((piece) => piece.type === choice.ref.type && piece.id === choice.ref.id));
+      },
+    };
     const done = (): void => {
       this.casePresented = true;
       this.caseOverlay.setCaseButtonVisible(false);
@@ -1543,7 +1672,7 @@ export class Game {
     if (summation && !this.casePresented) {
       // An open conversation is never interrupted; the case is offered once the dialogue box closes.
       this.caseOverlay.setCaseButtonVisible(!this.dialogueBox.isOpen);
-      if (!this.dialogueBox.isOpen && !this.caseOffered) {
+      if (!this.dialogueBox.isOpen && !this.caseOverlay.isOpen && !this.caseOffered) {
         this.caseOffered = true;
         this.caseOverlay.offerCase(() => this.startPresentation());
       }
@@ -1616,6 +1745,7 @@ export class Game {
       },
       {
         ...buildRecap(this.story.pack, this.story.view, this.story.state, this.story.getRecapSummation()),
+        grade: buildGrade(this.story.pack, this.story.view, this.story.state),
         timePlayedMs: this.persistence.timePlayedMs + Math.max(0, Date.now() - this.startedAt),
       },
       epilogue ? {

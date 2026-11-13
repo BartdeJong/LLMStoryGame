@@ -212,12 +212,13 @@ export function createDialogueBox(container: HTMLElement): DialogueBox {
       const chosen = challengeStatement;
       challengeHeading.textContent = `What contradicts “${chosen.text}”?`;
       challengeNote.textContent = "Choose one item or clue. If it does not fit, they will hear no more challenges this time.";
-      if (challengeOptions.evidence.length === 0) {
+      const evidenceList = challengeOptions.evidenceByStatement?.[chosen.id] ?? challengeOptions.evidence;
+      if (evidenceList.length === 0) {
         const empty = el("p", "dialogue-ask-empty");
         empty.textContent = "You have no items or clues to show yet.";
         challengeList.append(empty);
       }
-      for (const entry of challengeOptions.evidence) {
+      for (const entry of evidenceList) {
         const button = el("button", "dialogue-choice dialogue-ask-entry");
         button.type = "button";
         button.dataset.padHint = "A";
