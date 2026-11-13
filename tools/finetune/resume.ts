@@ -61,6 +61,23 @@ export function rebuildResumeState(rows: readonly Record<string, unknown>[]): Re
   return state;
 }
 
+// What to do with the next session index. The train and holdout quotas are separate: `--count` counts train
+// records and `--holdout-count` holdout records. A session whose own quota is full is skipped (not marked done, so
+// a later run with a higher count can still use it); the run stops when both quotas are full.
+export function sessionDecision(input: {
+  isHoldoutStory: boolean;
+  hasHoldout: boolean;
+  trainTotal: number;
+  trainCount: number;
+  holdoutTotal: number;
+  holdoutCount: number;
+}): "run" | "skip" | "stop" {
+  const trainFull = input.trainTotal >= input.trainCount;
+  const holdoutFull = !input.hasHoldout || input.holdoutTotal >= input.holdoutCount;
+  if (trainFull && holdoutFull) return "stop";
+  return (input.isHoldoutStory ? holdoutFull : trainFull) ? "skip" : "run";
+}
+
 // A session is done only if no HTTP or connection failure touched it and the judge always gave a verdict.
 export function canMarkSessionDone(input: { outagesDuringSession: number; incomplete: boolean }): boolean {
   return input.outagesDuringSession === 0 && !input.incomplete;

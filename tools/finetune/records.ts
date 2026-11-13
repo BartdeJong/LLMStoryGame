@@ -157,6 +157,7 @@ export interface RunIdentity {
   judge: boolean;
   judgeModel: string | null; // the model that judges, null with --no-judge
   judgeThink: string | null; // "off", "low" or "on"; null with --no-judge
+  holdoutCount: number | null; // records wanted in holdout.jsonl; null without a holdout story
 }
 
 // Why an earlier run's files cannot be continued by this run, or null when they can. Catches a holdout
@@ -175,6 +176,7 @@ export function checkResume(input: {
   if (stray) return `holdout.jsonl contains a row of story "${String(stray.story)}", not the holdout story ${run.holdout ? `"${run.holdout}"` : "(none)"}.`;
   const manifest = input.manifest;
   if (!manifest) return null;
+  if ((manifest.holdoutCount ?? null) !== run.holdoutCount) return `the manifest wants ${JSON.stringify(manifest.holdoutCount ?? null)} holdout records, this run wants ${JSON.stringify(run.holdoutCount)}.`;
   if (String(manifest.seed) !== run.seed) return `the manifest was made with seed "${String(manifest.seed)}", this run uses "${run.seed}".`;
   if (JSON.stringify(manifest.stories) !== JSON.stringify(run.stories)) return `the manifest lists stories ${JSON.stringify(manifest.stories)}, this run uses ${JSON.stringify(run.stories)}.`;
   if ((manifest.holdout ?? null) !== run.holdout) return `the manifest holds out ${JSON.stringify(manifest.holdout ?? null)}, this run holds out ${JSON.stringify(run.holdout)}.`;

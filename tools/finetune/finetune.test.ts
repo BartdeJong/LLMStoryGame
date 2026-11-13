@@ -11,7 +11,7 @@ import { DIALOGUE_SYSTEM } from "../../src/llm/prompts";
 import { getLengthView } from "../../src/story/loader";
 import { isRequirementMet } from "../../src/story/requirements";
 import { validateStoryPack } from "../../src/story/validate";
-import { canMarkSessionDone, rebuildResumeState } from "./resume";
+import { canMarkSessionDone, rebuildResumeState, sessionDecision } from "./resume";
 import { afterSkippedTurn, attemptWithResamples, restoreState, snapshotState } from "./rollback";
 import { Quota, appendJsonl } from "./records";
 import { withPhrase } from "./playerTurns";
@@ -224,8 +224,8 @@ describe("repairJsonl", () => {
 });
 
 describe("checkResume", () => {
-  const run = { seed: "1", stories: ["example", "other"], holdout: "example", judge: true, judgeModel: "judge:1", judgeThink: "on" };
-  const manifest = { seed: "1", stories: ["example", "other"], holdout: "example", judge: true, judgeModel: "judge:1", judgeThink: "on" };
+  const run = { seed: "1", stories: ["example", "other"], holdout: "example", judge: true, judgeModel: "judge:1", judgeThink: "on", holdoutCount: 5 };
+  const manifest = { seed: "1", stories: ["example", "other"], holdout: "example", judge: true, judgeModel: "judge:1", judgeThink: "on", holdoutCount: 5 };
 
   it("accepts fresh and matching output", () => {
     expect(checkResume({ train: [], holdout: [], manifest: null, run })).toBeNull();
@@ -241,8 +241,10 @@ describe("checkResume", () => {
     expect(checkResume({ train: [], holdout: [], manifest: { ...manifest, judge: false }, run })).toMatch(/judge/);
     expect(checkResume({ train: [], holdout: [], manifest: { ...manifest, judgeModel: "other:2" }, run })).toMatch(/judged by/);
     expect(checkResume({ train: [], holdout: [], manifest: { ...manifest, judgeThink: "off" }, run })).toMatch(/thinking/);
+    expect(checkResume({ train: [], holdout: [], manifest: { ...manifest, holdoutCount: 9 }, run })).toMatch(/holdout records/);
+    expect(checkResume({ train: [], holdout: [], manifest, run: { ...run, holdoutCount: 6 } })).toMatch(/holdout records/);
     expect(checkResume({ train: [], holdout: [], manifest, run: { ...run, judgeThink: "low" } })).toMatch(/thinking/);
-    expect(checkResume({ train: [], holdout: [], manifest: { seed: "1", stories: ["example", "other"], holdout: "example", judge: false }, run: { ...run, judge: false, judgeModel: null, judgeThink: null } })).toBeNull();
+    expect(checkResume({ train: [], holdout: [], manifest: { seed: "1", stories: ["example", "other"], holdout: "example", judge: false, holdoutCount: 5 }, run: { ...run, judge: false, judgeModel: null, judgeThink: null } })).toBeNull();
     expect(checkResume({ train: [], holdout: [], manifest, run: { ...run, judge: false } })).toMatch(/judge/);
     expect(checkResume({ train: [], holdout: [{ story: "x" }], manifest: null, run: { ...run, holdout: null } })).toMatch(/holdout\.jsonl/);
   });
@@ -995,7 +997,7 @@ describe("concurrent workers", () => {
 describe("review items", () => {
   it("reads a manifest without judgeThink as thinking on when the judge was on", () => {
     const manifest = { seed: "1", stories: ["a"], holdout: null, judge: true, judgeModel: "m" };
-    const run = { seed: "1", stories: ["a"], holdout: null, judge: true, judgeModel: "m", judgeThink: "on" };
+    const run = { seed: "1", stories: ["a"], holdout: null, judge: true, judgeModel: "m", judgeThink: "on", holdoutCount: null };
     expect(checkResume({ train: [], holdout: [], manifest, run })).toBeNull();
     expect(checkResume({ train: [], holdout: [], manifest, run: { ...run, judgeThink: "off" } })).toMatch(/thinking "on"/);
   });
@@ -1090,5 +1092,44 @@ describe("phrase budget at pick time and with errors", () => {
     expect(backend.consecutiveRequestErrors).toBe(0);
     const failure = backend.drainFailures().find((entry) => entry.kind === "request");
     expect(failure?.message).toContain("bad option"); // the error body travels with the failure, for the reject reason
+  });
+});
+
+describe("separate train and holdout quotas", () => {
+  const base = { hasHoldout: true, trainTotal: 0, trainCount: 1000, holdoutTotal: 0, holdoutCount: 100 };
+
+  it("runs sessions of both stories until each quota is full, then skips only the full one", () => {
+    expect(sessionDecision({ ...base, isHoldoutStory: false })).toBe("run");
+    expect(sessionDecision({ ...base, isHoldoutStory: true })).toBe("run");
+    // holdout is full: its sessions are skipped, train goes on
+    expect(sessionDecision({ ...base, holdoutTotal: 100, isHoldoutStory: true })).toBe("skip");
+    expect(sessionDecision({ ...base, holdoutTotal: 100, isHoldoutStory: false })).toBe("run");
+    // train is full: the other stories are skipped, holdout goes on
+    expect(sessionDecision({ ...base, trainTotal: 1000, isHoldoutStory: false })).toBe("skip");
+    expect(sessionDecision({ ...base, trainTotal: 1000, isHoldoutStory: true })).toBe("run");
+  });
+
+  it("stops only when train is at count and holdout at holdout-count", () => {
+    expect(sessionDecision({ ...base, trainTotal: 1000, holdoutTotal: 99, isHoldoutStory: true })).toBe("run");
+    expect(sessionDecision({ ...base, trainTotal: 999, holdoutTotal: 100, isHoldoutStory: false })).toBe("run");
+    expect(sessionDecision({ ...base, trainTotal: 1000, holdoutTotal: 100, isHoldoutStory: false })).toBe("stop");
+    expect(sessionDecision({ ...base, trainTotal: 1200, holdoutTotal: 100, isHoldoutStory: true })).toBe("stop");
+  });
+
+  it("stops at train count when there is no holdout story", () => {
+    const none = { ...base, hasHoldout: false, holdoutCount: 0, isHoldoutStory: false };
+    expect(sessionDecision({ ...none, trainTotal: 999 })).toBe("run");
+    expect(sessionDecision({ ...none, trainTotal: 1000 })).toBe("stop");
+  });
+
+  it("keeps a quota per split, so holdout records do not use up the train count", () => {
+    const train = new Quota({ dialogue: 0, greeting: 0, summary: 0, ending: 0 }, 10);
+    const holdout = new Quota({ dialogue: 0, greeting: 0, summary: 0, ending: 0 }, 2);
+    for (let step = 0; step < 5; step += 1) if (holdout.allowed("dialogue")) holdout.add("dialogue");
+    for (let step = 0; step < 20; step += 1) if (train.allowed("dialogue")) train.add("dialogue");
+    expect(holdout.total()).toBe(2);
+    expect(train.total()).toBeGreaterThanOrEqual(8); // dialogue is about 80% of 10
+    expect(train.total()).toBeLessThanOrEqual(10);
+    expect(new Quota({ dialogue: 0, greeting: 0, summary: 0, ending: 0 }, 0).allowed("dialogue")).toBe(false);
   });
 });

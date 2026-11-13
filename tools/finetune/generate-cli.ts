@@ -39,7 +39,7 @@ import {
 } from "./records";
 import type { Task } from "./records";
 import { CircuitOpen, FatalRequest, fatalRequestMessage, throwIfTripped } from "./breaker";
-import { canMarkSessionDone, rebuildResumeState } from "./resume";
+import { canMarkSessionDone, rebuildResumeState, sessionDecision } from "./resume";
 import { afterSkippedTurn, attemptWithResamples, restoreState, snapshotState } from "./rollback";
 import type { AttemptVerdict } from "./rollback";
 import { buildContext, createSeededRandom, pickCharacter, sampleStoryState } from "./sampleState";
@@ -57,6 +57,7 @@ interface Args {
   judgeModel: string;
   judgeThink: "off" | "low" | "on";
   concurrency: number;
+  holdoutCount: number; // holdout records to write; 0 without a holdout story
 }
 
 function fail(message: string): never {
@@ -75,18 +76,22 @@ function parseArgs(argv: string[]): Args {
       continue;
     }
     const value = argv[index + 1];
-    if (!flag?.startsWith("--") || value === undefined) fail(`Unexpected argument "${flag ?? ""}". Flags are --model --count --out --seed --holdout --stories --host --temperature --no-judge --judge-model --judge-think --concurrency.`);
+    if (!flag?.startsWith("--") || value === undefined) fail(`Unexpected argument "${flag ?? ""}". Flags are --model --count --out --seed --holdout --stories --host --temperature --no-judge --judge-model --judge-think --concurrency --holdout-count.`);
     values.set(flag.slice(2), value);
   }
-  const known = ["concurrency", "judge-think", "judge-model", "model", "count", "out", "seed", "holdout", "stories", "host", "temperature"];
+  const known = ["holdout-count", "concurrency", "judge-think", "judge-model", "model", "count", "out", "seed", "holdout", "stories", "host", "temperature"];
   for (const key of values.keys()) if (!known.includes(key)) fail(`Unknown flag --${key}.`);
   const model = values.get("model");
-  if (!model) fail("Usage: npm run finetune-data -- --model <ollama tag> [--count 200] [--out finetune-data] [--seed 1] [--holdout <story id>] [--stories a,b] [--host url] [--temperature 0.7] [--no-judge] [--judge-model <tag>] [--judge-think off|low|on (low needs a judge model that supports think levels)] [--concurrency N]");
+  if (!model) fail("Usage: npm run finetune-data -- --model <ollama tag> [--count 200] [--out finetune-data] [--seed 1] [--holdout <story id>] [--stories a,b] [--host url] [--temperature 0.7] [--no-judge] [--judge-model <tag>] [--judge-think off|low|on (low needs a judge model that supports think levels)] [--concurrency N] [--holdout-count N]");
   const judgeThink = values.get("judge-think") ?? "on";
   if (judgeThink !== "off" && judgeThink !== "low" && judgeThink !== "on") fail("--judge-think must be off, low or on.");
   const concurrency = Number(values.get("concurrency") ?? 1);
   if (!Number.isInteger(concurrency) || concurrency < 1 || concurrency > 16) fail("--concurrency must be a whole number from 1 to 16.");
   const count = Number(values.get("count") ?? 200);
+  if (values.has("holdout-count") && !values.has("holdout")) fail("--holdout-count needs --holdout <story id>.");
+  // --count counts train records; the holdout story gets its own number (a tenth of --count unless given).
+  const holdoutCount = !values.has("holdout") ? 0 : values.has("holdout-count") ? Number(values.get("holdout-count")) : Math.round(count / 10);
+  if (!Number.isInteger(holdoutCount) || holdoutCount < 0) fail("--holdout-count must be a whole number, 0 or more.");
   if (!Number.isInteger(count) || count < 1) fail("--count must be a positive whole number.");
   const temperature = values.has("temperature") ? Number(values.get("temperature")) : undefined;
   if (temperature !== undefined && !Number.isFinite(temperature)) fail("--temperature must be a number.");
@@ -103,6 +108,7 @@ function parseArgs(argv: string[]): Args {
     judgeModel: values.get("judge-model") ?? model,
     judgeThink: judgeThink as Args["judgeThink"],
     concurrency,
+    holdoutCount,
   };
 }
 
@@ -167,7 +173,7 @@ const resumeProblem = checkResume({
   train: readJsonl(files.train),
   holdout: readJsonl(files.holdout),
   manifest: previousManifest,
-  run: { seed: args.seed, stories: storyIds, holdout: args.holdout ?? null, judge: args.judge, judgeModel: args.judge ? args.judgeModel : null, judgeThink: args.judge ? args.judgeThink : null },
+  run: { seed: args.seed, stories: storyIds, holdout: args.holdout ?? null, judge: args.judge, judgeModel: args.judge ? args.judgeModel : null, judgeThink: args.judge ? args.judgeThink : null, holdoutCount: args.holdout ? args.holdoutCount : null },
 });
 if (resumeProblem) fail(`Cannot continue in ${outDir}: ${resumeProblem} Use another --out or remove the old files.`);
 
@@ -199,14 +205,18 @@ if (args.judge && args.judgeModel !== args.model) {
 
 // Resume state: what earlier runs wrote.
 const doneSessions = readDoneSessions(files.rejects);
-const { counts, lineDeduper, greetingDeduper, summaryDeduper, endingDeduper, phrases, sessionLines } = rebuildResumeState(
+const { lineDeduper, greetingDeduper, summaryDeduper, endingDeduper, phrases, sessionLines } = rebuildResumeState(
   [...readJsonl(files.train), ...readJsonl(files.holdout)],
 );
 const MAX_DIALOGUE_PER_SESSION = 3;
-const quota = new Quota(counts, args.count);
-const total = (): number => quota.total();
+// Train and holdout have their own quotas: --count counts train records, --holdout-count holdout records.
+const splitCounts = { train: emptyCounts(), holdout: emptyCounts() };
+for (const name of ["train", "holdout"] as const) {
+  for (const row of readJsonl(files[name])) if (TASKS.includes(row.task as Task)) splitCounts[name][row.task as Task] += 1;
+}
+const quotas = { train: new Quota(splitCounts.train, args.count), holdout: new Quota(splitCounts.holdout, args.holdoutCount) };
+const total = (): number => quotas.train.total() + quotas.holdout.total();
 const rejectCounts = new Map<string, number>();
-const allowed = (task: Task): boolean => quota.allowed(task);
 
 const startedAt = Date.now();
 let acceptedThisRun = 0;
@@ -292,10 +302,10 @@ async function judged(
 function emit(split: "train" | "holdout", record: ReturnType<typeof toRecord>, shown: string): void {
   throwIfTripped(breakerReason); // once a breaker has tripped, nothing more is written
   appendJsonl(files[split], record);
-  quota.add(record.task);
+  quotas[split].add(record.task);
   acceptedThisRun += 1;
   const seconds = (Date.now() - startedAt) / 1000 / acceptedThisRun;
-  console.log(`[${total()}/${args.count}] ${split} ${record.task}${record.character ? ` ${record.character}` : ""}: ${shown} (${seconds.toFixed(1)}s/example)`);
+  console.log(`[train ${quotas.train.total()}/${args.count}${args.holdout ? `, holdout ${quotas.holdout.total()}/${args.holdoutCount}` : ""}] ${split} ${record.task}${record.character ? ` ${record.character}` : ""}: ${shown} (${seconds.toFixed(1)}s/example)`);
 }
 
 function reject(input: { id: string; task: Task; story: string; character: string | null; reason: string; calls: RecordedCall[]; line?: string; note?: string; attempt?: number }): void {
@@ -321,6 +331,7 @@ async function runSession(index: number, w: Worker): Promise<void> {
   const story = stories[index % stories.length]!;
   const { pack, view } = story;
   const split = story.id === args.holdout ? "holdout" : "train";
+  const allowed = (task: Task): boolean => quotas[split].allowed(task);
   const rng = createSeededRandom(`${args.seed}:${sessionId}`);
   backend.beginSession(`${args.seed}:${sessionId}`);
   const outageMark = backend.totalOutages;
@@ -560,7 +571,8 @@ function writeManifest(): void {
     gitCommit: gitCommit(),
     stories: storyIds,
     holdout: args.holdout ?? null,
-    requestedCount: args.count,
+    requestedCount: args.count, // train records
+    holdoutCount: args.holdout ? args.holdoutCount : null,
     judge: args.judge,
     judgeModel: args.judge ? args.judgeModel : null,
     judgeThink: args.judge ? args.judgeThink : null,
@@ -576,18 +588,28 @@ function writeManifest(): void {
 
 if (!existsSync(files.manifest)) writeManifest();
 
-console.log(`Model ${args.model} at ${args.host}; stories ${storyIds.join(", ")}${args.holdout ? ` (holdout ${args.holdout})` : ""}; ${total()}/${args.count} records already present.`);
-const maxSessions = args.count * 20;
+console.log(`Model ${args.model} at ${args.host}; stories ${storyIds.join(", ")}${args.holdout ? ` (holdout ${args.holdout})` : ""}; train ${quotas.train.total()}/${args.count}${args.holdout ? `, holdout ${quotas.holdout.total()}/${args.holdoutCount}` : ""} records already present.`);
+const maxSessions = (args.count + args.holdoutCount) * 20;
 let nextSession = 0;
 
 // Each worker takes the next session index that is not done yet. Sessions are independent: each has its own
 // rng and seeds, so the data of a session does not depend on how the workers are scheduled.
 async function workerLoop(w: Worker): Promise<void> {
-  while (nextSession < maxSessions && total() < args.count && !breakerReason) {
+  while (nextSession < maxSessions && !breakerReason) {
     const index = nextSession;
     nextSession += 1;
     const sessionId = `s${String(index).padStart(5, "0")}`;
     if (doneSessions.has(sessionId)) continue;
+    const decision = sessionDecision({
+      isHoldoutStory: stories[index % stories.length]!.id === args.holdout,
+      hasHoldout: args.holdout !== undefined,
+      trainTotal: quotas.train.total(),
+      trainCount: args.count,
+      holdoutTotal: quotas.holdout.total(),
+      holdoutCount: args.holdoutCount,
+    });
+    if (decision === "stop") return;
+    if (decision === "skip") continue; // this split is full; the session is not marked done
     try {
       await runSession(index, w);
     } catch (error) {
