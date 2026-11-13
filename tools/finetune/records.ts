@@ -1,4 +1,5 @@
 import { appendFileSync, existsSync, readFileSync, truncateSync } from "node:fs";
+import { CONVERSATION_END, CONVERSATION_START, GREETING_END, GREETING_START } from "../../src/dialogue/prompt";
 import { repeatsCharacterLine } from "../../src/dialogue/quality";
 import type { ChatMessage } from "../../src/llm/types";
 
@@ -36,6 +37,11 @@ export function toRecord(input: {
       { role: "assistant", content: JSON.stringify(input.value) },
     ],
   };
+}
+
+// A line without case, punctuation or extra spacing, for comparing lines.
+export function normalizeLine(text: string): string {
+  return comparable(text);
 }
 
 function comparable(text: string): string {
@@ -148,6 +154,8 @@ export interface RunIdentity {
   seed: string;
   stories: readonly string[];
   holdout: string | null;
+  judge: boolean;
+  judgeModel: string | null; // the model that judges, null with --no-judge
 }
 
 // Why an earlier run's files cannot be continued by this run, or null when they can. Catches a holdout
@@ -169,7 +177,25 @@ export function checkResume(input: {
   if (String(manifest.seed) !== run.seed) return `the manifest was made with seed "${String(manifest.seed)}", this run uses "${run.seed}".`;
   if (JSON.stringify(manifest.stories) !== JSON.stringify(run.stories)) return `the manifest lists stories ${JSON.stringify(manifest.stories)}, this run uses ${JSON.stringify(run.stories)}.`;
   if ((manifest.holdout ?? null) !== run.holdout) return `the manifest holds out ${JSON.stringify(manifest.holdout ?? null)}, this run holds out ${JSON.stringify(run.holdout)}.`;
+  if (run.judge && manifest.judge === true && (manifest.judgeModel ?? null) !== run.judgeModel) return `the manifest was judged by "${String(manifest.judgeModel ?? null)}", this run uses "${run.judgeModel}".`;
+  if (manifest.judge !== run.judge) return `the manifest was made with the judge ${manifest.judge === true ? "on" : "off"}, this run has it ${run.judge ? "on" : "off"}.`;
   return null;
+}
+
+// The NPC lines ("You: ...") of the conversation in a dialogue prompt, oldest first.
+export function npcHistoryLines(prompt: string): string[] {
+  const start = prompt.indexOf(CONVERSATION_START);
+  const end = prompt.indexOf(CONVERSATION_END);
+  if (start < 0 || end < start) return [];
+  return prompt.slice(start + CONVERSATION_START.length, end).split("\n")
+    .filter((line) => line.startsWith("You: "))
+    .map((line) => line.slice(5).trim());
+}
+
+// True when the line repeats, word for word or nearly, something the NPC already said in this prompt's history.
+export function repeatsHistory(line: string, prompt: string): boolean {
+  const history = npcHistoryLines(prompt);
+  return history.some((earlier) => comparable(earlier) === comparable(line)) || repeatsCharacterLine(line, history);
 }
 
 // Words a spoken line may use without them being in the prompt.
@@ -231,4 +257,76 @@ export function mixPlan(total: number): TaskCounts {
     left -= 1;
   }
   return plan;
+}
+
+function words(text: string): string[] {
+  return comparable(text).split(" ").filter(Boolean);
+}
+
+function trigrams(text: string): Set<string> {
+  const list = words(text);
+  const grams = new Set<string>();
+  for (let index = 0; index + 3 <= list.length; index += 1) grams.add(list.slice(index, index + 3).join(" "));
+  return grams;
+}
+
+// Exact and near-duplicate check for longer texts (summaries, ending scenes). Exact means equal after lowercasing,
+// stripping punctuation and collapsing whitespace; near means a word-trigram Jaccard of at least 0.8.
+// Unlike the line check this does not skip short texts or lean on word overlap, which would flag any two
+// summaries of the same story.
+export class TextDeduper {
+  private readonly texts = new Map<string, { exact: Set<string>; grams: Set<string>[] }>();
+
+  check(key: string, text: string): "duplicate" | "repeat" | null {
+    const seen = this.texts.get(key);
+    if (!seen) return null;
+    if (seen.exact.has(comparable(text))) return "duplicate";
+    const grams = trigrams(text);
+    if (grams.size === 0) return null;
+    for (const earlier of seen.grams) {
+      if (earlier.size === 0) continue;
+      const shared = [...grams].filter((gram) => earlier.has(gram)).length;
+      if (shared / (grams.size + earlier.size - shared) >= 0.8) return "repeat";
+    }
+    return null;
+  }
+
+  add(key: string, text: string): void {
+    const seen = this.texts.get(key) ?? { exact: new Set<string>(), grams: [] };
+    seen.exact.add(comparable(text));
+    seen.grams.push(trigrams(text));
+    this.texts.set(key, seen);
+  }
+}
+
+// What the player last said in a dialogue prompt (the last "Player: ..." line of the conversation).
+export function lastPlayerLine(prompt: string): string | null {
+  const start = prompt.indexOf(CONVERSATION_START);
+  const end = prompt.indexOf(CONVERSATION_END);
+  if (start < 0 || end < start) return null;
+  const lines = prompt.slice(start + CONVERSATION_START.length, end).split("\n").filter((line) => line.startsWith("Player: "));
+  return lines.length > 0 ? lines[lines.length - 1]!.slice(8).trim() : null;
+}
+
+// The group a reject reason counts under in the manifest: judge reasons keep their problem names (sorted), digits become N, free-text
+// details (ungrounded words, model call counts, brackets) are dropped.
+export function reasonBucket(reason: string): string {
+  const bucket = reason.replace(/^(ungrounded):.*$/, "$1").replace(/\s*[(\[].*$/, "").trim() || reason;
+  const judge = /^judge ([a-z_,]+)$/.exec(bucket);
+  if (judge) return `judge ${judge[1]!.split(",").sort().join(",")}`;
+  return bucket.replace(/\d+/g, "N");
+}
+
+// The authored greeting a greeting prompt asks the model to rephrase (null for other prompts).
+export function seedGreeting(prompt: string): string | null {
+  const start = prompt.indexOf(GREETING_START);
+  const end = prompt.indexOf(GREETING_END);
+  if (start < 0 || end < start) return null;
+  return prompt.slice(start + GREETING_START.length, end).trim();
+}
+
+// True when the greeting is the authored one word for word (ignoring case, punctuation and spacing).
+export function copiesSeedGreeting(line: string, prompt: string): boolean {
+  const seed = seedGreeting(prompt);
+  return seed !== null && seed !== "" && comparable(seed) === comparable(line);
 }

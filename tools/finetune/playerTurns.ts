@@ -50,7 +50,8 @@ export function playerMessagesRequest(input: PlayerTurnsInput, count: number, rn
     input.topics.length > 0 ? `Topics the player could bring up: ${input.topics.join(" | ")}` : "",
     `Write ${count} different messages the player might type to ${input.character.name}, one per line of this list:`,
     ...kinds,
-    "Each message is the player's own words, 1 to 15 words, no quotation marks, no names of speakers. Vary the wording.",
+    "Each message is the player's own words, 1 to 20 words, no quotation marks, no names of speakers.",
+    'Be specific and varied: refer to concrete things (a name, object or place from the topics or the story so far) where it fits, mix short and long messages, and vary mood and phrasing. Do not write bare "Goodbye", "Thanks" or "What do you need?".',
     'Return JSON: {"messages": [<one string per item>]}',
   ].filter(Boolean).join("\n");
   return {
@@ -118,4 +119,50 @@ export function pickPlayerAction(
 
 export function flattenAskOptions(options: AskOptions): { subject: SubjectRef; label: string }[] {
   return [...options.people, ...options.items, ...options.evidence].map((entry) => ({ subject: entry.subject, label: entry.label }));
+}
+
+// "What can you tell me about <label>?" is the game's own ask-about text. Clue labels are whole sentences cut to
+// 60 characters, which reads badly there, so only short names (people, items) are asked about.
+export function askLabelReadsWell(label: string): boolean {
+  const text = label.trim();
+  return text.length > 0 && text.length <= 40 && !/[.!?\u2026,;:]/.test(text);
+}
+
+const WATCHED_PHRASES = new Set(["goodbye", "thanks", "thank you", "what do you need", "what do you need from me"]);
+
+function phraseKey(text: string): string {
+  return text.toLowerCase().replace(/[^\p{L}\p{N}\s]/gu, "").replace(/\s+/g, " ").trim();
+}
+
+// Stock phrases (goodbye, thanks, "what do you need") may be used only a few times per run, so they do not dominate.
+export class PhraseBudget {
+  private readonly used = new Map<string, number>();
+
+  constructor(private readonly perPhrase = 3) {}
+
+  canUse(text: string): boolean {
+    const key = phraseKey(text);
+    return !WATCHED_PHRASES.has(key) || (this.used.get(key) ?? 0) < this.perPhrase;
+  }
+
+  use(text: string): void {
+    const key = phraseKey(text);
+    if (WATCHED_PHRASES.has(key)) this.used.set(key, (this.used.get(key) ?? 0) + 1);
+  }
+}
+
+// Which turns (1-based) of a conversation become records: at most `cap`, one from each equal stretch of the
+// conversation, so they are spread out instead of consecutive. Every turn is still played so the history builds up.
+export function pickRecordedTurns(turnCount: number, cap: number, rng: Random): Set<number> {
+  const turns = new Set<number>();
+  if (turnCount <= cap) {
+    for (let turn = 1; turn <= turnCount; turn += 1) turns.add(turn);
+    return turns;
+  }
+  for (let part = 0; part < cap; part += 1) {
+    const from = Math.floor((part * turnCount) / cap);
+    const to = Math.floor(((part + 1) * turnCount) / cap);
+    turns.add(from + 1 + Math.floor(rng() * Math.max(1, to - from)));
+  }
+  return turns;
 }

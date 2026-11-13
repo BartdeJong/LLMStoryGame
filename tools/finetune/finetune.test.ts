@@ -11,9 +11,13 @@ import { DIALOGUE_SYSTEM } from "../../src/llm/prompts";
 import { getLengthView } from "../../src/story/loader";
 import { isRequirementMet } from "../../src/story/requirements";
 import { validateStoryPack } from "../../src/story/validate";
+import { canMarkSessionDone, rebuildResumeState } from "./resume";
+import { afterSkippedTurn, attemptWithResamples, restoreState, snapshotState } from "./rollback";
+import { JUDGE_CONTEXT_CHARS, JUDGE_MAX_TOKENS, JUDGE_SEED, decideSummary, judgeProblemReason, judgeRequest, parseVerdict, runJudge } from "./judge";
+import type { JudgeOutcome } from "./judge";
 import { MAX_CONSECUTIVE_OUTAGES, NUM_CTX, OllamaBackend } from "./ollamaBackend";
-import { parsePlayerMessages, pickPlayerAction } from "./playerTurns";
-import { Deduper, checkEnding, checkResume, checkSummary, mixPlan, readDoneIds, readDoneSessions, repairJsonl, toRecord, ungroundedWords } from "./records";
+import { PhraseBudget, askLabelReadsWell, parsePlayerMessages, pickPlayerAction, pickRecordedTurns } from "./playerTurns";
+import { Deduper, checkEnding, checkResume, checkSummary, mixPlan, readDoneIds, TextDeduper, lastPlayerLine, copiesSeedGreeting, normalizeLine, npcHistoryLines, reasonBucket, readDoneSessions, repeatsHistory, repairJsonl, toRecord, ungroundedWords } from "./records";
 import { buildContext, createSeededRandom, openBeatCount, pickCharacter, sampleStoryState } from "./sampleState";
 
 const report = validateStoryPack(fixture);
@@ -217,8 +221,8 @@ describe("repairJsonl", () => {
 });
 
 describe("checkResume", () => {
-  const run = { seed: "1", stories: ["example", "other"], holdout: "example" };
-  const manifest = { seed: "1", stories: ["example", "other"], holdout: "example" };
+  const run = { seed: "1", stories: ["example", "other"], holdout: "example", judge: true, judgeModel: "judge:1" };
+  const manifest = { seed: "1", stories: ["example", "other"], holdout: "example", judge: true, judgeModel: "judge:1" };
 
   it("accepts fresh and matching output", () => {
     expect(checkResume({ train: [], holdout: [], manifest: null, run })).toBeNull();
@@ -231,6 +235,9 @@ describe("checkResume", () => {
     expect(checkResume({ train: [], holdout: [], manifest: { ...manifest, seed: "2" }, run })).toMatch(/seed/);
     expect(checkResume({ train: [], holdout: [], manifest: { ...manifest, stories: ["example"] }, run })).toMatch(/stories/);
     expect(checkResume({ train: [], holdout: [], manifest: { ...manifest, holdout: null }, run })).toMatch(/holds out/);
+    expect(checkResume({ train: [], holdout: [], manifest: { ...manifest, judge: false }, run })).toMatch(/judge/);
+    expect(checkResume({ train: [], holdout: [], manifest: { ...manifest, judgeModel: "other:2" }, run })).toMatch(/judged by/);
+    expect(checkResume({ train: [], holdout: [], manifest, run: { ...run, judge: false } })).toMatch(/judge/);
     expect(checkResume({ train: [], holdout: [{ story: "x" }], manifest: null, run: { ...run, holdout: null } })).toMatch(/holdout\.jsonl/);
   });
 });
@@ -358,5 +365,513 @@ describe("ungroundedWords after dashes and ellipses", () => {
     expect(ungroundedWords("It was—Barnaby, of course.", "nothing here")).toEqual([]);
     expect(ungroundedWords("Well – Barnaby knows.", "nothing here")).toEqual([]);
     expect(ungroundedWords("It was Barnaby, of course.", "nothing here")).toEqual(["Barnaby"]);
+  });
+});
+
+describe("judge", () => {
+  const context = [{ role: "system" as const, content: "You are Mira." }, { role: "user" as const, content: "Facts: the hat is missing.\nPlayer: hello" }];
+  const tagsThen = (verdict: string, seen: { body?: Record<string, unknown>; chats: number }): typeof fetch =>
+    (async (input: string | URL | Request, init?: RequestInit) => {
+      if (String(input).endsWith("/api/tags")) return new Response(JSON.stringify({ models: [{ name: "m" }] }));
+      seen.chats += 1;
+      seen.body = JSON.parse(String(init?.body)) as Record<string, unknown>;
+      return new Response(JSON.stringify({ message: { content: verdict } }));
+    }) as typeof fetch;
+
+  it("builds a strict request with the candidate, the prompt it was given and a problem enum", () => {
+    const line = judgeRequest("line", context, "I know her very well.");
+    expect(line.messages[0]!.content).toMatch(/strict/);
+    expect(line.messages[1]!.content).toContain("Facts: the hat is missing.");
+    expect(line.messages[1]!.content).toContain("I know her very well.");
+    const problems = (line.schema as { properties: { problems: { items: { enum: string[] } } } }).properties.problems.items.enum;
+    expect(problems).toEqual(["invents_fact", "contradicts_prompt", "reveals_secret", "ignores_player", "repeats_earlier_line", "too_long", "out_of_character", "modern_or_meta", "breaks_answer_plan", "copies_seed_greeting"]);
+    expect(line.messages[0]!.content).toMatch(/factual claims/);
+    // The claim scope names what is not a claim, and shows real pass and fail cases.
+    expect(line.messages[0]!.content).toMatch(/NOT claims: sensory flavour/);
+    expect(line.messages[0]!.content).toMatch(/warm bun/);
+    expect(line.messages[0]!.content).toMatch(/clock tower/);
+    expect(line.messages[0]!.content).toMatch(/receipt confirms the ward was paid/);
+    expect(line.messages[0]!.content).toMatch(/very unusual for him/);
+    const ending = judgeRequest("ending", context, "x");
+    expect(ending.messages[0]!.content).toMatch(/who did what, how and why/);
+    expect(ending.messages[0]!.content).toMatch(/cheering villagers/);
+    expect(ending.messages[0]!.content).not.toMatch(/clock tower/);
+    expect(line.messages[0]!.content).toMatch(/What do you need/);
+    const shape = line.schema as { required: string[]; properties: { claims: { items: { required: string[] } } } };
+    expect(shape.required).toEqual(["claims", "problems", "verdict"]);
+    expect(shape.properties.claims.items.required).toEqual(["text", "support"]);
+    const text = (judgeRequest("summary", context, "x").schema as { properties: { problems: { items: { enum: string[] } } } }).properties.problems.items.enum;
+    expect(text).toEqual(["invents_fact", "contradicts_prompt", "too_long"]);
+  });
+
+  it("derives the verdict from the claims, ignoring the model's own verdict field", () => {
+    const prompt = "Facts: the hat peg in the hall is empty. Jonathan says the hat was not on the peg at breakfast.";
+    const supported = '{"claims":[{"text":"the hat peg is empty","support":"the hat peg in the hall is empty"}],"problems":[],"verdict":"fail"}';
+    expect(parseVerdict(supported, "line", prompt)).toMatchObject({ verdict: "pass", problems: [], unsupported: [] });
+    const invented = '{"claims":[{"text":"the ledger was signed with Vale\'s hand","support":null},{"text":"the hat peg is empty","support":"hat peg in the hall is empty"}],"problems":[],"verdict":"pass"}';
+    expect(parseVerdict(invented, "line", prompt)).toMatchObject({
+      verdict: "fail",
+      problems: ["invents_fact"],
+      unsupported: ["the ledger was signed with Vale's hand"],
+      note: "unsupported: the ledger was signed with Vale's hand",
+    });
+    // A quote that is not in the prompt is no support.
+    expect(parseVerdict('{"claims":[{"text":"the ward was paid","support":"the ward received full payment on Tuesday"}],"problems":[]}', "line", prompt)?.verdict).toBe("fail");
+    expect(parseVerdict('{"claims":[{"text":"x","support":"null"}],"problems":[]}', "line", prompt)?.unsupported).toEqual(["x"]);
+    // No claims and no problems passes; a listed problem fails even when every claim is supported.
+    expect(parseVerdict('{"claims":[],"problems":[],"verdict":"fail"}', "line", prompt)?.verdict).toBe("pass");
+    expect(parseVerdict('{"claims":[],"problems":["ignores_player","bogus"],"verdict":"pass"}', "line", prompt)).toMatchObject({ verdict: "fail", problems: ["ignores_player"] });
+    expect(parseVerdict('{"claims":[],"problems":["reveals_secret"]}', "summary", prompt)).toMatchObject({ verdict: "pass", problems: [] });
+    expect(parseVerdict('{"verdict":"pass"}', "line", prompt)).toBeNull();
+    expect(parseVerdict("nope", "line", prompt)).toBeNull();
+  });
+
+  it("calls Ollama at temperature 0 with a fixed seed, outside the recorded calls", async () => {
+    const seen: { body?: Record<string, unknown>; chats: number } = { chats: 0 };
+    const backend = new OllamaBackend({ fetchImpl: tagsThen('<think>hmm</think>{"claims":[{"text":"damp air holds secrets","support":null}],"problems":["ignores_player"],"verdict":"pass"}', seen), temperature: 1.3 });
+    await backend.load("m", () => {});
+    const outcome = await runJudge(backend, "line", context, "The damp air holds secrets.", { model: "judge:1" });
+    expect(outcome).toEqual({ status: "fail", reason: "judge ignores_player,invents_fact", note: "unsupported: damp air holds secrets" });
+    // Only the judge thinks, with a generous budget, at temperature 0 and a fixed seed, on the judge model.
+    expect(seen.body).toMatchObject({ model: "judge:1", stream: false, think: true, options: { temperature: 0, seed: JUDGE_SEED, num_predict: JUDGE_MAX_TOKENS } });
+    expect(seen.body?.format).toBeTruthy();
+    // The judge is not one of the turn's model calls: the one-call accept rule still sees none.
+    expect(backend.calls).toHaveLength(0);
+  });
+
+  it("passes without calling Ollama when the judge is off", async () => {
+    const seen: { body?: Record<string, unknown>; chats: number } = { chats: 0 };
+    void tagsThen("{}", seen);
+    expect(await runJudge(null, "line", context, "anything")).toEqual({ status: "pass" });
+    expect(seen.chats).toBe(0);
+  });
+
+  it("reports an Ollama failure as unavailable and counts it as an outage", async () => {
+    const backend = new OllamaBackend({
+      fetchImpl: (async (input: string | URL | Request) => {
+        if (String(input).endsWith("/api/tags")) return new Response(JSON.stringify({ models: [{ name: "m" }] }));
+        return new Response("down", { status: 503 });
+      }) as typeof fetch,
+    });
+    await backend.load("m", () => {});
+    expect((await runJudge(backend, "line", context, "x")).status).toBe("unavailable");
+    expect(backend.consecutiveOutages).toBe(1);
+    const seen: { body?: Record<string, unknown>; chats: number } = { chats: 0 };
+    const garbled = new OllamaBackend({ fetchImpl: tagsThen("not json", seen) });
+    await garbled.load("m", () => {});
+    expect((await runJudge(garbled, "line", context, "x")).status).toBe("unavailable");
+  });
+});
+
+describe("dedupe and variety rules", () => {
+  const prompt = "intro\nCONVERSATION:\nYou: Welcome to the bakery, dear. Have a bun and tell me what brings you.\nPlayer: What do you need?\nEND CONVERSATION\nAnswer plan";
+
+  it("reads the NPC lines of the prompt history and rejects verbatim or near-verbatim repeats", () => {
+    expect(npcHistoryLines(prompt)).toEqual(["Welcome to the bakery, dear. Have a bun and tell me what brings you."]);
+    expect(repeatsHistory("Welcome to the bakery, dear. Have a bun and tell me what brings you.", prompt)).toBe(true);
+    expect(repeatsHistory("welcome to the bakery dear have a bun and tell me what brings you", prompt)).toBe(true);
+    expect(repeatsHistory("Welcome to the bakery, dear. Have a bun and tell me what brings you today.", prompt)).toBe(true);
+    expect(repeatsHistory("I need flour for the festival cake.", prompt)).toBe(false);
+    expect(repeatsHistory("Hello", "no conversation here")).toBe(false);
+  });
+
+  it("finds near-duplicate summaries across sessions", () => {
+    const deduper = new Deduper();
+    expect(deduper.accept("example", "You visited the bakery and learned the lantern is missing.")).toBeNull();
+    expect(deduper.accept("example", "You visited the bakery and learned that the lantern is missing.")).toBe("repeat");
+    expect(deduper.accept("example", "You visited the bakery and learned the lantern is missing.")).toBe("duplicate");
+    expect(deduper.accept("other", "You visited the bakery and learned the lantern is missing.")).toBeNull();
+  });
+
+  it("caps recorded turns per session and spreads them over the conversation", () => {
+    for (let seed = 0; seed < 100; seed += 1) {
+      const rng = createSeededRandom(`cap${seed}`);
+      for (let turns = 2; turns <= 6; turns += 1) {
+        const picked = [...pickRecordedTurns(turns, 3, rng)].sort((a, b) => a - b);
+        expect(picked.length).toBe(Math.min(3, turns));
+        expect(picked.every((turn) => turn >= 1 && turn <= turns)).toBe(true);
+        if (turns === 6) {
+          expect(picked[0]).toBeLessThanOrEqual(2);
+          expect(picked[2]).toBeGreaterThanOrEqual(5);
+        }
+      }
+    }
+  });
+
+  it("limits stock phrases per run", () => {
+    const budget = new PhraseBudget(2);
+    for (let use = 0; use < 2; use += 1) {
+      expect(budget.canUse("Goodbye.")).toBe(true);
+      budget.use("goodbye");
+    }
+    expect(budget.canUse("GOODBYE!")).toBe(false);
+    expect(budget.canUse("What do you need?")).toBe(true);
+    expect(budget.canUse("What do you know about the lantern?")).toBe(true);
+    budget.use("What do you know about the lantern?");
+    expect(budget.canUse("What do you know about the lantern?")).toBe(true);
+  });
+
+  it("keeps ask-about subjects whose names read well in the game's ask text", () => {
+    expect(askLabelReadsWell("Sherlock Holmes")).toBe(true);
+    expect(askLabelReadsWell("Duplicate ledger")).toBe(true);
+    expect(askLabelReadsWell("Jonathan says the hat was not on the peg at breakfast.")).toBe(false);
+    expect(askLabelReadsWell("The hat peg in the hall is empty. Paddington's old hat is n\u2026")).toBe(false);
+  });
+});
+
+describe("judge without a verdict", () => {
+  const context = [{ role: "system" as const, content: "generic writer system message" }, { role: "user" as const, content: "Facts: the hat is missing." }];
+  const fetchWith = (chat: () => Response): typeof fetch =>
+    (async (input: string | URL | Request) => (String(input).endsWith("/api/tags") ? new Response(JSON.stringify({ models: [{ name: "m" }] })) : chat())) as typeof fetch;
+
+  it("tells unreadable, context and outage apart and names the reject reason", async () => {
+    const unreadable = new OllamaBackend({ fetchImpl: fetchWith(() => new Response(JSON.stringify({ message: { content: "no json" } }))) });
+    await unreadable.load("m", () => {});
+    const a = await runJudge(unreadable, "line", context, "x");
+    expect(a).toMatchObject({ status: "unavailable", kind: "unreadable" });
+    expect(judgeProblemReason(a)).toBe("judge unreadable");
+
+    const overflow = new OllamaBackend({ fetchImpl: fetchWith(() => new Response(JSON.stringify({ message: { content: "{}" }, prompt_eval_count: 8100 }))) });
+    await overflow.load("m", () => {});
+    const b = await runJudge(overflow, "line", context, "x");
+    expect(b).toMatchObject({ status: "unavailable", kind: "context" });
+    expect(judgeProblemReason(b)).toBe("judge context");
+
+    const down = new OllamaBackend({ fetchImpl: fetchWith(() => new Response("x", { status: 500 })) });
+    await down.load("m", () => {});
+    const c = await runJudge(down, "line", context, "x");
+    expect(c).toMatchObject({ status: "unavailable", kind: "outage" });
+    expect(judgeProblemReason(c)).toBeNull();
+    expect(judgeProblemReason({ status: "pass" })).toBeNull();
+  });
+
+  it("counts unreadable verdicts separately and resets only on a parsed verdict", () => {
+    const backend = new OllamaBackend();
+    for (let attempt = 0; attempt < MAX_CONSECUTIVE_OUTAGES - 1; attempt += 1) backend.noteUnreadable();
+    expect(backend.consecutiveUnreadable).toBe(MAX_CONSECUTIVE_OUTAGES - 1);
+    expect(backend.consecutiveOutages).toBe(0);
+    expect(backend.totalOutages).toBe(0);
+    backend.noteVerdict();
+    expect(backend.consecutiveUnreadable).toBe(0);
+    for (let attempt = 0; attempt < MAX_CONSECUTIVE_OUTAGES; attempt += 1) backend.noteUnreadable();
+    expect(backend.consecutiveUnreadable).toBe(MAX_CONSECUTIVE_OUTAGES);
+  });
+
+  it("keeps the judge prompt small: no writer system message, bounded context", () => {
+    const small = judgeRequest("line", context, "cand");
+    expect(small.messages[1]!.content).not.toContain("generic writer system message");
+    expect(small.messages[0]!.content.length + small.messages[1]!.content.length).toBeLessThan(5000);
+    const huge = judgeRequest("line", [{ role: "user", content: "z".repeat(100000) }], "cand");
+    expect(huge.messages[1]!.content.length).toBeLessThan(JUDGE_CONTEXT_CHARS + 300);
+  });
+});
+
+describe("seeds of game calls", () => {
+  it("are not moved by chatJson calls between them", async () => {
+    const run = async (withSideCalls: boolean): Promise<number[]> => {
+      const seeds: number[] = [];
+      const backend = new OllamaBackend({
+        fetchImpl: (async (input: string | URL | Request, init?: RequestInit) => {
+          if (String(input).endsWith("/api/tags")) return new Response(JSON.stringify({ models: [{ name: "m" }] }));
+          const body = JSON.parse(String(init?.body)) as { options: { seed: number; temperature: number } };
+          if (body.options.temperature !== 0) seeds.push(body.options.seed);
+          return new Response(JSON.stringify({ message: { content: "{}" } }));
+        }) as typeof fetch,
+      });
+      await backend.load("m", () => {});
+      backend.beginSession("1:s00007");
+      const game = () => backend.generate({ messages: [{ role: "user", content: "x" }], maxTokens: 10, temperature: 0.5, signal: new AbortController().signal, tag: "dialogue" });
+      await game();
+      if (withSideCalls) await backend.chatJson([{ role: "user", content: "j" }], {}, { temperature: 0, exact: true });
+      await game();
+      if (withSideCalls) await backend.chatJson([{ role: "user", content: "j" }], {}, { temperature: 0, exact: true });
+      await game();
+      return seeds;
+    };
+    const plain = await run(false);
+    expect(plain).toHaveLength(3);
+    expect(new Set(plain).size).toBe(3);
+    expect(await run(true)).toEqual(plain);
+  });
+});
+
+describe("stock phrase budget on resume", () => {
+  it("reads the last player message of a dialogue prompt and rebuilds the budget from it", () => {
+    const prompt = "x\nCONVERSATION:\nYou: Hello.\nPlayer: Goodbye.\nYou: Bye.\nPlayer: Thanks!\nEND CONVERSATION\ny";
+    expect(lastPlayerLine(prompt)).toBe("Thanks!");
+    expect(lastPlayerLine("no conversation")).toBeNull();
+    const budget = new PhraseBudget(2);
+    for (let row = 0; row < 2; row += 1) {
+      const said = lastPlayerLine(prompt);
+      if (said) budget.use(said);
+    }
+    expect(budget.canUse("thanks")).toBe(false);
+    expect(budget.canUse("Goodbye.")).toBe(true);
+  });
+});
+
+describe("summary decision", () => {
+  const never = async (): Promise<JudgeOutcome> => { throw new Error("judge must not run"); };
+
+  it("skips dedupe and judge when no record will be written", async () => {
+    expect(await decideSummary({ willEmit: false, duplicate: () => { throw new Error("no dedupe"); }, judge: never })).toEqual({ kind: "skip" });
+  });
+
+  it("rejects a duplicate without judging, rejects a judge fail, emits a pass", async () => {
+    expect(await decideSummary({ willEmit: true, duplicate: () => "duplicate", judge: never })).toEqual({ kind: "reject", reason: "duplicate summary" });
+    expect(await decideSummary({ willEmit: true, duplicate: () => null, judge: async () => ({ status: "fail", reason: "judge invents_fact", note: "n" }) }))
+      .toEqual({ kind: "reject", reason: "judge invents_fact", note: "n" });
+    expect(await decideSummary({ willEmit: true, duplicate: () => null, judge: async () => ({ status: "pass" }) })).toEqual({ kind: "emit" });
+  });
+
+  it("reports a missing verdict as incomplete, so the session is not marked done", async () => {
+    const outcome: JudgeOutcome = { status: "unavailable", kind: "unreadable", error: "x" };
+    expect(await decideSummary({ willEmit: true, duplicate: () => null, judge: async () => outcome })).toEqual({ kind: "incomplete", outcome });
+  });
+});
+
+describe("TextDeduper and reject buckets", () => {
+  it("finds exact matches after normalising and near-duplicates by word trigrams, per key", () => {
+    const deduper = new TextDeduper();
+    const summary = "You visited the bakery and the library, and learned that the festival lantern is missing from the square.";
+    deduper.add("example", summary);
+    expect(deduper.check("example", "YOU visited the bakery and the library; and learned that the festival lantern is missing from the square")).toBe("duplicate");
+    expect(deduper.check("example", "You visited the bakery and the library, and learned that the festival lantern is missing from the plaza.")).toBe("repeat");
+    expect(deduper.check("example", "You walked to the clock tower and found a note about the keys to the old cellar door.")).toBeNull();
+    expect(deduper.check("example", "You visited the bakery and learned about the lantern.")).toBeNull();
+    expect(deduper.check("other", summary)).toBeNull();
+    expect(deduper.check("example:", summary)).toBeNull();
+  });
+
+  it("keeps judge problem names in the bucket and drops free-text details", () => {
+    expect(reasonBucket("judge invents_fact,ignores_player")).toBe("judge ignores_player,invents_fact");
+    expect(reasonBucket("judge too_long [e_lantern (flawed)]")).toBe("judge too_long");
+    expect(reasonBucket("ungrounded: Barnaby, Tower")).toBe("ungrounded");
+    expect(reasonBucket("needed 2 model calls (repair or reminder)")).toBe("needed N model calls");
+    expect(reasonBucket("judge too_long,invents_fact")).toBe("judge invents_fact,too_long");
+    expect(reasonBucket("summary is 301 characters (max 280)")).toBe("summary is N characters");
+    expect(reasonBucket("summary has 3 sentences (max 2)")).toBe("summary has N sentences");
+    expect(reasonBucket("repeats earlier line")).toBe("repeats earlier line");
+  });
+});
+
+describe("resume", () => {
+  const row = (task: string, story: string, character: string | null, value: unknown, user = "u") => ({
+    id: `s/${task}/0`,
+    task,
+    story,
+    character,
+    messages: [{ role: "system", content: "s" }, { role: "user", content: user }, { role: "assistant", content: JSON.stringify(value) }],
+  });
+
+  it("rebuilds counts, duplicate checks and the stock-phrase budget from saved records", () => {
+    const talk = "CONVERSATION:\nYou: Hi.\nPlayer: Goodbye.\nEND CONVERSATION";
+    const state = rebuildResumeState([
+      row("dialogue", "a", "c_mira", { line: "The hook on the square was empty this morning." }, talk),
+      row("dialogue", "a", "c_mira", { line: "Try the bakery for a fresh loaf of bread." }, talk),
+      row("greeting", "a", "c_mira", { line: "Hello, dear, come in." }),
+      row("summary", "a", null, { summary: "You visited the bakery and learned the lantern is missing." }),
+      row("ending", "b", null, { scene: "The village gathers beneath the lanterns and welcomes the morning together." }),
+      { task: "unknown", story: "a" },
+    ]);
+    expect(state.counts).toEqual({ dialogue: 2, greeting: 1, summary: 1, ending: 1 });
+    expect(state.lineDeduper.check("c_mira", "the hook on the square was empty this morning")).toBe("duplicate");
+    expect(state.greetingDeduper.check("c_mira", "Hello, dear, come in.")).toBe("duplicate");
+    expect(state.summaryDeduper.check("a", "You visited the bakery and learned the lantern is missing.")).toBe("duplicate");
+    expect(state.summaryDeduper.check("b", "You visited the bakery and learned the lantern is missing.")).toBeNull();
+    expect(state.endingDeduper.check("b", "The village gathers beneath the lanterns and welcomes the morning together.")).toBe("duplicate");
+    expect(state.endingDeduper.check("a", "The village gathers beneath the lanterns and welcomes the morning together.")).toBeNull();
+    expect(state.phrases.canUse("Goodbye.")).toBe(true); // used twice, budget is 3
+    state.phrases.use("goodbye");
+    expect(state.phrases.canUse("Goodbye.")).toBe(false);
+  });
+
+  it("starts empty without records", () => {
+    const state = rebuildResumeState([]);
+    expect(state.counts).toEqual({ dialogue: 0, greeting: 0, summary: 0, ending: 0 });
+    expect(state.phrases.canUse("Goodbye.")).toBe(true);
+  });
+
+  it("marks a session done only with no outage and a verdict for every judged text", () => {
+    expect(canMarkSessionDone({ outagesDuringSession: 0, incomplete: false })).toBe(true);
+    expect(canMarkSessionDone({ outagesDuringSession: 1, incomplete: false })).toBe(false);
+    expect(canMarkSessionDone({ outagesDuringSession: 0, incomplete: true })).toBe(false);
+    expect(canMarkSessionDone({ outagesDuringSession: 2, incomplete: true })).toBe(false);
+  });
+});
+
+describe("rolling back a rejected turn", () => {
+  const scripted = (lines: string[]) => {
+    const prompts: string[] = [];
+    const fetchImpl = (async (input: string | URL | Request, init?: RequestInit) => {
+      if (String(input).endsWith("/api/tags")) return new Response(JSON.stringify({ models: [{ name: "m" }] }));
+      const body = JSON.parse(String(init?.body)) as { messages: { role: string; content: string }[] };
+      prompts.push(body.messages.find((message) => message.role === "user")!.content);
+      return new Response(JSON.stringify({ message: { content: JSON.stringify({ line: lines[prompts.length - 1] }) } }));
+    }) as typeof fetch;
+    return { prompts, fetchImpl };
+  };
+
+  it("keeps a rejected line, and what it marked as told, out of the next prompt", async () => {
+    const fabricated = "I sketched the missing lantern myself, three days ago, in my little brown notebook.";
+    const { prompts, fetchImpl } = scripted([fabricated, "The hook on the square was empty this morning, dear.", "Try the library, dear, Oswin knows his books."]);
+    const backend = new OllamaBackend({ fetchImpl });
+    await backend.load("m", () => {});
+    const client = new LLMClient(backend, { pauseWhenHidden: false });
+    await client.load("m");
+    const rng = createSeededRandom("rollback");
+    const { state } = sampleStoryState(pack, view, rng);
+    const character = pack.cast.find((member) => member.id === "c_mira")!;
+    const controller = new ConversationController(client, pack, state, character, buildContext(pack, view, state, character), { speculate: false, random: rng });
+
+    const before = snapshotState(state);
+    const restoreController = controller.checkpoint();
+    const rejected = await controller.reply("What happened to the missing lantern?");
+    expect(rejected.line).toBe(fabricated);
+    expect(controller.getTurns()).toHaveLength(2);
+    restoreController();
+    restoreState(state, before);
+    expect(controller.getTurns()).toHaveLength(0);
+    expect(state).toEqual(before);
+
+    // The same question again, then a follow-up: neither prompt may carry the rejected line.
+    const again = await controller.reply("What happened to the missing lantern?");
+    expect(again.line).toMatch(/hook on the square/);
+    await controller.reply("Where should I look next?");
+    expect(prompts).toHaveLength(3);
+    expect(prompts[1]).not.toContain(fabricated);
+    expect(prompts[2]).not.toContain(fabricated);
+    expect(prompts[2]).toContain("hook on the square");
+    expect(prompts[2].match(/Player: What happened to the missing lantern\?/g)).toHaveLength(1);
+  });
+});
+
+describe("resampling", () => {
+  it("replays a rejected turn after a rollback and stops at the first clean one", async () => {
+    const log: string[] = [];
+    let run = 0;
+    const outcome = await attemptWithResamples({
+      maxResamples: 2,
+      run: async () => `line${++run}`,
+      judge: async (line, attempt) => {
+        log.push(`judge ${line} #${attempt}`);
+        return line === "line2" ? "ok" : "rejected";
+      },
+      rollback: () => log.push("rollback"),
+    });
+    expect(outcome).toEqual({ status: "ok", result: "line2", attempts: 2 });
+    expect(log).toEqual(["judge line1 #0", "rollback", "judge line2 #1"]);
+  });
+
+  it("gives up after the resamples, rolls every attempt back and ends the session there", async () => {
+    let rollbacks = 0;
+    let run = 0;
+    const outcome = await attemptWithResamples({ maxResamples: 2, run: async () => ++run, judge: async () => "rejected", rollback: () => { rollbacks += 1; } });
+    expect(outcome).toEqual({ status: "exhausted", result: null, attempts: 3 });
+    expect(rollbacks).toBe(3);
+  });
+
+  it("stops at once on an abort", async () => {
+    let run = 0;
+    const outcome = await attemptWithResamples({ maxResamples: 2, run: async () => ++run, judge: async () => "abort", rollback: () => {} });
+    expect(outcome).toEqual({ status: "abort", result: null, attempts: 1 });
+    expect(run).toBe(1);
+  });
+});
+
+describe("copies_seed_greeting", () => {
+  const prompt = "Rephrase the greeting.\nGREETING TO REPHRASE:\nOh, hello, dear! Have a bun and tell me what brings you by.\nEND GREETING\nReturn JSON";
+
+  it("flags a greeting that is the authored one, apart from case and punctuation", () => {
+    expect(copiesSeedGreeting("Oh, hello, dear! Have a bun and tell me what brings you by.", prompt)).toBe(true);
+    expect(copiesSeedGreeting("oh hello dear have a bun and tell me what brings you by", prompt)).toBe(true);
+    expect(copiesSeedGreeting("Hello, dear! Do have a bun and tell me what brings you by.", prompt)).toBe(false);
+    expect(copiesSeedGreeting("Oh, hello, dear!", "a dialogue prompt without a seed")).toBe(false);
+  });
+});
+
+describe("claim support threshold", () => {
+  const prompt = "Facts: the supply receipt shows the ward ordered bandages. Mr Vale's signature is on the duplicate ledger.";
+  const verdictFor = (support: string) =>
+    parseVerdict(JSON.stringify({ claims: [{ text: "a claim", support }], problems: [] }), "line", prompt)?.verdict;
+
+  it("accepts a quote after normalising case, punctuation and possessives, at 60% word overlap", () => {
+    expect(verdictFor("THE SUPPLY RECEIPT, shows the ward ORDERED bandages!")).toBe("pass");
+    expect(verdictFor("Vale signature is on the duplicate ledger")).toBe("pass");
+    // 3 of 5 words (supply, receipt, ward) are in the prompt: exactly 60%
+    expect(verdictFor("supply receipt ward payment tuesday")).toBe("pass");
+    // 2 of 5: below the threshold
+    expect(verdictFor("supply receipt invoice payment tuesday")).toBe("fail");
+    expect(verdictFor("")).toBe("fail");
+  });
+});
+
+describe("skipping an exhausted turn", () => {
+  it("skips the first, ends the session after two in a row, and ends at once on an abort", () => {
+    expect(afterSkippedTurn(0, "exhausted")).toEqual({ skippedInARow: 1, endSession: false });
+    expect(afterSkippedTurn(1, "exhausted")).toEqual({ skippedInARow: 2, endSession: true });
+    expect(afterSkippedTurn(0, "abort")).toEqual({ skippedInARow: 1, endSession: true });
+  });
+});
+
+describe("last judge refinements", () => {
+  const prompt = "Facts: the ward ordered bandages. The receipt is in the drawer.";
+  const parse = (claims: unknown[], extra: Record<string, unknown> = {}) => parseVerdict(JSON.stringify({ claims, problems: [], ...extra }), "line", prompt);
+
+  it("cuts an unclosed think block to the end of the text, so the verdict is unreadable", async () => {
+    const answer = '{"claims":[],"problems":[],"verdict":"pass"}';
+    const backendFor = (content: string) => new OllamaBackend({
+      fetchImpl: (async (input: string | URL | Request) =>
+        String(input).endsWith("/api/tags") ? new Response(JSON.stringify({ models: [{ name: "m" }] })) : new Response(JSON.stringify({ message: { content } }))) as typeof fetch,
+    });
+    const closed = backendFor(`<think>a</think>${answer}`);
+    await closed.load("m", () => {});
+    expect(await closed.chatJson([{ role: "user", content: "x" }], {})).toBe(answer);
+    const unclosed = backendFor(`<think>still thinking ${answer}`);
+    await unclosed.load("m", () => {});
+    expect(await unclosed.chatJson([{ role: "user", content: "x" }], {})).toBe("");
+    expect(await runJudge(unclosed, "line", [{ role: "user", content: "x" }], "y")).toMatchObject({ status: "unavailable", kind: "unreadable" });
+    // A think tag that reaches the parser is never a clean answer.
+    expect(parseVerdict(`<think>${answer}`, "line", prompt)).toBeNull();
+  });
+
+  it("keeps the pass when the model says fail without a reason, and says so in the note and the outcome", async () => {
+    expect(parse([], { verdict: "fail" })).toMatchObject({ verdict: "pass", modelSaidFail: true, note: "model said fail" });
+    expect(parse([], { verdict: "pass" })).toMatchObject({ verdict: "pass", modelSaidFail: false });
+    expect(parse([{ text: "x", support: null }], { verdict: "fail" })).toMatchObject({ verdict: "fail", modelSaidFail: false });
+    const backend = new OllamaBackend({
+      fetchImpl: (async (input: string | URL | Request) =>
+        String(input).endsWith("/api/tags") ? new Response(JSON.stringify({ models: [{ name: "m" }] }))
+          : new Response(JSON.stringify({ message: { content: '{"claims":[],"problems":[],"verdict":"fail"}' } }))) as typeof fetch,
+    });
+    await backend.load("m", () => {});
+    expect(await runJudge(backend, "line", [{ role: "user", content: prompt }], "Hello!")).toEqual({ status: "pass", modelSaidFail: true });
+  });
+
+  it("counts only words of 4 letters or more, and needs a contiguous quote when fewer than 2 such words", () => {
+    // "the ward" has one long word: it must appear as it is.
+    expect(parse([{ text: "c", support: "the ward" }])?.verdict).toBe("pass");
+    expect(parse([{ text: "c", support: "ward bandages" }])?.verdict).toBe("pass"); // two long words, both in the prompt
+    expect(parse([{ text: "c", support: "ward in the drawer" }])?.verdict).toBe("pass"); // two long words, both in the prompt
+  });
+
+  it("does not let filler words support a claim", () => {
+    expect(parse([{ text: "c", support: "the hat is in it" }])?.verdict).toBe("fail");
+    expect(parse([{ text: "c", support: "in the drawer" }])?.verdict).toBe("pass"); // one long word, and the quote is in the prompt as it is
+    expect(parse([{ text: "c", support: "drawer in the" }])?.verdict).toBe("fail"); // one long word, but not contiguous in the prompt
+  });
+
+  it("recognises lines a session already recorded", () => {
+    const row = (id: string, line: string) => ({
+      id,
+      task: "dialogue",
+      story: "a",
+      character: "c_mira",
+      messages: [{ role: "system", content: "s" }, { role: "user", content: "u" }, { role: "assistant", content: JSON.stringify({ line }) }],
+    });
+    const state = rebuildResumeState([row("s00001/dialogue/2", "Try the bakery, dear!"), row("s00002/dialogue/1", "Other line.")]);
+    expect(state.sessionLines.get("s00001")?.has(normalizeLine("try the bakery dear"))).toBe(true);
+    expect(state.sessionLines.get("s00001")?.has(normalizeLine("Other line."))).toBe(false);
+    expect(state.sessionLines.get("s00003")).toBeUndefined();
   });
 });

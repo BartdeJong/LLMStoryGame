@@ -10,18 +10,24 @@ import type { LengthView } from "../../src/story/loader";
 import { writeEnding } from "../../src/story/ending";
 import { SUMMARY_EVERY_AREAS } from "../../src/story/state";
 import { buildSummaryRequest } from "../../src/story/summary";
+import type { ChatMessage } from "../../src/llm/types";
 import type { StoryPack } from "../../src/story/types";
 import { formatIssue, validateStoryPack } from "../../src/story/validate";
 import { DEFAULT_OLLAMA_HOST, MAX_CONSECUTIVE_OUTAGES, OllamaBackend } from "./ollamaBackend";
 import type { OllamaError, RecordedCall } from "./ollamaBackend";
-import { flattenAskOptions, parsePlayerMessages, pickPlayerAction, playerMessagesRequest } from "./playerTurns";
+import { decideSummary, judgeProblemReason, runJudge } from "./judge";
+import type { JudgeKind, JudgeOutcome } from "./judge";
+import { askLabelReadsWell, flattenAskOptions, parsePlayerMessages, pickPlayerAction, pickRecordedTurns, playerMessagesRequest } from "./playerTurns";
 import {
-  Deduper,
   MIX_SHARE,
   TASKS,
   checkEnding,
   checkResume,
   checkSummary,
+  copiesSeedGreeting,
+  normalizeLine,
+  reasonBucket,
+  repeatsHistory,
   emptyCounts,
   mixPlan,
   readDoneSessions,
@@ -31,7 +37,10 @@ import {
   toRecord,
   ungroundedWords,
 } from "./records";
-import type { Task, TaskCounts } from "./records";
+import type { Task } from "./records";
+import { canMarkSessionDone, rebuildResumeState } from "./resume";
+import { afterSkippedTurn, attemptWithResamples, restoreState, snapshotState } from "./rollback";
+import type { AttemptVerdict } from "./rollback";
 import { buildContext, createSeededRandom, pickCharacter, sampleStoryState } from "./sampleState";
 
 interface Args {
@@ -43,6 +52,8 @@ interface Args {
   stories: string[] | undefined;
   host: string;
   temperature: number | undefined;
+  judge: boolean;
+  judgeModel: string;
 }
 
 function fail(message: string): never {
@@ -52,16 +63,22 @@ function fail(message: string): never {
 
 function parseArgs(argv: string[]): Args {
   const values = new Map<string, string>();
+  let judge = true;
   for (let index = 0; index < argv.length; index += 2) {
     const flag = argv[index];
+    if (flag === "--no-judge") {
+      judge = false;
+      index -= 1;
+      continue;
+    }
     const value = argv[index + 1];
-    if (!flag?.startsWith("--") || value === undefined) fail(`Unexpected argument "${flag ?? ""}". Flags are --model --count --out --seed --holdout --stories --host --temperature.`);
+    if (!flag?.startsWith("--") || value === undefined) fail(`Unexpected argument "${flag ?? ""}". Flags are --model --count --out --seed --holdout --stories --host --temperature --no-judge --judge-model.`);
     values.set(flag.slice(2), value);
   }
-  const known = ["model", "count", "out", "seed", "holdout", "stories", "host", "temperature"];
+  const known = ["judge-model", "model", "count", "out", "seed", "holdout", "stories", "host", "temperature"];
   for (const key of values.keys()) if (!known.includes(key)) fail(`Unknown flag --${key}.`);
   const model = values.get("model");
-  if (!model) fail("Usage: npm run finetune-data -- --model <ollama tag> [--count 200] [--out finetune-data] [--seed 1] [--holdout <story id>] [--stories a,b] [--host url] [--temperature 0.7]");
+  if (!model) fail("Usage: npm run finetune-data -- --model <ollama tag> [--count 200] [--out finetune-data] [--seed 1] [--holdout <story id>] [--stories a,b] [--host url] [--temperature 0.7] [--no-judge] [--judge-model <tag>]");
   const count = Number(values.get("count") ?? 200);
   if (!Number.isInteger(count) || count < 1) fail("--count must be a positive whole number.");
   const temperature = values.has("temperature") ? Number(values.get("temperature")) : undefined;
@@ -75,6 +92,8 @@ function parseArgs(argv: string[]): Args {
     stories: values.get("stories")?.split(",").map((id) => id.trim()).filter(Boolean),
     host: values.get("host") ?? DEFAULT_OLLAMA_HOST,
     temperature,
+    judge,
+    judgeModel: values.get("judge-model") ?? model,
   };
 }
 
@@ -109,15 +128,6 @@ function gitCommit(): string {
   }
 }
 
-function assistantValue(row: Record<string, unknown>): Record<string, unknown> {
-  const messages = row.messages as { role: string; content: string }[] | undefined;
-  try {
-    return JSON.parse(messages?.[2]?.content ?? "{}") as Record<string, unknown>;
-  } catch {
-    return {};
-  }
-}
-
 const args = parseArgs(process.argv.slice(2));
 const storyIds = args.stories ?? readdirSync(resolve("public/stories"))
   .filter((file) => file.endsWith(".json") && file !== "index.json")
@@ -148,7 +158,7 @@ const resumeProblem = checkResume({
   train: readJsonl(files.train),
   holdout: readJsonl(files.holdout),
   manifest: previousManifest,
-  run: { seed: args.seed, stories: storyIds, holdout: args.holdout ?? null },
+  run: { seed: args.seed, stories: storyIds, holdout: args.holdout ?? null, judge: args.judge, judgeModel: args.judge ? args.judgeModel : null },
 });
 if (resumeProblem) fail(`Cannot continue in ${outDir}: ${resumeProblem} Use another --out or remove the old files.`);
 
@@ -159,25 +169,20 @@ try {
 } catch (error) {
   fail((error as Error).message);
 }
+if (args.judge && args.judgeModel !== args.model) {
+  try {
+    await backend.checkModel(args.judgeModel);
+  } catch (error) {
+    fail(`--judge-model: ${(error as Error).message}`);
+  }
+}
 
 // Resume state: what earlier runs wrote.
 const doneSessions = readDoneSessions(files.rejects);
-const counts: TaskCounts = emptyCounts();
-const lineDeduper = new Deduper();
-const greetingDeduper = new Deduper(true);
-const endingDeduper = new Deduper(true);
-for (const path of [files.train, files.holdout]) {
-  for (const row of readJsonl(path)) {
-    const task = row.task as Task;
-    if (!TASKS.includes(task)) continue;
-    counts[task] += 1;
-    const character = String(row.character ?? "");
-    const value = assistantValue(row);
-    if (task === "dialogue" && typeof value.line === "string") lineDeduper.add(character, value.line);
-    if (task === "greeting" && typeof value.line === "string") greetingDeduper.add(character, value.line);
-    if (task === "ending" && typeof value.scene === "string") endingDeduper.add("ending", value.scene);
-  }
-}
+const { counts, lineDeduper, greetingDeduper, summaryDeduper, endingDeduper, phrases, sessionLines } = rebuildResumeState(
+  [...readJsonl(files.train), ...readJsonl(files.holdout)],
+);
+const MAX_DIALOGUE_PER_SESSION = 3;
 const plan = mixPlan(args.count);
 const total = (): number => TASKS.reduce((sum, task) => sum + counts[task], 0);
 const rejectCounts = new Map<string, number>();
@@ -195,6 +200,17 @@ let acceptedThisRun = 0;
 
 class CircuitOpen extends Error {}
 
+// Set when the judge could not give a verdict: the session is then not marked done and runs again on resume.
+let sessionIncomplete = false;
+
+// Verdicts where the model said fail without a reason, so code kept the pass.
+const judgeStats = { modelSaidFailKept: 0 };
+const MAX_TURN_RESAMPLES = 2;
+// How often a rejected turn was played again: turns played, rescued by a resample, given up on (the turn is
+// skipped; `endedEarly` counts the sessions cut short by two skipped turns in a row) or aborted (an outage or a
+// missing verdict).
+const resampleStats = { turns: 0, firstTryRejected: 0, rescued: 0, exhausted: 0, aborted: 0, endedEarly: 0 };
+
 // Takes what the backend recorded since the last call. Stops the run when Ollama keeps failing.
 function take(): { calls: RecordedCall[]; failures: OllamaError[] } {
   const taken = { calls: backend.drain(), failures: backend.drainFailures() };
@@ -203,6 +219,9 @@ function take(): { calls: RecordedCall[]; failures: OllamaError[] } {
 }
 
 function checkBreaker(): void {
+  if (backend.consecutiveUnreadable >= MAX_CONSECUTIVE_OUTAGES) {
+    throw new CircuitOpen(`${backend.consecutiveUnreadable} judge verdicts in a row could not be read; the judge is not working.`);
+  }
   if (backend.consecutiveOutages >= MAX_CONSECUTIVE_OUTAGES) {
     throw new CircuitOpen(`${backend.consecutiveOutages} HTTP or connection failures in a row; Ollama looks unavailable.`);
   }
@@ -212,6 +231,29 @@ function checkBreaker(): void {
 const hasOutage = (failures: readonly OllamaError[]): boolean => failures.some((failure) => failure.kind !== "context");
 const contextFailure = (failures: readonly OllamaError[]): string | undefined => failures.find((failure) => failure.kind === "context")?.message;
 
+// The fact-check call. It goes around the game's pipeline, so it is not one of the turn's model calls.
+// Without a verdict the session cannot be called done; the problem is logged as a reject.
+async function judged(
+  kind: JudgeKind,
+  messages: readonly ChatMessage[],
+  text: string,
+  meta: { id: string; task: Task; story: string; character: string | null; calls: RecordedCall[]; line?: string },
+): Promise<JudgeOutcome> {
+  const outcome = await runJudge(args.judge ? backend : null, kind, messages, text, { model: args.judgeModel });
+  backend.drainFailures(); // judge failures belong to no game turn
+  if (outcome.status !== "unavailable" && args.judge) backend.noteVerdict();
+  if (outcome.status === "pass" && outcome.modelSaidFail) judgeStats.modelSaidFailKept += 1;
+  if (outcome.status === "unavailable") {
+    console.log(`  judge unavailable (${outcome.kind}): ${outcome.error}`);
+    sessionIncomplete = true;
+    if (outcome.kind === "unreadable") backend.noteUnreadable();
+    const reason = judgeProblemReason(outcome);
+    if (reason) reject({ ...meta, reason, note: outcome.error });
+    checkBreaker();
+  }
+  return outcome;
+}
+
 function emit(split: "train" | "holdout", record: ReturnType<typeof toRecord>, shown: string): void {
   appendFileSync(files[split], `${JSON.stringify(record)}\n`);
   counts[record.task] += 1;
@@ -220,8 +262,8 @@ function emit(split: "train" | "holdout", record: ReturnType<typeof toRecord>, s
   console.log(`[${total()}/${args.count}] ${split} ${record.task}${record.character ? ` ${record.character}` : ""}: ${shown} (${seconds.toFixed(1)}s/example)`);
 }
 
-function reject(input: { id: string; task: Task; story: string; character: string | null; reason: string; calls: RecordedCall[]; line?: string }): void {
-  const reason = input.reason.replace(/[:(].*$/, "").trim() || input.reason;
+function reject(input: { id: string; task: Task; story: string; character: string | null; reason: string; calls: RecordedCall[]; line?: string; note?: string; attempt?: number }): void {
+  const reason = reasonBucket(input.reason);
   rejectCounts.set(reason, (rejectCounts.get(reason) ?? 0) + 1);
   appendFileSync(files.rejects, `${JSON.stringify({
     id: input.id,
@@ -230,6 +272,8 @@ function reject(input: { id: string; task: Task; story: string; character: strin
     character: input.character,
     reason: input.reason,
     ...(input.line !== undefined ? { line: input.line } : {}),
+    ...(input.note ? { note: input.note } : {}),
+    ...(input.attempt ? { attempt: input.attempt } : {}),
     raw: input.calls.map((call) => call.text),
   })}\n`);
   console.log(`  rejected ${input.task} (${input.reason})`);
@@ -243,6 +287,7 @@ async function runSession(index: number): Promise<void> {
   const rng = createSeededRandom(`${args.seed}:${sessionId}`);
   backend.beginSession(`${args.seed}:${sessionId}`);
   const outageMark = backend.totalOutages;
+  sessionIncomplete = false;
   const { state, endingReached } = sampleStoryState(pack, view, rng);
   const character = pickCharacter(pack, view, state, rng);
   console.log(`session ${sessionId}: ${story.id}, ${character.name}${endingReached ? ", after the ending" : ""}, ${state.visitedAreas.length} areas visited`);
@@ -258,41 +303,116 @@ async function runSession(index: number): Promise<void> {
     if (problem === "outage") console.log("  summary skipped: Ollama failed");
     else if (problem) reject({ id, task: "summary", story: story.id, character: null, reason: problem, calls });
     else {
+      // The summary is the state's summary as soon as the cheap checks pass. Dedupe and judge only decide the record.
       state.summary = summary;
-      if (allowed("summary")) emit(split, toRecord({ id, task: "summary", story: story.id, character: null, messages: calls[0]!.messages, value: { summary } }), summary);
+      const meta = { id, task: "summary" as const, story: story.id, character: null, calls, line: summary };
+      const action = await decideSummary({
+        willEmit: allowed("summary"),
+        duplicate: () => summaryDeduper.check(story.id, summary),
+        judge: () => judged("summary", calls[0]!.messages, summary, meta),
+      });
+      if (action.kind === "reject") reject({ ...meta, reason: action.reason, ...(action.note ? { note: action.note } : {}) });
+      else if (action.kind === "emit") {
+        summaryDeduper.add(story.id, summary);
+        emit(split, toRecord({ id, task: "summary", story: story.id, character: null, messages: calls[0]!.messages, value: { summary } }), summary);
+      }
     }
   }
 
   const context = buildContext(pack, view, state, character);
   const controller = new ConversationController(client, pack, state, character, context, { speculate: false, random: rng });
 
-  const handle = (task: Task, turn: DialogueTurn, turnIndex: number): void => {
+  let turnAccepted = false;
+  let currentAttempt = 0;
+  let ended = false; // a turn found no clean reply: nothing further is recorded in this session
+
+  // Checks one reply. "rejected" means play the turn again; "abort" means stop (an outage, a missing verdict).
+  // Every reply is judged, recorded or not: a fabricated fact left in the history would end up in later prompts.
+  const handle = async (task: Task, turn: DialogueTurn, turnIndex: number, recorded: boolean): Promise<AttemptVerdict> => {
     const { calls, failures } = take();
     const id = `${sessionId}/${task}/${turnIndex}`;
-    const base = { id, task, story: story.id, character: character.id, calls, line: turn.line };
-    if (hasOutage(failures)) return console.log("  turn skipped: Ollama failed");
+    const base = { id, task, story: story.id, character: character.id, calls, line: turn.line, attempt: currentAttempt };
+    const bad = (reason: string, note?: string): AttemptVerdict => {
+      reject({ ...base, reason, ...(note ? { note } : {}) });
+      return "rejected";
+    };
+    if (hasOutage(failures)) {
+      console.log("  turn skipped: Ollama failed");
+      return "abort";
+    }
     const overflow = contextFailure(failures);
-    if (overflow) return reject({ ...base, reason: overflow });
-    // An authored fallback or deflection without a model call is not a sample, so there is nothing to reject.
-    if (calls.length === 0) return;
-    if (turn.quality !== "generated") return reject({ ...base, reason: `quality ${turn.quality}` });
-    if (calls.length !== 1) return reject({ ...base, reason: `needed ${calls.length} model calls (repair or reminder)` });
-    const missing = ungroundedWords(turn.line, calls[0]!.messages.map((message) => message.content).join("\n"), [pack.identity.player.name]);
-    if (missing.length > 0) return reject({ ...base, reason: `ungrounded: ${missing.join(", ")}` });
+    if (overflow) {
+      reject({ ...base, reason: overflow });
+      return "abort";
+    }
+    // An authored fallback or deflection without a model call is not a sample, so there is nothing to check.
+    if (calls.length === 0) return "ok";
+    if (turn.quality !== "generated") return bad(`quality ${turn.quality}`);
+    if (calls.length !== 1) return bad(`needed ${calls.length} model calls (repair or reminder)`);
+    // A session that is run again repeats its earlier lines (the seeds are the same). One that is already recorded
+    // is accepted without being written again, so it stays in the history and nothing is resampled.
+    if (sessionLines.get(sessionId)?.has(normalizeLine(turn.line))) return "ok";
+    const promptText = calls[0]!.messages.map((message) => message.content).join("\n");
+    const missing = ungroundedWords(turn.line, promptText, [pack.identity.player.name]);
+    if (missing.length > 0) return bad(`ungrounded: ${missing.join(", ")}`);
+    const userPrompt = calls[0]!.messages.find((message) => message.role === "user")?.content ?? "";
+    if (task === "greeting" && copiesSeedGreeting(turn.line, userPrompt)) return bad("copies_seed_greeting");
+    if (task === "dialogue" && repeatsHistory(turn.line, userPrompt)) return bad("repeats earlier line");
     const deduper = task === "greeting" ? greetingDeduper : lineDeduper;
     const duplicate = deduper.check(character.id, turn.line);
-    if (duplicate) return reject({ ...base, reason: `${duplicate} line` });
-    if (!allowed(task)) return;
+    if (duplicate) return bad(`${duplicate} line`);
+    const willRecord = allowed(task) && recorded;
+    const verdict = await judged("line", calls[0]!.messages, turn.line, base);
+    if (verdict.status === "fail") return bad(verdict.reason, verdict.note);
+    if (verdict.status === "unavailable") return "abort";
+    // A judged line counts for the duplicate check whether or not it becomes a record.
     deduper.add(character.id, turn.line);
+    if (!willRecord) return "ok";
     emit(split, toRecord({ id, task, story: story.id, character: character.id, messages: calls[0]!.messages, value: { line: turn.line } }), `"${turn.line}"`);
+    turnAccepted = true;
+    return "ok";
   };
 
-  take();
-  const greeting = await controller.start();
-  handle("greeting", greeting, 0);
+  // Plays one turn. A reply that is rejected is rolled back (history, story state) and asked for again, up to
+  // MAX_TURN_RESAMPLES times; if none is clean the session ends here. Returns the accepted turn or null.
+  const play = async (task: Task, turnIndex: number, recorded: boolean, run: () => Promise<DialogueTurn>): Promise<{ turn: DialogueTurn | null; status: "ok" | "exhausted" | "abort" }> => {
+    const restoreController = controller.checkpoint();
+    const snapshot = snapshotState(state);
+    const outcome = await attemptWithResamples({
+      maxResamples: MAX_TURN_RESAMPLES,
+      run: async () => {
+        take();
+        turnAccepted = false;
+        return run();
+      },
+      judge: (turn, attempt) => {
+        currentAttempt = attempt;
+        return handle(task, turn, turnIndex, recorded);
+      },
+      rollback: () => {
+        restoreController();
+        restoreState(state, snapshot);
+      },
+    });
+    resampleStats.turns += 1;
+    if (outcome.attempts > 1) resampleStats.firstTryRejected += 1;
+    if (outcome.status === "ok") {
+      if (outcome.attempts > 1) resampleStats.rescued += 1;
+      return { turn: outcome.result, status: "ok" };
+    }
+    if (outcome.status === "exhausted") resampleStats.exhausted += 1;
+    else resampleStats.aborted += 1;
+    console.log(`  no clean ${task} reply (${outcome.status})`);
+    return { turn: null, status: outcome.status };
+  };
 
-  if (allowed("dialogue")) {
+  const { turn: greeting } = await play("greeting", 0, true, () => controller.start());
+  if (!greeting) ended = true; // without a clean greeting there is no conversation to build on
+
+  if (!ended && allowed("dialogue")) {
     const turnCount = 2 + Math.floor(rng() * 5);
+    // Every turn is played so the history builds up, but only a few, spread out, become records.
+    const recordedTurns = pickRecordedTurns(turnCount, MAX_DIALOGUE_PER_SESSION, rng);
     let teacher: string[] = [];
     try {
       const request = playerMessagesRequest({
@@ -301,26 +421,39 @@ async function runSession(index: number): Promise<void> {
         summary: context.storySummary,
         topics: character.knowledge.map((item) => item.ask).slice(0, 6),
       }, 4 + Math.floor(rng() * 5), rng);
-      teacher = parsePlayerMessages(await backend.chatJson(request.messages, request.schema));
+      teacher = parsePlayerMessages(await backend.chatJson(request.messages, request.schema, { temperature: 1.1 })).filter((message) => phrases.canUse(message));
     } catch (error) {
       console.log(`  player messages unavailable: ${(error as Error).message}`);
       checkBreaker();
     }
-    let choices = greeting.choices;
+    let choices = greeting!.choices;
+    let skippedInARow = 0; // turns in a row that found no clean reply
     for (let turnIndex = 1; turnIndex <= turnCount && allowed("dialogue"); turnIndex += 1) {
       const askable = flattenAskOptions(controller.askOptions())
-        .filter((entry) => resolveAsk(pack, state, character, entry.subject).source !== "deflection");
-      const action = pickPlayerAction(rng, { teacher, choices, askable, last: turnIndex === turnCount });
+        .filter((entry) => askLabelReadsWell(entry.label) && resolveAsk(pack, state, character, entry.subject).source !== "deflection");
+      const action = pickPlayerAction(rng, { teacher, choices: choices.filter((choice) => phrases.canUse(choice)), askable, last: turnIndex === turnCount });
       if (!action) break;
-      take();
-      const turn = action.kind === "ask" ? await controller.askAbout(action.subject) : await controller.reply(action.text);
-      handle("dialogue", turn, turnIndex);
+      const { turn, status } = await play("dialogue", turnIndex, recordedTurns.has(turnIndex),
+        () => (action.kind === "ask" ? controller.askAbout(action.subject) : controller.reply(action.text)));
+      if (!turn) {
+        // The turn is already rolled back: skip this player message and go on with the next, unless that happened twice in a row.
+        const next = afterSkippedTurn(skippedInARow, status === "abort" ? "abort" : "exhausted");
+        skippedInARow = next.skippedInARow;
+        if (next.endSession) {
+          if (status !== "abort") resampleStats.endedEarly += 1;
+          ended = true;
+          break;
+        }
+        continue;
+      }
+      skippedInARow = 0;
+      if (action.kind === "reply" && turnAccepted) phrases.use(action.text);
       choices = turn.choices;
     }
   }
   controller.close();
 
-  if (allowed("ending")) {
+  if (!ended && allowed("ending")) {
     const ending = view.endings[Math.floor(rng() * view.endings.length)]!;
     const variant = ending.flawed && rng() < 0.5 ? ending.flawed : null;
     take();
@@ -332,16 +465,20 @@ async function runSession(index: number): Promise<void> {
     const label = `${ending.id}${variant ? " (flawed)" : ""}`;
     const problem = hasOutage(failures) ? "outage" : contextFailure(failures) ?? (calls.length !== 1 ? `ending took ${calls.length} model calls`
       : scene.scene === source.scene_outline ? "ending fell back to the outline"
-      : checkEnding(value) ?? (endingDeduper.check("ending", value.scene) ? "duplicate ending" : null));
+      : checkEnding(value) ?? (endingDeduper.check(story.id, value.scene) ? "duplicate ending" : null));
     if (problem === "outage") console.log("  ending skipped: Ollama failed");
     else if (problem) reject({ id, task: "ending", story: story.id, character: null, reason: `${problem} [${label}]`, calls });
     else {
-      endingDeduper.add("ending", value.scene);
-      emit(split, toRecord({ id, task: "ending", story: story.id, character: null, messages: calls[0]!.messages, value }), `${label}: ${value.epilogue}`);
+      const verdict = await judged("ending", calls[0]!.messages, `Scene: ${value.scene}\nEpilogue: ${value.epilogue}`, { id, task: "ending", story: story.id, character: null, calls });
+      if (verdict.status === "fail") reject({ id, task: "ending", story: story.id, character: null, reason: `${verdict.reason} [${label}]`, calls, note: verdict.note });
+      else if (verdict.status === "pass") {
+        endingDeduper.add(story.id, value.scene);
+        emit(split, toRecord({ id, task: "ending", story: story.id, character: null, messages: calls[0]!.messages, value }), `${label}: ${value.epilogue}`);
+      }
     }
   }
   // Only a session that ran to the end without an outage is done; an interrupted one is run again.
-  if (backend.totalOutages === outageMark) {
+  if (canMarkSessionDone({ outagesDuringSession: backend.totalOutages - outageMark, incomplete: sessionIncomplete })) {
     appendFileSync(files.rejects, `${JSON.stringify({ id: `${sessionId}/${SESSION_DONE_ID}`, reason: "done" })}\n`);
   }
 }
@@ -360,7 +497,7 @@ function writeManifest(): void {
   }
   const rejectReasons: Record<string, number> = {};
   for (const row of readJsonl(files.rejects)) {
-    const reason = String(row.reason ?? "unknown").replace(/[:(\[].*$/, "").trim();
+    const reason = reasonBucket(String(row.reason ?? "unknown"));
     if (reason === "done") continue;
     rejectReasons[reason] = (rejectReasons[reason] ?? 0) + 1;
   }
@@ -374,9 +511,11 @@ function writeManifest(): void {
     stories: storyIds,
     holdout: args.holdout ?? null,
     requestedCount: args.count,
+    judge: args.judge,
+    judgeModel: args.judge ? args.judgeModel : null,
     counts: { total: TASKS.reduce((sum, task) => sum + final[task], 0), byTask: final, train: split.train, holdout: split.holdout },
     rejects: rejectReasons,
-    lastRun: { acceptedRecords: acceptedThisRun, seconds: Math.round(elapsed), secondsPerAcceptedExample: acceptedThisRun > 0 ? Number((elapsed / acceptedThisRun).toFixed(1)) : null },
+    lastRun: { resamples: resampleStats, judgeModelSaidFailKept: judgeStats.modelSaidFailKept, acceptedRecords: acceptedThisRun, seconds: Math.round(elapsed), secondsPerAcceptedExample: acceptedThisRun > 0 ? Number((elapsed / acceptedThisRun).toFixed(1)) : null },
     updatedAt: new Date().toISOString(),
   }, null, 2)}\n`);
 }
@@ -406,6 +545,7 @@ const final = emptyCounts();
 for (const row of [...readJsonl(files.train), ...readJsonl(files.holdout)]) if (TASKS.includes(row.task as Task)) final[row.task as Task] += 1;
 const elapsed = (Date.now() - startedAt) / 1000;
 console.log(`Done: ${total()} records (${TASKS.map((task) => `${task} ${final[task]}`).join(", ")}); ${[...rejectCounts.values()].reduce((a, b) => a + b, 0)} rejected this run.`);
+console.log(`Turns: ${resampleStats.turns}; rejected on the first try ${resampleStats.firstTryRejected}; rescued by a resample ${resampleStats.rescued}; turns skipped ${resampleStats.exhausted}; sessions ended early ${resampleStats.endedEarly}; aborted ${resampleStats.aborted}.`);
 if (acceptedThisRun > 0) console.log(`Average ${(elapsed / acceptedThisRun).toFixed(1)}s per accepted example this run.`);
 if (args.holdout && readJsonl(files.train).some((row) => row.story === args.holdout)) {
   console.error(`train.jsonl contains rows of the holdout story "${args.holdout}". Do not use this data.`);

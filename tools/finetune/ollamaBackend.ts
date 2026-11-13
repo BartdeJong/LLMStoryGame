@@ -49,8 +49,11 @@ export class OllamaBackend implements LLMBackend {
   consecutiveOutages = 0;
   // Every HTTP or connection failure so far, so a session can tell whether an outage touched it.
   totalOutages = 0;
+  // Judge answers in a row that could not be parsed. The CLI stops at MAX_CONSECUTIVE_OUTAGES.
+  consecutiveUnreadable = 0;
   private seedKey = "";
-  private callIndex = 0;
+  private callIndex = 0; // game calls of this session; seeds them
+  private sideIndex = 0; // chatJson calls (player messages, the judge); they never move callIndex
   private model = "";
   private readonly host: string;
   private readonly fetchImpl: typeof fetch;
@@ -73,14 +76,15 @@ export class OllamaBackend implements LLMBackend {
   beginSession(key: string): void {
     this.seedKey = key;
     this.callIndex = 0;
+    this.sideIndex = 0;
   }
 
   drainFailures(): OllamaError[] {
     return this.failures.splice(0, this.failures.length);
   }
 
-  async load(tag: string, onProgress: (progress: LoadProgress) => void = () => {}): Promise<LoadResult> {
-    const started = Date.now();
+  // Throws, listing the installed tags, when the model is not installed.
+  async checkModel(tag: string): Promise<void> {
     let response: Response;
     try {
       response = await this.fetchImpl(`${this.host}/api/tags`);
@@ -93,6 +97,11 @@ export class OllamaBackend implements LLMBackend {
     if (!names.includes(tag) && !names.includes(`${tag}:latest`)) {
       throw new Error(`Model "${tag}" is not installed in Ollama. Available tags: ${names.join(", ") || "(none)"}`);
     }
+  }
+
+  async load(tag: string, onProgress: (progress: LoadProgress) => void = () => {}): Promise<LoadResult> {
+    const started = Date.now();
+    await this.checkModel(tag);
     this.model = tag;
     onProgress({ progress: 1, text: `Using ${tag}`, timeMs: Date.now() - started });
     return { loadTimeMs: Date.now() - started, fromCache: true };
@@ -116,13 +125,32 @@ export class OllamaBackend implements LLMBackend {
     return { text, tokens, timeToFirstTokenMs: (body.prompt_eval_duration ?? 0) / 1e6, tokensPerSecond: tokens / decodeSeconds };
   }
 
-  // A free-form JSON request outside the game's pipeline (player messages). Returns the raw text.
-  async chatJson(messages: ChatMessage[], schema: Record<string, unknown>, options: { temperature?: number; maxTokens?: number } = {}): Promise<string> {
+  // A free-form JSON request outside the game's pipeline (player messages, the judge). Returns the raw text and is
+  // never recorded in `calls`. `exact` keeps the given temperature even when a --temperature override is set.
+  async chatJson(
+    messages: ChatMessage[],
+    schema: Record<string, unknown>,
+    options: { temperature?: number; maxTokens?: number; seed?: number; exact?: boolean; think?: boolean; model?: string } = {},
+  ): Promise<string> {
+    const temperature = options.exact ? options.temperature ?? 0 : this.options.temperature ?? options.temperature ?? 1;
     const body = await this.chat(messages, schema, {
-      temperature: this.options.temperature ?? options.temperature ?? 1,
+      temperature,
       num_predict: options.maxTokens ?? 600,
-    });
-    return body.message?.content ?? "";
+      ...(options.seed !== undefined ? { seed: options.seed } : {}),
+    }, undefined, { side: true, think: options.think === true, ...(options.model ? { model: options.model } : {}) });
+    // With thinking on, the reasoning comes in its own field; a model that inlines it gets the tags cut out.
+    // An unclosed <think> runs to the end of the text, so what follows it is not an answer.
+    return (body.message?.content ?? "").replace(/<think>[\s\S]*?<\/think>/g, "").replace(/<think>[\s\S]*$/, "").trim();
+  }
+
+  // An answer that came back but could not be used (an unreadable judge verdict) has its own count, separate
+  // from HTTP and connection failures. Only a parsed verdict (noteVerdict) resets it.
+  noteUnreadable(): void {
+    this.consecutiveUnreadable += 1;
+  }
+
+  noteVerdict(): void {
+    this.consecutiveUnreadable = 0;
   }
 
   async unload(): Promise<void> {}
@@ -132,10 +160,11 @@ export class OllamaBackend implements LLMBackend {
     format: Record<string, unknown> | undefined,
     options: Record<string, number>,
     signal?: AbortSignal,
+    extra: { side?: boolean; think?: boolean; model?: string } = {},
   ): Promise<ChatResponse> {
     if (!this.model) throw new Error("OllamaBackend.load() must be called before generating.");
     try {
-      const body = await this.request(messages, format, options, signal);
+      const body = await this.request(messages, format, options, signal, extra);
       this.consecutiveOutages = 0;
       return body;
     } catch (error) {
@@ -155,7 +184,9 @@ export class OllamaBackend implements LLMBackend {
     format: Record<string, unknown> | undefined,
     options: Record<string, number>,
     signal?: AbortSignal,
+    extra: { side?: boolean; think?: boolean; model?: string } = {},
   ): Promise<ChatResponse> {
+    const side = extra.side === true;
     // Conservative size check before sending (about 3 characters per token): prompt_eval_count can read low
     // when Ollama reuses a cached prefix, so it is not the only guard.
     const chars = messages.reduce((sum, message) => sum + message.content.length, 0);
@@ -163,19 +194,19 @@ export class OllamaBackend implements LLMBackend {
       throw new OllamaError("context", `context overflow: about ${Math.ceil(chars / 3)} prompt tokens plus ${options.num_predict ?? 0} to generate do not fit in ${NUM_CTX}`);
     }
     const timeout = AbortSignal.timeout(this.options.requestTimeoutMs ?? 300_000);
-    this.callIndex += 1;
+    const seedKey = side ? `${this.seedKey}:side:${++this.sideIndex}` : `${this.seedKey}:${++this.callIndex}`;
     let response: Response;
     try {
       response = await this.fetchImpl(`${this.host}/api/chat`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          model: this.model,
+          model: extra.model ?? this.model,
           messages,
           stream: false,
-          think: false,
+          think: extra.think === true,
           ...(format ? { format } : {}),
-          options: { ...options, num_ctx: NUM_CTX, seed: hashSeed(`${this.seedKey}:${this.callIndex}`) },
+          options: { num_ctx: NUM_CTX, seed: hashSeed(seedKey), ...options },
         }),
         signal: signal ? AbortSignal.any([signal, timeout]) : timeout,
       });

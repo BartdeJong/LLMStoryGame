@@ -166,6 +166,25 @@ export class ConversationController {
     return this.turns;
   }
 
+  // Remembers the conversation as it is now. The returned function puts it back, as if later turns never happened
+  // (offline tools use it to drop a rejected reply). Story state is the caller's to restore.
+  checkpoint(): () => void {
+    const turns = this.turns.length;
+    const discussed = [...this.discussed];
+    const handovers = [...this.pendingHandovers];
+    const { lastDeflection, hintTurn, challengeLocked } = this;
+    return () => {
+      this.cancelSpeculation();
+      this.turns.length = turns;
+      this.discussed.clear();
+      for (const id of discussed) this.discussed.add(id);
+      this.pendingHandovers = [...handovers];
+      this.lastDeflection = lastDeflection;
+      this.hintTurn = hintTurn;
+      this.challengeLocked = challengeLocked;
+    };
+  }
+
   // Ends the conversation: nothing speculative may keep running or start afterwards.
   close(): void {
     this.closed = true;
