@@ -310,10 +310,31 @@ export interface Subplot {
   truths: string[];
 }
 
+// Someone present after the ending. `endings` limits them to those endings (all endings when absent).
+export interface EpilogueCast {
+  id: string;
+  at: [number, number]; // tile in the epilogue location's area
+  greeting: string; // authored first line after the ending; the model rephrases it lightly
+  endings?: string[];
+}
+
+// After the ending the player walks around one area and talks with the people who belong in the ending.
+export interface Epilogue {
+  location: string;
+  description: string; // arrival caption
+  objective: string; // shown in the objective HUD
+  join_label: string; // the ending screen's button into the epilogue
+  door_message: string; // said when the player tries to leave
+  player_sprite?: SpriteSpec; // the player's look after the ending (Paddington wears his hat again)
+  deflections: string[]; // small talk when a character has nothing to add
+  cast: EpilogueCast[];
+}
+
 export interface LengthDefinition {
   target_minutes: number;
   start_location: string;
   opening?: StoryOpening;
+  epilogue?: Epilogue;
   cast: string[];
   core_truths: string[];
   side_truths: string[];

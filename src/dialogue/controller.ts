@@ -524,12 +524,18 @@ export class ConversationController {
     ].join(" ");
   }
 
+  // A character with no goal states and no goal hints wants nothing (the epilogue), so "What do you need?" is not offered.
+  private hasNeeds(): boolean {
+    const hints = this.character.goal_hints;
+    return this.character.goal_states.length > 0 || hints.unmet.length + hints.in_progress.length + hints.resolved.length > 0;
+  }
+
   private makeTurn(line: string, quality: DialogueTurn["quality"], effects: AppliedEffects, notice?: string): DialogueTurn {
     const available = availableKnowledge(this.pack, this.state, this.character);
     return {
       line,
       mode: "choices",
-      choices: buildQuickReplies(available, this.discussed, this.state, this.knownText()),
+      choices: buildQuickReplies(available, this.discussed, this.state, this.knownText(), this.hasNeeds()),
       gives: giveOptions(this.pack, this.state, this.character),
       effects,
       quality,

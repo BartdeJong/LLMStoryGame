@@ -26,6 +26,19 @@ record is flawed (many wrong final answers or failed challenges). Keep every
 plot fact of the normal ending; the case is still closed, but something is left
 unsettled or someone else has to put it right. Keep it cozy and never punishing.
 
+Give the length an `epilogue`: after the ending scene the player can walk one
+area and talk with the people who belong in the ending. Choose a `location`
+that fits how the story ends (a party for everyone, a quiet room where the
+case is talked over) and list in `cast` only the people who would be there,
+never a culprit who was taken away. Each entry has the tile `at` [x, y] where
+they stand (walkable floor in that location's baked map, not on an object,
+decor, door or the start tile), an authored `greeting` in their voice that
+reflects the resolution, and optional `endings` to limit them to some endings.
+Add a short arrival `description`, an `objective`, a `join_label` for the
+ending screen button, a `door_message` for when the player tries to leave, 2-3
+generic small-talk `deflections`, and an optional `player_sprite` when the
+ending changes how the player looks.
+
 Approved bible:
 <paste the complete approved bible here>
 

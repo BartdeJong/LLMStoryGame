@@ -1,6 +1,6 @@
 import type { LLMClient } from "../llm/client";
 import type { Area, AreaEntity, GridPoint } from "../world/types";
-import { buildPackArea, doorSpawn, type StoryAreaBrief } from "./packArea";
+import { buildPackArea, doorSpawn, type BriefCharacter, type StoryAreaBrief } from "./packArea";
 import type { LengthView } from "./loader";
 import { findDoorLock, isRequirementMet, missingRequirementNames } from "./requirements";
 import { endingChoiceLabel, writeEnding } from "./ending";
@@ -12,7 +12,8 @@ import { refreshSummary } from "./summary";
 import { statementForClue } from "./statements";
 import { caseResult, endingVariant } from "./caseRecord";
 import { layoutStoryWorld, type LocationCell, type StoryWorldLayout } from "./worldLayout";
-import type { Beat, CastMember, Ending, Item, StoryPack } from "./types";
+import type { Beat, CastMember, Ending, Epilogue, EpilogueCast, Item, StoryPack } from "./types";
+import { recipeFromSprite } from "./recipes";
 import type { GameSave } from "../save/types";
 
 export interface CollectResult {
@@ -61,9 +62,40 @@ export class StorySession {
       .map((entity) => entity.name);
   }
 
+  get epilogue(): Epilogue | undefined {
+    return this.view.definition.epilogue;
+  }
+
+  // True once the ending has played in a story with an epilogue: the player then walks one area and talks freely.
+  get inEpilogue(): boolean {
+    return this.state.endingReached !== undefined && this.epilogue !== undefined;
+  }
+
+  // The people present after the ending that played.
+  epilogueCast(): EpilogueCast[] {
+    const endingId = this.state.endingReached?.endingId;
+    return (this.epilogue?.cast ?? []).filter((entry) => !entry.endings || (endingId !== undefined && entry.endings.includes(endingId)));
+  }
+
+  // Records the ending. With an epilogue, builds its area and returns it with the player's starting tile.
+  enterEpilogue(ending: EndingScene): StoryTransition | null {
+    this.state.endingReached = ending;
+    const epilogue = this.epilogue;
+    if (!epilogue) return null;
+    const area = this.buildArea(epilogue.location);
+    markVisited(this.state, area.id);
+    return { area, spawn: area.entry };
+  }
+
+  // Questions of the final case, for the recap. Unlike getSummation it does not depend on where the player is.
+  getRecapSummation(): SummationQuestion[] {
+    return pickSummation(this.view.endings.filter((ending) => this.endingFactsMet(ending))) ?? [];
+  }
+
   // True for the places that belong to the lead the player is following right now and still hold
   // evidence or facts (clues and what the characters there can tell) that the player has not found.
   isLeadLocation(locationId: string): boolean {
+    if (this.inEpilogue) return false;
     if (!this.currentBeat.locations.includes(locationId)) return false;
     const area = this.areas.get(locationId);
     if (!area || !this.state.visitedAreas.includes(locationId)) return true;
@@ -126,6 +158,7 @@ export class StorySession {
   }
 
   getEndingChoices(locationId: string): EndingChoice[] {
+    if (this.inEpilogue) return [];
     if (!this.isFinaleLocation(locationId) || !this.state.visitedAreas.includes(locationId)) return [];
     const eligible = this.view.endings.filter((ending) => this.endingFactsMet(ending));
     const options = new Map<string, EndingChoice>();
@@ -173,6 +206,7 @@ export class StorySession {
   }
 
   getAvailableCharacterClues(characterId: string): { id: string; text: string }[] {
+    if (this.inEpilogue) return [];
     if (!this.view.definition.cast.includes(characterId)) return [];
     return this.pack.clues
       .filter((clue) => {
@@ -236,7 +270,26 @@ export class StorySession {
   // The pack core for a character entity, or undefined for a non-cast entity (no core, no dialogue).
   getCharacter(entity: AreaEntity): CastMember | undefined {
     if (entity.kind !== "character" || !entity.packId) return undefined;
-    return this.pack.cast.find((member) => member.id === entity.packId);
+    const member = this.pack.cast.find((candidate) => candidate.id === entity.packId);
+    return member && this.inEpilogue ? this.epilogueCharacter(member) : member;
+  }
+
+  // After the ending there is nothing left to find: no knowledge, statements, needs or secrets, only the
+  // character's voice, the authored epilogue greeting and the epilogue's small talk.
+  private epilogueCharacter(member: CastMember): CastMember {
+    const entry = this.epilogueCast().find((candidate) => candidate.id === member.id);
+    return {
+      ...member,
+      goal: "Talk about how everything turned out.",
+      secret: "",
+      greetings: entry ? [entry.greeting] : member.greetings,
+      knowledge: [],
+      statements: [],
+      reactions: [],
+      goal_states: [],
+      goal_hints: { unmet: [], in_progress: [], resolved: [] },
+      deflections: this.epilogue?.deflections.length ? this.epilogue.deflections : member.deflections,
+    };
   }
 
   // Picking up a key item. Safe to call again on the same entity: a second pickup never duplicates the item.
@@ -258,6 +311,7 @@ export class StorySession {
   }
 
   isDoorLocked(areaId: string, doorId: string): boolean {
+    if (this.inEpilogue) return true;
     const door = this.getArea(areaId).doors.find((candidate) => candidate.id === doorId);
     if (!door?.targetAreaId) return false;
     return !this.isLocationOpen(door.targetAreaId)
@@ -268,6 +322,7 @@ export class StorySession {
   describeDoorLock(areaId: string, doorId: string): string | null {
     const door = this.getArea(areaId).doors.find((candidate) => candidate.id === doorId);
     if (!door?.targetAreaId) return null;
+    if (this.inEpilogue) return this.epilogue?.door_message ?? "The story has ended.";
     if (!this.isLocationOpen(door.targetAreaId)) {
       return "This path will open once the current part of the story has settled. Keep exploring nearby for another clue or a neighbor who could use a hand.";
     }
@@ -281,6 +336,7 @@ export class StorySession {
   describeDoorLockBriefly(areaId: string, doorId: string): string | null {
     const door = this.getArea(areaId).doors.find((candidate) => candidate.id === doorId);
     if (!door?.targetAreaId) return null;
+    if (this.inEpilogue) return "The story has ended";
     if (!this.isLocationOpen(door.targetAreaId)) return "Opens later in the story";
     const lock = findDoorLock(this.pack, areaId, door.targetAreaId);
     if (isRequirementMet(lock, this.state)) return null;
@@ -304,13 +360,43 @@ export class StorySession {
   // Builds the area from the pack and leaves out the things the player has already picked up.
   private buildArea(locationId: string): Area {
     const { area: built, brief } = buildPackArea(this.pack, this.view, locationId);
-    const area: Area = {
+    let area: Area = {
       ...built,
       entities: built.entities?.filter((entity) => !this.state.collectedEntities.includes(entity.id)),
     };
+    let areaBrief = brief;
+    if (this.inEpilogue && locationId === this.epilogue?.location) ({ area, brief: areaBrief } = this.epilogueArea(area, brief));
     this.areas.set(locationId, area);
-    this.briefsByArea.set(locationId, brief);
+    this.briefsByArea.set(locationId, areaBrief);
     return area;
+  }
+
+  // The epilogue location with its usual people and items replaced by the people of the ending.
+  private epilogueArea(area: Area, brief: StoryAreaBrief): { area: Area; brief: StoryAreaBrief } {
+    const present = this.epilogueCast().flatMap((entry) => {
+      const member = this.pack.cast.find((candidate) => candidate.id === entry.id);
+      return member ? [{ entry, member }] : [];
+    });
+    const characters: BriefCharacter[] = present.map(({ member }) => ({
+      castId: member.id,
+      name: member.name,
+      species: member.species,
+      personality: member.personality,
+      goal: member.goal,
+      secret: "",
+      recipe: recipeFromSprite(member.sprite, member.id),
+      sprite: member.sprite,
+      required: true,
+    }));
+    const people: AreaEntity[] = present.map(({ entry, member }, index) => ({
+      id: `char:${member.id}`, kind: "character", x: entry.at[0], y: entry.at[1], required: true, packId: member.id,
+      name: member.name, description: member.personality, character: characters[index]!.recipe, sprite: member.sprite,
+    }));
+    const entities = [...(area.entities ?? []).filter((entity) => entity.kind === "object"), ...people];
+    return {
+      area: { ...area, entities, spawnPoints: entities.map(({ id, kind, x, y }) => ({ id, kind, x, y })) },
+      brief: { ...brief, description: this.epilogue?.description ?? brief.description, characters },
+    };
   }
 
   private onEntered(area: Area): void {

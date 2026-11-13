@@ -33,7 +33,11 @@ export interface DialogueContext {
   getInventory?: () => InventoryEntry[];
   // Set when the player has talked to this character before. Topic names only, never earlier replies.
   returnVisit?: { topics: string[] };
+  // Set after the ending: the mystery is solved and the story summary tells how it ended.
+  afterEnding?: boolean;
 }
+
+export const AFTER_ENDING_LINE = "The story has ended and the mystery is solved: the story so far tells how it ended. Nothing is secret any more. Talk freely and in character about how it all turned out and how you feel now. Do not start a new mystery.";
 
 export interface DialoguePromptInput {
   character: CastMember;
@@ -99,6 +103,7 @@ export function buildDialoguePrompt(input: DialoguePromptInput): string {
     "Answer the player's latest message first, in 1 to 3 short sentences of spoken words. Never narrate, describe the scene, or speak for the player. Do not repeat an earlier line of yours.",
     ...characterBlock(character),
     `Place: ${context.locationName} (${context.locationMood}). Story so far: ${context.storySummary || "It has just begun."}`,
+    ...(context.afterEnding ? [AFTER_ENDING_LINE] : []),
     ...(context.knownFacts?.length ? [`Story facts the player already found that you know: ${JSON.stringify(context.knownFacts.map((fact) => fact.text))}`] : []),
     `Player's inventory: ${JSON.stringify((context.getInventory?.() ?? context.inventory).map((item) => item.name))}`,
     THINGS_START,
@@ -143,6 +148,7 @@ function buildCompactDialoguePrompt(input: DialoguePromptInput): string {
     "The game supports talking and item handovers only. Do not propose physical actions. Only claim a handover explicitly listed as Just happened.",
     ...characterBlock(character, false),
     `Place: ${context.locationName} (${context.locationMood}). Story so far: ${context.storySummary || "It has just begun."}`,
+    ...(context.afterEnding ? [AFTER_ENDING_LINE] : []),
     ...(context.knownFacts?.length ? [`Known story facts: ${JSON.stringify(context.knownFacts.map((fact) => fact.text))}`] : []),
     `Player's inventory: ${JSON.stringify((context.getInventory?.() ?? context.inventory).map((item) => item.name))}`,
     THINGS_START,

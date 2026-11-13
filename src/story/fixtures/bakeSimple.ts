@@ -38,5 +38,9 @@ export function bakeSimple(source: unknown): unknown {
     };
     location.area = area;
   }
+  // Epilogue people stand in a row on the room's fifth row, clear of the things above and the start tile below.
+  for (const id of LENGTH_IDS) {
+    pack.lengths[id]?.epilogue?.cast.forEach((entry, index) => { entry.at = [1 + index, 5]; });
+  }
   return pack;
 }

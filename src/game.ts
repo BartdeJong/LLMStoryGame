@@ -43,9 +43,10 @@ import {
 } from "./story/deduction";
 import { createWorldMap, type WorldMap } from "./ui/worldMap";
 import { getMovementSpeed, getPrepareRepliesInAdvance } from "./ui/preferences";
-import type { EndingChoice } from "./story/ending";
+import type { EndingChoice, EndingScene } from "./story/ending";
 import type { StorySession } from "./story/storySession";
-import type { CastMember, SubjectRef } from "./story/types";
+import type { Beat, CastMember, SubjectRef } from "./story/types";
+import type { SpriteSpec } from "./art/spriteSpec";
 import type { SaveRepository } from "./save/repository";
 import { SAVE_FORMAT_VERSION } from "./save/types";
 import type { GameSave, PlayerSave } from "./save/types";
@@ -354,6 +355,13 @@ export class Game {
         this.stop();
         this.onBackToTitle();
       },
+      onShowEnding: this.story.inEpilogue && this.story.state.endingReached ? () => {
+        const ending = this.story.state.endingReached;
+        if (!ending) return;
+        void this.saveProgress();
+        this.leaveWorldForEnding();
+        this.showEndingScreen(ending);
+      } : undefined,
       onImport: (save) => {
         this.stop();
         const status = document.createElement("section");
@@ -428,7 +436,22 @@ export class Game {
   }
 
   private saveProgress(): Promise<boolean> {
-    const save: GameSave = {
+    const save = this.buildSave();
+    let succeeded = false;
+    this.setSaveStatus("saving", "Saving…");
+    const write = (): Promise<void> => this.persistence.repository.save(save).then(() => {
+      succeeded = true;
+      this.setSaveStatus("saved", "Saved just now");
+    });
+    this.saveQueue = this.saveQueue.then(write, write).catch((error: unknown) => {
+      this.setSaveStatus("failed", "Save failed");
+      this.message.textContent = `Could not save your game: ${error instanceof Error ? error.message : String(error)}`;
+    });
+    return this.saveQueue.then(() => succeeded);
+  }
+
+  private buildSave(): GameSave {
+    return {
       formatVersion: SAVE_FORMAT_VERSION,
       slotId: this.persistence.slotId,
       metadata: {
@@ -445,17 +468,12 @@ export class Game {
       areaIds: this.story.getAreaIds(),
       player: { areaId: this.areaId, x: this.player.x, y: this.player.y },
     };
-    let succeeded = false;
-    this.setSaveStatus("saving", "Saving…");
-    const write = (): Promise<void> => this.persistence.repository.save(save).then(() => {
-      succeeded = true;
-      this.setSaveStatus("saved", "Saved just now");
-    });
-    this.saveQueue = this.saveQueue.then(write, write).catch((error: unknown) => {
-      this.setSaveStatus("failed", "Save failed");
-      this.message.textContent = `Could not save your game: ${error instanceof Error ? error.message : String(error)}`;
-    });
-    return this.saveQueue.then(() => succeeded);
+  }
+
+  // The player's look: after the ending an epilogue may change it (Paddington has his hat back).
+  private get playerSprite(): SpriteSpec | undefined {
+    const epilogueSprite = this.story.inEpilogue ? this.story.epilogue?.player_sprite : undefined;
+    return epilogueSprite ?? this.story.pack.identity.player?.sprite;
   }
 
   private saveStatusTimer = 0;
@@ -562,7 +580,7 @@ export class Game {
         checkedEntityIds: this.checkedClueEntityIds(world),
         animateCharacters: !reducedMotion && !this.paused && !this.transitioning && !this.inDialogue && !this.worldMap.isOpen,
         doorSigns: this.doorSigns(world),
-        playerSprite: this.story.pack.identity.player?.sprite,
+        playerSprite: this.playerSprite,
       },
     );
     this.animationFrame = requestAnimationFrame(this.frame);
@@ -739,6 +757,7 @@ export class Game {
 
   private talkMarkerIds(area: Area): Set<string> {
     const markers = new Set<string>();
+    if (this.story.inEpilogue) return markers;
     for (const entity of area.entities ?? []) {
       if (entity.kind !== "character" || !entity.packId) continue;
       const character = this.story.pack.cast.find((candidate) => candidate.id === entity.packId);
@@ -1161,6 +1180,18 @@ export class Game {
 
   private refreshObjective(): void {
     const progress = caseProgress(this.story.view, this.story.state);
+    const epilogue = this.story.inEpilogue ? this.story.epilogue : undefined;
+    if (epilogue) {
+      const beat: Beat = {
+        id: "epilogue",
+        title: this.story.state.endingReached?.endingTitle ?? "Epilogue",
+        objective: epilogue.objective,
+        locations: [epilogue.location],
+        must_find: {},
+      };
+      this.objectiveHud.update(beat, false, { ...progress, leadNumber: this.story.view.beats.length, leadTotal: this.story.view.beats.length });
+      return;
+    }
     this.objectiveHud.update(this.story.currentBeat, this.story.currentBeatWaitsOnDeduction(), {
       ...progress,
       leadNumber: this.story.view.beats.indexOf(this.story.currentBeat) + 1,
@@ -1250,7 +1281,7 @@ export class Game {
       greetings: this.greetings,
     });
     const player = this.story.pack.identity.player;
-    this.dialogueBox.open(name, this.dialogueHandlers(), { character: character.sprite, player: player?.sprite, playerName: player?.name });
+    this.dialogueBox.open(name, this.dialogueHandlers(), { character: character.sprite, player: this.playerSprite, playerName: player?.name });
     this.dialogueBox.setBusy(true);
     await this.runDialogueTurn(this.conversation.start());
   }
@@ -1275,12 +1306,15 @@ export class Game {
   private buildDialogueContext(character: CastMember): DialogueContext {
     const brief = this.story.getBrief(this.areaId);
     const area = this.story.getArea(this.areaId);
+    const ending = this.story.inEpilogue ? this.story.state.endingReached : undefined;
     return {
       locationName: brief?.name ?? area.name,
       locationMood: brief?.mood ?? area.mood,
       returnVisit: returnVisitFor(this.story.pack, this.story.state, character),
-      storySummary: this.story.state.summary,
-      knownFacts: character.knows_truths
+      storySummary: ending ? `${ending.scene} ${ending.epilogue}` : this.story.state.summary,
+      ...(ending ? { afterEnding: true } : {}),
+      // After the ending every confirmed truth is common knowledge.
+      knownFacts: (ending ? this.story.state.truthsFound : character.knows_truths)
         .filter((truthId) => this.story.state.truthsFound.includes(truthId))
         .flatMap((truthId) => {
           const truth = this.story.pack.truths.find((entry) => entry.id === truthId);
@@ -1367,6 +1401,13 @@ export class Game {
       onAsk: (subject: SubjectRef) => {
         if (!this.conversation) return;
         const label = subjectLabel(this.story.pack, subject) ?? subject.id;
+        if (this.story.inEpilogue) {
+          // Nothing is left to uncover, so the character simply chats about it.
+          const text = `What do you think about ${label} now?`;
+          this.dialogueBox.showPlayerReply(text);
+          void this.runDialogueTurn(this.conversation.reply(text));
+          return;
+        }
         this.dialogueBox.showPlayerReply(`What can you tell me about ${label}?`);
         void this.runDialogueTurn(this.conversation.askAbout(subject));
       },
@@ -1477,39 +1518,23 @@ export class Game {
       }
       return false;
     }
-    this.ending = true;
-    this.running = false;
-    this.stopAutosave();
-    this.conversation?.close();
-    this.dialogueBox.close();
-    this.conversation = null;
-    this.greetings.cancelAll();
+    this.leaveWorldForEnding();
     const leaveEnding = (): void => {
       this.stop();
       this.onBackToTitle();
     };
-    const summationQuestions = this.story.getSummation(this.areaId);
     const finish = async (choiceIds: string[]): Promise<void> => {
       const ending = await this.story.finishEnding(choiceIds, this.areaId);
+      // With an epilogue the save now puts the player in its area, so loading it later returns there.
+      const epilogue = this.story.enterEpilogue(ending);
+      if (epilogue) {
+        this.areaId = epilogue.area.id;
+        this.player.x = epilogue.spawn.x * TILE_SIZE + TILE_SIZE / 2;
+        this.player.y = epilogue.spawn.y * TILE_SIZE + TILE_SIZE / 2;
+      }
       await this.saveProgress();
       soundEffects.play("ending");
-      mountEndingScreen(
-        this.appRoot,
-        this.story.pack.identity.title,
-        ending,
-        () => {
-          this.stop();
-          this.onNewStory();
-        },
-        () => {
-          this.stop();
-          this.onBackToTitle();
-        },
-        {
-          ...buildRecap(this.story.pack, this.story.view, this.story.state, summationQuestions ?? []),
-          timePlayedMs: this.persistence.timePlayedMs + Math.max(0, Date.now() - this.startedAt),
-        },
-      );
+      this.showEndingScreen(ending);
     };
     if (choices.some((choice) => choice.choices.length > 0)) {
       mountEndingChoiceScreen(this.appRoot, this.story.pack.identity.title, choices, finish, leaveEnding);
@@ -1526,6 +1551,52 @@ export class Game {
       }
     }
     return true;
+  }
+
+  // Stops play in the world while an ending screen is shown. The screen's buttons then stop the game for good.
+  private leaveWorldForEnding(): void {
+    this.ending = true;
+    this.running = false;
+    this.stopAutosave();
+    this.conversation?.close();
+    this.dialogueBox.close();
+    this.conversation = null;
+    this.greetings.cancelAll();
+    this.pauseOverlay?.remove();
+    this.pauseOverlay = null;
+    this.paused = false;
+    soundEffects.setAmbience(null);
+    soundEffects.setDucked(false);
+  }
+
+  private showEndingScreen(ending: EndingScene): void {
+    const epilogue = this.story.inEpilogue ? this.story.epilogue : undefined;
+    mountEndingScreen(
+      this.appRoot,
+      this.story.pack.identity.title,
+      ending,
+      () => {
+        this.stop();
+        this.onNewStory();
+      },
+      () => {
+        this.stop();
+        this.onBackToTitle();
+      },
+      {
+        ...buildRecap(this.story.pack, this.story.view, this.story.state, this.story.getRecapSummation()),
+        timePlayedMs: this.persistence.timePlayedMs + Math.max(0, Date.now() - this.startedAt),
+      },
+      epilogue ? {
+        label: epilogue.join_label,
+        onJoin: async () => {
+          // The epilogue is played as a loaded save, so it runs the same way now and after a reload.
+          const save = this.buildSave();
+          this.stop();
+          await this.onLoadSave(save);
+        },
+      } : undefined,
+    );
   }
 
   private collides(centerX: number, centerY: number): boolean {

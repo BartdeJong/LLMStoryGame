@@ -292,6 +292,13 @@ export function validateStoryPack(data: unknown): ValidationReport {
       refs("location", b.locations, `${p}.beats[${i}].locations`, `beat "${b.id}"`);
       refReq(b.must_find, `${p}.beats[${i}].must_find`, `beat "${b.id}"`);
     });
+    if (len.epilogue) {
+      ref("location", len.epilogue.location, `${p}.epilogue.location`, `${owner} epilogue`);
+      len.epilogue.cast.forEach((entry, i) => {
+        ref("cast", entry.id, `${p}.epilogue.cast[${i}].id`, `${owner} epilogue`);
+        refs("ending", entry.endings ?? [], `${p}.epilogue.cast[${i}].endings`, `${owner} epilogue`);
+      });
+    }
   }
 
   checkTextLimits(pack, "", "", error);
@@ -341,6 +348,7 @@ export function validateStoryPack(data: unknown): ValidationReport {
       if (!beat.guidance) warn("BEAT_GUIDANCE_MISSING", `lengths.${lengthId}.beats[${index}].guidance`, `Add a concrete next step for beat "${beat.title}".`);
     });
     checkLength(pack, lengthId, definition, error, warn);
+    checkEpilogue(pack, lengthId, definition, error, warn);
   }
 
   // ---- warnings ----
@@ -688,6 +696,78 @@ function checkLocationArea({ pack, error, warn }: AreaCheckContext, l: Location,
       }
     }
   }
+}
+
+// The epilogue area is the location's baked area with the ending's people standing where the epilogue says.
+function checkEpilogue(pack: StoryPack, lengthId: LengthId, definition: LengthDefinition, error: Report, warn: Report): void {
+  const epilogue = definition.epilogue;
+  if (!epilogue) {
+    warn("EPILOGUE_MISSING", `lengths.${lengthId}.epilogue`, "Add an epilogue so the player can talk with everyone after the ending.");
+    return;
+  }
+  const path = `lengths.${lengthId}.epilogue`;
+  if (epilogue.player_sprite) {
+    for (const problem of validateSpriteSpec(epilogue.player_sprite, `${path}.player_sprite`)) error("EPILOGUE_PLAYER_SPRITE", `${path}.player_sprite`, problem);
+  }
+  const inLength = new Set(orderedLocations(definition));
+  if (!inLength.has(epilogue.location)) error("EPILOGUE_LOCATION_NOT_IN_LENGTH", `${path}.location`, `"${epilogue.location}" is not a location of the ${lengthId} length.`);
+  const lengthEndings = new Set(definition.endings);
+  const seen = new Set<string>();
+  epilogue.cast.forEach((entry, i) => {
+    const at = `${path}.cast[${i}]`;
+    if (!definition.cast.includes(entry.id)) error("EPILOGUE_CAST_NOT_IN_LENGTH", `${at}.id`, `"${entry.id}" is not in the ${lengthId} length's cast.`);
+    if (seen.has(entry.id)) error("EPILOGUE_CAST_DUPLICATE", `${at}.id`, `"${entry.id}" is listed twice.`);
+    seen.add(entry.id);
+    for (const endingId of entry.endings ?? []) {
+      if (!lengthEndings.has(endingId)) error("EPILOGUE_ENDING_NOT_IN_LENGTH", `${at}.endings`, `"${endingId}" is not an ending of the ${lengthId} length.`);
+    }
+  });
+  for (const endingId of definition.endings) {
+    if (!epilogue.cast.some((entry) => !entry.endings || entry.endings.includes(endingId))) {
+      error("EPILOGUE_EMPTY_FOR_ENDING", `${path}.cast`, `nobody is present after ending "${endingId}".`);
+    }
+  }
+  const location = pack.locations.find((l) => l.id === epilogue.location);
+  const parsed = location?.area ? tryParseMap(location.area.map) : undefined;
+  if (!location?.area || !parsed) return;
+  const a = location.area;
+  const layers = { ground: parsed.layers.ground.map((row) => [...row]), feature: parsed.layers.feature.map((row) => [...row]) };
+  const active: GridPoint[] = [];
+  for (const [number, point] of [...parsed.doorSlots].sort((x, y) => x[0] - y[0])) {
+    const target = a.doors[number - 1];
+    if (target && inLength.has(target.to)) active.push(point);
+    else layers.feature[point.y]![point.x] = Tile.Wall;
+  }
+  const area: Area = {
+    id: location.id, seed: location.id, name: location.name, biome: a.biome, mood: location.mood, palette: a.palette,
+    width: parsed.width, height: parsed.height, layers, entry: parsed.start ?? { x: 0, y: 0 }, spawnPoints: [], doors: [], decor: a.decor,
+  };
+  const origin = parsed.start ?? active[0];
+  const reachable = origin ? reachableTiles(area, origin) : new Set<string>();
+  // The location's usual people are not there in the epilogue, so only objects and items block a spot.
+  const blocked = new Set<string>([
+    ...Object.entries(a.placements).filter(([id]) => !id.startsWith("char:") && !(location.required_characters ?? []).includes(id))
+      .map(([, [x, y]]) => key(x!, y!)),
+    ...a.decor.map((d) => key(d.x, d.y)),
+  ]);
+  const taken = new Map<string, string>();
+  epilogue.cast.forEach((entry, i) => {
+    const at = `${path}.cast[${i}].at`;
+    const [x, y] = entry.at;
+    if (x < 0 || y < 0 || x >= parsed.width || y >= parsed.height) {
+      error("EPILOGUE_PLACEMENT_OUT_OF_BOUNDS", at, `"${entry.id}" is placed at ${x},${y}, outside the ${parsed.width}x${parsed.height} map.`);
+      return;
+    }
+    if (!isWalkable(area, x, y) || parsed.layers.feature[y]?.[x] === Tile.Door) {
+      error("EPILOGUE_PLACEMENT_BLOCKED", at, `"${entry.id}" is placed at ${x},${y}, which is not walkable floor.`);
+    }
+    if (blocked.has(key(x, y))) error("EPILOGUE_PLACEMENT_OVERLAP", at, `"${entry.id}" at ${x},${y} stands on an object or decor.`);
+    const other = taken.get(key(x, y));
+    if (other) error("EPILOGUE_PLACEMENT_OVERLAP", at, `"${entry.id}" and "${other}" are both placed at ${x},${y}.`);
+    taken.set(key(x, y), entry.id);
+    if (parsed.start && parsed.start.x === x && parsed.start.y === y) error("EPILOGUE_PLACEMENT_ON_START", at, `"${entry.id}" stands on the player's start tile.`);
+    if (origin && !reachable.has(key(x, y))) error("EPILOGUE_UNREACHABLE", at, `"${entry.id}" at ${x},${y} cannot be reached.`);
+  });
 }
 
 function checkTextLimits(value: unknown, path: string, key: string, error: Report): void {

@@ -393,6 +393,40 @@
     "short": {
       "target_minutes": 15,
       "start_location": "l_square",
+      "epilogue": {
+        "location": "l_square",
+        "description": "Lantern light spills across the square. The whole village has come out for the festival.",
+        "objective": "Enjoy the festival and talk with the villagers.",
+        "join_label": "Stay for the festival",
+        "door_message": "The festival is here in the square tonight.",
+        "deflections": [
+          "What a lovely night for a festival.",
+          "Doesn't the Moon Lantern look bright?",
+          "I'm just glad it all worked out."
+        ],
+        "cast": [
+          {
+            "id": "c_hollis",
+            "at": [17, 6],
+            "greeting": "There she is, the Moon Lantern, mended and shining. Thank you for being kind about my mistake."
+          },
+          {
+            "id": "c_mira",
+            "at": [13, 9],
+            "greeting": "Have a bun, love! The festival is going ahead after all. Look at that lantern glow!"
+          },
+          {
+            "id": "c_pip",
+            "at": [23, 9],
+            "greeting": "Chief Detective Pip, at your service. You helped a little too, I suppose."
+          },
+          {
+            "id": "c_oswin",
+            "at": [18, 12],
+            "greeting": "Hoo. Every key is back where it belongs, and the festival may begin in proper order."
+          }
+        ]
+      },
       "opening": {
         "context": "The village's Moon Lantern vanished the night before the festival. You have until the festival begins to discover who took it, and why."
       },

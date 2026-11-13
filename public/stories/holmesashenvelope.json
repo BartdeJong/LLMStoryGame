@@ -3927,6 +3927,63 @@
     "long": {
       "target_minutes": 65,
       "start_location": "l_baker_street",
+      "epilogue": {
+        "location": "l_baker_street",
+        "description": "Rain taps on the windows of 221B. The fire is lit, and the people who saw the case through have gathered.",
+        "objective": "The case is closed. Talk with everyone about how it ended.",
+        "join_label": "Return to Baker Street",
+        "door_message": "The case is closed. There is nowhere else you need to be tonight.",
+        "deflections": [
+          "A quiet evening after a hard case is no small thing.",
+          "The fire is warm, and the case is closed.",
+          "The rest is for the court now."
+        ],
+        "cast": [
+          {
+            "id": "c_holmes",
+            "at": [4, 8],
+            "greeting": "The facts are in their proper order at last. Sit, if you like. The case is closed."
+          },
+          {
+            "id": "c_watson",
+            "at": [19, 7],
+            "greeting": "Ah, there you are. I have begun writing up the case. Holmes says I make it too romantic."
+          },
+          {
+            "id": "c_hudson",
+            "at": [8, 5],
+            "greeting": "Tea, dear? You have earned it. And Ada's letter is back in her own hands, where it belongs."
+          },
+          {
+            "id": "c_lestrade",
+            "at": [15, 9],
+            "greeting": "Vale is in custody, and the evidence will stand in court. I was too quick to trust his timetable."
+          },
+          {
+            "id": "c_ada",
+            "at": [12, 10],
+            "greeting": "Elias would have thanked you himself. People will remember him as an honest man now."
+          },
+          {
+            "id": "c_silas",
+            "at": [17, 11],
+            "greeting": "My name is clear, thanks to you. That oily rag nearly hanged me.",
+            "endings": ["e_public_trial"]
+          },
+          {
+            "id": "c_shaw",
+            "at": [14, 11],
+            "greeting": "The committee will support the ward lawfully now. My patients will not pay for Vale's crime.",
+            "endings": ["e_ward_inquest"]
+          },
+          {
+            "id": "c_pembroke",
+            "at": [20, 11],
+            "greeting": "Wren's ledger is safe and will speak for him in court. Quietly, as it should.",
+            "endings": ["e_tempered_truth"]
+          }
+        ]
+      },
       "opening": {
         "context": "Elias Wren, a Relief Fund clerk, has been found dead beside the Thames. Holmes suspects a staged scene and a missing account, while Wren's sister fears a public accusation. Help the inquiry follow the evidence from Baker Street to the committee room."
       },

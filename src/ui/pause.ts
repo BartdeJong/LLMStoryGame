@@ -28,6 +28,7 @@ export interface PauseMenuActions {
   onChangeAISettings?(): Promise<void>;
   onTitle(): void;
   onImport(save: GameSave): void;
+  onShowEnding?(): void; // after the ending: show the ending and recap again
 }
 
 export function mountPauseMenu(
@@ -121,7 +122,9 @@ export function mountPauseMenu(
   const controls = document.createElement("p");
   controls.className = "llm-screen-note pause-controls";
   controls.textContent = "Move: WASD or arrows. Interact: E or Space. Map: M. Journal: J. Inventory: I. Pause: Escape. On touch screens, tap a person, clue, item, or doorway to walk there, or drag on the left to steer.";
-  panel.append(title, resume, save);
+  panel.append(title, resume);
+  if (actions.onShowEnding) panel.append(button("See the ending again", actions.onShowEnding));
+  panel.append(save);
   if (changeAISettings) panel.append(changeAISettings);
   panel.append(exportSave, importSave, file, titleButton, preferences, controls, status);
   overlay.append(panel);

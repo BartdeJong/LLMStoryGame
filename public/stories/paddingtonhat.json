@@ -1062,6 +1062,90 @@
     "medium": {
       "target_minutes": 40,
       "start_location": "l_bedroom",
+      "epilogue": {
+        "location": "l_bandstand",
+        "description": "The party is in full swing! Balloons bob in the sun, and everyone has come to say happy birthday.",
+        "objective": "Enjoy your party! Talk to everyone and say thank you.",
+        "join_label": "Join the party",
+        "door_message": "The party is here! Paddington does not want to leave his own birthday party.",
+        "player_sprite": {
+          "species": "bear",
+          "height": "short",
+          "girth": "stout",
+          "skin": "#7b4a2a",
+          "accent": "#c99a66",
+          "outfit": {
+            "style": "duffle-coat",
+            "color": "#2d57a6",
+            "trim": "#a8743c",
+            "legs": "#7b4a2a"
+          },
+          "headwear": {
+            "style": "bush-hat",
+            "color": "#5b4127",
+            "trim": "#d0302a"
+          },
+          "accessories": [
+            {
+              "kind": "suitcase",
+              "color": "#8a5a32"
+            }
+          ]
+        },
+        "deflections": [
+          "What a lovely party this is!",
+          "Have some more marmalade cake, Paddington!",
+          "It is a wonderful day, is it not?"
+        ],
+        "cast": [
+          {
+            "id": "c_judy",
+            "at": [15, 6],
+            "greeting": "Happy birthday, Paddington! Sorry I took your hat. Do you like the new red ribbon?"
+          },
+          {
+            "id": "c_jonathan",
+            "at": [21, 6],
+            "greeting": "Happy birthday, Paddington! Twenty balloons, and I only popped two!"
+          },
+          {
+            "id": "c_mrs_brown",
+            "at": [10, 9],
+            "greeting": "Happy birthday, dear! Your hat looks lovely. Aunt Lucy would be so proud of you."
+          },
+          {
+            "id": "c_mr_brown",
+            "at": [10, 11],
+            "greeting": "Happy birthday, old chap! What do you think of my banner? The paint is dry now."
+          },
+          {
+            "id": "c_mr_gruber",
+            "at": [26, 9],
+            "greeting": "Happy birthday, my friend. Your hat is as good as new. The ribbon suits you."
+          },
+          {
+            "id": "c_barnaby",
+            "at": [26, 11],
+            "greeting": "Happy birthday, young bear! My oranges made a fine cake, did they not?"
+          },
+          {
+            "id": "c_mrs_bird",
+            "at": [4, 17],
+            "greeting": "Happy birthday, young bear. Yes, all the marmalade went into this cake. Have a big slice."
+          },
+          {
+            "id": "c_mrs_penny",
+            "at": [21, 15],
+            "greeting": "Happy birthday, Paddington! I kept the bandstand free all day, just for you."
+          },
+          {
+            "id": "c_mr_curry",
+            "at": [13, 15],
+            "greeting": "Hmph. Happy birthday, bear. This cake is not bad. Not bad at all.",
+            "endings": ["e_party_for_everyone"]
+          }
+        ]
+      },
       "opening": {
         "context": "You are Paddington Bear. It is a sunny Saturday at 32 Windsor Gardens. You go down to the hall, but your old hat is not on its peg! The marmalade is gone too. And everyone is acting strange. Time to be a detective!"
       },

@@ -97,6 +97,7 @@ export function buildQuickReplies(
   discussed: ReadonlySet<string>,
   state: StoryState,
   knownText = "",
+  offerNeed = true, // false for a character with no needs at all (after the ending)
 ): string[] {
   const open = available.filter((item) => !discussed.has(item.id));
   const unfound = open.filter((item) => item.clue_id && !state.cluesFound.includes(item.clue_id));
@@ -107,7 +108,7 @@ export function buildQuickReplies(
     return topicWords.length > 0 && topicWords.every((word) => knownWords.has(word));
   };
   const topics = [...unfound, ...rest].filter(safeToSuggest).slice(0, MAX_TOPIC_BUTTONS).map((item) => item.ask);
-  return [...topics, QUICK_NEED, QUICK_GOODBYE];
+  return [...topics, ...(offerNeed ? [QUICK_NEED] : []), QUICK_GOODBYE];
 }
 
 export function goalHintLine(character: CastMember, state: StoryState, turnIndex: number): string {

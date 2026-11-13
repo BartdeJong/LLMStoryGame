@@ -42,6 +42,7 @@ export function mountEndingScreen(
   onNewStory: () => void,
   onBackToTitle: () => void,
   recap?: CaseRecap & { timePlayedMs?: number },
+  epilogue?: { label: string; onJoin: () => Promise<void> },
 ): void {
   enableScreenScrolling();
   root.replaceChildren();
@@ -56,14 +57,28 @@ export function mountEndingScreen(
   );
   if (recap) screen.append(recapSection(recap));
   const actions = el("div", "ending-actions");
-  const newStory = el("button", "llm-button", "New story");
+  const status = el("p", "llm-screen-note", "");
+  if (epilogue) {
+    const join = el("button", "llm-button", epilogue.label);
+    join.type = "button";
+    join.addEventListener("click", () => {
+      join.disabled = true;
+      status.textContent = "";
+      void epilogue.onJoin().catch((error: unknown) => {
+        status.textContent = `Could not continue: ${error instanceof Error ? error.message : String(error)}`;
+        join.disabled = false;
+      });
+    });
+    actions.append(join);
+  }
+  const newStory = el("button", epilogue ? "llm-button ending-secondary" : "llm-button", "New story");
   newStory.type = "button";
   newStory.addEventListener("click", onNewStory);
   const title = el("button", "llm-button ending-secondary", "Back to title");
   title.type = "button";
   title.addEventListener("click", onBackToTitle);
   actions.append(newStory, title);
-  screen.append(actions);
+  screen.append(actions, status);
   root.append(screen);
   title.dataset.padHint = "B";
   activateGamepadFocus(screen, { onBack: onBackToTitle });

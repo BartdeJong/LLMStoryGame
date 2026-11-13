@@ -1,4 +1,5 @@
 import type { LengthView } from "./loader";
+import type { EndingScene } from "./ending";
 import { isAssistedDeductions } from "./assist";
 import type { LengthId } from "./types";
 import type { StoryPack, Truth } from "./types";
@@ -79,6 +80,7 @@ export interface StoryState {
   progressLog?: ProgressEntry[]; // clues, truths and items in the order they were found
   statementsHeard?: string[]; // statement ids the player has heard (save format 7)
   caseRecord?: CaseRecord; // answers and challenges (save format 7)
+  endingReached?: EndingScene; // set once the ending has played; the game then runs the epilogue
 }
 
 export function progressLogOf(state: StoryState): readonly ProgressEntry[] {

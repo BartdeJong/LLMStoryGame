@@ -515,6 +515,35 @@
             "context": { "$ref": "#/$defs/text" }
           }
         },
+        "epilogue": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["location", "description", "objective", "join_label", "door_message", "deflections", "cast"],
+          "properties": {
+            "location": { "$ref": "#/$defs/id" },
+            "description": { "$ref": "#/$defs/text" },
+            "objective": { "$ref": "#/$defs/text" },
+            "join_label": { "$ref": "#/$defs/text" },
+            "door_message": { "$ref": "#/$defs/text" },
+            "player_sprite": { "$ref": "#/$defs/sprite" },
+            "deflections": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/text" } },
+            "cast": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["id", "at", "greeting"],
+                "properties": {
+                  "id": { "$ref": "#/$defs/id" },
+                  "at": { "type": "array", "minItems": 2, "maxItems": 2, "items": { "type": "integer", "minimum": 0 } },
+                  "greeting": { "$ref": "#/$defs/text" },
+                  "endings": { "$ref": "#/$defs/idList" }
+                }
+              }
+            }
+          }
+        },
         "cast": { "$ref": "#/$defs/idList" },
         "core_truths": { "$ref": "#/$defs/idList" },
         "side_truths": { "$ref": "#/$defs/idList" },
