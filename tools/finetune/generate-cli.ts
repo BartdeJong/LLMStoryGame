@@ -17,9 +17,10 @@ import { DEFAULT_OLLAMA_HOST, MAX_CONSECUTIVE_OUTAGES, OllamaBackend } from "./o
 import type { OllamaError, RecordedCall } from "./ollamaBackend";
 import { decideSummary, judgeProblemReason, runJudge } from "./judge";
 import type { JudgeKind, JudgeOutcome } from "./judge";
-import { askLabelReadsWell, flattenAskOptions, parsePlayerMessages, pickPlayerAction, pickRecordedTurns, playerMessagesRequest } from "./playerTurns";
+import { withPhrase, askLabelReadsWell, flattenAskOptions, parsePlayerMessages, pickPlayerAction, pickRecordedTurns, playerMessagesRequest } from "./playerTurns";
 import {
-  MIX_SHARE,
+  Quota,
+  appendJsonl,
   TASKS,
   checkEnding,
   checkResume,
@@ -29,7 +30,6 @@ import {
   reasonBucket,
   repeatsHistory,
   emptyCounts,
-  mixPlan,
   readDoneSessions,
   SESSION_DONE_ID,
   readJsonl,
@@ -38,6 +38,7 @@ import {
   ungroundedWords,
 } from "./records";
 import type { Task } from "./records";
+import { CircuitOpen, FatalRequest, fatalRequestMessage, throwIfTripped } from "./breaker";
 import { canMarkSessionDone, rebuildResumeState } from "./resume";
 import { afterSkippedTurn, attemptWithResamples, restoreState, snapshotState } from "./rollback";
 import type { AttemptVerdict } from "./rollback";
@@ -54,6 +55,8 @@ interface Args {
   temperature: number | undefined;
   judge: boolean;
   judgeModel: string;
+  judgeThink: "off" | "low" | "on";
+  concurrency: number;
 }
 
 function fail(message: string): never {
@@ -72,13 +75,17 @@ function parseArgs(argv: string[]): Args {
       continue;
     }
     const value = argv[index + 1];
-    if (!flag?.startsWith("--") || value === undefined) fail(`Unexpected argument "${flag ?? ""}". Flags are --model --count --out --seed --holdout --stories --host --temperature --no-judge --judge-model.`);
+    if (!flag?.startsWith("--") || value === undefined) fail(`Unexpected argument "${flag ?? ""}". Flags are --model --count --out --seed --holdout --stories --host --temperature --no-judge --judge-model --judge-think --concurrency.`);
     values.set(flag.slice(2), value);
   }
-  const known = ["judge-model", "model", "count", "out", "seed", "holdout", "stories", "host", "temperature"];
+  const known = ["concurrency", "judge-think", "judge-model", "model", "count", "out", "seed", "holdout", "stories", "host", "temperature"];
   for (const key of values.keys()) if (!known.includes(key)) fail(`Unknown flag --${key}.`);
   const model = values.get("model");
-  if (!model) fail("Usage: npm run finetune-data -- --model <ollama tag> [--count 200] [--out finetune-data] [--seed 1] [--holdout <story id>] [--stories a,b] [--host url] [--temperature 0.7] [--no-judge] [--judge-model <tag>]");
+  if (!model) fail("Usage: npm run finetune-data -- --model <ollama tag> [--count 200] [--out finetune-data] [--seed 1] [--holdout <story id>] [--stories a,b] [--host url] [--temperature 0.7] [--no-judge] [--judge-model <tag>] [--judge-think off|low|on (low needs a judge model that supports think levels)] [--concurrency N]");
+  const judgeThink = values.get("judge-think") ?? "on";
+  if (judgeThink !== "off" && judgeThink !== "low" && judgeThink !== "on") fail("--judge-think must be off, low or on.");
+  const concurrency = Number(values.get("concurrency") ?? 1);
+  if (!Number.isInteger(concurrency) || concurrency < 1 || concurrency > 16) fail("--concurrency must be a whole number from 1 to 16.");
   const count = Number(values.get("count") ?? 200);
   if (!Number.isInteger(count) || count < 1) fail("--count must be a positive whole number.");
   const temperature = values.has("temperature") ? Number(values.get("temperature")) : undefined;
@@ -94,6 +101,8 @@ function parseArgs(argv: string[]): Args {
     temperature,
     judge,
     judgeModel: values.get("judge-model") ?? model,
+    judgeThink: judgeThink as Args["judgeThink"],
+    concurrency,
   };
 }
 
@@ -158,17 +167,28 @@ const resumeProblem = checkResume({
   train: readJsonl(files.train),
   holdout: readJsonl(files.holdout),
   manifest: previousManifest,
-  run: { seed: args.seed, stories: storyIds, holdout: args.holdout ?? null, judge: args.judge, judgeModel: args.judge ? args.judgeModel : null },
+  run: { seed: args.seed, stories: storyIds, holdout: args.holdout ?? null, judge: args.judge, judgeModel: args.judge ? args.judgeModel : null, judgeThink: args.judge ? args.judgeThink : null },
 });
 if (resumeProblem) fail(`Cannot continue in ${outDir}: ${resumeProblem} Use another --out or remove the old files.`);
 
-const backend = new OllamaBackend({ host: args.host, ...(args.temperature !== undefined ? { temperature: args.temperature } : {}) });
-const client = new LLMClient(backend, { pauseWhenHidden: false });
-try {
-  await client.load(args.model);
-} catch (error) {
-  fail((error as Error).message);
+// One backend and client per worker, so each session has its own recorded calls, seed counters and failure counts.
+interface Worker {
+  backend: OllamaBackend;
+  client: LLMClient;
+  incomplete: boolean; // the judge gave no verdict somewhere in the current session
 }
+const workers: Worker[] = [];
+for (let index = 0; index < args.concurrency; index += 1) {
+  const workerBackend = new OllamaBackend({ host: args.host, ...(args.temperature !== undefined ? { temperature: args.temperature } : {}) });
+  const workerClient = new LLMClient(workerBackend, { pauseWhenHidden: false });
+  try {
+    await workerClient.load(args.model);
+  } catch (error) {
+    fail((error as Error).message);
+  }
+  workers.push({ backend: workerBackend, client: workerClient, incomplete: false });
+}
+const backend = workers[0]!.backend;
 if (args.judge && args.judgeModel !== args.model) {
   try {
     await backend.checkModel(args.judgeModel);
@@ -183,25 +203,21 @@ const { counts, lineDeduper, greetingDeduper, summaryDeduper, endingDeduper, phr
   [...readJsonl(files.train), ...readJsonl(files.holdout)],
 );
 const MAX_DIALOGUE_PER_SESSION = 3;
-const plan = mixPlan(args.count);
-const total = (): number => TASKS.reduce((sum, task) => sum + counts[task], 0);
+const quota = new Quota(counts, args.count);
+const total = (): number => quota.total();
 const rejectCounts = new Map<string, number>();
-
-// A task may add a record while it is under its quota and, until dialogue is full, no further ahead of its
-// share than the run so far, so greetings, summaries and endings spread over the sessions.
-function allowed(task: Task): boolean {
-  if (total() >= args.count || counts[task] >= plan[task]) return false;
-  if (task === "dialogue" || counts.dialogue >= plan.dialogue) return true;
-  return counts[task] < Math.ceil(MIX_SHARE[task] * (total() + 1));
-}
+const allowed = (task: Task): boolean => quota.allowed(task);
 
 const startedAt = Date.now();
 let acceptedThisRun = 0;
 
-class CircuitOpen extends Error {}
+// A worker that sees an invalid request stops every worker, like a tripped breaker.
+function fatalRequest(detail: string): never {
+  const message = fatalRequestMessage(detail, args.judgeThink === "low");
+  breakerReason = message;
+  throw new FatalRequest(message);
+}
 
-// Set when the judge could not give a verdict: the session is then not marked done and runs again on resume.
-let sessionIncomplete = false;
 
 // Verdicts where the model said fail without a reason, so code kept the pass.
 const judgeStats = { modelSaidFailKept: 0 };
@@ -212,41 +228,60 @@ const MAX_TURN_RESAMPLES = 2;
 const resampleStats = { turns: 0, firstTryRejected: 0, rescued: 0, exhausted: 0, aborted: 0, endedEarly: 0 };
 
 // Takes what the backend recorded since the last call. Stops the run when Ollama keeps failing.
-function take(): { calls: RecordedCall[]; failures: OllamaError[] } {
-  const taken = { calls: backend.drain(), failures: backend.drainFailures() };
+function take(w: Worker): { calls: RecordedCall[]; failures: OllamaError[] } {
+  const taken = { calls: w.backend.drain(), failures: w.backend.drainFailures() };
   checkBreaker();
   return taken;
 }
 
+// Once any worker sees too many failures in a row the whole run stops: every worker talks to the same server.
+let breakerReason: string | null = null;
 function checkBreaker(): void {
-  if (backend.consecutiveUnreadable >= MAX_CONSECUTIVE_OUTAGES) {
-    throw new CircuitOpen(`${backend.consecutiveUnreadable} judge verdicts in a row could not be read; the judge is not working.`);
+  if (!breakerReason) {
+    for (const worker of workers) {
+      if (worker.backend.consecutiveRequestErrors >= MAX_CONSECUTIVE_OUTAGES) {
+        breakerReason = `${worker.backend.consecutiveRequestErrors} requests in a row were rejected as invalid (HTTP 400); the settings cannot work.`;
+      } else if (worker.backend.consecutiveUnreadable >= MAX_CONSECUTIVE_OUTAGES) {
+        breakerReason = `${worker.backend.consecutiveUnreadable} judge verdicts in a row could not be read; the judge is not working.`;
+      } else if (worker.backend.consecutiveOutages >= MAX_CONSECUTIVE_OUTAGES) {
+        breakerReason = `${worker.backend.consecutiveOutages} HTTP or connection failures in a row; Ollama looks unavailable.`;
+      }
+    }
   }
-  if (backend.consecutiveOutages >= MAX_CONSECUTIVE_OUTAGES) {
-    throw new CircuitOpen(`${backend.consecutiveOutages} HTTP or connection failures in a row; Ollama looks unavailable.`);
-  }
+  if (breakerReason) throw new CircuitOpen(breakerReason);
 }
 
 // An outage says nothing about the sample, so nothing is written for it and the session is not marked done.
-const hasOutage = (failures: readonly OllamaError[]): boolean => failures.some((failure) => failure.kind !== "context");
-const contextFailure = (failures: readonly OllamaError[]): string | undefined => failures.find((failure) => failure.kind === "context")?.message;
+const hasOutage = (failures: readonly OllamaError[]): boolean => failures.some((failure) => failure.kind === "http" || failure.kind === "connection");
+// A prompt that did not fit, or one Ollama rejected as invalid (HTTP 400, with its error body): the sample is
+// rejected with that as the reason. Only a run of them in a row stops the run.
+const contextFailure = (failures: readonly OllamaError[]): string | undefined => {
+  const failure = failures.find((entry) => entry.kind === "context" || entry.kind === "request");
+  if (!failure) return undefined;
+  return failure.kind === "request" ? `request rejected (${failure.message})` : failure.message;
+};
 
 // The fact-check call. It goes around the game's pipeline, so it is not one of the turn's model calls.
 // Without a verdict the session cannot be called done; the problem is logged as a reject.
 async function judged(
+  w: Worker,
   kind: JudgeKind,
   messages: readonly ChatMessage[],
   text: string,
   meta: { id: string; task: Task; story: string; character: string | null; calls: RecordedCall[]; line?: string },
 ): Promise<JudgeOutcome> {
-  const outcome = await runJudge(args.judge ? backend : null, kind, messages, text, { model: args.judgeModel });
-  backend.drainFailures(); // judge failures belong to no game turn
-  if (outcome.status !== "unavailable" && args.judge) backend.noteVerdict();
+  const outcome = await runJudge(args.judge ? w.backend : null, kind, messages, text, {
+    model: args.judgeModel,
+    think: args.judgeThink === "off" ? false : args.judgeThink === "low" ? "low" : true,
+  });
+  w.backend.drainFailures(); // judge failures belong to no game turn
+  if (outcome.status !== "unavailable" && args.judge) w.backend.noteVerdict();
   if (outcome.status === "pass" && outcome.modelSaidFail) judgeStats.modelSaidFailKept += 1;
+  if (outcome.status === "unavailable" && outcome.kind === "request") fatalRequest(outcome.error);
   if (outcome.status === "unavailable") {
     console.log(`  judge unavailable (${outcome.kind}): ${outcome.error}`);
-    sessionIncomplete = true;
-    if (outcome.kind === "unreadable") backend.noteUnreadable();
+    w.incomplete = true;
+    if (outcome.kind === "unreadable") w.backend.noteUnreadable();
     const reason = judgeProblemReason(outcome);
     if (reason) reject({ ...meta, reason, note: outcome.error });
     checkBreaker();
@@ -255,8 +290,9 @@ async function judged(
 }
 
 function emit(split: "train" | "holdout", record: ReturnType<typeof toRecord>, shown: string): void {
-  appendFileSync(files[split], `${JSON.stringify(record)}\n`);
-  counts[record.task] += 1;
+  throwIfTripped(breakerReason); // once a breaker has tripped, nothing more is written
+  appendJsonl(files[split], record);
+  quota.add(record.task);
   acceptedThisRun += 1;
   const seconds = (Date.now() - startedAt) / 1000 / acceptedThisRun;
   console.log(`[${total()}/${args.count}] ${split} ${record.task}${record.character ? ` ${record.character}` : ""}: ${shown} (${seconds.toFixed(1)}s/example)`);
@@ -279,7 +315,8 @@ function reject(input: { id: string; task: Task; story: string; character: strin
   console.log(`  rejected ${input.task} (${input.reason})`);
 }
 
-async function runSession(index: number): Promise<void> {
+async function runSession(index: number, w: Worker): Promise<void> {
+  const { backend, client } = w;
   const sessionId = `s${String(index).padStart(5, "0")}`;
   const story = stories[index % stories.length]!;
   const { pack, view } = story;
@@ -287,16 +324,16 @@ async function runSession(index: number): Promise<void> {
   const rng = createSeededRandom(`${args.seed}:${sessionId}`);
   backend.beginSession(`${args.seed}:${sessionId}`);
   const outageMark = backend.totalOutages;
-  sessionIncomplete = false;
+  w.incomplete = false;
   const { state, endingReached } = sampleStoryState(pack, view, rng);
   const character = pickCharacter(pack, view, state, rng);
   console.log(`session ${sessionId}: ${story.id}, ${character.name}${endingReached ? ", after the ending" : ""}, ${state.visitedAreas.length} areas visited`);
 
   // The rolling summary, as the game writes it once enough areas were visited. It becomes the state's summary.
   if (!endingReached && state.visitedAreas.length >= SUMMARY_EVERY_AREAS) {
-    take();
+    take(w);
     const result = await client.generateJSON(buildSummaryRequest(pack, view, state));
-    const { calls, failures } = take();
+    const { calls, failures } = take(w);
     const id = `${sessionId}/summary/0`;
     const summary = result.value.summary.trim();
     const problem = hasOutage(failures) ? "outage" : contextFailure(failures) ?? (result.status !== "ok" ? `summary status ${result.status}` : calls.length !== 1 ? `summary took ${calls.length} model calls` : checkSummary(summary));
@@ -309,10 +346,10 @@ async function runSession(index: number): Promise<void> {
       const action = await decideSummary({
         willEmit: allowed("summary"),
         duplicate: () => summaryDeduper.check(story.id, summary),
-        judge: () => judged("summary", calls[0]!.messages, summary, meta),
+        judge: () => judged(w, "summary", calls[0]!.messages, summary, meta),
       });
       if (action.kind === "reject") reject({ ...meta, reason: action.reason, ...(action.note ? { note: action.note } : {}) });
-      else if (action.kind === "emit") {
+      else if (action.kind === "emit" && allowed("summary") && !summaryDeduper.check(story.id, summary)) {
         summaryDeduper.add(story.id, summary);
         emit(split, toRecord({ id, task: "summary", story: story.id, character: null, messages: calls[0]!.messages, value: { summary } }), summary);
       }
@@ -329,7 +366,7 @@ async function runSession(index: number): Promise<void> {
   // Checks one reply. "rejected" means play the turn again; "abort" means stop (an outage, a missing verdict).
   // Every reply is judged, recorded or not: a fabricated fact left in the history would end up in later prompts.
   const handle = async (task: Task, turn: DialogueTurn, turnIndex: number, recorded: boolean): Promise<AttemptVerdict> => {
-    const { calls, failures } = take();
+    const { calls, failures } = take(w);
     const id = `${sessionId}/${task}/${turnIndex}`;
     const base = { id, task, story: story.id, character: character.id, calls, line: turn.line, attempt: currentAttempt };
     const bad = (reason: string, note?: string): AttemptVerdict => {
@@ -361,13 +398,14 @@ async function runSession(index: number): Promise<void> {
     const deduper = task === "greeting" ? greetingDeduper : lineDeduper;
     const duplicate = deduper.check(character.id, turn.line);
     if (duplicate) return bad(`${duplicate} line`);
-    const willRecord = allowed(task) && recorded;
-    const verdict = await judged("line", calls[0]!.messages, turn.line, base);
+    const verdict = await judged(w, "line", calls[0]!.messages, turn.line, base);
     if (verdict.status === "fail") return bad(verdict.reason, verdict.note);
     if (verdict.status === "unavailable") return "abort";
-    // A judged line counts for the duplicate check whether or not it becomes a record.
-    deduper.add(character.id, turn.line);
-    if (!willRecord) return "ok";
+    // From here to the write there is no await, so other workers cannot slip in between the quota and duplicate
+    // checks and the write. A judged line counts for the duplicate check whether or not it becomes a record.
+    const taken = deduper.check(character.id, turn.line) !== null;
+    if (!taken) deduper.add(character.id, turn.line);
+    if (taken || !recorded || !allowed(task)) return "ok";
     emit(split, toRecord({ id, task, story: story.id, character: character.id, messages: calls[0]!.messages, value: { line: turn.line } }), `"${turn.line}"`);
     turnAccepted = true;
     return "ok";
@@ -381,7 +419,7 @@ async function runSession(index: number): Promise<void> {
     const outcome = await attemptWithResamples({
       maxResamples: MAX_TURN_RESAMPLES,
       run: async () => {
-        take();
+        take(w);
         turnAccepted = false;
         return run();
       },
@@ -433,8 +471,21 @@ async function runSession(index: number): Promise<void> {
         .filter((entry) => askLabelReadsWell(entry.label) && resolveAsk(pack, state, character, entry.subject).source !== "deflection");
       const action = pickPlayerAction(rng, { teacher, choices: choices.filter((choice) => phrases.canUse(choice)), askable, last: turnIndex === turnCount });
       if (!action) break;
-      const { turn, status } = await play("dialogue", turnIndex, recordedTurns.has(turnIndex),
-        () => (action.kind === "ask" ? controller.askAbout(action.subject) : controller.reply(action.text)));
+      // The phrase budget counts recorded uses. A use is reserved here (so another worker cannot take the last one
+      // while this turn is played) and given back, whatever happens, unless the turn is accepted. A phrase that is
+      // over budget at this point skips the action.
+      let played: Awaited<ReturnType<typeof play>> | null = null;
+      const runTurn = async (): Promise<boolean> => {
+        played = await play("dialogue", turnIndex, recordedTurns.has(turnIndex),
+          () => (action.kind === "ask" ? controller.askAbout(action.subject) : controller.reply(action.text)));
+        return played.turn !== null && turnAccepted;
+      };
+      if (action.kind === "reply") {
+        if ((await withPhrase(phrases, action.text, runTurn)).skipped) continue;
+      } else {
+        await runTurn();
+      }
+      const { turn, status } = played as unknown as Awaited<ReturnType<typeof play>>;
       if (!turn) {
         // The turn is already rolled back: skip this player message and go on with the next, unless that happened twice in a row.
         const next = afterSkippedTurn(skippedInARow, status === "abort" ? "abort" : "exhausted");
@@ -447,7 +498,6 @@ async function runSession(index: number): Promise<void> {
         continue;
       }
       skippedInARow = 0;
-      if (action.kind === "reply" && turnAccepted) phrases.use(action.text);
       choices = turn.choices;
     }
   }
@@ -456,9 +506,9 @@ async function runSession(index: number): Promise<void> {
   if (!ended && allowed("ending")) {
     const ending = view.endings[Math.floor(rng() * view.endings.length)]!;
     const variant = ending.flawed && rng() < 0.5 ? ending.flawed : null;
-    take();
+    take(w);
     const scene = await writeEnding(client, pack, ending, variant);
-    const { calls, failures } = take();
+    const { calls, failures } = take(w);
     const source = variant ?? ending;
     const id = `${sessionId}/ending/0`;
     const value = { scene: scene.scene, epilogue: scene.epilogue };
@@ -469,16 +519,16 @@ async function runSession(index: number): Promise<void> {
     if (problem === "outage") console.log("  ending skipped: Ollama failed");
     else if (problem) reject({ id, task: "ending", story: story.id, character: null, reason: `${problem} [${label}]`, calls });
     else {
-      const verdict = await judged("ending", calls[0]!.messages, `Scene: ${value.scene}\nEpilogue: ${value.epilogue}`, { id, task: "ending", story: story.id, character: null, calls });
+      const verdict = await judged(w, "ending", calls[0]!.messages, `Scene: ${value.scene}\nEpilogue: ${value.epilogue}`, { id, task: "ending", story: story.id, character: null, calls });
       if (verdict.status === "fail") reject({ id, task: "ending", story: story.id, character: null, reason: `${verdict.reason} [${label}]`, calls, note: verdict.note });
-      else if (verdict.status === "pass") {
+      else if (verdict.status === "pass" && allowed("ending") && !endingDeduper.check(story.id, value.scene)) {
         endingDeduper.add(story.id, value.scene);
         emit(split, toRecord({ id, task: "ending", story: story.id, character: null, messages: calls[0]!.messages, value }), `${label}: ${value.epilogue}`);
       }
     }
   }
   // Only a session that ran to the end without an outage is done; an interrupted one is run again.
-  if (canMarkSessionDone({ outagesDuringSession: backend.totalOutages - outageMark, incomplete: sessionIncomplete })) {
+  if (canMarkSessionDone({ outagesDuringSession: backend.totalOutages - outageMark, incomplete: w.incomplete })) {
     appendFileSync(files.rejects, `${JSON.stringify({ id: `${sessionId}/${SESSION_DONE_ID}`, reason: "done" })}\n`);
   }
 }
@@ -513,6 +563,10 @@ function writeManifest(): void {
     requestedCount: args.count,
     judge: args.judge,
     judgeModel: args.judge ? args.judgeModel : null,
+    judgeThink: args.judge ? args.judgeThink : null,
+    concurrency: args.concurrency,
+    deterministic: args.concurrency === 1,
+    concurrencyNote: args.concurrency === 1 ? null : "With concurrency above 1 the content of sessions, not only the order of records, can differ between runs: workers share the duplicate checks, the quotas and the stock-phrase budget, and which session fills a quota depends on timing.",
     counts: { total: TASKS.reduce((sum, task) => sum + final[task], 0), byTask: final, train: split.train, holdout: split.holdout },
     rejects: rejectReasons,
     lastRun: { resamples: resampleStats, judgeModelSaidFailKept: judgeStats.modelSaidFailKept, acceptedRecords: acceptedThisRun, seconds: Math.round(elapsed), secondsPerAcceptedExample: acceptedThisRun > 0 ? Number((elapsed / acceptedThisRun).toFixed(1)) : null },
@@ -524,21 +578,41 @@ if (!existsSync(files.manifest)) writeManifest();
 
 console.log(`Model ${args.model} at ${args.host}; stories ${storyIds.join(", ")}${args.holdout ? ` (holdout ${args.holdout})` : ""}; ${total()}/${args.count} records already present.`);
 const maxSessions = args.count * 20;
-for (let index = 0; index < maxSessions && total() < args.count; index += 1) {
-  const sessionId = `s${String(index).padStart(5, "0")}`;
-  if (doneSessions.has(sessionId)) continue;
-  try {
-    await runSession(index);
-  } catch (error) {
-    if (error instanceof CircuitOpen) {
-      writeManifest();
-      console.error(`${error.message} Stopped at ${sessionId}; run the same command again to resume.`);
-      process.exit(1);
+let nextSession = 0;
+
+// Each worker takes the next session index that is not done yet. Sessions are independent: each has its own
+// rng and seeds, so the data of a session does not depend on how the workers are scheduled.
+async function workerLoop(w: Worker): Promise<void> {
+  while (nextSession < maxSessions && total() < args.count && !breakerReason) {
+    const index = nextSession;
+    nextSession += 1;
+    const sessionId = `s${String(index).padStart(5, "0")}`;
+    if (doneSessions.has(sessionId)) continue;
+    try {
+      await runSession(index, w);
+    } catch (error) {
+      if (error instanceof CircuitOpen || error instanceof FatalRequest) throw error;
+      console.error(`session ${sessionId} failed: ${error instanceof Error ? error.stack ?? error.message : String(error)}`);
+      appendFileSync(files.rejects, `${JSON.stringify({ id: `${sessionId}/session/0`, task: "dialogue", reason: "session error", raw: [String((error as Error).message)] })}\n`);
     }
-    console.error(`session ${sessionId} failed: ${error instanceof Error ? error.stack ?? error.message : String(error)}`);
-    appendFileSync(files.rejects, `${JSON.stringify({ id: `${sessionId}/session/0`, task: "dialogue", reason: "session error", raw: [String((error as Error).message)] })}\n`);
   }
 }
+
+const results = await Promise.allSettled(workers.map((worker) => workerLoop(worker)));
+const invalidRequest = results.find((result) => result.status === "rejected" && result.reason instanceof FatalRequest);
+if (invalidRequest && invalidRequest.status === "rejected") {
+  writeManifest();
+  console.error((invalidRequest.reason as Error).message);
+  process.exit(1);
+}
+const tripped = results.find((result) => result.status === "rejected" && result.reason instanceof CircuitOpen);
+if (tripped) {
+  writeManifest();
+  console.error(`${breakerReason ?? "A circuit breaker tripped."} Run the same command again to resume.`);
+  process.exit(1);
+}
+const crashed = results.find((result) => result.status === "rejected");
+if (crashed && crashed.status === "rejected") throw crashed.reason;
 
 writeManifest();
 const final = emptyCounts();
@@ -552,4 +626,4 @@ if (args.holdout && readJsonl(files.train).some((row) => row.story === args.hold
   process.exit(1);
 }
 console.log(`Train data: ${files.train}`);
-await client.unload();
+for (const worker of workers) await worker.client.unload();

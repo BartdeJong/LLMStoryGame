@@ -13,6 +13,9 @@ import { isRequirementMet } from "../../src/story/requirements";
 import { validateStoryPack } from "../../src/story/validate";
 import { canMarkSessionDone, rebuildResumeState } from "./resume";
 import { afterSkippedTurn, attemptWithResamples, restoreState, snapshotState } from "./rollback";
+import { Quota, appendJsonl } from "./records";
+import { withPhrase } from "./playerTurns";
+import { CircuitOpen, fatalRequestMessage, throwIfTripped } from "./breaker";
 import { JUDGE_CONTEXT_CHARS, JUDGE_MAX_TOKENS, JUDGE_SEED, decideSummary, judgeProblemReason, judgeRequest, parseVerdict, runJudge } from "./judge";
 import type { JudgeOutcome } from "./judge";
 import { MAX_CONSECUTIVE_OUTAGES, NUM_CTX, OllamaBackend } from "./ollamaBackend";
@@ -221,8 +224,8 @@ describe("repairJsonl", () => {
 });
 
 describe("checkResume", () => {
-  const run = { seed: "1", stories: ["example", "other"], holdout: "example", judge: true, judgeModel: "judge:1" };
-  const manifest = { seed: "1", stories: ["example", "other"], holdout: "example", judge: true, judgeModel: "judge:1" };
+  const run = { seed: "1", stories: ["example", "other"], holdout: "example", judge: true, judgeModel: "judge:1", judgeThink: "on" };
+  const manifest = { seed: "1", stories: ["example", "other"], holdout: "example", judge: true, judgeModel: "judge:1", judgeThink: "on" };
 
   it("accepts fresh and matching output", () => {
     expect(checkResume({ train: [], holdout: [], manifest: null, run })).toBeNull();
@@ -237,6 +240,9 @@ describe("checkResume", () => {
     expect(checkResume({ train: [], holdout: [], manifest: { ...manifest, holdout: null }, run })).toMatch(/holds out/);
     expect(checkResume({ train: [], holdout: [], manifest: { ...manifest, judge: false }, run })).toMatch(/judge/);
     expect(checkResume({ train: [], holdout: [], manifest: { ...manifest, judgeModel: "other:2" }, run })).toMatch(/judged by/);
+    expect(checkResume({ train: [], holdout: [], manifest: { ...manifest, judgeThink: "off" }, run })).toMatch(/thinking/);
+    expect(checkResume({ train: [], holdout: [], manifest, run: { ...run, judgeThink: "low" } })).toMatch(/thinking/);
+    expect(checkResume({ train: [], holdout: [], manifest: { seed: "1", stories: ["example", "other"], holdout: "example", judge: false }, run: { ...run, judge: false, judgeModel: null, judgeThink: null } })).toBeNull();
     expect(checkResume({ train: [], holdout: [], manifest, run: { ...run, judge: false } })).toMatch(/judge/);
     expect(checkResume({ train: [], holdout: [{ story: "x" }], manifest: null, run: { ...run, holdout: null } })).toMatch(/holdout\.jsonl/);
   });
@@ -873,5 +879,216 @@ describe("last judge refinements", () => {
     expect(state.sessionLines.get("s00001")?.has(normalizeLine("try the bakery dear"))).toBe(true);
     expect(state.sessionLines.get("s00001")?.has(normalizeLine("Other line."))).toBe(false);
     expect(state.sessionLines.get("s00003")).toBeUndefined();
+  });
+});
+
+describe("judge thinking level", () => {
+  const sent = async (think?: boolean | "low") => {
+    let body: { think?: unknown } = {};
+    const backend = new OllamaBackend({
+      fetchImpl: (async (input: string | URL | Request, init?: RequestInit) => {
+        if (String(input).endsWith("/api/tags")) return new Response(JSON.stringify({ models: [{ name: "m" }] }));
+        body = JSON.parse(String(init?.body)) as { think?: unknown };
+        return new Response(JSON.stringify({ message: { content: '{"claims":[],"problems":[],"verdict":"pass"}' } }));
+      }) as typeof fetch,
+    });
+    await backend.load("m", () => {});
+    await runJudge(backend, "line", [{ role: "user", content: "x" }], "hi", think === undefined ? {} : { think });
+    return body.think;
+  };
+
+  it("sends think on by default, off for off and \"low\" for low; the teacher stays off", async () => {
+    expect(await sent()).toBe(true);
+    expect(await sent(false)).toBe(false);
+    expect(await sent("low")).toBe("low");
+    let teacherThink: unknown = "unset";
+    const backend = new OllamaBackend({
+      fetchImpl: (async (input: string | URL | Request, init?: RequestInit) => {
+        if (String(input).endsWith("/api/tags")) return new Response(JSON.stringify({ models: [{ name: "m" }] }));
+        teacherThink = (JSON.parse(String(init?.body)) as { think?: unknown }).think;
+        return new Response(JSON.stringify({ message: { content: "{}" } }));
+      }) as typeof fetch,
+    });
+    await backend.load("m", () => {});
+    await backend.generate({ messages: [{ role: "user", content: "x" }], maxTokens: 10, temperature: 0.5, signal: new AbortController().signal, tag: "dialogue" });
+    expect(teacherThink).toBe(false);
+  });
+});
+
+describe("concurrent workers", () => {
+  const pause = (ms: number) => new Promise<void>((done) => setTimeout(done, ms));
+
+  it("never interleave lines and never exceed the quotas", async () => {
+    const dir = tempDir();
+    const path = join(dir, "train.jsonl");
+    const quota = new Quota({ dialogue: 0, greeting: 0, summary: 0, ending: 0 }, 50);
+    const tasks = ["dialogue", "dialogue", "dialogue", "dialogue", "greeting", "summary", "ending"] as const;
+    const worker = async (id: number) => {
+      for (let step = 0; step < 60; step += 1) {
+        const task = tasks[(id + step) % tasks.length]!;
+        await pause(Math.random() * 3); // the model call
+        // check and write with no await between, as the CLI does
+        if (!quota.allowed(task)) continue;
+        appendJsonl(path, { id: `w${id}/${step}`, task, text: "x".repeat(2000 + id) });
+        quota.add(task);
+      }
+    };
+    await Promise.all([0, 1, 2, 3].map(worker));
+    const lines = readFileSync(path, "utf8").split("\n").filter(Boolean);
+    const rows = lines.map((line) => JSON.parse(line) as { id: string; task: keyof typeof quota.counts });
+    expect(rows).toHaveLength(lines.length);
+    expect(new Set(rows.map((row) => row.id)).size).toBe(rows.length);
+    expect(rows.length).toBe(quota.total());
+    expect(rows.length).toBeLessThanOrEqual(50);
+    for (const task of ["dialogue", "greeting", "summary", "ending"] as const) {
+      expect(rows.filter((row) => row.task === task).length).toBeLessThanOrEqual(quota.plan[task]);
+    }
+    expect(rows.length).toBeGreaterThan(40);
+  });
+
+  it("keep each session's seeds the same however the workers are scheduled", async () => {
+    const seedsOf = async (interleaved: boolean) => {
+      const seen = new Map<string, number[]>();
+      const makeBackend = (name: string) => {
+        const backend = new OllamaBackend({
+          fetchImpl: (async (input: string | URL | Request, init?: RequestInit) => {
+            if (String(input).endsWith("/api/tags")) return new Response(JSON.stringify({ models: [{ name: "m" }] }));
+            const body = JSON.parse(String(init?.body)) as { options: { seed: number } };
+            seen.set(name, [...(seen.get(name) ?? []), body.options.seed]);
+            return new Response(JSON.stringify({ message: { content: "{}" } }));
+          }) as typeof fetch,
+        });
+        return backend;
+      };
+      const a = makeBackend("s1");
+      const b = makeBackend("s2");
+      await a.load("m", () => {});
+      await b.load("m", () => {});
+      a.beginSession("1:s00001");
+      b.beginSession("1:s00002");
+      const call = (backend: OllamaBackend) =>
+        backend.generate({ messages: [{ role: "user", content: "x" }], maxTokens: 10, temperature: 0.5, signal: new AbortController().signal, tag: "dialogue" });
+      if (interleaved) {
+        await Promise.all([call(a), call(b), pause(2)]);
+        await Promise.all([call(b), call(a)]);
+        await call(a);
+      } else {
+        await call(a);
+        await call(a);
+        await call(a);
+        await call(b);
+        await call(b);
+      }
+      return { s1: seen.get("s1"), s2: seen.get("s2"), callsA: a.calls.length, callsB: b.calls.length };
+    };
+    const together = await seedsOf(true);
+    const apart = await seedsOf(false);
+    expect(together.s1).toEqual(apart.s1);
+    expect(together.s2).toEqual(apart.s2);
+    expect(new Set([...together.s1!, ...together.s2!]).size).toBe(5);
+    // each worker's recorded calls are its own
+    expect(together.callsA).toBe(3);
+    expect(together.callsB).toBe(2);
+  });
+});
+
+describe("review items", () => {
+  it("reads a manifest without judgeThink as thinking on when the judge was on", () => {
+    const manifest = { seed: "1", stories: ["a"], holdout: null, judge: true, judgeModel: "m" };
+    const run = { seed: "1", stories: ["a"], holdout: null, judge: true, judgeModel: "m", judgeThink: "on" };
+    expect(checkResume({ train: [], holdout: [], manifest, run })).toBeNull();
+    expect(checkResume({ train: [], holdout: [], manifest, run: { ...run, judgeThink: "off" } })).toMatch(/thinking "on"/);
+  });
+
+  it("treats HTTP 400 as an invalid request, not an outage, and gives a clear message", async () => {
+    const backend = new OllamaBackend({
+      fetchImpl: (async (input: string | URL | Request) =>
+        String(input).endsWith("/api/tags") ? new Response(JSON.stringify({ models: [{ name: "m" }] })) : new Response('{"error":"think level not supported"}', { status: 400 })) as typeof fetch,
+    });
+    await backend.load("m", () => {});
+    const outcome = await runJudge(backend, "line", [{ role: "user", content: "x" }], "hi", { think: "low" });
+    expect(outcome).toMatchObject({ status: "unavailable", kind: "request" });
+    expect(backend.consecutiveOutages).toBe(0);
+    expect(backend.totalOutages).toBe(0);
+    expect(backend.drainFailures().map((failure) => failure.kind)).toEqual(["request"]);
+    expect(fatalRequestMessage("HTTP 400", true)).toMatch(/--judge-think low.*think levels/);
+    expect(fatalRequestMessage("HTTP 400")).not.toMatch(/think levels/);
+    expect(fatalRequestMessage("HTTP 400", false)).toContain("HTTP 400");
+  });
+
+  it("stops writing once a breaker has tripped", () => {
+    expect(() => throwIfTripped(null)).not.toThrow();
+    expect(() => throwIfTripped("5 failures in a row")).toThrow(CircuitOpen);
+  });
+
+  it("reserves a stock phrase when it is picked and gives it back when the turn is not recorded", () => {
+    const budget = new PhraseBudget(2);
+    // two workers pick "Goodbye." at the same time
+    expect(budget.canUse("Goodbye.")).toBe(true);
+    budget.use("Goodbye.");
+    expect(budget.canUse("Goodbye.")).toBe(true);
+    budget.use("Goodbye.");
+    expect(budget.canUse("Goodbye.")).toBe(false); // a third worker cannot take it while both turns are played
+    budget.release("Goodbye."); // one turn was not recorded
+    expect(budget.canUse("Goodbye.")).toBe(true);
+    budget.release("What a day"); // not a watched phrase: nothing happens
+    budget.release("Goodbye.");
+    budget.release("Goodbye."); // never below zero
+    budget.use("Goodbye.");
+    budget.use("Goodbye.");
+    expect(budget.canUse("Goodbye.")).toBe(false);
+  });
+});
+
+describe("phrase budget at pick time and with errors", () => {
+  it("use() takes nothing and returns false when the phrase is over budget", () => {
+    const budget = new PhraseBudget(1);
+    expect(budget.use("Goodbye.")).toBe(true);
+    expect(budget.use("goodbye")).toBe(false);
+    expect(budget.canUse("Goodbye.")).toBe(false);
+    budget.release("Goodbye.");
+    expect(budget.use("Goodbye.")).toBe(true);
+    expect(budget.use("Tell me about the lantern")).toBe(true); // not a watched phrase
+    expect(budget.use("Tell me about the lantern")).toBe(true);
+  });
+
+  it("keeps a reserved use only for an accepted turn, even when the turn throws", async () => {
+    const budget = new PhraseBudget(1);
+    expect(await withPhrase(budget, "Goodbye.", async () => true)).toEqual({ skipped: false });
+    expect(budget.canUse("Goodbye.")).toBe(false); // kept: it was recorded
+    expect(await withPhrase(budget, "Goodbye.", async () => { throw new Error("must not run"); })).toEqual({ skipped: true });
+
+    const other = new PhraseBudget(1);
+    await withPhrase(other, "Thanks", async () => false); // rejected or skipped turn
+    expect(other.canUse("Thanks")).toBe(true);
+    await expect(withPhrase(other, "Thanks", async () => { throw new Error("boom"); })).rejects.toThrow("boom");
+    expect(other.canUse("Thanks")).toBe(true); // given back after the error too
+
+    // two turns in flight at once cannot both take the last use
+    const shared = new PhraseBudget(1);
+    const results = await Promise.all([
+      withPhrase(shared, "Goodbye.", async () => { await new Promise((done) => setTimeout(done, 5)); return true; }),
+      withPhrase(shared, "Goodbye.", async () => true),
+    ]);
+    expect(results.filter((result) => result.skipped)).toHaveLength(1);
+  });
+
+  it("counts HTTP 400 answers in a row on game calls and resets on a good answer", async () => {
+    let status = 400;
+    const backend = new OllamaBackend({
+      fetchImpl: (async (input: string | URL | Request) =>
+        String(input).endsWith("/api/tags") ? new Response(JSON.stringify({ models: [{ name: "m" }] }))
+          : status === 400 ? new Response('{"error":"bad option"}', { status }) : new Response(JSON.stringify({ message: { content: "{}" } }))) as typeof fetch,
+    });
+    await backend.load("m", () => {});
+    const call = () => backend.generate({ messages: [{ role: "user", content: "x" }], maxTokens: 10, temperature: 0.5, signal: new AbortController().signal, tag: "dialogue" });
+    for (let attempt = 0; attempt < MAX_CONSECUTIVE_OUTAGES - 1; attempt += 1) await expect(call()).rejects.toThrow(/HTTP 400.*bad option/);
+    expect(backend.consecutiveRequestErrors).toBe(MAX_CONSECUTIVE_OUTAGES - 1);
+    expect(backend.consecutiveOutages).toBe(0);
+    status = 200;
+    await call();
+    expect(backend.consecutiveRequestErrors).toBe(0);
+    const failure = backend.drainFailures().find((entry) => entry.kind === "request");
+    expect(failure?.message).toContain("bad option"); // the error body travels with the failure, for the reject reason
   });
 });

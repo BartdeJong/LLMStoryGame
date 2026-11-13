@@ -2,7 +2,7 @@ import { parseJsonLoose } from "../../src/llm/json";
 import { defineSchema, s, toJsonSchema } from "../../src/llm/schema";
 import type { ChatMessage } from "../../src/llm/types";
 import { OllamaError } from "./ollamaBackend";
-import type { OllamaBackend } from "./ollamaBackend";
+import type { OllamaBackend, ThinkSetting } from "./ollamaBackend";
 
 export type JudgeKind = "line" | "summary" | "ending";
 
@@ -165,7 +165,7 @@ export type JudgeOutcome =
   | { status: "pass"; modelSaidFail?: true } // modelSaidFail: the model said fail but gave no reason, so the pass stands
   | { status: "fail"; reason: string; note: string }
   // "outage": Ollama failed (the backend counts it); "context": the judge prompt did not fit; "unreadable": no usable verdict.
-  | { status: "unavailable"; kind: "outage" | "context" | "unreadable"; error: string };
+  | { status: "unavailable"; kind: "outage" | "context" | "unreadable" | "request"; error: string };
 
 // One extra Ollama call with thinking on, temperature 0 and a fixed seed. It is not part of the game's calls, so it
 // never reaches `backend.calls` and cannot count against the one-call accept rule. A null backend means --no-judge.
@@ -175,7 +175,7 @@ export async function runJudge(
   kind: JudgeKind,
   context: readonly ChatMessage[],
   candidate: string,
-  options: { model?: string } = {},
+  options: { model?: string; think?: ThinkSetting } = {},
 ): Promise<JudgeOutcome> {
   if (!backend) return { status: "pass" };
   const request = judgeRequest(kind, context, candidate);
@@ -186,11 +186,11 @@ export async function runJudge(
       maxTokens: JUDGE_MAX_TOKENS,
       seed: JUDGE_SEED,
       exact: true,
-      think: true,
+      think: options.think ?? true,
       ...(options.model ? { model: options.model } : {}),
     });
   } catch (error) {
-    const kindOfFailure = error instanceof OllamaError && error.kind === "context" ? "context" : "outage";
+    const kindOfFailure = error instanceof OllamaError && (error.kind === "context" || error.kind === "request") ? error.kind : "outage";
     return { status: "unavailable", kind: kindOfFailure, error: error instanceof Error ? error.message : String(error) };
   }
   const verdict = parseVerdict(text, kind, context.filter((message) => message.role !== "system").map((message) => message.content).join("\n"));

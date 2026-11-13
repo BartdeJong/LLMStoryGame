@@ -16,11 +16,14 @@ export interface OllamaBackendOptions {
 }
 
 export const DEFAULT_OLLAMA_HOST = "http://localhost:11434";
+// Ollama takes true/false for thinking, and "low" asks a model that supports levels for less of it.
+export type ThinkSetting = boolean | "low";
 export const NUM_CTX = 8192;
 export const MAX_CONSECUTIVE_OUTAGES = 5;
 
 // "http" and "connection" mean Ollama itself was unavailable; "context" means this one prompt did not fit.
-export type OllamaFailureKind = "http" | "connection" | "context";
+// "request" is HTTP 400: the request itself is invalid (for example a think level the model lacks), not an outage.
+export type OllamaFailureKind = "http" | "connection" | "context" | "request";
 
 export class OllamaError extends Error {
   constructor(readonly kind: OllamaFailureKind, message: string) {
@@ -51,6 +54,8 @@ export class OllamaBackend implements LLMBackend {
   totalOutages = 0;
   // Judge answers in a row that could not be parsed. The CLI stops at MAX_CONSECUTIVE_OUTAGES.
   consecutiveUnreadable = 0;
+  // HTTP 400 answers in a row (game, summary, ending and player-message calls reject the sample; the CLI stops at the limit).
+  consecutiveRequestErrors = 0;
   private seedKey = "";
   private callIndex = 0; // game calls of this session; seeds them
   private sideIndex = 0; // chatJson calls (player messages, the judge); they never move callIndex
@@ -130,14 +135,14 @@ export class OllamaBackend implements LLMBackend {
   async chatJson(
     messages: ChatMessage[],
     schema: Record<string, unknown>,
-    options: { temperature?: number; maxTokens?: number; seed?: number; exact?: boolean; think?: boolean; model?: string } = {},
+    options: { temperature?: number; maxTokens?: number; seed?: number; exact?: boolean; think?: ThinkSetting; model?: string } = {},
   ): Promise<string> {
     const temperature = options.exact ? options.temperature ?? 0 : this.options.temperature ?? options.temperature ?? 1;
     const body = await this.chat(messages, schema, {
       temperature,
       num_predict: options.maxTokens ?? 600,
       ...(options.seed !== undefined ? { seed: options.seed } : {}),
-    }, undefined, { side: true, think: options.think === true, ...(options.model ? { model: options.model } : {}) });
+    }, undefined, { side: true, think: options.think ?? false, ...(options.model ? { model: options.model } : {}) });
     // With thinking on, the reasoning comes in its own field; a model that inlines it gets the tags cut out.
     // An unclosed <think> runs to the end of the text, so what follows it is not an answer.
     return (body.message?.content ?? "").replace(/<think>[\s\S]*?<\/think>/g, "").replace(/<think>[\s\S]*$/, "").trim();
@@ -160,19 +165,21 @@ export class OllamaBackend implements LLMBackend {
     format: Record<string, unknown> | undefined,
     options: Record<string, number>,
     signal?: AbortSignal,
-    extra: { side?: boolean; think?: boolean; model?: string } = {},
+    extra: { side?: boolean; think?: ThinkSetting; model?: string } = {},
   ): Promise<ChatResponse> {
     if (!this.model) throw new Error("OllamaBackend.load() must be called before generating.");
     try {
       const body = await this.request(messages, format, options, signal, extra);
       this.consecutiveOutages = 0;
+      this.consecutiveRequestErrors = 0;
       return body;
     } catch (error) {
       if (error instanceof OllamaError) {
-        if (error.kind !== "context") {
+        if (error.kind === "http" || error.kind === "connection") {
           this.consecutiveOutages += 1;
           this.totalOutages += 1;
-        } else this.consecutiveOutages = 0;
+        } else if (error.kind === "context") this.consecutiveOutages = 0;
+        if (error.kind === "request") this.consecutiveRequestErrors += 1;
         this.failures.push(error);
       }
       throw error;
@@ -184,7 +191,7 @@ export class OllamaBackend implements LLMBackend {
     format: Record<string, unknown> | undefined,
     options: Record<string, number>,
     signal?: AbortSignal,
-    extra: { side?: boolean; think?: boolean; model?: string } = {},
+    extra: { side?: boolean; think?: ThinkSetting; model?: string } = {},
   ): Promise<ChatResponse> {
     const side = extra.side === true;
     // Conservative size check before sending (about 3 characters per token): prompt_eval_count can read low
@@ -204,7 +211,7 @@ export class OllamaBackend implements LLMBackend {
           model: extra.model ?? this.model,
           messages,
           stream: false,
-          think: extra.think === true,
+          think: extra.think ?? false,
           ...(format ? { format } : {}),
           options: { num_ctx: NUM_CTX, seed: hashSeed(seedKey), ...options },
         }),
@@ -213,7 +220,7 @@ export class OllamaBackend implements LLMBackend {
     } catch (error) {
       throw new OllamaError("connection", `Could not reach Ollama at ${this.host}: ${error instanceof Error ? error.message : String(error)}`);
     }
-    if (!response.ok) throw new OllamaError("http", `Ollama /api/chat failed with HTTP ${response.status}: ${(await response.text()).slice(0, 300)}`);
+    if (!response.ok) throw new OllamaError(response.status === 400 ? "request" : "http", `Ollama /api/chat failed with HTTP ${response.status}: ${(await response.text()).slice(0, 300)}`);
     let body: ChatResponse;
     try {
       body = (await response.json()) as ChatResponse;

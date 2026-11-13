@@ -156,6 +156,7 @@ export interface RunIdentity {
   holdout: string | null;
   judge: boolean;
   judgeModel: string | null; // the model that judges, null with --no-judge
+  judgeThink: string | null; // "off", "low" or "on"; null with --no-judge
 }
 
 // Why an earlier run's files cannot be continued by this run, or null when they can. Catches a holdout
@@ -178,6 +179,7 @@ export function checkResume(input: {
   if (JSON.stringify(manifest.stories) !== JSON.stringify(run.stories)) return `the manifest lists stories ${JSON.stringify(manifest.stories)}, this run uses ${JSON.stringify(run.stories)}.`;
   if ((manifest.holdout ?? null) !== run.holdout) return `the manifest holds out ${JSON.stringify(manifest.holdout ?? null)}, this run holds out ${JSON.stringify(run.holdout)}.`;
   if (run.judge && manifest.judge === true && (manifest.judgeModel ?? null) !== run.judgeModel) return `the manifest was judged by "${String(manifest.judgeModel ?? null)}", this run uses "${run.judgeModel}".`;
+  if (run.judge && manifest.judge === true && (manifest.judgeThink ?? "on") !== run.judgeThink) return `the manifest was judged with thinking "${String(manifest.judgeThink ?? "on")}", this run uses "${run.judgeThink}".`;
   if (manifest.judge !== run.judge) return `the manifest was made with the judge ${manifest.judge === true ? "on" : "off"}, this run has it ${run.judge ? "on" : "off"}.`;
   return null;
 }
@@ -329,4 +331,36 @@ export function seedGreeting(prompt: string): string | null {
 export function copiesSeedGreeting(line: string, prompt: string): boolean {
   const seed = seedGreeting(prompt);
   return seed !== null && seed !== "" && comparable(seed) === comparable(line);
+}
+
+// Appends one JSON row as one write of one whole line. The call is synchronous, so workers that run at the same
+// time in one process can never interleave partial lines.
+export function appendJsonl(path: string, row: unknown): void {
+  appendFileSync(path, `${JSON.stringify(row)}\n`);
+}
+
+// How many records of each task a run may still add. Reading `allowed` and calling `add` with no await in
+// between keeps the quotas exact however many workers there are.
+export class Quota {
+  readonly plan: TaskCounts;
+
+  constructor(readonly counts: TaskCounts, readonly count: number) {
+    this.plan = mixPlan(count);
+  }
+
+  total(): number {
+    return TASKS.reduce((sum, task) => sum + this.counts[task], 0);
+  }
+
+  // A task may add a record while it is under its quota and, until dialogue is full, no further ahead of its
+  // share than the run so far, so greetings, summaries and endings spread over the sessions.
+  allowed(task: Task): boolean {
+    if (this.total() >= this.count || this.counts[task] >= this.plan[task]) return false;
+    if (task === "dialogue" || this.counts.dialogue >= this.plan.dialogue) return true;
+    return this.counts[task] < Math.ceil(MIX_SHARE[task] * (this.total() + 1));
+  }
+
+  add(task: Task): void {
+    this.counts[task] += 1;
+  }
 }

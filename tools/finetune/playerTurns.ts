@@ -145,9 +145,23 @@ export class PhraseBudget {
     return !WATCHED_PHRASES.has(key) || (this.used.get(key) ?? 0) < this.perPhrase;
   }
 
-  use(text: string): void {
+  // Takes one use. With several workers this is called when a phrase is picked, so no other worker can take the
+  // last use while the turn is still being played.
+  // Returns false, and takes nothing, when the phrase is over budget: the caller then skips the action.
+  use(text: string): boolean {
     const key = phraseKey(text);
-    if (WATCHED_PHRASES.has(key)) this.used.set(key, (this.used.get(key) ?? 0) + 1);
+    if (!WATCHED_PHRASES.has(key)) return true;
+    const used = this.used.get(key) ?? 0;
+    if (used >= this.perPhrase) return false;
+    this.used.set(key, used + 1);
+    return true;
+  }
+
+  // Gives the use back when the turn was not recorded.
+  release(text: string): void {
+    const key = phraseKey(text);
+    const used = this.used.get(key) ?? 0;
+    if (WATCHED_PHRASES.has(key) && used > 0) this.used.set(key, used - 1);
   }
 }
 
@@ -165,4 +179,18 @@ export function pickRecordedTurns(turnCount: number, cap: number, rng: Random): 
     turns.add(from + 1 + Math.floor(rng() * Math.max(1, to - from)));
   }
   return turns;
+}
+
+// Plays a turn that says `text`. The budget counts recorded uses: the use is reserved here and kept only if `play`
+// reports the turn as accepted; a rejected turn, a skipped one or an error gives it back. When the phrase is over
+// budget nothing is played and `skipped` is true.
+export async function withPhrase(budget: PhraseBudget, text: string, play: () => Promise<boolean>): Promise<{ skipped: boolean }> {
+  if (!budget.use(text)) return { skipped: true };
+  let accepted = false;
+  try {
+    accepted = await play();
+  } finally {
+    if (!accepted) budget.release(text);
+  }
+  return { skipped: false };
 }
