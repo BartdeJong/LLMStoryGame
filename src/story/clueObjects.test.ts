@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import example from "../../public/stories/example.json";
+import authoredExample from "../../public/stories/example.json";
+import { stripLockText } from "./fixtures/stripLockText";
 import { LLMClient } from "../llm/client";
 import { MockBackend } from "../llm/mock";
 import { bakeSimple } from "./fixtures/bakeSimple";
@@ -10,6 +11,8 @@ import { giveItem } from "./state";
 import { StorySession } from "./storySession";
 import type { StoryPack } from "./types";
 import { validateStoryPack } from "./validate";
+
+const example = stripLockText(authoredExample);
 
 function loadExample(): StoryPack {
   const report = validateStoryPack(bakeSimple(example));

@@ -2221,7 +2221,9 @@
           "i_wren_docket"
         ]
       },
-      "text": "Wren's pocket docket records the irregular payments and his intention to report them."
+      "text": "Wren's pocket docket records the irregular payments and his intention to report them.",
+      "locked_glimpse": "Wren's pocket docket lies among his effects, its cramped figures hard to follow. It would speak plainly if you carried it with you.",
+      "reveal_text": "You hold Wren's docket now. Its figures may read very differently where it was found, among the mortuary papers."
     },
     {
       "id": "cl_watson_inquest",
@@ -2338,7 +2340,9 @@
           "i_ferry_token"
         ]
       },
-      "text": "The corrected ferry register leaves no crossing at the hour Vale claimed."
+      "text": "The corrected ferry register leaves no crossing at the hour Vale claimed.",
+      "locked_glimpse": "The ferry register shows crossings in a neat hand, but it means little yet. A worn brass token lying nearby may tell you which entry to trust.",
+      "reveal_text": "The brass ferry token is in your hand. The register at the landing can be checked against it."
     },
     {
       "id": "cl_cab_entry",
@@ -2406,7 +2410,9 @@
           "i_charred_envelope"
         ]
       },
-      "text": "A preserved press archive identifies the envelope paper as a harmless public-notice proof."
+      "text": "A preserved press archive identifies the envelope paper as a harmless public-notice proof.",
+      "locked_glimpse": "The reading-room archive lists printed notices by paper and type. It would mean more set beside a scrap of charred paper from the scene.",
+      "reveal_text": "With the charred envelope in your keeping, the press archive entry in the reading room may now tell you something."
     },
     {
       "id": "cl_press_archive",
@@ -2423,7 +2429,9 @@
           "i_press_proof"
         ]
       },
-      "text": "The dated municipal archive record proves the proof predates Wren's murder."
+      "text": "The dated municipal archive record proves the proof predates Wren's murder.",
+      "locked_glimpse": "The municipal record gives printing dates, but a date means little without the printed proof it concerns.",
+      "reveal_text": "You hold a press proof now. The municipal record's printing date may settle when it was struck."
     },
     {
       "id": "cl_pembroke_copy",
@@ -2439,7 +2447,8 @@
           "i_duplicate_ledger"
         ]
       },
-      "text": "Pembroke confirms that Wren left a duplicate ledger with him before the murder."
+      "text": "Pembroke confirms that Wren left a duplicate ledger with him before the murder.",
+      "reveal_text": "You hold Wren's duplicate ledger now. Mr Pembroke may speak plainly about how it came to him."
     },
     {
       "id": "cl_ada_receipt",
@@ -4215,6 +4224,8 @@
         {
           "id": "b_witnesses",
           "title": "The false crossing",
+          "gate_reason": "Lestrade will not open the press, cab and ferry lines of inquiry until you can say what Wren was about and what really happened to him.",
+          "unlock_text": "Holmes has the shape of Wren's last days. Lestrade waves you on toward the Fleet Street press, the cab stand and the river-side records.",
           "objective": "Test Vale's account against the ferry and cab records.",
           "guidance": "Compare the corrected ferry register with the cab fare book, and ask Silas what the grease can prove.",
           "locations": [
@@ -4234,6 +4245,8 @@
         {
           "id": "b_records",
           "title": "The paper trail",
+          "gate_reason": "The warehouse and station clerks will release nothing until you can show how the Fund's money moved and who could enter the countinghouse.",
+          "unlock_text": "Holmes has the Fund's account of money and access. The clerks of the yard and the station now agree to open their records.",
           "objective": "Resolve the planted suspicion, the envelope, and Wren's missing ledger.",
           "guidance": "Follow the connected yard, station, and solicitor records; talk with Kit, Ada, and Pembroke about what each paper proves.",
           "locations": [
@@ -4258,6 +4271,8 @@
         {
           "id": "b_confrontation",
           "title": "The committee's account",
+          "gate_reason": "The committee room and Mr Vale's Hampstead house stay closed to you until the Fund treasurer's conduct is firmly proved.",
+          "unlock_text": "The treasurer's conduct is proved beyond doubt. The committee agrees to receive Holmes, and Mr Vale's house is open to you.",
           "objective": "Bring the full evidence together and reach a just ending.",
           "guidance": "Compare Vale's grant account with Ada's evidence, then discuss the findings with the Relief Fund committee.",
           "locations": [

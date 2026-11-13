@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import example from "../../public/stories/example.json";
+import authoredExample from "../../public/stories/example.json";
+import { stripLockText } from "./fixtures/stripLockText";
 import holmes from "../../public/stories/holmesashenvelope.json";
 import { LLMClient } from "../llm/client";
 import { MockBackend } from "../llm/mock";
@@ -14,6 +15,8 @@ import { giveItem } from "./state";
 import { StorySession } from "./storySession";
 import type { AuthoredArea, LengthId, StoryPack } from "./types";
 import { validateStoryPack } from "./validate";
+
+const example = stripLockText(authoredExample);
 
 const PACKS: Record<string, unknown> = { example, holmesashenvelope: holmes };
 

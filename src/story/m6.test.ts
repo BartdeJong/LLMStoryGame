@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import fixture from "../../public/stories/example.json";
+import authoredExample from "../../public/stories/example.json";
+import { stripLockText } from "./fixtures/stripLockText";
 import { LLMClient } from "../llm/client";
 import { MockBackend } from "../llm/mock";
 import { getLengthView } from "./loader";
@@ -8,6 +9,8 @@ import { giveItem } from "./state";
 import { StorySession } from "./storySession";
 import type { StoryPack } from "./types";
 import { validateStoryPack } from "./validate";
+
+const fixture = stripLockText(authoredExample);
 
 function loadPack(): StoryPack {
   const report = validateStoryPack(fixture);

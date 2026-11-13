@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import example from "../../public/stories/example.json";
+import authoredExample from "../../public/stories/example.json";
+import { stripLockText } from "./fixtures/stripLockText";
 import paddington from "../../public/stories/paddingtonhat.json";
 import schema from "../../tools/story-forge/schema/story-pack.schema.json";
 import { LLMClient } from "../llm/client";
@@ -13,6 +14,8 @@ import { createStoryState, giveItem } from "./state";
 import { StorySession } from "./storySession";
 import type { StoryPack } from "./types";
 import { validateStoryPack } from "./validate";
+
+const example = stripLockText(authoredExample);
 
 function loadPack(data: unknown): StoryPack {
   const report = validateStoryPack(structuredClone(data));
@@ -469,5 +472,18 @@ describe("lock text validator warnings and schema", () => {
     const pack = structuredClone(example) as unknown as StoryPack;
     pack.locations.find((location) => location.id === "l_library")!.doors[0]!.lock!.reason = "x".repeat(161);
     expect(validateStoryPack(pack).errors.map((issue) => issue.code)).toContain("TEXT_TOO_LONG");
+  });
+});
+
+describe("authored lock text in the shipped example pack", () => {
+  it("has a reason, lead and unlock line on the tower door and a gate reason on the tower beat", () => {
+    const pack = loadPack(authoredExample);
+    const lock = pack.locations.find((location) => location.id === "l_library")!.doors.find((door) => door.id === "d_library_tower")!.lock!;
+    expect(lock.reason).toBeTruthy();
+    expect(lock.lead).toBeTruthy();
+    expect(lock.unlock_text).toBeTruthy();
+    const beat = pack.lengths.short!.beats.find((candidate) => candidate.id === "b_tower")!;
+    expect(beat.gate_reason).toBeTruthy();
+    expect(beat.unlock_text).toBeTruthy();
   });
 });
