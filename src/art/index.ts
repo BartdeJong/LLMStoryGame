@@ -47,3 +47,4 @@ export {
   validateSpriteSpec,
 } from "./spriteSpec";
 export type { SpriteAccessory, SpriteSpec, SpriteSpecies } from "./spriteSpec";
+export type { StoryLighting } from "./lighting";

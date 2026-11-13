@@ -28,6 +28,19 @@ import {
   wallCropRows,
 } from "./art/glyphs";
 import { RUG_EDGE, mix } from "./art/surfaceTiles";
+import {
+  LIGHT_FALLOFF_STOPS,
+  ambientFor,
+  areaHasLights,
+  capLightRadius,
+  collectLights,
+  effectiveAmbient,
+  flickerFactor,
+  lightCoreColor,
+  mapBoundaryShapes,
+  type LightSource,
+  type Rect,
+} from "./art/lighting";
 import { REFERENCE_VIEW_HEIGHT, REFERENCE_VIEW_WIDTH, computeViewLayout } from "./viewport";
 
 // Extra ambient specks keep the density of the original 320x180 view on bigger screens.
@@ -81,6 +94,20 @@ function silhouette(source: HTMLCanvasElement, color: string): HTMLCanvasElement
     byColor.set(color, canvas);
   }
   return canvas;
+}
+
+// "#rgb" or "#rrggbb" as an rgba() string; anything else is returned unchanged.
+function withAlpha(color: string, alpha: number): string {
+  let hex = /^#([0-9a-f]{3})$/i.test(color) ? color.slice(1).replace(/./g, "$&$&") : "";
+  if (!hex && /^#[0-9a-f]{6}$/i.test(color)) hex = color.slice(1);
+  if (!hex) return color;
+  return `rgba(${parseInt(hex.slice(0, 2), 16)}, ${parseInt(hex.slice(2, 4), 16)}, ${parseInt(hex.slice(4, 6), 16)}, ${alpha})`;
+}
+
+// Colour multiplied over everything outside the map, and the fill drawn there; both near black.
+const VOID_SHADE_DARKEN = 0.8;
+function voidColor(edge: string): string {
+  return mix(edge, "#000000", VOID_SHADE_DARKEN);
 }
 
 function hashId(text: string): number {
@@ -145,6 +172,12 @@ export class Renderer {
   private resizeObserver: ResizeObserver | null = null;
   private viewWidthPx = REFERENCE_VIEW_WIDTH;
   private viewHeightPx = REFERENCE_VIEW_HEIGHT;
+  private lightCanvas: HTMLCanvasElement | null = null;
+  private lightContext: CanvasRenderingContext2D | null = null;
+  private readonly lightSprites = new Map<string, HTMLCanvasElement>();
+  private lightBase: HTMLCanvasElement | null = null;
+  private lightBaseKey = "";
+  private readonly lightPositions = new Map<string, { x: number; y: number }>();
 
   // World pixels across and down the canvas; they follow the shape of the screen.
   get viewWidth(): number {
@@ -212,7 +245,7 @@ export class Renderer {
     const context = this.context;
     const viewWidth = this.viewWidthPx;
     const viewHeight = this.viewHeightPx;
-    context.fillStyle = world.style ? mix(PALETTES[world.palette].ink, "#000000", 0.35) : "#17251d";
+    context.fillStyle = voidColor(this.storyTheme.lighting.edge);
     context.fillRect(0, 0, viewWidth, viewHeight);
 
     const firstColumn = Math.floor(camera.x / TILE_SIZE);
@@ -257,6 +290,7 @@ export class Renderer {
     this.drawDecor(world, camera);
 
     this.frameWorld = world;
+    this.drawCharacterShadows(world, player, camera, presentation);
     for (const entity of world.entities ?? []) this.drawEntity(world.palette, entity, camera, presentation);
     this.drawPlayer(
       world.palette,
@@ -266,6 +300,7 @@ export class Renderer {
       playerMoving,
       presentation?.playerSprite,
     );
+    this.drawLighting(world, player, camera, presentation);
     this.drawAtmosphere(world);
     this.drawStoryAtmosphere(context);
     if (interactionTarget) this.drawInteractionMarker(interactionTarget, camera, world.palette);
@@ -495,15 +530,183 @@ export class Renderer {
   }
 
   private drawObjectShadow(x: number, y: number): void {
+    this.drawContactShadow(x + 8, y + 15, 8, 2.5, 0.42);
+  }
+
+  // A soft dark ellipse on the ground where something stands.
+  private drawContactShadow(cx: number, footY: number, rx: number, ry: number, alpha: number): void {
     const context = this.context;
     context.save();
-    const shadow = context.createRadialGradient(x + 8, y + 15, 0, x + 8, y + 15, 8);
-    shadow.addColorStop(0, "rgba(0, 0, 0, 0.42)");
+    const shadow = context.createRadialGradient(cx, footY, 0, cx, footY, rx);
+    shadow.addColorStop(0, `rgba(0, 0, 0, ${alpha})`);
     shadow.addColorStop(1, "rgba(0, 0, 0, 0)");
     context.fillStyle = shadow;
     context.beginPath();
-    context.ellipse(x + 8, y + 15, 8, 2.5, 0, 0, Math.PI * 2);
+    context.ellipse(cx, footY, rx, ry, 0, 0, Math.PI * 2);
     context.fill();
+    context.restore();
+  }
+
+  // Characters and the player get a small shadow under their feet; drawn before them so they stand on it.
+  private drawCharacterShadows(world: Area, player: Position, camera: Position, presentation?: EntityPresentation): void {
+    for (const entity of world.entities ?? []) {
+      if (!entity.sprite && !entity.character) continue;
+      const character = presentation?.characters.get(entity.id);
+      const x = Math.round((character?.x ?? entity.x) * TILE_SIZE - camera.x);
+      const y = Math.round((character?.y ?? entity.y) * TILE_SIZE - camera.y);
+      if (x < -TILE_SIZE || y < -TILE_SIZE || x > this.viewWidthPx || y > this.viewHeightPx) continue;
+      this.drawContactShadow(x + 8, y + 15, 6, 2, 0.4);
+    }
+    this.drawContactShadow(Math.round(player.x - camera.x), Math.round(player.y - camera.y) + 7, 6, 2, 0.4);
+  }
+
+  private ensureLightCanvas(): CanvasRenderingContext2D | null {
+    if (!this.lightCanvas) {
+      this.lightCanvas = document.createElement("canvas");
+      this.lightContext = this.lightCanvas.getContext("2d");
+    }
+    if (this.lightCanvas.width !== this.viewWidthPx || this.lightCanvas.height !== this.viewHeightPx) {
+      this.lightCanvas.width = this.viewWidthPx;
+      this.lightCanvas.height = this.viewHeightPx;
+    }
+    return this.lightContext;
+  }
+
+  // A soft round glow: the colour at the centre fading to nothing at the edge.
+  private lightSprite(color: string, radius: number): HTMLCanvasElement {
+    const safeColor = /^#(?:[0-9a-f]{3}|[0-9a-f]{6})$/i.test(color) ? color : "#ffd9a0";
+    const key = `${safeColor}|${radius}`;
+    let sprite = this.lightSprites.get(key);
+    if (!sprite) {
+      sprite = document.createElement("canvas");
+      sprite.width = sprite.height = Math.max(1, Math.ceil(radius * 2));
+      try {
+        const context = sprite.getContext("2d");
+        if (context) {
+          const gradient = context.createRadialGradient(radius, radius, 0, radius, radius, radius);
+          gradient.addColorStop(0, lightCoreColor(safeColor));
+          for (const [distance, alpha] of LIGHT_FALLOFF_STOPS.slice(1)) {
+            gradient.addColorStop(distance, withAlpha(safeColor, alpha));
+          }
+          context.fillStyle = gradient;
+          context.fillRect(0, 0, sprite.width, sprite.height);
+        }
+      } catch {
+        // Leave the sprite empty rather than break the frame.
+      }
+      this.lightSprites.set(key, sprite);
+    }
+    return sprite;
+  }
+
+  // Ambient colour plus darkened edges; only rebuilt when the view, theme, ambient or visible map edge changes.
+  private lightBaseLayer(ambient: string, edgeColor: string, map: Rect): HTMLCanvasElement | null {
+    const width = this.viewWidthPx;
+    const height = this.viewHeightPx;
+    const shapes = mapBoundaryShapes(map, { width, height });
+    const mapKey = shapes.outside.length || shapes.bands.length || shapes.corners.length ? `${map.x},${map.y},${map.w},${map.h}` : "-";
+    const key = `${width}x${height}|${ambient}|${edgeColor}|${mapKey}`;
+    if (this.lightBase && this.lightBaseKey === key) return this.lightBase;
+    this.lightBase ??= document.createElement("canvas");
+    const base = this.lightBase;
+    if (base.width !== width) base.width = width;
+    if (base.height !== height) base.height = height;
+    const context = base.getContext("2d");
+    if (!context) return null;
+    context.globalCompositeOperation = "source-over";
+    context.clearRect(0, 0, width, height);
+    context.fillStyle = ambient;
+    context.fillRect(0, 0, width, height);
+    context.globalCompositeOperation = "multiply";
+    try {
+      const edge = context.createRadialGradient(
+        width / 2,
+        height / 2,
+        Math.min(width, height) * 0.15,
+        width / 2,
+        height / 2,
+        Math.hypot(width, height) * 0.5,
+      );
+      edge.addColorStop(0, withAlpha(edgeColor, 0));
+      edge.addColorStop(1, edgeColor);
+      context.fillStyle = edge;
+      context.fillRect(0, 0, width, height);
+      // Outside the map is near black; just inside, the shade eases into the ambient.
+      const shade = voidColor(edgeColor);
+      context.fillStyle = shade;
+      for (const rect of shapes.outside) context.fillRect(rect.x, rect.y, rect.w, rect.h);
+      for (const band of shapes.bands) {
+        const fade = context.createLinearGradient(band.from.x, band.from.y, band.to.x, band.to.y);
+        fade.addColorStop(0, shade);
+        fade.addColorStop(1, withAlpha(shade, 0));
+        context.fillStyle = fade;
+        context.fillRect(band.rect.x, band.rect.y, band.rect.w, band.rect.h);
+      }
+      for (const corner of shapes.corners) {
+        const fade = context.createRadialGradient(corner.center.x, corner.center.y, 0, corner.center.x, corner.center.y, corner.radius);
+        fade.addColorStop(0, withAlpha(shade, 0));
+        fade.addColorStop(1, shade);
+        context.fillStyle = fade;
+        context.fillRect(corner.rect.x, corner.rect.y, corner.rect.w, corner.rect.h);
+      }
+    } catch {
+      // Keep just the ambient colour if the edge colour is unusable.
+    }
+    this.lightBaseKey = key;
+    return base;
+  }
+
+  // Dims the view with the area's ambient colour and darkened edges, then lets lights cut through it.
+  private drawLighting(world: Area, player: Position, camera: Position, presentation?: EntityPresentation): void {
+    if (document.documentElement.dataset.highContrast === "true") return;
+    const light = this.ensureLightCanvas();
+    if (!light) return;
+    const viewWidth = this.viewWidthPx;
+    const viewHeight = this.viewHeightPx;
+    const lighting = this.storyTheme.lighting;
+    const map: Rect = {
+      x: Math.round(-camera.x),
+      y: Math.round(-camera.y),
+      w: world.width * TILE_SIZE,
+      h: world.height * TILE_SIZE,
+    };
+    const base = this.lightBaseLayer(effectiveAmbient(ambientFor(lighting, world.biome), areaHasLights(world)), lighting.edge, map);
+    if (!base) return;
+    const reduced = document.documentElement.dataset.reducedMotion === "true";
+    const time = performance.now() / 1000;
+
+    light.save();
+    light.globalCompositeOperation = "copy";
+    light.drawImage(base, 0, 0);
+
+    // Keep lights out of the void beyond the map edge.
+    light.beginPath();
+    light.rect(map.x, map.y, map.w, map.h);
+    light.clip();
+    light.globalCompositeOperation = "lighter";
+    this.lightPositions.clear();
+    for (const [id, character] of presentation?.characters ?? []) this.lightPositions.set(id, { x: character.x, y: character.y });
+    const sources: LightSource[] = collectLights(world, camera, { width: viewWidth, height: viewHeight }, this.lightPositions);
+    sources.push({
+      x: player.x - camera.x,
+      y: player.y - camera.y - 4,
+      color: "#fff1d6",
+      radius: 36,
+      intensity: 0.35,
+      flicker: 0,
+      phase: 0,
+    });
+    for (const source of sources) {
+      const radius = Math.round(capLightRadius(source.radius, map.w, map.h));
+      light.globalAlpha = Math.min(1, source.intensity * flickerFactor(time, source.phase, source.flicker, reduced));
+      light.drawImage(this.lightSprite(source.color, radius), source.x - radius, source.y - radius);
+    }
+    light.restore();
+
+    const context = this.context;
+    context.save();
+    context.globalCompositeOperation = "multiply";
+    context.drawImage(this.lightCanvas!, 0, 0);
     context.restore();
   }
 
@@ -682,28 +885,8 @@ export class Renderer {
 
   private drawAtmosphere(world: Area): void {
     const context = this.context;
-    const light = world.biome === "cave" || world.biome === "ruins"
-      ? "rgba(133, 148, 196, 0.10)"
-      : world.biome === "building"
-        ? "rgba(255, 214, 140, 0.06)"
-        : world.biome === "shore"
-        ? "rgba(142, 214, 224, 0.09)"
-        : "rgba(255, 224, 157, 0.09)";
     const viewWidth = this.viewWidthPx;
     const viewHeight = this.viewHeightPx;
-    // Matches the original 320x180 vignette and keeps the same falloff on any shape.
-    const vignette = context.createRadialGradient(
-      viewWidth / 2,
-      viewHeight / 2,
-      Math.min(viewWidth, viewHeight) * 0.15,
-      viewWidth / 2,
-      viewHeight / 2,
-      Math.hypot(viewWidth, viewHeight) * 0.627,
-    );
-    vignette.addColorStop(0, light);
-    vignette.addColorStop(1, world.biome === "building" ? "rgba(60, 30, 14, 0.07)" : "rgba(18, 27, 24, 0.13)");
-    context.fillStyle = vignette;
-    context.fillRect(0, 0, viewWidth, viewHeight);
     if (world.palette === "underwater") {
       context.fillStyle = "rgba(40, 150, 165, 0.14)";
       context.fillRect(0, 0, viewWidth, viewHeight);

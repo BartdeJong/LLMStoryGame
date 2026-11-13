@@ -1,4 +1,5 @@
 import { hashSeed } from "./random";
+import type { StoryLighting } from "./lighting";
 
 export type StoryAtmosphere = "fireflies" | "tide-glow" | "falling-ash" | "motes";
 
@@ -13,9 +14,10 @@ export interface StoryVisualTheme {
   readonly activeControl: string;
   readonly atmosphere: StoryAtmosphere;
   readonly particle: string;
+  readonly lighting: StoryLighting;
 }
 
-const STORY_THEMES: Readonly<Record<string, StoryVisualTheme>> = {
+export const STORY_THEMES: Readonly<Record<string, StoryVisualTheme>> = {
   example: {
     canvasFilter: "sepia(0.14) saturate(1.12) hue-rotate(-8deg) brightness(1.06)",
     frame: "#bd9651",
@@ -27,6 +29,7 @@ const STORY_THEMES: Readonly<Record<string, StoryVisualTheme>> = {
     activeControl: "rgb(126 91 47 / 88%)",
     atmosphere: "fireflies",
     particle: "#f5d477",
+    lighting: { outdoor: "#f2eee6", indoor: "#d9cdb8", underground: "#a9a6b8", edge: "#8f8a84" },
   },
   holmesashenvelope: {
     canvasFilter: "sepia(0.38) saturate(0.72) brightness(0.82) contrast(1.12)",
@@ -39,6 +42,7 @@ const STORY_THEMES: Readonly<Record<string, StoryVisualTheme>> = {
     activeControl: "rgb(91 73 57 / 92%)",
     atmosphere: "falling-ash",
     particle: "#b8b2a8",
+    lighting: { outdoor: "#f6f2ea", indoor: "#e2d6c0", underground: "#b4b1c2", edge: "#9a948c" },
   },
   paddingtonhat: {
     canvasFilter: "sepia(0.48) saturate(1.28) hue-rotate(-8deg) brightness(1.04)",
@@ -51,6 +55,7 @@ const STORY_THEMES: Readonly<Record<string, StoryVisualTheme>> = {
     activeControl: "rgb(131 75 28 / 90%)",
     atmosphere: "motes",
     particle: "#ffd27a",
+    lighting: { outdoor: "#fbf6ee", indoor: "#f0e4cc", underground: "#b8b0b8", edge: "#a39a8e" },
   },
 };
 
@@ -70,5 +75,6 @@ export function getStoryVisualTheme(storyId: string): StoryVisualTheme {
     activeControl: `hsl(${hue} 38% 38% / 92%)`,
     atmosphere: "motes",
     particle: `hsl(${hue} 74% 82%)`,
+    lighting: { outdoor: "#f0ede6", indoor: "#d9cdb8", underground: "#a9a6b8", edge: "#8e8a86" },
   };
 }

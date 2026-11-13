@@ -16,3 +16,5 @@ export { LEGACY_SHAPE_GLYPHS, getVisualCanvas, renderCatalogOrLegacy, renderLega
 export {
   BIG_FURNITURE_SCALE, canEnlarge, glyphBottomRow, isBigFurniture, isWallMounted, wallCropRows,
 } from "./placement";
+export { GLYPH_LIGHTS, getGlyphLight } from "./lights";
+export type { GlyphLight } from "./lights";

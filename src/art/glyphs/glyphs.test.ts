@@ -4,6 +4,7 @@ import { resolveVisual, tokenizeVisualText } from "./matcher";
 import { lintGlyphCatalog } from "./lint";
 import { renderGlyph } from "./render";
 import { getVisualCanvas } from "./legacy";
+import { GLYPH_LIGHTS } from "./lights";
 
 afterEach(() => {
   vi.unstubAllGlobals();
@@ -158,5 +159,12 @@ describe("glyph lint", () => {
     const issues = lintGlyphCatalog([malformed]);
     expect(issues.length).toBeGreaterThan(3);
     expect(issues.every((issue) => issue.glyphId === "Bad-Id")).toBe(true);
+  });
+});
+
+describe("glyph lights", () => {
+  it("only light glyphs that exist in the catalog", () => {
+    const ids = new Set(GLYPH_CATALOG.map((glyph) => glyph.id));
+    for (const id of Object.keys(GLYPH_LIGHTS)) expect(ids.has(id), id).toBe(true);
   });
 });

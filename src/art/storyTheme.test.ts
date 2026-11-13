@@ -25,4 +25,17 @@ describe("story visual themes", () => {
     expect(theme.frame).toBe("#dc8b35");
     expect(theme.accent).toBe("#ffb347");
   });
+
+  it("gives every theme moderate ambient lighting", () => {
+    for (const id of ["example", "holmesashenvelope", "paddingtonhat", "generated-story"]) {
+      const { lighting } = getStoryVisualTheme(id);
+      for (const key of ["outdoor", "indoor", "underground", "edge"] as const) {
+        expect(lighting[key], `${id} ${key}`).toMatch(/^#[0-9a-f]{6}$/i);
+      }
+      for (const key of ["outdoor", "indoor", "underground"] as const) {
+        const value = parseInt(lighting[key].slice(1), 16);
+        for (const channel of [value >> 16, (value >> 8) & 255, value & 255]) expect(channel).toBeGreaterThanOrEqual(0x90);
+      }
+    }
+  });
 });
