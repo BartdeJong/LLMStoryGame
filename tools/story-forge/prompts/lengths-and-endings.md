@@ -14,6 +14,12 @@ beat's locations. The opening screen and persistent in-game lead use these
 authored fields; do not rely on generated area descriptions to explain the plot
 or tell the player what to do.
 
+Every beat after the first keeps its places shut until the previous beat's
+`must_find` holds. Give it a `gate_reason` (at most 200 characters, shown when
+the player tries a door into those places: why it is shut for now, in the
+story's voice, hinting at the previous beat's goal) and an `unlock_text` (at
+most 200 characters, announced when the places open).
+
 For each ending that depends on the player solving the case, add a
 `summation` of 2-4 `{ question, truth_id }` entries. Every `truth_id` must
 appear in that ending's `conditions.truths`, so list the truths the player

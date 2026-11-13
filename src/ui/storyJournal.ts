@@ -3,6 +3,7 @@ import { PROOF_SLOTS } from "../story/config";
 import type { ProofChoice } from "../story/proof";
 import type { AnswerOutcome } from "../story/state";
 import type { EvidenceRef } from "../story/statements";
+import type { JournalLead } from "../story/storySession";
 import { createEvidencePicker } from "./evidencePicker";
 import { fillPips, progressLabel, type HudProgress } from "./objectiveHud";
 import { el } from "./dom";
@@ -53,6 +54,7 @@ export interface JournalExtras {
   readonly judged?: readonly JournalJudged[];
   readonly ruledOut: readonly JournalRuledOut[];
   readonly progress?: Pick<HudProgress, "truthsFound" | "truthsTotal">;
+  readonly leads?: readonly JournalLead[];
 }
 
 export interface StoryJournal {
@@ -107,6 +109,7 @@ export function createStoryJournal(
   for (const [value, label] of [
     ["all", "All notes"],
     ["questions", "Open questions"],
+    ["leads", "Leads"],
     ["facts", "Story facts"],
     ["evidence", "Evidence"],
     ["statements", "What people said"],
@@ -132,6 +135,12 @@ export function createStoryJournal(
   const questionsList = el("div", "journal-list");
   const questionsEmpty = el("p", "inventory-empty");
   questionsEmpty.textContent = "No open questions right now.";
+
+  const leadsHeading = el("p", "journal-heading");
+  leadsHeading.textContent = "Leads";
+  const leadsList = el("div", "journal-list");
+  const leadsEmpty = el("p", "inventory-empty");
+  leadsEmpty.textContent = "No locked doors or puzzles noted yet.";
 
   const ruledHeading = el("p", "journal-heading");
   ruledHeading.textContent = "Ruled out";
@@ -164,6 +173,7 @@ export function createStoryJournal(
   requestsEmpty.textContent = "No one has asked you to find anything yet.";
   panel.append(title, progressLine, search, filter, status,
     questionsHeading, questionsList, questionsEmpty,
+    leadsHeading, leadsList, leadsEmpty,
     factsHeading, factsList, factsEmpty,
     evidenceHeading, evidenceList, evidenceEmpty,
     statementsHeading, statementsList, statementsEmpty,
@@ -172,6 +182,7 @@ export function createStoryJournal(
 
   const sections = [
     { key: "questions", heading: questionsHeading, list: questionsList, empty: questionsEmpty },
+    { key: "leads", heading: leadsHeading, list: leadsList, empty: leadsEmpty },
     { key: "facts", heading: factsHeading, list: factsList, empty: factsEmpty },
     { key: "evidence", heading: evidenceHeading, list: evidenceList, empty: evidenceEmpty },
     { key: "statements", heading: statementsHeading, list: statementsList, empty: statementsEmpty },
@@ -352,6 +363,32 @@ export function createStoryJournal(
         }
         row.dataset.search = `${question.question} ${question.evidence.join(" ")}`.toLocaleLowerCase();
         questionsList.append(row);
+      }
+
+      leadsList.replaceChildren();
+      const leads = extras.leads ?? [];
+      leadsEmpty.hidden = leads.length > 0;
+      for (const lead of leads) {
+        const row = el("article", `journal-entry${lead.resolved !== undefined ? " journal-entry-resolved" : ""}`);
+        const label = el("p", "journal-entry-label");
+        label.textContent = lead.title;
+        const reason = el("p", "journal-entry-text");
+        reason.textContent = lead.reason;
+        row.append(label, reason);
+        let searchable = `${lead.title} ${lead.reason}`;
+        if (lead.resolved !== undefined) {
+          const opened = el("p", "journal-entry-location");
+          opened.textContent = `Opened: ${lead.resolved}`;
+          row.append(opened);
+          searchable += ` ${opened.textContent}`;
+        } else if (lead.lead) {
+          const hint = el("p", "journal-entry-location");
+          hint.textContent = `Lead: ${lead.lead}`;
+          row.append(hint);
+          searchable += ` ${hint.textContent}`;
+        }
+        row.dataset.search = searchable.toLocaleLowerCase();
+        leadsList.append(row);
       }
 
       ruledList.replaceChildren();

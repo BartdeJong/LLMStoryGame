@@ -90,6 +90,7 @@ export interface StoryState {
   progressLog?: ProgressEntry[]; // clues, truths and items in the order they were found
   statementsHeard?: string[]; // statement ids the player has heard (save format 7)
   caseRecord?: CaseRecord; // answers and challenges (save format 7)
+  leadsSeen?: string[]; // lock keys the player has met (src/story/locks.ts), for the journal's Leads
   endingReached?: EndingScene; // set once the ending has played; the game then runs the epilogue
 }
 
@@ -97,6 +98,17 @@ export function progressLogOf(state: StoryState): readonly ProgressEntry[] {
   return Array.isArray(state.progressLog)
     ? state.progressLog.filter((entry) => typeof entry?.id === "string" && typeof entry.kind === "string")
     : [];
+}
+
+export function leadsOf(state: StoryState): readonly string[] {
+  return Array.isArray(state.leadsSeen) ? state.leadsSeen.filter((key) => typeof key === "string") : [];
+}
+
+// Returns true only the first time a lock is noted.
+export function rememberLead(state: StoryState, key: string): boolean {
+  if (leadsOf(state).includes(key)) return false;
+  (state.leadsSeen ??= []).push(key);
+  return true;
 }
 
 function logProgress(state: StoryState, kind: ProgressKind, id: string): void {

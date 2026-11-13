@@ -49,7 +49,7 @@ describe("story world layout", () => {
     expect(story.isLeadLocation("l_square")).toBe(true);
     expect(story.isLeadLocation("l_library")).toBe(false);
     expect(story.describeDoorLockBriefly(square.id, toBakery.id)).toBeNull();
-    expect(story.describeDoorLockBriefly(square.id, toLibrary.id)).toBe("Opens later in the story");
+    expect(story.describeDoorLockBriefly(square.id, toLibrary.id)).toBe("Ask Mira");
     expect(story.describeDoorDestination(square.id, toBakery.id)).toBe(toBakery.label);
 
     const { area: bakery, spawn } = story.enterDoor(square.id, toBakery.id);

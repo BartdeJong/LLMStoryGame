@@ -3,8 +3,10 @@ import { MIN_SPRITE_DIFFERENCES, spriteDifferences, validateSpriteSpec, type Spr
 import { COMPLEXITY, DEFAULT_TEXT_LIMIT, DIALOGUE_LIMITS, PROOF_SLOTS, TEXT_LIMITS, type Range } from "./config";
 import { narrationIssue } from "../dialogue/lineCleanup";
 import { checkSchema, joinPath } from "./jsonSchema";
+import { describeMissing } from "./locks";
 import { proofPieces, requiredCount } from "./proof";
 import { heldEvidence, isSatisfied, missingOf, orderedLocations, requirementEntries, solveLength, type SolveResult } from "./solver";
+import type { StoryState } from "./state";
 import { LENGTH_IDS, type CastMember, type LengthDefinition, type LengthId, type Location, type Proof, type Requirement, type SourceRef, type StoryPack } from "./types";
 import { placedObjects } from "./slice";
 import { GLYPH_STATES, getGlyph, resolveVisual, tokenizeVisualText } from "../art/glyphs";
@@ -383,8 +385,68 @@ export function validateStoryPack(data: unknown): ValidationReport {
     if (!usedItems.has(x.id)) warn("UNUSED_ITEM", `items[${i}]`, `item "${x.id}" is never required by a door, clue, goal state, beat or twist.`);
   });
   checkAuthoredAreas(pack, error, warn);
+  checkLockText(pack, definedLengths, warn);
 
   return finish(pack);
+}
+
+function escapeRegExp(text: string): string {
+  return text.replace(/[.*+?^${}()|[\]\\]/g, (char) => `\\${char}`);
+}
+
+// Locks, gated clues and gated beats should explain themselves. Without authored text the game derives a line from
+// the pack (src/story/locks.ts); these warnings point at the places where that derived line would be vague, or
+// where nobody in the story ever points the player at the key.
+function checkLockText(pack: StoryPack, lengths: readonly LengthId[], warn: Report): void {
+  const nothingDone = { resolvedGoalStates: [], itemsHeld: [], truthsFound: [], truthsReady: [] } as unknown as StoryState;
+  const isEmpty = (req: Requirement | undefined): boolean => !req || ((req.items?.length ?? 0) + (req.goal_states?.length ?? 0) + (req.truths?.length ?? 0)) === 0;
+
+  pack.locations.forEach((location, i) => location.doors.forEach((door, j) => {
+    if (!door.lock || isEmpty(door.lock) || door.lock.reason) return;
+    if (describeMissing(pack, nothingDone, door.lock).vague) {
+      warn("LOCK_NO_REASON", `locations[${i}].doors[${j}].lock`, `the lock on door "${door.id}" has no reason and its source cannot be traced. Add a "reason" that says why it is shut.`);
+    }
+  }));
+  pack.clues.forEach((clue, i) => {
+    if (!clue.object_id || isEmpty(clue.requirements) || clue.locked_glimpse) return;
+    if (describeMissing(pack, nothingDone, clue.requirements).vague) {
+      warn("LOCK_NO_REASON", `clues[${i}]`, `clue "${clue.id}" is gated, anchored to an object and its source cannot be traced. Add a "locked_glimpse" that hints why it is out of reach.`);
+    }
+  });
+  for (const lengthId of lengths) {
+    const beats = (pack.lengths[lengthId] as LengthDefinition).beats;
+    beats.forEach((beat, index) => {
+      const previous = beats[index - 1];
+      if (previous && !isEmpty(previous.must_find) && !beat.gate_reason) {
+        warn("BEAT_GATE_NO_REASON", `lengths.${lengthId}.beats[${index}]`, `beat "${beat.id}" has places that stay shut until "${previous.id}" is done but no "gate_reason" says why.`);
+      }
+    });
+  }
+
+  // Text the player can hear that could point at a lock's key.
+  const spoken = pack.cast.flatMap((member) => [
+    ...member.knowledge.flatMap((item) => [item.text, ...item.keywords]),
+    ...member.goal_hints.unmet, ...member.goal_hints.in_progress, ...member.goal_hints.resolved,
+  ]).concat(pack.clues.map((clue) => clue.text)).join(" ");
+  const mentioned = (term: string): boolean =>
+    new RegExp(`(?<![\\p{L}\\p{N}])${escapeRegExp(term)}(?![\\p{L}\\p{N}])`, "iu").test(spoken);
+  pack.locations.forEach((location, i) => location.doors.forEach((door, j) => {
+    const lock = door.lock;
+    if (!lock || lock.lead || isEmpty(lock) || (!lock.items?.length && !lock.goal_states?.length)) return;
+    const terms: string[] = [];
+    for (const id of lock.items ?? []) {
+      const name = pack.items.find((item) => item.id === id)?.name;
+      if (name) terms.push(name, name.split(/\s+/).pop() ?? name);
+    }
+    if (lock.goal_states?.length) {
+      const target = pack.locations.find((candidate) => candidate.id === door.to)?.name ?? "";
+      terms.push(target.replace(/^.*?['’]s\s+/, "").replace(/^the\s+/i, ""));
+    }
+    const wanted = terms.map((term) => term.trim()).filter((term) => term.length > 2);
+    if (wanted.length > 0 && !wanted.some(mentioned)) {
+      warn("LOCK_NO_LEAD", `locations[${i}].doors[${j}].lock`, `nobody mentions what opens door "${door.id}" (looked for ${wanted.map((term) => `"${term}"`).join(", ")}). Add a "lead" or let a character say it.`);
+    }
+  }));
 }
 
 // Every character and the player needs a valid sprite spec, and no two may look alike.

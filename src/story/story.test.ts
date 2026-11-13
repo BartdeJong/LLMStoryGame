@@ -11,6 +11,8 @@ import storyIndex from "../../public/stories/index.json";
 import holmesPack from "../../public/stories/holmesashenvelope.json";
 import paddingtonPack from "../../public/stories/paddingtonhat.json";
 
+// The example pack has no authored lock text on purpose: it exercises the derived fallback (src/story/locks.ts).
+const LOCK_TEXT_CODES = ["LOCK_NO_REASON", "BEAT_GATE_NO_REASON", "LOCK_NO_LEAD"];
 const fresh = (): StoryPack => structuredClone(fixture) as unknown as StoryPack;
 const codes = (data: unknown): string[] => validateStoryPack(data).errors.map((e) => e.code);
 
@@ -31,7 +33,7 @@ describe("example pack", () => {
     expect(checkSchema(fixture, schema as Record<string, unknown>)).toEqual([]);
     const report = validateStoryPack(fixture);
     expect(report.errors.map(formatIssue)).toEqual([]);
-    expect(report.warnings.filter((issue) => !issue.code.startsWith("VISUAL_")).map(formatIssue)).toEqual([]);
+    expect(report.warnings.filter((issue) => !issue.code.startsWith("VISUAL_") && !LOCK_TEXT_CODES.includes(issue.code)).map(formatIssue)).toEqual([]);
   });
 
   it("can be solved to its ending", () => {
@@ -153,7 +155,7 @@ describe("validator rejects broken packs", () => {
     pack.items.push({ ...pack.items[2], id: "i_spare", found_at: { type: "character", id: "c_mira" } });
     const report = validateStoryPack(pack);
     expect(report.ok).toBe(true);
-    expect(report.warnings.filter((w) => !w.code.startsWith("VISUAL_")).map((w) => w.code).sort()).toEqual(["UNUSED_CAST", "UNUSED_ITEM"]);
+    expect(report.warnings.filter((w) => !w.code.startsWith("VISUAL_") && !LOCK_TEXT_CODES.includes(w.code)).map((w) => w.code).sort()).toEqual(["UNUSED_CAST", "UNUSED_ITEM"]);
   });
 });
 

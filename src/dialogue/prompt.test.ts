@@ -8,7 +8,7 @@ import { getLengthView } from "../story/loader";
 import { storyMockRespond } from "../story/mockResponder";
 import { ConversationController } from "./controller";
 import {
-  buildDialoguePrompt, COMPACT_HISTORY_CHARS, COMPACT_HISTORY_TURNS, CONVERSATION_END, CONVERSATION_START,
+  buildDialoguePrompt, COMPACT_HISTORY_CHARS, LOCK_NOTES_INSTRUCTION, COMPACT_HISTORY_TURNS, CONVERSATION_END, CONVERSATION_START,
 } from "./prompt";
 import type { DialoguePromptInput } from "./prompt";
 import type { ConversationTurn } from "./types";
@@ -34,6 +34,27 @@ function input(overrides: Partial<DialoguePromptInput> = {}): DialoguePromptInpu
 function transcript(prompt: string): string {
   return prompt.split(`${CONVERSATION_START}\n`)[1]!.split(`\n${CONVERSATION_END}`)[0]!;
 }
+
+describe("lock notes", () => {
+  const note = "The way into Clock Tower stays shut until: Oswin gets his overdue book back.";
+  const lines = `${note}
+${LOCK_NOTES_INSTRUCTION}
+`;
+
+  it.each(["compact", "standard"] as const)("adds the notes after the goal hint in the %s prompt", (style) => {
+    const plain = buildDialoguePrompt(input({ style }));
+    const noted = buildDialoguePrompt(input({ style, context: { ...context, lockNotes: [note] } }));
+    expect(noted).toContain(note);
+    expect(noted.indexOf(note)).toBeGreaterThan(noted.indexOf("I still need the overdue book."));
+    expect(noted.replace(lines, "")).toBe(plain);
+    expect(noted.split(LOCK_NOTES_INSTRUCTION)).toHaveLength(2);
+  });
+
+  it.each(["compact", "standard"] as const)("leaves the %s prompt unchanged when there are no notes", (style) => {
+    const plain = buildDialoguePrompt(input({ style }));
+    expect(buildDialoguePrompt(input({ style, context: { ...context, lockNotes: [] } }))).toBe(plain);
+  });
+});
 
 describe("compact dialogue prompts", () => {
   it("prioritizes the latest question and selected facts without including secrets or static goals", () => {

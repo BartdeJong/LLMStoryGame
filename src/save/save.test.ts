@@ -313,6 +313,14 @@ describe("save persistence", () => {
     expect(() => normalizeSave({ ...save, storyState: { ...save.storyState, progressLog: [{ kind: "x" }] } })).toThrow();
   });
 
+  it("keeps leads seen, loads saves without them and rejects malformed ones", () => {
+    const save = makeSave();
+    expect(normalizeSave(JSON.parse(JSON.stringify(save))).storyState.leadsSeen).toBeUndefined();
+    save.storyState.leadsSeen = ["door:l_a|l_b", "beat:b_out"];
+    expect(normalizeSave(JSON.parse(JSON.stringify(save))).storyState.leadsSeen).toEqual(save.storyState.leadsSeen);
+    expect(() => normalizeSave({ ...save, storyState: { ...save.storyState, leadsSeen: [1] } })).toThrow();
+  });
+
   it("rejects invalid imported files before storing them", async () => {
     const repository = createRepository();
 

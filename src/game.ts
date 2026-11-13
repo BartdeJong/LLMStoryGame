@@ -132,7 +132,6 @@ export class Game {
   private readonly inventoryUI: InventoryUI;
   private readonly storyJournal: StoryJournal;
   private readonly caseOverlay: CaseOverlay;
-  private readonly lockedDoors = new Set<string>();
   private frameCount = 0;
   private greetingTimer = 0;
   private caseOffered = false;
@@ -547,6 +546,7 @@ export class Game {
 
   private toggleMap(): void {
     soundEffects.play("map");
+    if (!this.worldMap.isOpen) this.story.recordMapLeads();
     this.worldMap.toggle();
   }
 
@@ -559,7 +559,7 @@ export class Game {
     this.syncAudio();
     this.celebrateProgress();
     this.frameCount += 1;
-    if (this.frameCount % 20 === 0) this.announceUnlockedDoors();
+    if (this.frameCount % 20 === 0) this.announceUnlocks();
     if (!this.isInteractive) this.walk = null;
     if (!this.paused) this.update(delta);
     const world = this.story.getArea(this.areaId);
@@ -588,32 +588,23 @@ export class Game {
     this.animationFrame = requestAnimationFrame(this.frame);
   };
 
-  // Tells the player when something they did opened a door that was locked before.
-  private announceUnlockedDoors(): void {
+  // Tells the player, in the story's words, when something they did opened a lock.
+  // `before` is what the screen already says (a message, or a dialogue notice that is not shown yet); the
+  // announcement follows it instead of replacing it. Only the unlock text goes to the journal's live region.
+  private announceUnlocks(before = ""): void {
     if (this.transitioning) return;
-    const opened: string[] = [];
-    const newAreas: string[] = [];
-    for (const area of this.story.getAreas()) {
-      for (const door of area.doors) {
-        if (!door.targetAreaId) continue;
-        const key = `${area.id}>${door.id}`;
-        if (this.story.isDoorLocked(area.id, door.id)) {
-          this.lockedDoors.add(key);
-          continue;
-        }
-        if (!this.lockedDoors.delete(key)) continue;
-        const destination = this.story.describeDoorDestination(area.id, door.id) ?? door.label;
-        opened.push(`${door.label} in ${area.name}`);
-        if (!this.story.state.visitedAreas.includes(door.targetAreaId)) newAreas.push(destination);
-      }
+    const unlocks = this.story.takeUnlocks();
+    if (unlocks.length === 0) {
+      if (before && this.dialogueBox.isOpen) this.dialogueBox.showNotice(before);
+      return;
     }
-    if (opened.length === 0) return;
     soundEffects.play("door");
-    let text = `Unlocked: ${opened.join("; ")}.`;
-    if (newAreas.length > 0) text += ` Newly available: ${[...new Set(newAreas)].join(", ")}.`;
+    const unlockText = unlocks.map((unlock) => unlock.text).join(" ");
+    const text = [before, unlockText].filter(Boolean).join(" ");
     if (this.dialogueBox.isOpen) this.dialogueBox.showNotice(text);
     else this.message.textContent = text;
-    this.storyJournal.announce(text);
+    this.storyJournal.announce(unlockText);
+    this.refreshJournal();
   }
 
   private doorSigns(area: Area): DoorSign[] {
@@ -1054,6 +1045,8 @@ export class Game {
     if (lockMessage) {
       soundEffects.play("locked");
       this.message.textContent = lockMessage;
+      this.story.recordDoorLead(this.areaId, door.id);
+      this.refreshJournal();
       return;
     }
     soundEffects.play("door");
@@ -1063,8 +1056,15 @@ export class Game {
   private examine(entity: AreaEntity): void {
     const clue = this.story.examineClues(entity);
     if (clue !== null) {
-      this.message.textContent = `Clue: ${clue}`;
+      if (clue.kind === "glimpse") {
+        this.message.textContent = clue.text;
+        this.refreshJournal();
+        void this.saveProgress();
+        return;
+      }
+      this.message.textContent = `Clue: ${clue.text}`;
       this.celebrateProgress();
+      this.announceUnlocks(this.message.textContent ?? "");
       this.refreshJournal();
       void this.saveProgress();
       void this.maybeFinish();
@@ -1087,11 +1087,12 @@ export class Game {
       } else if (result.given) {
         this.message.textContent = `You take the ${result.item.name}. ${entity.description}`;
         this.celebrateProgress();
+        this.announceUnlocks(this.message.textContent ?? "");
         this.refreshInventory();
         void this.saveProgress();
         void this.maybeFinish();
       } else if (result.blocked) {
-        this.message.textContent = "This may be useful a little later. No need to hurry.";
+        this.message.textContent = this.story.describeItemBlock(result.item);
       } else {
         this.message.textContent = `You already have the ${result.item.name}.`;
       }
@@ -1179,7 +1180,7 @@ export class Game {
     const ruledOut = ruledOutHerrings(pack, this.story.state)
       .map((herring) => ({ description: herring.description, resolution: herring.resolution }));
     const progress = caseProgress(this.story.view, this.story.state);
-    this.storyJournal.render(facts, evidence, requests, { questions, ruledOut, progress, statements, judged, evidenceChoices: proofChoices(pack, this.story.state) });
+    this.storyJournal.render(facts, evidence, requests, { questions, ruledOut, progress, statements, judged, evidenceChoices: proofChoices(pack, this.story.state), leads: this.story.leads() });
   }
 
   private refreshObjective(): void {
@@ -1232,6 +1233,7 @@ export class Game {
     this.refreshJournal();
     this.storyJournal.announce(note);
     this.message.textContent = note;
+    this.announceUnlocks(note);
     void this.saveProgress();
     void this.maybeFinish();
   }
@@ -1359,6 +1361,7 @@ export class Game {
           .map((locationId) => this.story.pack.locations.find((location) => location.id === locationId)?.name)
           .filter((name): name is string => name !== undefined),
       ],
+      lockNotes: this.story.inEpilogue ? [] : this.story.lockNotesFor(character.id),
       inventory: listInventory(this.story.pack, this.story.state).map((item) => ({ id: item.id, name: item.name })),
       getInventory: () => listInventory(this.story.pack, this.story.state).map((item) => ({ id: item.id, name: item.name })),
     };
@@ -1384,7 +1387,7 @@ export class Game {
     }
     this.dialogueBox.setBusy(false);
     if (!soundEffects.voicesEnabled) soundEffects.play("dialogue");
-    this.announceEffects(turn.effects);
+    this.announceUnlocks(this.announceEffects(turn.effects));
     this.refreshObjective();
     this.refreshJournal();
     if (errorNotice || turn.notice) this.dialogueBox.showNotice(errorNotice ?? turn.notice ?? "");
@@ -1461,7 +1464,8 @@ export class Game {
     void this.maybeFinish();
   }
 
-  private announceEffects(effects: AppliedEffects): void {
+  // Plays the sounds and toasts for what the turn changed and returns the notice text (shown by announceUnlocks).
+  private announceEffects(effects: AppliedEffects): string {
     const notices: string[] = [];
     if (effects.challenge) {
       const found = findStatement(this.story.pack, effects.challenge.statementId);
@@ -1487,7 +1491,7 @@ export class Game {
       notices.push(`Received: ${item?.name ?? effects.givenItem}.`);
       this.refreshInventory();
     }
-    if (notices.length > 0) this.dialogueBox.showNotice(notices.join(" "));
+    return notices.join(" ");
   }
 
 

@@ -2608,6 +2608,14 @@ html[data-reduced-motion="true"] *::after {
   color: #e29a7a;
 }
 
+.journal-entry-resolved {
+  opacity: 0.75;
+}
+
+.journal-entry-resolved .journal-entry-label {
+  color: #8fc99a;
+}
+
 .case-result-list {
   display: grid;
   gap: 6px;

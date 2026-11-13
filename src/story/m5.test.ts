@@ -201,11 +201,12 @@ describe("story session", () => {
     expect(area.id).toBe("l_square");
     const libraryDoor = area.doors.find((door) => door.targetAreaId === "l_library")!;
     expect(story.isDoorLocked(area.id, libraryDoor.id)).toBe(true);
-    expect(story.describeDoorLock(area.id, libraryDoor.id)).toContain("Keep exploring nearby");
-    expect(() => story.enterDoor(area.id, libraryDoor.id)).toThrow("Keep exploring nearby");
+    expect(story.describeDoorLock(area.id, libraryDoor.id)).toMatch(/^Not yet\./);
+    expect(story.describeDoorLock(area.id, libraryDoor.id)).not.toContain("more of the story");
+    expect(() => story.enterDoor(area.id, libraryDoor.id)).toThrow("Not yet.");
     const openingClue = area.entities?.find((entity) => entity.clueIds?.includes("cl_notice_board"));
     expect(openingClue).toBeDefined();
-    expect(story.examineClues(openingClue!)).toContain("festival notice");
+    expect(story.examineClues(openingClue!)?.text).toContain("festival notice");
     expect(story.isLocationOpen("l_library")).toBe(true);
     expect(story.isDoorLocked(area.id, libraryDoor.id)).toBe(false);
     giveItem(story.state, "i_tower_key");
@@ -217,7 +218,7 @@ describe("story session", () => {
     }
     const clueObject = area.entities?.find((entity) => entity.clueIds?.includes("cl_workbench"));
     expect(clueObject).toBeDefined();
-    expect(story.examineClues(clueObject!)).toBeTruthy();
+    expect(story.examineClues(clueObject!)?.kind).toBe("found");
     expect(story.state.truthsFound.length).toBe(1);
     expect(story.state.visitedAreas).toEqual(["l_square", "l_bakery", "l_library", "l_clocktower"]);
     expect(story.state).toMatchObject({ packId: "example", length: "short" });

@@ -64,6 +64,13 @@ export const TEXT_LIMITS: Record<string, number> = {
   relation: 120,
   label: 30, // area door signs
   hint: 100,
+  // Lock, gate and unlock texts shown to the player (src/story/locks.ts).
+  reason: 160,
+  lead: 200,
+  unlock_text: 200,
+  locked_glimpse: 200,
+  reveal_text: 200,
+  gate_reason: 200,
 };
 export const DEFAULT_TEXT_LIMIT = 400;
 

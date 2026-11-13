@@ -21,6 +21,13 @@ without a deduction; they are confirmed as soon as a clue is found. Twist
 `description` text is shown to the player once as a reveal, so write it for
 the player after the payoff.
 
+A clue anchored to an object that has `requirements` should also have a
+`locked_glimpse` (at most 200 characters): what the player sees when they
+examine the object too early, hinting why it is out of reach. Any clue with
+`requirements` can have a `reveal_text` (at most 200 characters): the line shown
+when the requirements are met and the clue becomes available, tied to what the
+player just did.
+
 For every clue that can be found at a location (`where` or an `alternatives`
 entry of type `location`), set `object_id` to the id of the location object the
 player examines to find it. Name that object in the locations part, with the

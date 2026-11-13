@@ -42,11 +42,15 @@ describe("clues attached to objects", () => {
     const shard = area.entities!.find((entity) => entity.id === "obj:cl_shard_match")!;
 
     expect(story.hasOpenClues(shard)).toBe(true);
-    expect(story.examineClues(shard)).toBe("This little detail can wait until the story has unfolded a bit more.");
+    const glimpse = story.examineClues(shard);
+    expect(glimpse?.kind).toBe("glimpse");
+    expect(glimpse?.text).toContain("Glass shard");
+    expect(glimpse?.text).not.toContain("can wait");
+    expect(story.state.leadsSeen).toContain("clue:cl_shard_match");
     expect(story.state.cluesFound).not.toContain("cl_shard_match");
 
     giveItem(story.state, "i_glass_shard");
-    expect(story.examineClues(shard)).toBe(pack.clues.find((clue) => clue.id === "cl_shard_match")!.text);
+    expect(story.examineClues(shard)).toEqual({ kind: "found", text: pack.clues.find((clue) => clue.id === "cl_shard_match")!.text });
     expect(story.state.cluesFound).toContain("cl_shard_match");
     expect(story.allCluesFound(shard)).toBe(true);
     expect(story.examineClues(shard)).toBeNull();

@@ -46,7 +46,9 @@ function isStoryState(value: unknown): value is JsonRecord & {
     // The progress log arrived after version 6 and is optional, so older saves load without it.
     && (value.progressLog === undefined || (Array.isArray(value.progressLog) && value.progressLog.every((entry) =>
       isRecord(entry) && typeof entry.id === "string" && ["clue", "truth", "item"].includes(String(entry.kind))
-      && Number.isFinite(entry.at))));
+      && Number.isFinite(entry.at))))
+    // Leads (explained locks) arrived later too and are optional.
+    && (value.leadsSeen === undefined || isStringArray(value.leadsSeen));
 }
 
 function isEvidence(value: unknown): boolean {

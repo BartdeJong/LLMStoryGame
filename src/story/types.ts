@@ -179,6 +179,8 @@ export interface Clue {
   object_id?: string; // location object the clue is attached to: examining it finds the clue (see "Clue anchors")
   requirements: Requirement;
   text: string;
+  locked_glimpse?: string; // shown when the object is examined while the requirements are unmet
+  reveal_text?: string; // announced when the requirements become met
 }
 
 export interface Item {
@@ -194,10 +196,17 @@ export interface Item {
   purpose: string;
 }
 
+// A door lock. The optional texts make it explain itself in-world; without them the game derives text.
+export interface DoorLock extends Requirement {
+  reason?: string; // shown when the player tries the door
+  lead?: string; // the journal note: who or what opens it
+  unlock_text?: string; // announced when it opens
+}
+
 export interface Door {
   id: string;
   to: string;
-  lock?: Requirement; // doors work in both directions
+  lock?: DoorLock; // doors work in both directions
 }
 
 export interface WorldObject {
@@ -301,6 +310,8 @@ export interface Beat {
   title: string;
   objective?: string;
   guidance?: string;
+  gate_reason?: string; // why this beat's places stay shut until the previous beat's must_find holds
+  unlock_text?: string; // announced when they open
   locations: string[];
   must_find: Requirement; // must hold before the next beat opens
 }

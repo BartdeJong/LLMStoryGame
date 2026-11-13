@@ -35,6 +35,8 @@ export interface DialogueContext {
   returnVisit?: { topics: string[] };
   // Set after the ending: the mystery is solved and the story summary tells how it ended.
   afterEnding?: boolean;
+  // Locks the player has run into that this character holds the key to (src/story/locks.ts).
+  lockNotes?: string[];
 }
 
 export const AFTER_ENDING_LINE = "The story has ended and the mystery is solved: the story so far tells how it ended. Nothing is secret any more. Talk freely and in character about how it all turned out and how you feel now. Do not start a new mystery.";
@@ -53,6 +55,13 @@ export interface DialoguePromptInput {
   admittedTo?: string;
   reminder?: string;
   style?: DialoguePromptStyle;
+}
+
+// Said once after the lock notes, so each note stays short.
+export const LOCK_NOTES_INSTRUCTION = "You may mention these naturally if they come up, but do not just hand it over; the player still has to do it.";
+
+function lockNoteLines(context: DialogueContext): string[] {
+  return context.lockNotes?.length ? [...context.lockNotes, LOCK_NOTES_INSTRUCTION] : [];
 }
 
 export const HOLD_STATEMENT_LINE = "If the player doubts you, keep to what you said.";
@@ -111,6 +120,7 @@ export function buildDialoguePrompt(input: DialoguePromptInput): string {
     THINGS_END,
     "If the player asks about something not listed, answer briefly and vaguely in character or ask the player a question. Do not invent facts about the world.",
     ...(input.goalHint ? [`What you need right now: ${input.goalHint}`] : []),
+    ...lockNoteLines(context),
     ...(input.askedAbout ? [askedAboutLine(input.askedAbout)] : []),
     ...statementLines(input),
     ...input.handoverLines,
@@ -155,6 +165,7 @@ function buildCompactDialoguePrompt(input: DialoguePromptInput): string {
     ...(input.facts.length ? input.facts.map((fact) => `- ${fact.text}`) : ["(no selected facts)"]),
     THINGS_END,
     ...(input.goalHint ? [`Current need (mention only if asked or relevant): ${input.goalHint}`] : []),
+    ...lockNoteLines(context),
     ...(input.askedAbout ? [askedAboutLine(input.askedAbout)] : []),
     ...statementLines(input),
     ...input.handoverLines,

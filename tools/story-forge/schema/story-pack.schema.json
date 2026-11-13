@@ -149,6 +149,18 @@
         "truths": { "$ref": "#/$defs/idList" }
       }
     },
+    "doorLock": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "items": { "$ref": "#/$defs/idList" },
+        "goal_states": { "$ref": "#/$defs/idList" },
+        "truths": { "$ref": "#/$defs/idList" },
+        "reason": { "$ref": "#/$defs/text" },
+        "lead": { "$ref": "#/$defs/text" },
+        "unlock_text": { "$ref": "#/$defs/text" }
+      }
+    },
     "sourceRef": {
       "type": "object",
       "additionalProperties": false,
@@ -333,7 +345,9 @@
         "alternatives": { "type": "array", "items": { "$ref": "#/$defs/sourceRef" } },
         "object_id": { "$ref": "#/$defs/id" },
         "requirements": { "$ref": "#/$defs/requirement" },
-        "text": { "$ref": "#/$defs/text" }
+        "text": { "$ref": "#/$defs/text" },
+        "locked_glimpse": { "$ref": "#/$defs/text" },
+        "reveal_text": { "$ref": "#/$defs/text" }
       }
     },
     "item": {
@@ -388,7 +402,7 @@
             "properties": {
               "id": { "$ref": "#/$defs/id" },
               "to": { "$ref": "#/$defs/id" },
-              "lock": { "$ref": "#/$defs/requirement" }
+              "lock": { "$ref": "#/$defs/doorLock" }
             }
           }
         },
@@ -588,6 +602,8 @@
               "title": { "$ref": "#/$defs/text" },
               "objective": { "$ref": "#/$defs/text" },
               "guidance": { "$ref": "#/$defs/text" },
+              "gate_reason": { "$ref": "#/$defs/text" },
+              "unlock_text": { "$ref": "#/$defs/text" },
               "locations": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/id" } },
               "must_find": { "$ref": "#/$defs/requirement" }
             }

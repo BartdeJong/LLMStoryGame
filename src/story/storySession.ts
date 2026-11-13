@@ -2,17 +2,18 @@ import type { LLMClient } from "../llm/client";
 import type { Area, AreaEntity, GridPoint } from "../world/types";
 import { buildPackArea, doorSpawn, type BriefCharacter, type StoryAreaBrief } from "./packArea";
 import type { LengthView } from "./loader";
-import { findDoorLock, isRequirementMet, missingRequirementNames } from "./requirements";
+import { findDoorLock, isRequirementMet } from "./requirements";
+import { beatLockKey, clueLockKey, derivedUnlockLine, describeMissing, doorLockKey, lockKeyBody, lockKeyKind, lockNotesFor } from "./locks";
 import { endingChoiceLabel, writeEnding } from "./ending";
 import { pickSummation, type SummationQuestion } from "./deduction";
 import type { EndingChoice, EndingScene } from "./ending";
-import { caseRecordOf, createStoryState, giveItem, grantTruthsFromFoundClues, markClueFound, markCollected, markVisited, summaryDue } from "./state";
+import { caseRecordOf, createStoryState, giveItem, grantTruthsFromFoundClues, leadsOf, markClueFound, markCollected, markVisited, rememberLead, summaryDue } from "./state";
 import type { StoryState } from "./state";
 import { refreshSummary } from "./summary";
 import { statementForClue } from "./statements";
 import { caseResult, endingVariant } from "./caseRecord";
 import { layoutStoryWorld, type LocationCell, type StoryWorldLayout } from "./worldLayout";
-import type { Beat, CastMember, Ending, Epilogue, EpilogueCast, Item, StoryPack } from "./types";
+import type { Beat, CastMember, Clue, DoorLock, Ending, Epilogue, EpilogueCast, Item, StoryPack } from "./types";
 import { recipeFromSprite } from "./recipes";
 import type { GameSave } from "../save/types";
 
@@ -20,6 +21,20 @@ export interface CollectResult {
   item: Item;
   given: boolean; // false when the item was already held (a repeat pickup changes nothing)
   blocked: boolean;
+}
+
+// What the journal's Leads section shows for one lock the player has run into (the journal draws it).
+export interface JournalLead {
+  title: string;
+  reason: string;
+  lead?: string;
+  resolved?: string; // what opened it, once it is open
+}
+
+export interface StoryUnlock {
+  key: string; // the lock key (src/story/locks.ts)
+  text: string;
+  newArea?: string; // name of a place the player has not been to that this opened
 }
 
 export interface StoryTransition {
@@ -34,6 +49,12 @@ export class StorySession {
   private readonly briefsByArea = new Map<string, StoryAreaBrief>();
   private readonly worldLayout: StoryWorldLayout;
   private summaryRunning = false;
+  // Lock keys that were shut when last looked at; whatever is no longer shut has just opened (takeUnlocks).
+  private lockedSnapshot = new Set<string>();
+  // The place the player was trying to reach when they ran into a door lock (doors only), so "the way into X" names
+  // the right side of a door that works both ways. Not saved: after a reload it is rebuilt from the places not yet
+  // visited. Beat gates never use it; their target is derived (beatTarget), so it is the same after a reload.
+  private readonly lockTargets = new Map<string, string>();
 
   constructor(
     readonly pack: StoryPack,
@@ -138,13 +159,16 @@ export class StorySession {
       || save.length !== this.view.length || save.worldSeed !== this.worldSeed) {
       throw new Error("The save does not match this story session.");
     }
+    delete this.state.leadsSeen; // a save without leads must not keep the ones from before
     Object.assign(this.state, save.storyState);
+    this.lockTargets.clear();
     this.areas.clear();
     this.briefsByArea.clear();
     for (const areaId of save.areaIds) {
       if (!this.view.locations.some((location) => location.id === areaId)) continue;
       this.buildArea(areaId);
     }
+    this.lockedSnapshot = this.currentLocked();
   }
 
   isLocationOpen(locationId: string): boolean {
@@ -225,6 +249,7 @@ export class StorySession {
   start(): Area {
     const area = this.ensureArea(this.startLocationId);
     this.onEntered(area);
+    this.lockedSnapshot = this.currentLocked();
     return area;
   }
 
@@ -251,20 +276,32 @@ export class StorySession {
     return (entity.clueIds?.length ?? 0) > 0 && !this.hasOpenClues(entity);
   }
 
-  // Examining an object records the clues anchored to it whose requirements are met. Returns the clue text to show,
-  // or null when the object has no clue left to find (it then reads as plain scenery).
-  examineClues(entity: AreaEntity): string | null {
+  // Examining an object records the clues anchored to it whose requirements are met and returns their text. When
+  // only gated clues are left it returns a glimpse that says why they are out of reach (and notes the lead). Null
+  // when the object has no clue left to find (it then reads as plain scenery).
+  examineClues(entity: AreaEntity): { kind: "found" | "glimpse"; text: string } | null {
     if (!this.hasOpenClues(entity)) return null;
     const texts: string[] = [];
+    let gated: Clue | undefined;
     for (const id of entity.clueIds ?? []) {
       const clue = this.pack.clues.find((candidate) => candidate.id === id);
-      if (!clue || this.state.cluesFound.includes(id) || !isRequirementMet(clue.requirements, this.state)) continue;
+      if (!clue || this.state.cluesFound.includes(id)) continue;
+      if (!isRequirementMet(clue.requirements, this.state)) {
+        gated ??= clue;
+        continue;
+      }
       markClueFound(this.state, clue.id);
       texts.push(clue.text);
     }
-    if (texts.length === 0) return "This little detail can wait until the story has unfolded a bit more.";
+    if (texts.length === 0) {
+      if (!gated) return null;
+      this.noteLead(clueLockKey(gated.id));
+      const text = gated.locked_glimpse
+        ?? `${entity.name}. ${describeMissing(this.pack, this.state, gated.requirements).line}`;
+      return { kind: "glimpse", text };
+    }
     grantTruthsFromFoundClues(this.pack, this.state);
-    return texts.join(" ");
+    return { kind: "found", text: texts.join(" ") };
   }
 
   // The pack core for a character entity, or undefined for a non-cast entity (no core, no dialogue).
@@ -318,18 +355,15 @@ export class StorySession {
       || !isRequirementMet(findDoorLock(this.pack, areaId, door.targetAreaId), this.state);
   }
 
-  // A short "you need..." message for a locked door, or null if it is not locked.
+  // Why a door is shut, in the story's own words, or null if it is not locked.
   describeDoorLock(areaId: string, doorId: string): string | null {
     const door = this.getArea(areaId).doors.find((candidate) => candidate.id === doorId);
     if (!door?.targetAreaId) return null;
     if (this.inEpilogue) return this.epilogue?.door_message ?? "The story has ended.";
-    if (!this.isLocationOpen(door.targetAreaId)) {
-      return "This path will open once the current part of the story has settled. Keep exploring nearby for another clue or a neighbor who could use a hand.";
-    }
+    if (!this.isLocationOpen(door.targetAreaId)) return this.describeBeatGate(door.targetAreaId);
     const lock = findDoorLock(this.pack, areaId, door.targetAreaId);
     if (isRequirementMet(lock, this.state)) return null;
-    const missing = missingRequirementNames(this.pack, lock, this.state);
-    return missing.length > 0 ? `It's locked. You need: ${missing.join(", ")}.` : "It's locked.";
+    return lock?.reason ?? `Locked. ${describeMissing(this.pack, this.state, lock).line}`;
   }
 
   // The same reason in a few words, for places with little room such as the map. Null when the door is open.
@@ -337,11 +371,229 @@ export class StorySession {
     const door = this.getArea(areaId).doors.find((candidate) => candidate.id === doorId);
     if (!door?.targetAreaId) return null;
     if (this.inEpilogue) return "The story has ended";
-    if (!this.isLocationOpen(door.targetAreaId)) return "Opens later in the story";
+    if (!this.isLocationOpen(door.targetAreaId)) return describeMissing(this.pack, this.state, this.currentBeat.must_find).brief;
     const lock = findDoorLock(this.pack, areaId, door.targetAreaId);
     if (isRequirementMet(lock, this.state)) return null;
-    const missing = [...new Set(missingRequirementNames(this.pack, lock, this.state))];
-    return missing.length > 0 ? `Needs ${missing.join(", ")}` : "Locked";
+    return describeMissing(this.pack, this.state, lock).brief;
+  }
+
+  // Why a place stays shut before its beat opens: the beat's own gate_reason, else the open beat's objective.
+  private describeBeatGate(locationId: string): string {
+    const gated = this.view.beats.find((beat) => beat.locations.includes(locationId));
+    if (gated?.gate_reason) return gated.gate_reason;
+    const current = this.currentBeat;
+    const missing = describeMissing(this.pack, this.state, current.must_find);
+    return `Not yet. ${current.objective ?? current.title}${missing.vague ? "" : ` ${missing.line}`}`;
+  }
+
+  // Notes that this door is locked, so the journal's Leads can list it. Safe to call repeatedly.
+  recordDoorLead(areaId: string, doorId: string, fromMap = false): void {
+    if (this.inEpilogue) return;
+    const door = this.areas.get(areaId)?.doors.find((candidate) => candidate.id === doorId);
+    if (!door?.targetAreaId) return;
+    const key = this.lockKeyForDoor(areaId, door.targetAreaId);
+    if (!key) return;
+    this.noteLead(key);
+    // Bumping into the door says which side the player wants; the map does not, so it never overrides.
+    if (lockKeyKind(key) === "door" && (!fromMap || !this.lockTargets.has(key))) this.lockTargets.set(key, door.targetAreaId);
+  }
+
+  // Opening the map notes every locked exit of the places the player has been to.
+  recordMapLeads(): void {
+    for (const area of this.areas.values()) {
+      if (!this.state.visitedAreas.includes(area.id)) continue;
+      for (const door of area.doors) this.recordDoorLead(area.id, door.id, true);
+    }
+  }
+
+  // The locks the player has run into, open ones first and opened ones (with what opened them) after.
+  leads(): JournalLead[] {
+    const open: JournalLead[] = [];
+    const resolved: JournalLead[] = [];
+    for (const key of leadsOf(this.state)) {
+      const lead = this.leadFor(key);
+      if (lead) (lead.resolved === undefined ? open : resolved).push(lead);
+    }
+    return [...open, ...resolved];
+  }
+
+  // Announcements for locks that opened since the last call. Each opening is announced once.
+  takeUnlocks(): StoryUnlock[] {
+    const current = this.currentLocked();
+    const opened = [...this.lockedSnapshot].filter((key) => !current.has(key));
+    this.lockedSnapshot = current;
+    if (this.inEpilogue) return [];
+    return opened.flatMap((key) => {
+      const unlock = this.unlockFor(key);
+      return unlock ? [unlock] : [];
+    });
+  }
+
+  lockNotesFor(characterId: string): string[] {
+    return lockNotesFor(this.pack, this.view, this.state, characterId, (id) => this.isLocationOpen(id));
+  }
+
+  // Why the player cannot take an item yet.
+  describeItemBlock(item: Item): string {
+    const missing = describeMissing(this.pack, this.state, item.found_requires);
+    return `You cannot take the ${item.name} yet. ${missing.line}`;
+  }
+
+  // Remembers a lock for the journal and starts watching it, so its opening is announced even if it happens at once.
+  private noteLead(key: string): void {
+    rememberLead(this.state, key);
+    this.lockedSnapshot.add(key);
+  }
+
+  // The lock key that currently shuts this door: its beat, else its own lock. Null when it is open.
+  private lockKeyForDoor(areaId: string, targetId: string): string | null {
+    if (!this.isLocationOpen(targetId)) {
+      const beat = this.view.beats.find((candidate) => candidate.locations.includes(targetId));
+      return beat ? beatLockKey(beat.id) : null;
+    }
+    const lock = findDoorLock(this.pack, areaId, targetId);
+    return lock && !isRequirementMet(lock, this.state) ? doorLockKey(areaId, targetId) : null;
+  }
+
+  private isKeyLocked(key: string): boolean {
+    if (lockKeyKind(key) === "beat") {
+      const index = this.view.beats.findIndex((beat) => beat.id === lockKeyBody(key));
+      return index >= this.openBeatCount();
+    }
+    if (lockKeyKind(key) === "clue") {
+      const clue = this.pack.clues.find((candidate) => candidate.id === lockKeyBody(key));
+      return clue !== undefined && !this.state.cluesFound.includes(clue.id) && !isRequirementMet(clue.requirements, this.state);
+    }
+    const [a, b] = lockKeyBody(key).split("|");
+    return a !== undefined && b !== undefined && !isRequirementMet(findDoorLock(this.pack, a, b), this.state);
+  }
+
+  // Keys of what is shut right now and worth watching: exits of visited places, locks the player ran into, and
+  // spoken clues of people already met.
+  private currentLocked(): Set<string> {
+    const locked = new Set<string>();
+    if (this.inEpilogue) return locked;
+    for (const area of this.areas.values()) {
+      if (!this.state.visitedAreas.includes(area.id)) continue;
+      for (const door of area.doors) {
+        if (!door.targetAreaId) continue;
+        const key = this.lockKeyForDoor(area.id, door.targetAreaId);
+        if (!key) continue;
+        locked.add(key);
+        if (lockKeyKind(key) === "door" && !this.lockTargets.has(key) && !this.state.visitedAreas.includes(door.targetAreaId)) {
+          this.lockTargets.set(key, door.targetAreaId);
+        }
+      }
+    }
+    for (const key of leadsOf(this.state)) {
+      if (this.isKeyLocked(key)) locked.add(key);
+    }
+    for (const clue of this.pack.clues) {
+      if (clue.kind !== "spoken" || clue.where.type !== "character") continue;
+      if ((this.state.characterMemory[clue.where.id]?.visits ?? 0) === 0) continue;
+      const key = clueLockKey(clue.id);
+      if (this.isKeyLocked(key)) locked.add(key);
+    }
+    return locked;
+  }
+
+  private placeNames(ids: readonly string[]): string[] {
+    return ids.map((id) => this.pack.locations.find((location) => location.id === id)?.name ?? id);
+  }
+
+  private objectOf(clue: Clue): { name: string } | undefined {
+    return this.pack.locations.flatMap((location) => location.objects).find((candidate) => candidate.id === clue.object_id);
+  }
+
+  private unlockFor(key: string): StoryUnlock | null {
+    if (lockKeyKind(key) === "beat") {
+      const beat = this.view.beats.find((candidate) => candidate.id === lockKeyBody(key));
+      if (!beat) return null;
+      return { key, text: beat.unlock_text ?? `New places are open: ${this.placeNames(beat.locations).join(", ")}.` };
+    }
+    if (lockKeyKind(key) === "clue") {
+      const clue = this.pack.clues.find((candidate) => candidate.id === lockKeyBody(key));
+      if (!clue) return null;
+      return { key, text: clue.reveal_text ?? this.derivedClueReveal(clue) };
+    }
+    const [a, b] = lockKeyBody(key).split("|");
+    if (a === undefined || b === undefined) return null;
+    const found = this.lockedDoor(key, a, b);
+    if (!found) return null;
+    const [targetName] = this.placeNames([found.target]);
+    const text = found.lock.unlock_text ?? derivedUnlockLine(this.pack, found.lock, targetName ?? found.target);
+    const unvisited = [a, b].find((id) => !this.state.visitedAreas.includes(id));
+    return { key, text, ...(unvisited ? { newArea: this.placeNames([unvisited])[0] ?? unvisited } : {}) };
+  }
+
+  private derivedClueReveal(clue: Clue): string {
+    const object = this.objectOf(clue);
+    if (object) return `Something new to look at: ${object.name}.`;
+    const speaker = clue.where.type === "character" ? this.pack.cast.find((member) => member.id === clue.where.id) : undefined;
+    return speaker ? `${speaker.name} may have something new to tell you.` : "Something new is worth a look.";
+  }
+
+  // The lock between two locations and the side the player is trying to reach: the one they bumped into, else the
+  // one they have not visited, else the door's own target.
+  private lockedDoor(key: string, a: string, b: string): { lock: DoorLock; target: string } | undefined {
+    for (const [from, to] of [[a, b], [b, a]] as const) {
+      const lock = this.pack.locations.find((location) => location.id === from)?.doors.find((door) => door.to === to)?.lock;
+      if (!lock) continue;
+      const remembered = this.lockTargets.get(key);
+      if (remembered === a || remembered === b) return { lock, target: remembered };
+      const unvisited = [a, b].filter((id) => !this.state.visitedAreas.includes(id));
+      return { lock, target: unvisited.length === 1 ? unvisited[0]! : to };
+    }
+    return undefined;
+  }
+
+  private leadFor(key: string): JournalLead | null {
+    const unlock = this.unlockFor(key);
+    if (!unlock) return null;
+    const resolved = this.isKeyLocked(key) ? {} : { resolved: unlock.text };
+    if (lockKeyKind(key) === "beat") {
+      const beat = this.view.beats.find((candidate) => candidate.id === lockKeyBody(key));
+      if (!beat) return null;
+      // Named after the first place behind the gate that the player can see a door to; neutral, so it still reads
+      // right once the way is open. Derived from visited places only, so it survives a reload unchanged.
+      const target = this.beatTarget(beat);
+      const name = target === undefined ? "somewhere new" : this.placeNames([target])[0];
+      return { title: `The way into ${name}`, reason: beat.gate_reason ?? this.beatReason(beat), ...resolved };
+    }
+    if (lockKeyKind(key) === "clue") {
+      const clue = this.pack.clues.find((candidate) => candidate.id === lockKeyBody(key));
+      if (!clue) return null;
+      const object = this.objectOf(clue);
+      const reason = clue.locked_glimpse
+        ?? `${object ? `${object.name}. ` : ""}${describeMissing(this.pack, this.state, clue.requirements).line}`;
+      return { title: object?.name ?? "Something out of reach", reason, ...resolved };
+    }
+    const [a, b] = lockKeyBody(key).split("|");
+    const found = a !== undefined && b !== undefined ? this.lockedDoor(key, a, b) : undefined;
+    if (!found) return null;
+    return {
+      title: `The way into ${this.placeNames([found.target])[0] ?? found.target}`,
+      reason: found.lock.reason ?? `Locked. ${describeMissing(this.pack, this.state, found.lock).line}`,
+      ...(found.lock.lead ? { lead: found.lock.lead } : {}),
+      ...resolved,
+    };
+  }
+
+  // The place of a gated beat to name: the first (in beat order) that a visited area has a door to.
+  private beatTarget(beat: Beat): string | undefined {
+    const seen = new Set<string>();
+    for (const area of this.areas.values()) {
+      if (!this.state.visitedAreas.includes(area.id)) continue;
+      for (const door of area.doors) if (door.targetAreaId) seen.add(door.targetAreaId);
+    }
+    return beat.locations.find((id) => seen.has(id)) ?? beat.locations[0];
+  }
+
+  private beatReason(beat: Beat): string {
+    const previous = this.view.beats[this.view.beats.indexOf(beat) - 1];
+    if (!previous) return "Not yet.";
+    const missing = describeMissing(this.pack, this.state, previous.must_find);
+    return `Not yet. ${previous.objective ?? previous.title}${missing.vague ? "" : ` ${missing.line}`}`;
   }
 
   // What a sign on a door says: the name of the place behind it once the player has been there, otherwise the
@@ -368,6 +620,8 @@ export class StorySession {
     if (this.inEpilogue && locationId === this.epilogue?.location) ({ area, brief: areaBrief } = this.epilogueArea(area, brief));
     this.areas.set(locationId, area);
     this.briefsByArea.set(locationId, areaBrief);
+    // New exits start being watched; locks that opened but were not announced yet stay in the snapshot.
+    for (const key of this.currentLocked()) this.lockedSnapshot.add(key);
     return area;
   }
 
