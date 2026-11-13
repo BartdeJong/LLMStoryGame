@@ -37,14 +37,14 @@ function makeSave(): GameSave {
     areasSinceSummary: 1,
     statementsHeard: ["st_heard"],
     caseRecord: {
-      deductions: [{ truthId: "truth", answer: "A guess", correct: false }],
-      summation: [{ truthId: "truth", answerId: "truth", correct: true }],
+      deductions: [{ truthId: "truth", answer: "A guess", correct: false, outcome: "wrong", evidence: [] }],
+      summation: [{ truthId: "truth", answerId: "truth", correct: true, outcome: "proven", evidence: [{ type: "clue", id: "clue" }] }],
       challenges: [{ statementId: "st_heard", evidence: { type: "item", id: "key" }, fits: false }],
       assisted: false,
     },
   };
   return {
-    formatVersion: 7,
+    formatVersion: 8,
     slotId: "slot-test",
     metadata: {
       storyTitle: "Test story",
@@ -152,9 +152,62 @@ describe("save persistence", () => {
 
     const migrated = normalizeSave(legacy);
 
-    expect(migrated.formatVersion).toBe(7);
+    expect(migrated.formatVersion).toBe(SAVE_FORMAT_VERSION);
     expect(migrated.storyState.statementsHeard).toEqual([]);
     expect(migrated.storyState.caseRecord).toEqual({ deductions: [], summation: [], challenges: [], assisted: false });
+  });
+
+  it("migrates version 7 saves: a right answer counts as proven, a wrong one as wrong, nothing shown", () => {
+    const legacy = JSON.parse(JSON.stringify(makeSave())) as { formatVersion: number; storyState: { caseRecord: Record<string, unknown> } };
+    legacy.formatVersion = 7;
+    legacy.storyState.caseRecord = {
+      deductions: [
+        { truthId: "t_a", answer: "A", correct: true },
+        { truthId: "t_b", answer: "B", correct: false },
+      ],
+      summation: [{ truthId: "t_c", answerId: "t_c", correct: true }],
+      challenges: [{ statementId: "st_heard", evidence: { type: "item", id: "key" }, fits: true }],
+      assisted: false,
+    };
+
+    const migrated = normalizeSave(legacy);
+
+    expect(migrated.formatVersion).toBe(SAVE_FORMAT_VERSION);
+    expect(migrated.storyState.caseRecord).toEqual({
+      deductions: [
+        { truthId: "t_a", answer: "A", correct: true, outcome: "proven", evidence: [] },
+        { truthId: "t_b", answer: "B", correct: false, outcome: "wrong", evidence: [] },
+      ],
+      summation: [{ truthId: "t_c", answerId: "t_c", correct: true, outcome: "proven", evidence: [] }],
+      challenges: [{ statementId: "st_heard", evidence: { type: "item", id: "key" }, fits: true }],
+      assisted: false,
+    });
+  });
+
+  it("migrates version 6 saves with answers all the way to the current format", () => {
+    const legacy = JSON.parse(JSON.stringify(makeSave())) as { formatVersion: number; storyState: { caseRecord: Record<string, unknown> } };
+    legacy.formatVersion = 6;
+    legacy.storyState.caseRecord = {
+      deductions: [{ truthId: "t_a", answer: "A", correct: true }],
+      summation: [],
+      challenges: [],
+      assisted: false,
+    };
+    const migrated = normalizeSave(legacy);
+    expect(migrated.formatVersion).toBe(SAVE_FORMAT_VERSION);
+    expect(migrated.storyState.caseRecord?.deductions).toEqual([{ truthId: "t_a", answer: "A", correct: true, outcome: "proven", evidence: [] }]);
+  });
+
+  it("rejects a current save whose answers have a malformed outcome or evidence", () => {
+    const bad = (patch: (record: { deductions: Record<string, unknown>[] }) => void): void => {
+      const save = JSON.parse(JSON.stringify(makeSave())) as { storyState: { caseRecord: { deductions: Record<string, unknown>[] } } };
+      patch(save.storyState.caseRecord);
+      expect(() => normalizeSave(save)).toThrow("not a valid game save");
+    };
+    bad((record) => { record.deductions[0]!.outcome = "lucky"; });
+    bad((record) => { delete record.deductions[0]!.outcome; });
+    bad((record) => { record.deductions[0]!.evidence = [{ type: "person", id: "x" }]; });
+    bad((record) => { delete record.deductions[0]!.evidence; });
   });
 
   it("rejects a current save whose case record is malformed", () => {

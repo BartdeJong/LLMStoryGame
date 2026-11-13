@@ -1,8 +1,10 @@
 import type { LengthView } from "./loader";
 import { isRequirementMet } from "./requirements";
+import { judgeAnswer, sanitizeShown } from "./proof";
 import { caseRecordOf, confirmTruth, grantTruthsFromFoundClues } from "./state";
-import type { StoryState } from "./state";
-import type { Ending, RedHerring, StoryPack, Truth, Twist } from "./types";
+import type { AnswerOutcome, StoryState } from "./state";
+import type { EvidenceRef } from "./statements";
+import type { Ending, Proof, RedHerring, StoryPack, Truth, Twist } from "./types";
 
 // Truths whose evidence is in and that wait for the player's answer.
 export function openDeductions(pack: StoryPack, state: StoryState): Truth[] {
@@ -12,26 +14,36 @@ export function openDeductions(pack: StoryPack, state: StoryState): Truth[] {
 
 export interface DeductionAnswer {
   accepted: boolean; // false when the question was not open (nothing changed)
-  correct: boolean;
+  correct: boolean; // the conclusion was right
+  outcome: AnswerOutcome;
   truth?: Truth; // what really happened; confirmed either way so the story goes on
   ruledOut: RedHerring[]; // red herrings newly settled by this answer
 }
 
 // Code decides the outcome, and the answer is final. Right or wrong, the truth is confirmed so later truths,
-// beats, doors and dialogue keep working; the answer is recorded in the case record.
-export function answerDeduction(pack: StoryPack, state: StoryState, truthId: string, answer: string): DeductionAnswer {
+// beats, doors and dialogue keep working; the answer is recorded in the case record. The evidence the player
+// showed is sanitized (held pieces only) and judged against the question's proof.
+export function answerDeduction(
+  pack: StoryPack,
+  state: StoryState,
+  truthId: string,
+  answer: string,
+  evidence: readonly EvidenceRef[] = [],
+): DeductionAnswer {
   const truth = pack.truths.find((candidate) => candidate.id === truthId);
   if (!truth?.deduction || !state.truthsReady.includes(truthId) || state.truthsFound.includes(truthId)) {
-    return { accepted: false, correct: false, ruledOut: [] };
+    return { accepted: false, correct: false, outcome: "wrong", ruledOut: [] };
   }
   const correct = answer === truth.deduction.answer;
-  caseRecordOf(state).deductions.push({ truthId, answer, correct });
+  const shown = sanitizeShown(state, evidence);
+  const outcome = judgeAnswer(correct, truth.deduction.proof, shown);
+  caseRecordOf(state).deductions.push({ truthId, answer, correct, outcome, evidence: shown });
   const before = new Set(state.herringsRuledOut);
   confirmTruth(state, truth);
   grantTruthsFromFoundClues(pack, state);
   const ruledOut = pack.red_herrings.filter((herring) =>
     state.herringsRuledOut.includes(herring.id) && !before.has(herring.id));
-  return { accepted: true, correct, truth, ruledOut };
+  return { accepted: true, correct, outcome, truth, ruledOut };
 }
 
 export function ruledOutHerrings(pack: StoryPack, state: StoryState): RedHerring[] {
@@ -77,6 +89,7 @@ export function collectTwistReveals(pack: StoryPack, view: LengthView, state: St
 export interface SummationQuestion {
   question: string;
   truthId: string;
+  proof?: Proof;
 }
 
 // The summation for the finale: the most specific ending whose facts are met and that defines one.
@@ -86,7 +99,7 @@ export function pickSummation(endings: readonly Ending[]): SummationQuestion[] |
   const ending = endings
     .filter((candidate) => (candidate.summation?.length ?? 0) > 0)
     .sort((a, b) => specificity(b) - specificity(a))[0];
-  return ending?.summation?.map((entry) => ({ question: entry.question, truthId: entry.truth_id })) ?? null;
+  return ending?.summation?.map((entry) => ({ question: entry.question, truthId: entry.truth_id, proof: entry.proof })) ?? null;
 }
 
 export function summationOptions(pack: StoryPack, state: StoryState): { id: string; text: string }[] {

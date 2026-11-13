@@ -95,11 +95,15 @@ function recapSection(recap: CaseRecap & { timePlayedMs?: number }): HTMLElement
     section.append(el("h3", "ending-recap-heading", "Your answers"));
     const answers = el("ol", "ending-recap-answers");
     for (const answer of recap.answers) {
-      const item = el("li", answer.correct ? "ending-recap-right" : "ending-recap-wrong");
+      const item = el("li", answer.outcome === "proven" ? "ending-recap-right"
+        : answer.outcome === "unproven" ? "ending-recap-unproven" : "ending-recap-wrong");
       item.append(el("span", "ending-recap-text", `${answer.kind === "summation" ? "Finale: " : ""}${answer.question}`));
-      item.append(el("span", "ending-recap-clue", answer.correct
-        ? `✓ ${answer.answer}`
-        : `✗ You answered: ${answer.answer} · In truth: ${answer.correctAnswer}`));
+      item.append(el("span", "ending-recap-clue", answer.outcome === "proven"
+        ? (answer.hadProof ? `✓ Proven: ${answer.answer}` : `✓ ${answer.answer}`)
+        : answer.outcome === "unproven"
+          ? `✓ Right, but unproven: ${answer.answer}`
+          : `${answer.outcome === "misread" ? "✗ Misread: " : "✗ "}You answered: ${answer.answer} · In truth: ${answer.correctAnswer}`));
+      if (answer.shown.length > 0) item.append(el("span", "ending-recap-clue", `You showed: ${answer.shown.join("; ")}`));
       answers.append(item);
     }
     section.append(answers);

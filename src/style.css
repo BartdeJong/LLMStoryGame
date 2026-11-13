@@ -2625,6 +2625,55 @@ html[data-reduced-motion="true"] *::after {
   color: #a9d6a0;
 }
 
+.case-result-unproven,
+.ending-recap-unproven {
+  color: #e7cd84;
+}
+
+.journal-entry-unproven .journal-entry-label {
+  color: #e7cd84;
+}
+
+.evidence-picker {
+  display: grid;
+  gap: 6px;
+}
+
+.evidence-heading {
+  margin: 4px 0 0;
+  color: #d8cfae;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.evidence-option {
+  overflow-wrap: anywhere;
+  white-space: normal;
+}
+
+.evidence-option[aria-pressed="true"] {
+  border-color: #f2c14e;
+  color: #1a2a1f;
+  background: #f2c14e;
+}
+
+.evidence-count {
+  margin: 0;
+  color: #d8cfae;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.evidence-note {
+  margin: 0;
+  color: #e7cd84;
+  font-size: 12px;
+}
+
+.evidence-note:empty {
+  display: none;
+}
+
 .ending-flawed-note,
 .ending-recap-result {
   font-weight: 700;

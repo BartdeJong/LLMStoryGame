@@ -53,8 +53,8 @@ function isEvidence(value: unknown): boolean {
   return isRecord(value) && (value.type === "item" || value.type === "clue") && typeof value.id === "string";
 }
 
-// The case record (format 7): every final answer and challenge.
-function isCaseRecord(value: unknown): boolean {
+// The case record as saved in format 7: every final answer and challenge, without outcomes or evidence.
+function isCaseRecordV7(value: unknown): boolean {
   return isRecord(value)
     && Array.isArray(value.deductions) && value.deductions.every((entry) => isRecord(entry)
       && typeof entry.truthId === "string" && typeof entry.answer === "string" && typeof entry.correct === "boolean")
@@ -63,6 +63,20 @@ function isCaseRecord(value: unknown): boolean {
     && Array.isArray(value.challenges) && value.challenges.every((entry) => isRecord(entry)
       && typeof entry.statementId === "string" && isEvidence(entry.evidence) && typeof entry.fits === "boolean")
     && typeof value.assisted === "boolean";
+}
+
+const ANSWER_OUTCOMES = ["proven", "unproven", "misread", "wrong"];
+
+function hasOutcomeAndEvidence(entry: unknown): boolean {
+  return isRecord(entry) && ANSWER_OUTCOMES.includes(String(entry.outcome))
+    && Array.isArray(entry.evidence) && entry.evidence.every(isEvidence);
+}
+
+// The case record (format 8): every final answer with how it turned out and what was shown, and every challenge.
+function isCaseRecord(value: unknown): boolean {
+  return isCaseRecordV7(value) && isRecord(value)
+    && (value.deductions as unknown[]).every(hasOutcomeAndEvidence)
+    && (value.summation as unknown[]).every(hasOutcomeAndEvidence);
 }
 
 function isSaveMetadata(value: unknown): value is SaveMetadata {
@@ -173,10 +187,26 @@ function migrateV6(value: JsonRecord): JsonRecord {
     storyState: {
       ...storyState,
       statementsHeard: isStringArray(storyState.statementsHeard) ? storyState.statementsHeard : [],
-      caseRecord: isCaseRecord(storyState.caseRecord)
+      caseRecord: isCaseRecordV7(storyState.caseRecord)
         ? storyState.caseRecord
         : { deductions: [], summation: [], challenges: [], assisted: false },
     },
+  };
+}
+
+// Answers get an outcome and the evidence shown: an old right answer counts as proven, with nothing shown.
+function migrateV7(value: JsonRecord): JsonRecord {
+  const storyState = isRecord(value.storyState) ? value.storyState : {};
+  const upgrade = (entries: unknown): unknown => Array.isArray(entries)
+    ? entries.map((entry) => (isRecord(entry) ? { ...entry, evidence: [], outcome: entry.correct === true ? "proven" : "wrong" } : entry))
+    : entries;
+  const record = isRecord(storyState.caseRecord) ? storyState.caseRecord : undefined;
+  return {
+    ...value,
+    formatVersion: 8,
+    storyState: record
+      ? { ...storyState, caseRecord: { ...record, deductions: upgrade(record.deductions), summation: upgrade(record.summation) } }
+      : storyState,
   };
 }
 
@@ -191,6 +221,7 @@ export function normalizeSave(value: unknown): GameSave {
   if (migrated.formatVersion === 4) migrated = migrateV4(migrated);
   if (migrated.formatVersion === 5) migrated = migrateV5(migrated);
   if (migrated.formatVersion === 6) migrated = migrateV6(migrated);
+  if (migrated.formatVersion === 7) migrated = migrateV7(migrated);
   if (migrated.formatVersion !== SAVE_FORMAT_VERSION) {
     throw new Error(`Save format version ${String(value.formatVersion)} is not supported.`);
   }

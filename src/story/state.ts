@@ -20,22 +20,32 @@ export interface ProgressEntry {
   at: number; // epoch milliseconds
 }
 
+// How an answer turned out (src/story/proof.ts): proven, right but unproven, wrong but evidence pointed the
+// right way (misread), or wrong.
+export type AnswerOutcome = "proven" | "unproven" | "misread" | "wrong";
+
+export type EvidenceKey = { type: "item" | "clue"; id: string };
+
 // How the player solved the case: every final answer and every challenge. Kept for the ending's result and recap.
 export interface DeductionRecord {
   truthId: string;
   answer: string;
-  correct: boolean;
+  correct: boolean; // the conclusion was right (the outcome says whether it was also proven)
+  outcome: AnswerOutcome;
+  evidence: EvidenceKey[]; // what the player showed
 }
 
 export interface SummationRecord {
   truthId: string; // the truth the question asks for
   answerId: string; // the truth the player chose
-  correct: boolean;
+  correct: boolean; // the conclusion was right
+  outcome: AnswerOutcome;
+  evidence: EvidenceKey[];
 }
 
 export interface ChallengeRecord {
   statementId: string;
-  evidence: { type: "item" | "clue"; id: string };
+  evidence: EvidenceKey;
   fits: boolean; // true: the statement broke
 }
 

@@ -20,6 +20,12 @@ appear in that ending's `conditions.truths`, so list the truths the player
 must have confirmed there. Endings without a `summation` play as soon as their
 conditions are met.
 
+Give `proof` (`items`, `clues`, and `required` as in the truths part) to one
+central question per ending, the one the ending turns on, and leave the other
+questions without it. Choose evidence for the correct truth only, not for a red
+herring, and only evidence the player can gather before the finale without
+already knowing the answer.
+
 Give each ending an optional `flawed` variant: `{ scene_outline, tone,
 epilogue_notes }`. It plays instead of the normal scene when the player's case
 record is flawed (many wrong final answers or failed challenges). Keep every

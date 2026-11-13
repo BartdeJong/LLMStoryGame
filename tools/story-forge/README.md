@@ -146,6 +146,72 @@ fronts on top and trees on the other sides; harbours and shores get a land-side
 building block or a grassy bank; outdoors, things named pond, fountain, boat,
 fog or flowers are placed at the water or in the flowers.
 
+## Proof
+
+A deduction or a summation entry can require evidence. Add `proof` to name the
+items and clues that back the right answer:
+
+```json
+"proof": { "items": ["i_wren_docket"], "clues": ["cl_wren_docket", "cl_watson_inquest"], "required": 1 }
+```
+
+- `items` and `clues` are ids of items and clues in the pack. The player shows
+  items they carry and clues they have found.
+- `required` is how many listed pieces must be shown for a right answer to count
+  as proven. It defaults to 1 and may be at most 3. Use `required: 2` only when
+  the question genuinely rests on two sources.
+- A clue that a broken statement reveals counts as found, so it can be listed.
+- The player can show up to 3 pieces with an answer. Pieces that are not in the
+  list are ignored without penalty.
+- A question with no `proof` keeps the one-click answer: right is proven, wrong
+  is wrong.
+- `proof` does not change `schema_version` (still 2). The schema defines it as
+  `$defs/proof`.
+
+Choose evidence that backs the right answer, and leave out evidence that
+supports a red herring. List only evidence the player can gather without
+already knowing the answer. The validator checks this by solving the story with
+the deduction's truth withheld; a summation question is checked against the full
+solve. On a summation, put `proof` on one central question per ending, not on
+every question.
+
+Each answer gets one of four outcomes, decided by code:
+
+- **proven**: the right answer, with at least `required` listed pieces shown.
+- **unproven**: the right answer, with fewer listed pieces shown (or none).
+- **misread**: a wrong answer, with at least one listed piece shown.
+- **wrong**: a wrong answer, with no listed piece shown.
+
+Weights (`CASE_RESULT` in `src/story/config.ts`): a wrong or misread answer is
+one mistake. An unproven answer and a failed challenge each weigh half. The
+share of mistakes is the weighted mistakes divided by the answers plus half the
+challenges. A case with no mistakes is clean. An unproven answer counts as a
+mistake, so it is never clean. A case is flawed when the share is 0.4 or more,
+and solved with mistakes otherwise. Example: four answers with two wrong gives
+0.5 and a flawed case; four answers with one wrong gives 0.25 and a solve with
+mistakes.
+
+With **Assisted deductions** on, deductions confirm by themselves and nothing is
+scored. At the finale the player can retry each question freely, and **Go on**
+appears after a failed attempt, so weak evidence never blocks the case.
+
+### Validator codes for proof
+
+- `PROOF_EMPTY` (error): the `proof` lists no items or clues. Remove `proof` or
+  list the evidence that proves the answer.
+- `PROOF_DUPLICATE` (error): the same item or clue appears twice in one list.
+  Remove the repeat.
+- `PROOF_REQUIRED_TOO_HIGH` (error): `required` is more than the pieces listed,
+  or more than 3. Lower `required` or list more pieces.
+- `PROOF_UNOBTAINABLE` (error): fewer listed pieces than `required` can be
+  obtained in this length before the question is answered. The message lists
+  the obtainable ids. Add a clue route for the missing piece, list evidence the
+  player can reach, or lower `required`.
+- `DEDUCTION_NO_PROOF` (warning): a deduction has no `proof`, so one click
+  settles it. Add proof, or keep the warning on purpose.
+
+Unknown item or clue ids in a proof are reported as `REF_UNKNOWN`.
+
 ## Rules for every pack
 
 - The pack fixes plot facts, cast, mystery, clues, key items, locations, and
@@ -164,19 +230,20 @@ fog or flowers are placed at the water or in the flowers.
   independent clue routes, and key items cannot be missable.
 - Keep the tone cozy, avoid graphic violence, and write English only.
 - Make the player solve the mystery. Give key truths an optional
-  `deduction` (`question`, `answer`, 2-3 `wrong_answers`, and optional
-  `rules_out` red herring ids). Such a truth becomes an open question in the
-  casebook once a clue for it is found and its `depends_on` truths are
-  confirmed. The player answers it once: the truth is confirmed either way, and
-  a wrong answer is recorded as a mistake in the case record.
-  Wrong answers must be plausible but clearly wrong given the clues, and all
-  options must differ. Truths without a `deduction` are confirmed as soon as a
-  clue is found. Answering (right or wrong) also settles the red herrings in
-  `rules_out`, showing their `resolution` text.
+  `deduction` (`question`, `answer`, 2-3 `wrong_answers`, optional `rules_out`
+  red herring ids, and optional `proof`, see "Proof" below). Such a truth
+  becomes an open question in the casebook once a clue for it is found and its
+  `depends_on` truths are confirmed. The player answers it once: the truth is
+  confirmed either way, and the answer is recorded in the case record with its
+  outcome. Wrong answers must be plausible but clearly wrong given the clues,
+  and all options must differ. Truths without a `deduction` are confirmed as
+  soon as a clue is found. Answering (right or wrong) also settles the red
+  herrings in `rules_out`, showing their `resolution` text.
 - Give an ending an optional `summation`: 2-4 `{ question, truth_id }` entries,
-  each `truth_id` taken from that ending's `conditions.truths`. At the finale
-  the player presents the case by matching each question to a confirmed truth,
-  once per question. Endings without a `summation` play as soon as their
+  each `truth_id` taken from that ending's `conditions.truths`, and optionally a
+  `proof` on an entry. At the finale the player presents the case by matching
+  each question to a confirmed truth, once per question, showing evidence where
+  the question has a `proof`. Endings without a `summation` play as soon as their
   conditions are met. The solver assumes a player who reaches every truth (a
   wrong answer still confirms it), so these fields never make an ending
   unreachable.
@@ -202,13 +269,14 @@ fog or flowers are placed at the water or in the flowers.
   piece of evidence depends on that evidence when routes are counted.
   Statements are optional and keep `schema_version` 2.
 - Answers are final. A deduction is answered once; a wrong answer still
-  confirms the truth (so the story continues) and is recorded. The finale's
-  summation is answered once per question, with no feedback until the end. The
-  case record (answers and challenges) gives a result at the ending: a clean
-  solve, a solve with mistakes or a flawed case (`CASE_RESULT` in
-  `src/story/config.ts`). Give an ending an optional `flawed` variant
-  (`scene_outline`, `tone`, `epilogue_notes`) to play instead when the case is
-  flawed; endings without one play as normal. Assisted deductions have no stakes.
+  confirms the truth (so the story continues) and is recorded with its outcome
+  (see "Proof"). The finale's summation is answered once per question, with no
+  feedback until the end. The case record (answers and challenges) gives a
+  result at the ending: a clean solve, a solve with mistakes or a flawed case
+  (`CASE_RESULT` in `src/story/config.ts`). Give an ending an optional `flawed`
+  variant (`scene_outline`, `tone`, `epilogue_notes`) to play instead when the
+  case is flawed; endings without one play as normal. Assisted deductions have
+  no stakes.
 - Optionally give a cast member `reactions` so the player can use "Ask about..."
   on a person, item or found clue. A reaction with a `clue_id` marks that clue
   found, so it must be a clue that character tells; gate it with `requires` when

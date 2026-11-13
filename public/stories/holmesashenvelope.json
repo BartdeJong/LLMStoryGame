@@ -1922,7 +1922,17 @@
         "wrong_answers": [
           "He had borrowed from the Fund himself and planned to flee London.",
           "He meant to sell the Fund's accounts to Kit's newspaper."
-        ]
+        ],
+        "proof": {
+          "items": [
+            "i_wren_docket"
+          ],
+          "clues": [
+            "cl_wren_docket",
+            "cl_watson_inquest"
+          ],
+          "required": 1
+        }
       }
     },
     {
@@ -1940,7 +1950,15 @@
         "wrong_answers": [
           "He was struck at the river stairs by a dockworker and died where he lay.",
           "He fell from the ferry landing and drowned; the injury came from the water."
-        ]
+        ],
+        "proof": {
+          "clues": [
+            "cl_mortuary_fibres",
+            "cl_river_drag",
+            "cl_wax_initials"
+          ],
+          "required": 1
+        }
       }
     },
     {
@@ -1960,7 +1978,15 @@
         "wrong_answers": [
           "Silas killed him on the dockside, where the grease was found.",
           "Kit killed him in the pressroom, where the ink was found."
-        ]
+        ],
+        "proof": {
+          "clues": [
+            "cl_wax_initials",
+            "cl_lestrade_keylog",
+            "cl_cab_entry"
+          ],
+          "required": 2
+        }
       }
     },
     {
@@ -1980,7 +2006,18 @@
         "wrong_answers": [
           "To cover his personal gambling debts.",
           "He did not; the committee itself moved the money."
-        ]
+        ],
+        "proof": {
+          "items": [
+            "i_ward_receipt"
+          ],
+          "clues": [
+            "cl_ward_appeal",
+            "cl_unpaid_vouchers",
+            "cl_ward_receipts"
+          ],
+          "required": 1
+        }
       }
     },
     {
@@ -2003,7 +2040,15 @@
         ],
         "rules_out": [
           "rh_false_ferry"
-        ]
+        ],
+        "proof": {
+          "clues": [
+            "cl_token_register",
+            "cl_cab_entry",
+            "cl_lestrade_keylog"
+          ],
+          "required": 1
+        }
       }
     },
     {
@@ -2023,7 +2068,15 @@
         "wrong_answers": [
           "Silas let him in with a pump-room key.",
           "Wren admitted him himself that evening."
-        ]
+        ],
+        "proof": {
+          "clues": [
+            "cl_vale_key_admission",
+            "cl_duplicate_key",
+            "cl_lestrade_keylog"
+          ],
+          "required": 1
+        }
       }
     },
     {
@@ -2043,7 +2096,14 @@
         "wrong_answers": [
           "Nothing; the odd columns were Wren's unfinished corrections.",
           "He ordered Wren to correct them, and the committee approved every transfer."
-        ]
+        ],
+        "proof": {
+          "clues": [
+            "cl_relief_columns",
+            "cl_ward_receipts"
+          ],
+          "required": 1
+        }
       }
     },
     {
@@ -2067,7 +2127,17 @@
         ],
         "rules_out": [
           "rh_kit_ink"
-        ]
+        ],
+        "proof": {
+          "items": [
+            "i_press_proof"
+          ],
+          "clues": [
+            "cl_envelope_proof",
+            "cl_press_archive"
+          ],
+          "required": 1
+        }
       }
     },
     {
@@ -2090,7 +2160,17 @@
         ],
         "rules_out": [
           "rh_ada_letter"
-        ]
+        ],
+        "proof": {
+          "items": [
+            "i_duplicate_ledger"
+          ],
+          "clues": [
+            "cl_pembroke_copy",
+            "cl_ada_receipt"
+          ],
+          "required": 1
+        }
       }
     },
     {
@@ -2113,7 +2193,15 @@
         ],
         "rules_out": [
           "rh_silas_grease"
-        ]
+        ],
+        "proof": {
+          "clues": [
+            "cl_silas_pump_grease",
+            "cl_planting_trace",
+            "cl_river_drag"
+          ],
+          "required": 1
+        }
       }
     }
   ],
@@ -3827,7 +3915,15 @@
       "summation": [
         {
           "question": "Whom does the inquest name?",
-          "truth_id": "t_fane_killed_wren"
+          "truth_id": "t_fane_killed_wren",
+          "proof": {
+            "clues": [
+              "cl_wax_initials",
+              "cl_lestrade_keylog",
+              "cl_cab_entry"
+            ],
+            "required": 2
+          }
         },
         {
           "question": "What was hidden in the accounts?",
@@ -3865,7 +3961,15 @@
       "summation": [
         {
           "question": "Whom does the public trial charge?",
-          "truth_id": "t_fane_killed_wren"
+          "truth_id": "t_fane_killed_wren",
+          "proof": {
+            "clues": [
+              "cl_wax_initials",
+              "cl_lestrade_keylog",
+              "cl_cab_entry"
+            ],
+            "required": 2
+          }
         },
         {
           "question": "What true record supports the case?",
@@ -3902,7 +4006,15 @@
       "summation": [
         {
           "question": "Whom is charged?",
-          "truth_id": "t_fane_killed_wren"
+          "truth_id": "t_fane_killed_wren",
+          "proof": {
+            "clues": [
+              "cl_wax_initials",
+              "cl_lestrade_keylog",
+              "cl_cab_entry"
+            ],
+            "required": 2
+          }
         },
         {
           "question": "What does Pembroke protect?",

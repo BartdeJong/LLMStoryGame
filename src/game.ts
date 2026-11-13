@@ -28,7 +28,9 @@ import { createObjectiveHud, type ObjectiveHud } from "./ui/objectiveHud";
 import { createProgressToasts, shorten, type ProgressToasts } from "./ui/progressToast";
 import { buildRecap, caseProgress } from "./story/progress";
 import { caseRecordOf, progressLogOf } from "./story/state";
-import { answerSummation, finaleHasStakes, markAssisted, nextSummationIndex, summationComplete } from "./story/caseRecord";
+import { PROOF_SLOTS } from "./story/config";
+import { proofChoices } from "./story/proof";
+import { answerSummation, finaleHasStakes, judgeSummation, markAssisted, nextSummationIndex, summationComplete } from "./story/caseRecord";
 import { findStatement, isStatementBroken, isStatementHeard, type EvidenceRef } from "./story/statements";
 import { createStoryJournal, type JournalFact, type JournalStatement, type JournalQuestion, type JournalRequest, type StoryJournal } from "./ui/storyJournal";
 import { createCaseOverlay, type CaseOverlay } from "./ui/caseOverlay";
@@ -227,7 +229,7 @@ export class Game {
     }, floatingStick ? { canvas, stick: floatingStick, onTap: this.handleTap } : undefined);
     this.dialogueBox = createDialogueBox(shell);
     this.inventoryUI = createInventoryUI(shell);
-    this.storyJournal = createStoryJournal(shell, (id, answer) => this.answerQuestion(id, answer));
+    this.storyJournal = createStoryJournal(shell, (id, answer, evidence) => this.answerQuestion(id, answer, evidence));
     this.caseOverlay = createCaseOverlay(shell, () => this.presentCaseFromButton());
     this.worldMap = createWorldMap(
       shell,
@@ -1159,6 +1161,7 @@ export class Game {
         question: deduction.question,
         evidence: evidenceFor(pack, this.story.state, truth.id),
         options,
+        proofSlots: deduction.proof ? PROOF_SLOTS : 0,
       }];
     });
     const statements: JournalStatement[] = pack.cast.flatMap((character) => (character.statements ?? [])
@@ -1169,13 +1172,14 @@ export class Game {
         text: statement.text,
         ...(isStatementBroken(this.story.state, statement.id) ? { admission: statement.admission } : {}),
       })));
-    const answeredWrong = caseRecordOf(this.story.state).deductions
-      .filter((entry) => !entry.correct)
-      .flatMap((entry) => pack.truths.find((truth) => truth.id === entry.truthId)?.text ?? []);
+    const judged = caseRecordOf(this.story.state).deductions.flatMap((entry) => {
+      const truth = pack.truths.find((candidate) => candidate.id === entry.truthId);
+      return truth ? [{ text: truth.text, outcome: entry.outcome, hadProof: truth.deduction?.proof !== undefined }] : [];
+    });
     const ruledOut = ruledOutHerrings(pack, this.story.state)
       .map((herring) => ({ description: herring.description, resolution: herring.resolution }));
     const progress = caseProgress(this.story.view, this.story.state);
-    this.storyJournal.render(facts, evidence, requests, { questions, ruledOut, progress, statements, answeredWrong });
+    this.storyJournal.render(facts, evidence, requests, { questions, ruledOut, progress, statements, judged, evidenceChoices: proofChoices(pack, this.story.state) });
   }
 
   private refreshObjective(): void {
@@ -1200,19 +1204,29 @@ export class Game {
   }
 
   // One answer per question. A wrong answer is final too: the game shows what really happened and confirms the
-  // truth so the story can go on, and the case record keeps the mistake for the ending.
-  private answerQuestion(truthId: string, answer: string): void {
-    const result = answerDeduction(this.story.pack, this.story.state, truthId, answer);
+  // truth so the story can go on, and the case record keeps the mistake (or the missing proof) for the ending.
+  private answerQuestion(truthId: string, answer: string, evidence: EvidenceRef[] = []): void {
+    const result = answerDeduction(this.story.pack, this.story.state, truthId, answer, evidence);
     if (!result.accepted) return;
     const ruled = result.ruledOut.map((herring) => `Ruled out: ${herring.resolution}`).join(" ");
+    const truth = result.truth?.text ?? "";
+    const chosen = answer.replace(/[.!?]+$/, "");
     let note: string;
-    if (result.correct) {
+    if (result.outcome === "proven") {
       this.celebrateProgress(truthId);
-      note = `Confirmed: ${result.truth?.text ?? "your deduction was right."}${ruled ? ` ${ruled}` : ""}`;
+      const hadProof = result.truth?.deduction?.proof !== undefined;
+      note = `${hadProof ? "Proven" : "Confirmed"}: ${truth || "your deduction was right."}${ruled ? ` ${ruled}` : ""}`;
+    } else if (result.outcome === "unproven") {
+      this.celebrateProgress();
+      note = `Right, but not proven: what you showed does not back it up well enough. What happened: ${truth}${ruled ? ` ${ruled}` : ""}`;
+    } else if (result.outcome === "misread") {
+      soundEffects.play("wrong");
+      this.celebrateProgress();
+      note = `Not quite: you chose "${chosen}". Your evidence pointed the right way, but not to that answer. What really happened: ${truth}${ruled ? ` ${ruled}` : ""}`;
     } else {
       soundEffects.play("wrong");
       this.celebrateProgress();
-      note = `Not quite: you chose "${answer.replace(/[.!?]+$/, "")}". What really happened: ${result.truth?.text ?? ""}${ruled ? ` ${ruled}` : ""}`;
+      note = `Not quite: you chose "${chosen}". What really happened: ${truth}${ruled ? ` ${ruled}` : ""}`;
     }
     this.refreshObjective();
     this.refreshJournal();
@@ -1244,6 +1258,7 @@ export class Game {
     this.storyJournal.close();
     this.inventoryUI.close();
     const options = summationOptions(this.story.pack, this.story.state);
+    const proof = { choices: proofChoices(this.story.pack, this.story.state), slots: PROOF_SLOTS };
     const done = (): void => {
       this.casePresented = true;
       this.caseOverlay.setCaseButtonVisible(false);
@@ -1252,21 +1267,33 @@ export class Game {
     if (!finaleHasStakes()) {
       // Assisted: the old finale with free retries; nothing is recorded.
       markAssisted(this.story.state);
-      this.caseOverlay.presentCase(questions, options, done);
+      this.caseOverlay.presentCase(questions, options, proof,
+        (question, answerId, evidence) => judgeSummation(this.story.state, question, answerId, evidence), done);
       return;
     }
     const truthText = (id: string): string => this.story.pack.truths.find((truth) => truth.id === id)?.text ?? id;
-    this.caseOverlay.presentFinalCase(questions, options, {
+    const shownLabel = (piece: EvidenceRef): string => (piece.type === "item"
+      ? this.story.pack.items.find((item) => item.id === piece.id)?.name
+      : this.story.pack.clues.find((clue) => clue.id === piece.id)?.text) ?? piece.id;
+    this.caseOverlay.presentFinalCase(questions, options, proof, {
       startAt: nextSummationIndex(this.story.state, questions),
-      onAnswer: (question, answerId) => {
-        answerSummation(this.story.state, question, answerId);
+      onAnswer: (question, answerId, evidence) => {
+        answerSummation(this.story.state, question, answerId, evidence);
         void this.saveProgress();
       },
       results: () => {
         const record = caseRecordOf(this.story.state);
         return questions.map((question) => {
           const entry = record.summation.find((candidate) => candidate.truthId === question.truthId);
-          return { question: question.question, answer: entry ? truthText(entry.answerId) : "", correct: entry?.correct ?? false, correctAnswer: truthText(question.truthId) };
+          return {
+            question: question.question,
+            answer: entry ? truthText(entry.answerId) : "",
+            correct: entry?.correct ?? false,
+            correctAnswer: truthText(question.truthId),
+            outcome: entry?.outcome ?? "wrong",
+            shown: (entry?.evidence ?? []).map(shownLabel),
+            hadProof: question.proof !== undefined,
+          };
         });
       },
       onDone: done,

@@ -10,8 +10,14 @@ must be achievable before they are needed.
 
 For the key truths, add a `deduction`: `question`, the correct `answer`
 (normally the truth's own text), 2-3 plausible `wrong_answers`, and optionally
-`rules_out` listing red herring ids the answer settles. Leave minor truths
-without one; they are confirmed as soon as a clue is found. Twist
+`rules_out` listing red herring ids the answer settles. Also add a `proof` to
+each deduction: `items` and `clues` ids that back the correct answer, and a
+`required` count (default 1, at most 3) for how many of them the player must
+show. List only evidence for the correct answer, not evidence that supports a
+red herring, and only evidence the player can gather without already knowing
+the answer. Use `required: 2` only when the answer genuinely rests on two
+sources. A clue that a broken statement reveals may be listed. Leave minor truths
+without a deduction; they are confirmed as soon as a clue is found. Twist
 `description` text is shown to the player once as a reveal, so write it for
 the player after the payoff.
 

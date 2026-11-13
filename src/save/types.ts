@@ -1,7 +1,7 @@
 import type { LengthId } from "../story/types";
 import type { StoryState } from "../story/state";
 
-export const SAVE_FORMAT_VERSION = 7;
+export const SAVE_FORMAT_VERSION = 8;
 
 export interface SaveMetadata {
   storyTitle: string;

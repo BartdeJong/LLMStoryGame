@@ -1,10 +1,11 @@
 import schemaJson from "../../tools/story-forge/schema/story-pack.schema.json";
 import { MIN_SPRITE_DIFFERENCES, spriteDifferences, validateSpriteSpec, type SpriteSpec } from "../art/spriteSpec";
-import { COMPLEXITY, DEFAULT_TEXT_LIMIT, DIALOGUE_LIMITS, TEXT_LIMITS, type Range } from "./config";
+import { COMPLEXITY, DEFAULT_TEXT_LIMIT, DIALOGUE_LIMITS, PROOF_SLOTS, TEXT_LIMITS, type Range } from "./config";
 import { narrationIssue } from "../dialogue/lineCleanup";
 import { checkSchema, joinPath } from "./jsonSchema";
+import { proofPieces, requiredCount } from "./proof";
 import { heldEvidence, isSatisfied, missingOf, orderedLocations, requirementEntries, solveLength, type SolveResult } from "./solver";
-import { LENGTH_IDS, type CastMember, type LengthDefinition, type LengthId, type Location, type Requirement, type SourceRef, type StoryPack } from "./types";
+import { LENGTH_IDS, type CastMember, type LengthDefinition, type LengthId, type Location, type Proof, type Requirement, type SourceRef, type StoryPack } from "./types";
 import { placedObjects } from "./slice";
 import { GLYPH_STATES, getGlyph, resolveVisual, tokenizeVisualText } from "../art/glyphs";
 import { PALETTE_COLOR_SLOTS } from "../art";
@@ -172,6 +173,23 @@ export function validateStoryPack(data: unknown): ValidationReport {
       refs("item", g.gives_items, `${p}.goal_states[${j}].gives_items`, `goal state "${g.id}"`);
     });
   });
+  // What backs a deduction or summation answer: known ids, no repeats, a reachable `required` count.
+  const checkProof = (proof: Proof | undefined, path: string, owner: string): void => {
+    if (!proof) return;
+    refs("item", proof.items, `${path}.items`, owner);
+    refs("clue", proof.clues, `${path}.clues`, owner);
+    const pieces = proofPieces(proof);
+    if (pieces.length === 0) {
+      error("PROOF_EMPTY", path, `${owner} has a proof that lists no items or clues. Remove it or list what proves the answer.`);
+      return;
+    }
+    if (new Set(pieces.map((piece) => `${piece.type}:${piece.id}`)).size !== pieces.length) {
+      error("PROOF_DUPLICATE", path, `${owner} lists the same item or clue more than once in its proof.`);
+    }
+    if (proof.required !== undefined && (proof.required > pieces.length || proof.required > PROOF_SLOTS)) {
+      error("PROOF_REQUIRED_TOO_HIGH", `${path}.required`, `${owner} requires ${proof.required} pieces of proof, but it lists ${pieces.length} and the player can show at most ${PROOF_SLOTS}.`);
+    }
+  };
   pack.cast.forEach((c, i) => checkDialogueContent(pack, c, `cast[${i}]`, error));
   checkSprites(pack, error);
   pack.truths.forEach((t, i) => {
@@ -180,6 +198,10 @@ export function validateStoryPack(data: unknown): ValidationReport {
     refs("clue", t.revealed_by, `truths[${i}].revealed_by`, owner);
     if (t.deduction) {
       refs("red_herring", t.deduction.rules_out, `truths[${i}].deduction.rules_out`, owner);
+      checkProof(t.deduction.proof, `truths[${i}].deduction.proof`, `${owner} deduction`);
+      if (!t.deduction.proof) {
+        warn("DEDUCTION_NO_PROOF", `truths[${i}].deduction`, `${owner} has a deduction without a proof, so the player never has to show evidence for it.`);
+      }
       const options = [t.deduction.answer, ...t.deduction.wrong_answers].map((text) => text.trim().toLocaleLowerCase());
       if (new Set(options).size !== options.length) {
         error("DEDUCTION_DUPLICATE_ANSWER", `truths[${i}].deduction`, `${owner} has a deduction whose answer and wrong_answers are not all different.`);
@@ -265,6 +287,7 @@ export function validateStoryPack(data: unknown): ValidationReport {
         error("SUMMATION_DUPLICATE_TRUTH", path, `ending "${e.id}" asks about truth "${entry.truth_id}" more than once.`);
       }
       summed.add(entry.truth_id);
+      checkProof(entry.proof, `endings[${i}].summation[${j}].proof`, `ending "${e.id}" summation question ${j + 1}`);
     });
   });
 
@@ -962,6 +985,26 @@ function checkLength(pack: StoryPack, lengthId: LengthId, len: LengthDefinition,
       const detail = clues.length === 0 ? "no clue reveals it" : found.length === 0 ? `none of its clues (${clues.join(", ")}) can be found` : `its dependencies are never learned first (depends_on ${JSON.stringify(pack.truths.find((t) => t.id === id)?.depends_on)})`;
       error("TRUTH_UNREACHABLE", `${p}.core_truths`, `truth "${id}" cannot be learned in the ${lengthId} length: ${detail}.`);
     }
+  });
+
+  // The proof for a question must be gatherable before the player answers it: for a deduction without the truth
+  // it confirms, for a summation question with everything the player can do.
+  const unobtainable = (proof: Proof, found: SolveResult, path: string, owner: string): void => {
+    const obtainable = proofPieces(proof).filter((piece) => (piece.type === "item" ? found.items : found.clues).has(piece.id));
+    if (obtainable.length >= requiredCount(proof)) return;
+    error("PROOF_UNOBTAINABLE", path, `${owner} needs ${requiredCount(proof)} piece(s) of proof in the ${lengthId} length, but only ${obtainable.length} can be obtained before it is answered. Obtainable: ${obtainable.map((piece) => piece.id).join(", ") || "(none)"}.`);
+  };
+  [...len.core_truths, ...len.side_truths].forEach((id) => {
+    const index = pack.truths.findIndex((t) => t.id === id);
+    const proof = pack.truths[index]?.deduction?.proof;
+    if (!proof) return;
+    unobtainable(proof, solveLength(pack, len, { withholdTruth: id }), `truths[${index}].deduction.proof`, `the deduction of truth "${id}"`);
+  });
+  len.endings.forEach((endingId) => {
+    const index = pack.endings.findIndex((e) => e.id === endingId);
+    (pack.endings[index]?.summation ?? []).forEach((entry, j) => {
+      if (entry.proof) unobtainable(entry.proof, solved, `endings[${index}].summation[${j}].proof`, `the summation question ${j + 1} of ending "${endingId}"`);
+    });
   });
 
   for (const truthId of len.core_truths) {

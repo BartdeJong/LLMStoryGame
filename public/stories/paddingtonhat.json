@@ -473,7 +473,8 @@
         "question": "Who took Paddington's hat?",
         "answer": "Judy took the hat early this morning.",
         "wrong_answers": ["Mr Curry took the hat.", "The wind blew the hat away.", "Jonathan hid the hat."],
-        "rules_out": ["rh_curry_hat", "rh_open_window"]
+        "rules_out": ["rh_curry_hat", "rh_open_window"],
+        "proof": { "clues": ["cl_judy_ticket", "cl_curry_saw"], "required": 1 }
       }
     },
     {
@@ -481,7 +482,8 @@
       "deduction": {
         "question": "Where is the hat now?",
         "answer": "The hat is at Mr Gruber's shop.",
-        "wrong_answers": ["The hat is in Mr Curry's garden.", "The hat is at the bus stop.", "The hat is up a tree in the park."]
+        "wrong_answers": ["The hat is in Mr Curry's garden.", "The hat is at the bus stop.", "The hat is up a tree in the park."],
+        "proof": { "clues": ["cl_barnaby_saw", "cl_gruber_tag"], "required": 1 }
       }
     },
     {
@@ -489,7 +491,8 @@
       "deduction": {
         "question": "Why did Judy take the hat to Mr Gruber?",
         "answer": "So Mr Gruber can mend it and add a new red ribbon, as a present.",
-        "wrong_answers": ["So Mr Gruber can sell it in his shop.", "Because the hat is too small for Paddington.", "So Mr Gruber can wear it."]
+        "wrong_answers": ["So Mr Gruber can sell it in his shop.", "Because the hat is too small for Paddington.", "So Mr Gruber can wear it."],
+        "proof": { "clues": ["cl_workbench_hat", "cl_judy_sketch", "cl_gruber_explains"], "required": 1 }
       }
     },
     {
@@ -498,7 +501,8 @@
         "question": "Where did all the marmalade go?",
         "answer": "Mrs Bird used it to bake a giant marmalade cake.",
         "wrong_answers": ["Jonathan ate it all for breakfast.", "Mr Curry took it.", "Paddington ate it in his sleep."],
-        "rules_out": ["rh_sticky_jonathan"]
+        "rules_out": ["rh_sticky_jonathan"],
+        "proof": { "clues": ["cl_oven_smell", "cl_barnaby_oranges"], "required": 1 }
       }
     },
     { "id": "t_party_in_park", "text": "A party is being set up at the park bandstand at three o'clock.", "depends_on": ["t_secret"], "importance": "core", "revealed_by": ["cl_penny_bandstand", "cl_jonathan_list"] },
@@ -507,7 +511,8 @@
       "deduction": {
         "question": "Why is everyone keeping secrets today?",
         "answer": "It is Paddington's summer birthday, and they are planning a surprise party.",
-        "wrong_answers": ["They are cross with Paddington.", "They are going on holiday without Paddington.", "They are hiding from Mr Curry."]
+        "wrong_answers": ["They are cross with Paddington.", "They are going on holiday without Paddington.", "They are hiding from Mr Curry."],
+        "proof": { "clues": ["cl_shed_banner", "cl_lucy_postcard"], "required": 1 }
       }
     }
   ],
@@ -1025,7 +1030,7 @@
         { "question": "Who took Paddington's hat?", "truth_id": "t_judy_took_hat" },
         { "question": "Why is the hat at Mr Gruber's shop?", "truth_id": "t_hat_mended" },
         { "question": "Where did the marmalade go?", "truth_id": "t_marmalade_cake" },
-        { "question": "What is the big secret?", "truth_id": "t_birthday" }
+        { "question": "What is the big secret?", "truth_id": "t_birthday", "proof": { "clues": ["cl_shed_banner", "cl_lucy_postcard"], "required": 1 } }
       ],
       "scene_outline": "Paddington walks to the bandstand. Everyone jumps out and shouts Surprise! Paddington acts very surprised, and he is very happy. Judy gives him his hat with its new red ribbon. Mrs Bird brings out the giant marmalade cake.",
       "tone": "Happy, bright and full of love.",
@@ -1038,7 +1043,7 @@
         { "question": "Who took Paddington's hat?", "truth_id": "t_judy_took_hat" },
         { "question": "Why is the hat at Mr Gruber's shop?", "truth_id": "t_hat_mended" },
         { "question": "Where did the marmalade go?", "truth_id": "t_marmalade_cake" },
-        { "question": "What is the big secret?", "truth_id": "t_birthday" }
+        { "question": "What is the big secret?", "truth_id": "t_birthday", "proof": { "clues": ["cl_shed_banner", "cl_lucy_postcard"], "required": 1 } }
       ],
       "scene_outline": "Paddington walks to the bandstand. Everyone shouts Surprise! Paddington acts very surprised and is very happy. Judy gives him his hat with its new red ribbon. Then Mr Curry walks up with his newspaper. Because Paddington was kind to him, he came to the party too.",
       "tone": "Happy, bright and a little funny.",
@@ -1051,7 +1056,7 @@
         { "question": "Who took Paddington's hat?", "truth_id": "t_judy_took_hat" },
         { "question": "Why is the hat at Mr Gruber's shop?", "truth_id": "t_hat_mended" },
         { "question": "Where did the marmalade go?", "truth_id": "t_marmalade_cake" },
-        { "question": "What is the big secret?", "truth_id": "t_birthday" }
+        { "question": "What is the big secret?", "truth_id": "t_birthday", "proof": { "clues": ["cl_shed_banner", "cl_lucy_postcard"], "required": 1 } }
       ],
       "scene_outline": "Everyone shouts Surprise! Paddington smiles and says he solved the whole mystery. He tells them about the hat, the cake and the banner. Everyone laughs and cheers for Detective Paddington. Judy puts the mended hat on his head.",
       "tone": "Proud, happy and funny.",

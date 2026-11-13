@@ -101,6 +101,11 @@ export interface StatementEvidence {
   clues?: string[];
 }
 
+// What backs a deduction or summation answer: the player shows items and clues from this list.
+export interface Proof extends StatementEvidence {
+  required?: number; // how many listed pieces must be shown; default 1, at most PROOF_SLOTS
+}
+
 // Something a character claims that is false or leaves out the important part. The player hears it in
 // conversation, finds evidence against it and challenges it; code decides whether the evidence fits. The
 // admission is never shown to the model before the statement is broken.
@@ -152,6 +157,7 @@ export interface Deduction {
   answer: string;
   wrong_answers: string[]; // 2-3 plausible but wrong options
   rules_out?: string[]; // red herring ids settled when the player answers correctly
+  proof?: Proof; // evidence that backs the answer; without it one click settles the question
 }
 
 export interface Truth {
@@ -269,6 +275,7 @@ export interface EndingConditions {
 export interface SummationEntry {
   question: string;
   truth_id: string; // must be one of the ending's condition truths
+  proof?: Proof;
 }
 
 // Plays instead of the normal ending when the player's case record is flawed (src/story/caseRecord.ts).

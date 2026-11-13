@@ -3,23 +3,29 @@ import fixture from "../../public/stories/example.json";
 import { LLMClient } from "../llm/client";
 import { MockBackend } from "../llm/mock";
 import { setAssistedDeductions } from "./assist";
-import { answerSummation, caseResult, endingVariant, nextSummationIndex, summationComplete } from "./caseRecord";
+import { answerSummation, caseResult, endingVariant, judgeSummation, nextSummationIndex, recapAnswers, summationComplete } from "./caseRecord";
 import { buildEndingPrompt, writeEnding } from "./ending";
 import { getLengthView } from "./loader";
 import { buildRecap } from "./progress";
 import { caseRecordOf, createStoryState, emptyCaseRecord, grantTruthsFromFoundClues, markClueFound } from "./state";
-import type { CaseRecord } from "./state";
+import type { AnswerOutcome, CaseRecord } from "./state";
 import type { Ending, StoryPack } from "./types";
 import { validateStoryPack } from "./validate";
 
 const pack = (): StoryPack => structuredClone(fixture) as unknown as StoryPack;
-const thresholds = { flawedShare: 0.4, challengeWeight: 0.5 };
+const thresholds = { flawedShare: 0.4, challengeWeight: 0.5, unprovenWeight: 0.5 };
 
 function record(parts: Partial<CaseRecord>): CaseRecord {
   return { ...emptyCaseRecord(), ...parts };
 }
-const answer = (correct: boolean) => ({ truthId: "t", answer: "a", correct });
-const summed = (correct: boolean) => ({ truthId: "t", answerId: "a", correct });
+const answer = (outcome: AnswerOutcome | boolean) => {
+  const kind: AnswerOutcome = typeof outcome === "boolean" ? (outcome ? "proven" : "wrong") : outcome;
+  return { truthId: "t", answer: "a", correct: kind === "proven" || kind === "unproven", outcome: kind, evidence: [] };
+};
+const summed = (outcome: AnswerOutcome | boolean) => {
+  const kind: AnswerOutcome = typeof outcome === "boolean" ? (outcome ? "proven" : "wrong") : outcome;
+  return { truthId: "t", answerId: "a", correct: kind === "proven" || kind === "unproven", outcome: kind, evidence: [] };
+};
 const challenge = (fits: boolean) => ({ statementId: "s", evidence: { type: "item" as const, id: "i" }, fits });
 
 afterEach(() => setAssistedDeductions(false));
@@ -48,7 +54,23 @@ describe("case result thresholds", () => {
     expect(result.kind).toBe("mistakes");
     expect(result.mistakes).toBe(2);
     expect(result.share).toBeCloseTo(1 / 4.5);
-    expect(caseResult(record({ challenges: [challenge(false)] }), { flawedShare: 0.4, challengeWeight: 1 }).kind).toBe("flawed");
+    expect(caseResult(record({ challenges: [challenge(false)] }), { flawedShare: 0.4, challengeWeight: 1, unprovenWeight: 0.5 }).kind).toBe("flawed");
+  });
+
+  it("counts an unproven answer as a mistake that weighs unprovenWeight", () => {
+    // 1 unproven of 4 answers = 0.5 / 4 = 0.125: solved with mistakes, never clean
+    const result = caseResult(record({ deductions: [answer(true), answer(true), answer("unproven")], summation: [summed(true)] }), thresholds);
+    expect(result.kind).toBe("mistakes");
+    expect(result.mistakes).toBe(1);
+    expect(result.share).toBeCloseTo(0.125);
+    // two unproven of five = 0.2; a full-weight unproven (1) of 2 answers reaches the flawed share
+    expect(caseResult(record({ deductions: [answer("unproven"), answer(true)] }), { ...thresholds, unprovenWeight: 1 }).kind).toBe("flawed");
+    expect(caseResult(record({ deductions: [answer("unproven"), answer(true)] }), thresholds).share).toBeCloseTo(0.25);
+  });
+
+  it("scores a misread answer like a wrong one", () => {
+    expect(caseResult(record({ deductions: [answer("misread"), answer(true)] }), thresholds).share).toBeCloseTo(0.5);
+    expect(caseResult(record({ deductions: [answer("misread"), answer(true)] }), thresholds).kind).toBe("flawed");
   });
 
   it("reports an assisted case whatever the record says", () => {
@@ -77,13 +99,35 @@ describe("one-pass finale", () => {
   it("records one answer per question and resumes at the first unanswered one", () => {
     const state = createStoryState(getLengthView(pack(), "short"));
     expect(nextSummationIndex(state, questions)).toBe(0);
-    expect(answerSummation(state, questions[0]!, "t_night")).toBe(false);
-    expect(answerSummation(state, questions[0]!, "t_taker")).toBe(false); // ignored: already answered
-    expect(caseRecordOf(state).summation).toEqual([{ truthId: "t_taker", answerId: "t_night", correct: false }]);
+    expect(answerSummation(state, questions[0]!, "t_night")).toBe("wrong");
+    expect(answerSummation(state, questions[0]!, "t_taker")).toBeNull(); // ignored: already answered
+    expect(caseRecordOf(state).summation).toEqual([{ truthId: "t_taker", answerId: "t_night", correct: false, outcome: "wrong", evidence: [] }]);
     expect(nextSummationIndex(state, questions)).toBe(1);
     expect(summationComplete(state, questions)).toBe(false);
-    expect(answerSummation(state, questions[1]!, "t_motive")).toBe(true);
+    expect(answerSummation(state, questions[1]!, "t_motive")).toBe("proven");
     expect(summationComplete(state, questions)).toBe(true);
+  });
+
+  it("judges a summation answer against its proof and records what was shown", () => {
+    const state = createStoryState(getLengthView(pack(), "short"));
+    markClueFound(state, "cl_oswin_ledger");
+    const question = { question: "Who took it?", truthId: "t_taker", proof: { clues: ["cl_oswin_ledger", "cl_shard_match"], required: 2 } };
+    const shown = [
+      { type: "clue" as const, id: "cl_oswin_ledger" },
+      { type: "clue" as const, id: "cl_oswin_ledger" }, // duplicate counts once
+      { type: "clue" as const, id: "cl_shard_match" }, // not held: dropped
+    ];
+    expect(judgeSummation(state, question, "t_taker", shown)).toBe("unproven");
+    expect(caseRecordOf(state).summation).toEqual([]); // judging records nothing
+    markClueFound(state, "cl_shard_match");
+    expect(judgeSummation(state, question, "t_taker", shown)).toBe("proven");
+    expect(judgeSummation(state, question, "t_night", shown)).toBe("misread");
+    expect(judgeSummation(state, question, "t_night", [])).toBe("wrong");
+    expect(answerSummation(state, question, "t_taker", shown)).toBe("proven");
+    expect(caseRecordOf(state).summation).toEqual([{
+      truthId: "t_taker", answerId: "t_taker", correct: true, outcome: "proven",
+      evidence: [{ type: "clue", id: "cl_oswin_ledger" }, { type: "clue", id: "cl_shard_match" }],
+    }]);
   });
 });
 
@@ -123,14 +167,30 @@ describe("recap", () => {
     const view = getLengthView(data, "short");
     const state = createStoryState(view);
     const wrong = data.truths[1]!.deduction!.wrong_answers[0]!;
-    caseRecordOf(state).deductions.push({ truthId: "t_night", answer: wrong, correct: false });
-    caseRecordOf(state).summation.push({ truthId: "t_taker", answerId: "t_taker", correct: true });
+    markClueFound(state, "cl_oswin_ledger");
+    caseRecordOf(state).deductions.push({ truthId: "t_night", answer: wrong, correct: false, outcome: "wrong", evidence: [] });
+    caseRecordOf(state).summation.push({
+      truthId: "t_taker", answerId: "t_taker", correct: true, outcome: "proven", evidence: [{ type: "clue", id: "cl_oswin_ledger" }],
+    });
     const recap = buildRecap(data, view, state, [{ question: "Who took it?", truthId: "t_taker" }]);
     expect(recap.result.kind).toBe("flawed"); // 1 wrong of 2 answers
     expect(recap.answers).toEqual([
-      { question: data.truths[1]!.deduction!.question, answer: wrong, correctAnswer: data.truths[1]!.deduction!.answer, correct: false, kind: "deduction" },
-      { question: "Who took it?", answer: data.truths[2]!.text, correctAnswer: data.truths[2]!.text, correct: true, kind: "summation" },
+      { question: data.truths[1]!.deduction!.question, answer: wrong, correctAnswer: data.truths[1]!.deduction!.answer, correct: false, outcome: "wrong", shown: [], hadProof: true, kind: "deduction" },
+      { question: "Who took it?", answer: data.truths[2]!.text, correctAnswer: data.truths[2]!.text, correct: true, outcome: "proven", shown: [data.clues.find((clue) => clue.id === "cl_oswin_ledger")!.text], hadProof: false, kind: "summation" },
     ]);
     expect(recap.statements).toEqual({ broken: 0, standing: 0, heardStanding: 0, missedChallenges: 0 });
+  });
+
+  it("flags whether each answered question had an authored proof", () => {
+    const data = pack();
+    const view = getLengthView(data, "short");
+    const state = createStoryState(view);
+    caseRecordOf(state).summation.push({ truthId: "t_taker", answerId: "t_taker", correct: true, outcome: "proven", evidence: [] });
+    const withProof = recapAnswers(data, state, [{ question: "Who took it?", truthId: "t_taker", proof: { clues: ["cl_oswin_ledger"] } }]);
+    expect(withProof.map((answer) => answer.hadProof)).toEqual([true]);
+    expect(recapAnswers(data, state, [{ question: "Who took it?", truthId: "t_taker" }]).map((answer) => answer.hadProof)).toEqual([false]);
+    delete data.truths[1]!.deduction!.proof;
+    caseRecordOf(state).deductions.push({ truthId: "t_night", answer: data.truths[1]!.deduction!.answer, correct: true, outcome: "proven", evidence: [] });
+    expect(recapAnswers(data, state)[0]!.hadProof).toBe(false);
   });
 });

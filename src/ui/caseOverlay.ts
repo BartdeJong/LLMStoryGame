@@ -1,17 +1,30 @@
 import { activateGamepadFocus } from "../input/focus";
 import type { SummationQuestion } from "../story/deduction";
+import type { ProofChoice } from "../story/proof";
+import type { AnswerOutcome } from "../story/state";
+import type { EvidenceRef } from "../story/statements";
 import { el } from "./dom";
+import { createEvidencePicker } from "./evidencePicker";
 
 export interface FinalCaseResult {
   question: string;
   answer: string;
   correctAnswer: string;
-  correct: boolean;
+  correct: boolean; // the conclusion was right
+  outcome: AnswerOutcome;
+  shown: string[]; // labels of the evidence the player showed
+  hadProof: boolean; // the question had an authored proof; without one a right answer is just right
+}
+
+// What the player can show with an answer, and how many pieces.
+export interface CaseProofOptions {
+  choices: readonly ProofChoice[];
+  slots: number;
 }
 
 export interface FinalCaseHandlers {
   startAt: number; // first unanswered question (answers survive a reload)
-  onAnswer(question: SummationQuestion, answerTruthId: string): void; // records and saves the answer
+  onAnswer(question: SummationQuestion, answerTruthId: string, evidence: EvidenceRef[]): void; // records and saves the answer
   results(): FinalCaseResult[];
   onDone(): void;
 }
@@ -24,12 +37,15 @@ export interface CaseOverlay {
   presentCase(
     questions: readonly SummationQuestion[],
     options: readonly { id: string; text: string }[],
+    proof: CaseProofOptions,
+    judge: (question: SummationQuestion, answerTruthId: string, evidence: EvidenceRef[]) => AnswerOutcome,
     onSolved: () => void,
   ): void;
   // The finale with stakes: each question is answered once, with no feedback until all are answered.
   presentFinalCase(
     questions: readonly SummationQuestion[],
     options: readonly { id: string; text: string }[],
+    proof: CaseProofOptions,
     handlers: FinalCaseHandlers,
   ): void;
   setCaseButtonVisible(visible: boolean): void;
@@ -73,6 +89,47 @@ export function createCaseOverlay(container: HTMLElement, onCaseButton: () => vo
     return node;
   };
 
+  // The second card of a question that has a proof: the answer is chosen, now show what backs it.
+  const showProofCard = (config: {
+    step: string;
+    question: string;
+    said: string;
+    proof: CaseProofOptions;
+    initial?: readonly EvidenceRef[];
+    note?: string;
+    confirmLabel: string;
+    onConfirm: (evidence: EvidenceRef[]) => void;
+    onBack: () => void;
+    onGoOn?: () => void;
+  }): void => {
+    const content = card("Show your evidence");
+    const picker = createEvidencePicker({ choices: config.proof.choices, max: config.proof.slots, initial: config.initial });
+    const actions = el("div", "case-actions");
+    actions.append(button(config.confirmLabel, () => config.onConfirm(picker.selected())));
+    if (config.onGoOn) actions.append(button("Go on", config.onGoOn));
+    actions.append(button("Back", config.onBack));
+    content.append(
+      el("p", "case-step", config.step),
+      el("h2", "case-title", config.question),
+      el("p", "case-text", `You said: ${config.said}`),
+      el("p", "case-text", `Show up to ${config.proof.slots} items or clues that prove it.`),
+      picker.element,
+    );
+    if (config.note) {
+      const note = el("p", "case-text journal-feedback", config.note);
+      note.setAttribute("role", "status");
+      content.append(note);
+    }
+    content.append(actions);
+    content.addEventListener("keydown", (event) => {
+      if (event.key !== "Escape") return;
+      event.preventDefault();
+      event.stopPropagation();
+      config.onBack();
+    });
+    open(content);
+  };
+
   return {
     elements: [caseButton],
     get isOpen() {
@@ -105,8 +162,12 @@ export function createCaseOverlay(container: HTMLElement, onCaseButton: () => vo
       );
       open(content);
     },
-    presentCase(questions, options, onSolved) {
+    presentCase(questions, options, proof, judge, onSolved) {
       let index = 0;
+      const advance = (): void => {
+        index += 1;
+        showQuestion();
+      };
       const showQuestion = (message = ""): void => {
         const question = questions[index];
         if (!question) {
@@ -122,11 +183,12 @@ export function createCaseOverlay(container: HTMLElement, onCaseButton: () => vo
         const actions = el("div", "case-actions");
         for (const option of options) {
           actions.append(button(option.text, () => {
-            if (option.id === question.truthId) {
-              index += 1;
-              showQuestion();
-            } else {
+            if (option.id !== question.truthId) {
               showQuestion("Not quite. Look through your casebook and try again.");
+            } else if (!question.proof) {
+              advance();
+            } else {
+              showEvidence(question, option, []);
             }
           }));
         }
@@ -139,24 +201,53 @@ export function createCaseOverlay(container: HTMLElement, onCaseButton: () => vo
         content.append(button("Not yet", close));
         open(content);
       };
+      // Free retries: weak evidence never blocks the case, and Go on leaves it.
+      const showEvidence = (question: SummationQuestion, option: { id: string; text: string }, initial: readonly EvidenceRef[], note = ""): void => {
+        showProofCard({
+          step: `Question ${index + 1} of ${questions.length}`,
+          question: question.question,
+          said: option.text,
+          proof,
+          initial,
+          note,
+          confirmLabel: "Present this",
+          onConfirm: (evidence) => {
+            if (judge(question, option.id, evidence) === "proven") advance();
+            else showEvidence(question, option, evidence, "That does not prove it yet. Try other evidence, or go on.");
+          },
+          onBack: () => showQuestion(),
+          onGoOn: note ? advance : undefined,
+        });
+      };
       showQuestion();
     },
-    presentFinalCase(questions, options, handlers) {
+    presentFinalCase(questions, options, proof, handlers) {
       let index = handlers.startAt;
+      const record = (question: SummationQuestion, answerId: string, evidence: EvidenceRef[]): void => {
+        handlers.onAnswer(question, answerId, evidence);
+        index += 1;
+        showQuestion();
+      };
       const showResults = (): void => {
         const results = handlers.results();
         const right = results.filter((result) => result.correct).length;
+        const proven = results.filter((result) => result.outcome === "proven").length;
         const content = card("Your case");
         content.append(
-          el("h2", "case-title", right === results.length ? "Everyone nods along" : "Your case is heard"),
+          el("h2", "case-title", proven === results.length ? "Everyone nods along" : "Your case is heard"),
           el("p", "case-text", `You answered ${right} of ${results.length} questions as it really happened.`),
         );
         const list = el("ol", "case-result-list");
         for (const result of results) {
-          const item = el("li", result.correct ? "case-result-right" : "case-result-wrong");
+          const item = el("li", result.outcome === "proven" ? "case-result-right"
+            : result.outcome === "unproven" ? "case-result-unproven" : "case-result-wrong");
           item.append(el("strong", "", result.question), el("br", ""));
-          if (result.correct) item.append(`✓ ${result.answer}`);
-          else item.append(`✗ You said: ${result.answer}`, el("br", ""), `In truth: ${result.correctAnswer}`);
+          if (result.outcome === "proven") item.append(result.hadProof ? `✓ Proven: ${result.answer}` : `✓ ${result.answer}`);
+          else if (result.outcome === "unproven") item.append(`✓ Right, but unproven: ${result.answer}`);
+          else {
+            item.append(`${result.outcome === "misread" ? "✗ Misread: " : "✗ "}You said: ${result.answer}`, el("br", ""), `In truth: ${result.correctAnswer}`);
+          }
+          if (result.shown.length > 0) item.append(el("br", ""), `You showed: ${result.shown.join("; ")}`);
           list.append(item);
         }
         const actions = el("div", "case-actions");
@@ -182,9 +273,23 @@ export function createCaseOverlay(container: HTMLElement, onCaseButton: () => vo
         const actions = el("div", "case-actions");
         for (const option of options) {
           actions.append(button(option.text, () => {
-            handlers.onAnswer(question, option.id);
-            index += 1;
-            showQuestion();
+            if (!question.proof) {
+              record(question, option.id, []);
+              return;
+            }
+            const showEvidence = (initial: readonly EvidenceRef[]): void => {
+              showProofCard({
+                step: `Question ${index + 1} of ${questions.length}`,
+                question: question.question,
+                said: option.text,
+                proof,
+                initial,
+                confirmLabel: "Present this",
+                onConfirm: (evidence) => record(question, option.id, evidence),
+                onBack: showQuestion,
+              });
+            };
+            showEvidence([]);
           }));
         }
         content.append(actions, button("Not yet", close));

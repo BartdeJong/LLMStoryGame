@@ -75,10 +75,16 @@ export const DIALOGUE_LIMITS = {
 };
 
 // How the case record turns into a result at the ending (src/story/caseRecord.ts). The share of mistakes is
-// (wrong final answers + weighted failed challenges) / (final answers + weighted challenges).
+// (wrong or misread answers + weighted unproven answers + weighted failed challenges) /
+// (final answers + weighted challenges).
 export const CASE_RESULT = {
   // Any mistake below this share is a solve with mistakes; at or above it the case is flawed.
   flawedShare: 0.4,
   // A failed challenge weighs less than a wrong deduction: it costs a conversation, not the answer.
   challengeWeight: 0.5,
+  // A right answer that was not proven weighs less than a wrong one: the player knew, but did not show why.
+  unprovenWeight: 0.5,
 };
+
+// How many pieces of evidence the player can show with one answer.
+export const PROOF_SLOTS = 3;

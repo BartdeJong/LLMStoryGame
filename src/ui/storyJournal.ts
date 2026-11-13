@@ -1,4 +1,9 @@
 import { activateGamepadFocus } from "../input/focus";
+import { PROOF_SLOTS } from "../story/config";
+import type { ProofChoice } from "../story/proof";
+import type { AnswerOutcome } from "../story/state";
+import type { EvidenceRef } from "../story/statements";
+import { createEvidencePicker } from "./evidencePicker";
 import { fillPips, progressLabel, type HudProgress } from "./objectiveHud";
 import { el } from "./dom";
 
@@ -18,6 +23,14 @@ export interface JournalQuestion {
   readonly question: string;
   readonly evidence: readonly string[];
   readonly options: readonly string[];
+  readonly proofSlots: number; // how many pieces of evidence can be shown with the answer; 0 = answered in one click
+}
+
+// How a confirmed truth's question was answered, keyed by the fact text.
+export interface JournalJudged {
+  readonly text: string;
+  readonly outcome: AnswerOutcome;
+  readonly hadProof: boolean; // the question had an authored proof; without one a right answer is just right
 }
 
 export interface JournalRuledOut {
@@ -36,8 +49,8 @@ export interface JournalStatement {
 export interface JournalExtras {
   readonly questions: readonly JournalQuestion[];
   readonly statements?: readonly JournalStatement[];
-  // Facts confirmed after a wrong final answer, keyed by the fact text.
-  readonly answeredWrong?: readonly string[];
+  readonly evidenceChoices: readonly ProofChoice[]; // items held and clues found, for showing with an answer
+  readonly judged?: readonly JournalJudged[];
   readonly ruledOut: readonly JournalRuledOut[];
   readonly progress?: Pick<HudProgress, "truthsFound" | "truthsTotal">;
 }
@@ -60,10 +73,13 @@ export interface StoryJournal {
 
 export function createStoryJournal(
   container: HTMLElement,
-  onAnswer: (questionId: string, answer: string) => void = () => undefined,
+  onAnswer: (questionId: string, answer: string, evidence: EvidenceRef[]) => void = () => undefined,
 ): StoryJournal {
   const feedback = new Map<string, string>();
-  let focusQuestion: string | null = null;
+  // The answer a player has picked but not yet given, with the evidence chosen so far. Not saved.
+  const pending = new Map<string, { answer: string; evidence: EvidenceRef[] }>();
+  let focusQuestion: { id: string; role: "option" | "evidence" | "give" } | null = null;
+  let lastRender: Parameters<StoryJournal["render"]> | null = null;
   const toggleButton = el("button", "journal-button");
   toggleButton.type = "button";
   toggleButton.textContent = "Journal · 0";
@@ -216,7 +232,17 @@ export function createStoryJournal(
     announce(message) {
       status.textContent = message;
     },
-    render(facts, evidence, requests, extras = { questions: [], ruledOut: [] }) {
+    render(...args) {
+      lastRender = args;
+      draw();
+    },
+  };
+
+  // Draws the journal from the last render arguments, so a pending answer can change without the game.
+  function draw(): void {
+    if (!lastRender) return;
+    const [facts, evidence, requests, extras = { questions: [], ruledOut: [], evidenceChoices: [] }] = lastRender;
+    {
       const progress = extras.progress;
       progressLine.hidden = !progress || progress.truthsTotal === 0;
       if (progress && progress.truthsTotal > 0) {
@@ -225,14 +251,20 @@ export function createStoryJournal(
       }
       questionsList.replaceChildren();
       questionsEmpty.hidden = extras.questions.length > 0;
+      for (const id of [...pending.keys()]) {
+        if (!extras.questions.some((question) => question.id === id)) pending.delete(id);
+      }
       for (const question of extras.questions) {
         const row = el("article", "journal-entry journal-question");
         const prompt = el("p", "journal-entry-text");
         prompt.textContent = question.question;
         const final = el("p", "journal-entry-location journal-final-note");
-        final.textContent = "Your answer is final. You can keep looking for evidence before you choose.";
+        final.textContent = question.proofSlots > 0
+          ? `Pick an answer, then show up to ${question.proofSlots} items or clues that prove it. Your answer is final.`
+          : "Your answer is final. You can keep looking for evidence before you choose.";
         row.append(prompt, final);
-        if (question.evidence.length > 0) {
+        // Questions with a proof do not list the clues found for them: that would hand over the answer.
+        if (question.proofSlots === 0 && question.evidence.length > 0) {
           const label = el("p", "journal-entry-label");
           label.textContent = "Evidence so far";
           row.append(label);
@@ -242,19 +274,75 @@ export function createStoryJournal(
             row.append(line);
           }
         }
-        const answers = el("div", "journal-answers");
-        for (const option of question.options) {
-          const button = el("button", "dialogue-choice journal-answer");
-          button.type = "button";
-          button.textContent = option;
-          button.dataset.questionId = question.id;
-          button.addEventListener("click", () => {
-            focusQuestion = question.id;
-            onAnswer(question.id, option);
+        const chosen = pending.get(question.id);
+        if (question.proofSlots > 0 && chosen) {
+          const said = el("p", "journal-entry-text journal-your-answer", `Your answer: ${chosen.answer}`);
+          const change = el("button", "dialogue-choice journal-change", "Change");
+          change.type = "button";
+          change.dataset.questionId = question.id;
+          change.dataset.role = "option";
+          change.addEventListener("click", () => {
+            pending.delete(question.id);
+            focusQuestion = { id: question.id, role: "option" };
+            draw();
           });
-          answers.append(button);
+          const picker = createEvidencePicker({
+            choices: extras.evidenceChoices,
+            max: Math.min(question.proofSlots, PROOF_SLOTS),
+            initial: chosen.evidence,
+            onChange: (selected) => { chosen.evidence = selected; },
+          });
+          const give = el("button", "dialogue-choice journal-give", "Give this answer");
+          give.type = "button";
+          give.dataset.questionId = question.id;
+          give.dataset.role = "give";
+          give.addEventListener("click", () => {
+            const shown = picker.selected();
+            pending.delete(question.id);
+            focusQuestion = { id: question.id, role: "give" };
+            onAnswer(question.id, chosen.answer, shown);
+          });
+          row.addEventListener("keydown", (event) => {
+            if (event.key !== "Escape") return;
+            event.preventDefault();
+            event.stopPropagation();
+            pending.delete(question.id);
+            focusQuestion = { id: question.id, role: "option" };
+            draw();
+          });
+          const actions = el("div", "journal-answers");
+          actions.append(change, give);
+          row.append(said, picker.element, actions);
+          const firstPiece = picker.element.querySelector<HTMLButtonElement>("button");
+          if (firstPiece) {
+            firstPiece.dataset.questionId = question.id;
+            firstPiece.dataset.role = "evidence";
+          } else if (focusQuestion?.id === question.id && focusQuestion.role === "evidence") {
+            // Nothing to pick: land on "Give this answer", not "Change", so a second press does not undo the pick.
+            focusQuestion = { id: question.id, role: "give" };
+          }
+        } else {
+          const answers = el("div", "journal-answers");
+          for (const option of question.options) {
+            const button = el("button", "dialogue-choice journal-answer");
+            button.type = "button";
+            button.textContent = option;
+            button.dataset.questionId = question.id;
+            button.dataset.role = "option";
+            button.addEventListener("click", () => {
+              if (question.proofSlots > 0) {
+                pending.set(question.id, { answer: option, evidence: [] });
+                focusQuestion = { id: question.id, role: "evidence" };
+                draw();
+              } else {
+                focusQuestion = { id: question.id, role: "option" };
+                onAnswer(question.id, option, []);
+              }
+            });
+            answers.append(button);
+          }
+          row.append(answers);
         }
-        row.append(answers);
         const note = feedback.get(question.id);
         if (note) {
           const message = el("p", "journal-entry-location journal-feedback");
@@ -284,9 +372,14 @@ export function createStoryJournal(
       for (const fact of facts) {
         const row = el("article", "journal-entry");
         const label = el("p", "journal-entry-label");
-        const wrong = extras.answeredWrong?.includes(fact.text) ?? false;
-        label.textContent = wrong ? `${fact.importance} truth · your answer was wrong` : `${fact.importance} truth`;
-        if (wrong) row.classList.add("journal-entry-missed");
+        const judged = extras.judged?.find((entry) => entry.text === fact.text);
+        const outcome = judged?.outcome;
+        const verdict = outcome === "proven" ? (judged?.hadProof ? " · proven" : "")
+          : outcome === "unproven" ? " · right, but unproven"
+          : outcome ? " · your answer was wrong" : "";
+        label.textContent = `${fact.importance} truth${verdict}`;
+        if (outcome === "unproven") row.classList.add("journal-entry-unproven");
+        else if (outcome === "wrong" || outcome === "misread") row.classList.add("journal-entry-missed");
         const text = el("p", "journal-entry-text");
         text.textContent = fact.text;
         row.append(label, text);
@@ -355,10 +448,12 @@ export function createStoryJournal(
       );
       updateFilter();
       if (focusQuestion !== null) {
-        const target = questionsList.querySelector<HTMLElement>(`button[data-question-id="${focusQuestion}"]`);
+        const { id, role } = focusQuestion;
+        const target = questionsList.querySelector<HTMLElement>(`button[data-question-id="${id}"][data-role="${role}"]`)
+          ?? questionsList.querySelector<HTMLElement>(`button[data-question-id="${id}"]`);
         focusQuestion = null;
         target?.focus();
       }
-    },
-  };
+    }
+  }
 }

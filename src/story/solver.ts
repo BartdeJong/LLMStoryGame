@@ -60,7 +60,9 @@ export function heldEvidence(statement: Statement, s: SolveState): string[] {
 
 // Simulates a player who does everything possible. Requirements are never consumed,
 // so repeating until nothing changes finds everything reachable.
-export function solveLength(pack: StoryPack, length: LengthDefinition): SolveResult {
+// `withholdTruth` keeps one truth from being learned (as if the player never confirmed it), to check that
+// the proof for that truth's own question can be gathered without it.
+export function solveLength(pack: StoryPack, length: LengthDefinition, options: { withholdTruth?: string } = {}): SolveResult {
   const lengthLocations = orderedLocations(length);
   const inLength = new Set(lengthLocations);
   const beatOfLocation = new Map<string, number>();
@@ -172,6 +174,7 @@ export function solveLength(pack: StoryPack, length: LengthDefinition): SolveRes
 
     for (const clue of pack.clues) {
       if (!clue.truth_id || !s.clues.has(clue.id) || s.truths.has(clue.truth_id)) continue;
+      if (clue.truth_id === options.withholdTruth) continue;
       const truth = pack.truths.find((t) => t.id === clue.truth_id);
       if (!truth || !truth.depends_on.every((id) => s.truths.has(id))) continue;
       changed = gain(s.truths, truth.id, `Learn truth ${truth.id} from clue ${clue.id}`) || changed;

@@ -70,7 +70,7 @@ No side truths.
 | t_party_in_park | Spoken: Mrs Penny the park keeper must keep the bandstand free at three. | Object: Jonathan's balloon list on the garden table (Back Garden). |
 | t_birthday | Object: the banner under the sheet in the shed (after the party truth). | Spoken: Mrs Brown shows Aunt Lucy's birthday postcard (after Paddington brings her flowers). |
 
-### Deductions (player picks the answer)
+### Deductions (player picks the answer and shows evidence)
 
 - **t_judy_took_hat** - "Who took Paddington's hat?"
   - Right: Judy took the hat early this morning.

@@ -205,9 +205,9 @@
   ],
   "truths": [
     { "id": "t_missing", "text": "The Moon Lantern vanished the night before the festival.", "depends_on": [], "importance": "core", "revealed_by": ["cl_mira_talk", "cl_notice_board"] },
-    { "id": "t_night", "text": "Someone climbed the clock tower stairs that night.", "depends_on": ["t_missing"], "importance": "core", "revealed_by": ["cl_pip_saw", "cl_library_log"], "deduction": { "question": "What do Pip's sighting and the key log tell you about that night?", "answer": "Someone climbed the clock tower stairs that night.", "wrong_answers": ["Someone sneaked into the bakery that night.", "The lantern simply blew away in the wind."] } },
-    { "id": "t_taker", "text": "Hollis the clock keeper took the lantern.", "depends_on": ["t_night"], "importance": "core", "revealed_by": ["cl_oswin_ledger", "cl_shard_match"], "deduction": { "question": "Who took the Moon Lantern?", "answer": "Hollis the clock keeper took the lantern.", "wrong_answers": ["Mira the baker took the lantern.", "Pip the gardener took the lantern."], "rules_out": ["rh_flour_prints"] } },
-    { "id": "t_motive", "text": "Hollis only wanted to mend a crack in it and was too ashamed to say so.", "depends_on": ["t_taker"], "importance": "core", "revealed_by": ["cl_hollis_confess", "cl_workbench"], "deduction": { "question": "Why did Hollis take the lantern?", "answer": "Hollis only wanted to mend a crack in it and was too ashamed to say so.", "wrong_answers": ["Hollis wanted to keep the lantern for himself.", "Hollis wanted to spoil the festival."] } }
+    { "id": "t_night", "text": "Someone climbed the clock tower stairs that night.", "depends_on": ["t_missing"], "importance": "core", "revealed_by": ["cl_pip_saw", "cl_library_log"], "deduction": { "question": "What do Pip's sighting and the key log tell you about that night?", "answer": "Someone climbed the clock tower stairs that night.", "wrong_answers": ["Someone sneaked into the bakery that night.", "The lantern simply blew away in the wind."], "proof": { "clues": ["cl_pip_saw", "cl_library_log"], "required": 2 } } },
+    { "id": "t_taker", "text": "Hollis the clock keeper took the lantern.", "depends_on": ["t_night"], "importance": "core", "revealed_by": ["cl_oswin_ledger", "cl_shard_match"], "deduction": { "question": "Who took the Moon Lantern?", "answer": "Hollis the clock keeper took the lantern.", "wrong_answers": ["Mira the baker took the lantern.", "Pip the gardener took the lantern."], "rules_out": ["rh_flour_prints"], "proof": { "clues": ["cl_oswin_ledger", "cl_shard_match"], "required": 1 } } },
+    { "id": "t_motive", "text": "Hollis only wanted to mend a crack in it and was too ashamed to say so.", "depends_on": ["t_taker"], "importance": "core", "revealed_by": ["cl_hollis_confess", "cl_workbench"], "deduction": { "question": "Why did Hollis take the lantern?", "answer": "Hollis only wanted to mend a crack in it and was too ashamed to say so.", "wrong_answers": ["Hollis wanted to keep the lantern for himself.", "Hollis wanted to spoil the festival."], "proof": { "clues": ["cl_hollis_confess", "cl_workbench"], "required": 1 } } }
   ],
   "clues": [
     { "id": "cl_mira_talk", "truth_id": "t_missing", "kind": "spoken", "where": { "type": "character", "id": "c_mira" }, "alternatives": [], "requirements": {}, "text": "Mira says the lantern's hook on the square is empty this morning." },
@@ -381,7 +381,7 @@
       "conditions": { "truths": ["t_night", "t_taker", "t_motive"], "goal_states": ["gs_hollis_forgiven"], "choices": [] },
       "summation": [
         { "question": "What happened on the night the lantern vanished?", "truth_id": "t_night" },
-        { "question": "Who took the Moon Lantern?", "truth_id": "t_taker" },
+        { "question": "Who took the Moon Lantern?", "truth_id": "t_taker", "proof": { "clues": ["cl_oswin_ledger", "cl_shard_match"], "required": 1 } },
         { "question": "Why did they take it?", "truth_id": "t_motive" }
       ],
       "scene_outline": "Hollis carries the mended lantern to the square and the village lights it together.",
