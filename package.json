@@ -11,6 +11,7 @@
     "test": "vitest run",
     "validate-stories": "node tools/story-forge/validate-stories.mjs",
     "story-readthrough": "node tools/story-forge/read-through.mjs",
+    "finetune-data": "node tools/finetune/generate.mjs",
     "bake-areas": "node tools/story-forge/run-visual-tool.mjs bake-areas",
     "anchor-clues": "node tools/story-forge/run-visual-tool.mjs anchor-clues",
     "icon-catalog": "node tools/story-forge/run-visual-tool.mjs icon-catalog",
