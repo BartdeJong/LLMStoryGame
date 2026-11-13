@@ -8,7 +8,6 @@ import type { StoryPack } from "./types";
 import { formatIssue, validateStoryPack } from "./validate";
 import { seededIconRecipe } from "./recipes";
 import storyIndex from "../../public/stories/index.json";
-import lanterntidePack from "../../public/stories/lanterntide.json";
 import holmesPack from "../../public/stories/holmesashenvelope.json";
 import paddingtonPack from "../../public/stories/paddingtonhat.json";
 
@@ -215,7 +214,7 @@ describe("one length per story", () => {
 
   it("ships exactly one length per story pack", () => {
     const packs: Record<string, { lengths: Record<string, unknown> }> = {
-      example: fixture, lanterntide: lanterntidePack, holmesashenvelope: holmesPack, paddingtonhat: paddingtonPack,
+      example: fixture, holmesashenvelope: holmesPack, paddingtonhat: paddingtonPack,
     };
     for (const entry of storyIndex.stories) {
       expect(Object.keys(packs[entry.id]!.lengths), entry.id).toEqual([entry.length]);

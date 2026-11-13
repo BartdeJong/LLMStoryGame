@@ -106,7 +106,7 @@ another device, its local-network HTTP address is not treated as `localhost`.
 
 ## Artwork
 
-The Lantern Tide lighthouse glyph adapts the 16×16 lighthouse from
+The lighthouse glyph adapts the 16×16 lighthouse from
 [Pixnote Pixels](https://pixnote.net/en/pixels/lighthouse/), available under
 [CC0 1.0](https://creativecommons.org/publicdomain/zero/1.0/). The item glyph
 catalog also uses Pixnote's CC0 sprites as references; source URLs and any

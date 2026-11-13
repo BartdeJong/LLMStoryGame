@@ -88,7 +88,7 @@ function drawArtArea(pack: StoryPack, locationId: string, zoom: number): HTMLEle
 
 function mountArtWorld(): void {
   const params = new URLSearchParams(window.location.search);
-  const storyIds = params.get("story") ? [params.get("story")!] : ["example", "paddingtonhat", "holmesashenvelope", "lanterntide"];
+  const storyIds = params.get("story") ? [params.get("story")!] : ["example", "paddingtonhat", "holmesashenvelope"];
   const zoom = Number(params.get("zoom") ?? "1");
   const only = params.get("loc");
   const outdoorOnly = params.get("outdoor") === "1";

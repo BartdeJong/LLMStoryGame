@@ -8,7 +8,7 @@ const session = {
   updatedAt: "2026-11-07T21:01:00.000Z",
   backend: "webllm",
   modelId: "local-model",
-  story: { id: "lanterntide", title: "Lantern Tide", version: 1, length: "short" },
+  story: { id: "example", title: "The Missing Moon Lantern", version: 1, length: "short" },
   character: { id: "c_hester", name: "Hester Wick" },
   setup: { truthsFound: [], itemsHeld: [] },
   turns: [

@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest";
 import fixture from "../../public/stories/example.json";
 import exampleStory from "../../public/stories/example.json";
-import lanternTide from "../../public/stories/lanterntide.json";
 import holmesAshEnvelope from "../../public/stories/holmesashenvelope.json";
 import schema from "../../tools/story-forge/schema/story-pack.schema.json";
 import { resolveVisual } from "../art/glyphs";
@@ -13,17 +12,8 @@ import { validateStoryPack } from "./validate";
 const fresh = (): StoryPack => structuredClone(fixture) as unknown as StoryPack;
 
 describe("story visuals", () => {
-  it("uses the lighthouse glyph for Lantern Tide's Thirteenth Light", async () => {
-    const pack = await loadStoryPack("lanterntide", async () => new Response(JSON.stringify(lanternTide), { status: 200 }));
-    const light = pack.locations
-      .find((location) => location.id === "l_drowned_lamp")
-      ?.objects.find((object) => object.id === "o_thirteenth_light");
-
-    expect(light?.visual).toEqual({ icon: "lighthouse", accent: "water", states: ["glow"] });
-  });
-
   it("uses specific glyphs for every current story item and room object", () => {
-    const stories = [exampleStory, lanternTide, holmesAshEnvelope];
+    const stories = [exampleStory, holmesAshEnvelope];
     const genericMatches = stories.flatMap((story) => [
       ...story.items.map((item) => ({ name: item.name, description: item.description })),
       ...story.locations.flatMap((location) => location.objects.map((object) => ({

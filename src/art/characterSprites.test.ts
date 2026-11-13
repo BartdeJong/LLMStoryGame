@@ -2,12 +2,11 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import example from "../../public/stories/example.json";
 import paddington from "../../public/stories/paddingtonhat.json";
 import holmes from "../../public/stories/holmesashenvelope.json";
-import lanterntide from "../../public/stories/lanterntide.json";
 import { DIRECTIONS } from "./sprites";
 import { IDLE_POSE, SPRITE_HEIGHT, SPRITE_WIDTH, WALK_POSES, getSpriteCanvas, renderSpriteCells } from "./characterSprites";
 import { SPRITE_SPECIES, parseSpriteSpec, spriteDifferences, validateSpriteSpec, type SpriteSpec } from "./spriteSpec";
 
-const packs = [example, paddington, holmes, lanterntide];
+const packs = [example, paddington, holmes];
 
 beforeEach(() => {
   vi.stubGlobal("document", {

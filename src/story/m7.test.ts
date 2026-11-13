@@ -1,6 +1,5 @@
 import { describe, expect, it } from "vitest";
 import example from "../../public/stories/example.json";
-import lanterntide from "../../public/stories/lanterntide.json";
 import holmes from "../../public/stories/holmesashenvelope.json";
 import { ConversationController } from "../dialogue/controller";
 import { giveOptions } from "../dialogue/effects";
@@ -207,7 +206,7 @@ async function simulate(pack: StoryPack, lengthId: LengthId): Promise<void> {
 }
 
 describe("M7 pacing and ending simulations", () => {
-  const packs = [loadPack(example), loadPack(lanterntide)];
+  const packs = [loadPack(example)];
   for (const pack of packs) {
     for (const lengthId of Object.keys(pack.lengths) as LengthId[]) {
       it(`plays ${pack.identity.id} (${lengthId}) from the solver path to its ending`, async () => {

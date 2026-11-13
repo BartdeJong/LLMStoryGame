@@ -3,7 +3,7 @@ import { getStoryVisualTheme } from "./storyTheme";
 
 describe("story visual themes", () => {
   it("gives every shipped story a distinct canvas look and atmosphere", () => {
-    const themes = ["example", "lanterntide", "holmesashenvelope"].map(getStoryVisualTheme);
+    const themes = ["example", "holmesashenvelope"].map(getStoryVisualTheme);
 
     expect(new Set(themes.map((theme) => theme.canvasFilter)).size).toBe(themes.length);
     expect(new Set(themes.map((theme) => theme.atmosphere)).size).toBe(themes.length);

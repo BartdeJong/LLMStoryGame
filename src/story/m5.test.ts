@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest";
 import example from "../../public/stories/example.json";
 import holmes from "../../public/stories/holmesashenvelope.json";
-import lanterntide from "../../public/stories/lanterntide.json";
 import { LLMClient } from "../llm/client";
 import { MockBackend } from "../llm/mock";
 import { Tile } from "../world/types";
@@ -16,7 +15,7 @@ import { StorySession } from "./storySession";
 import type { AuthoredArea, LengthId, StoryPack } from "./types";
 import { validateStoryPack } from "./validate";
 
-const PACKS: Record<string, unknown> = { example, lanterntide, holmesashenvelope: holmes };
+const PACKS: Record<string, unknown> = { example, holmesashenvelope: holmes };
 
 // Packs get plain hand-made areas here, so these tests do not depend on the real baked maps.
 function loadPack(id: string): StoryPack {
@@ -33,7 +32,6 @@ async function makeClient(): Promise<LLMClient> {
 
 const CASES: [string, LengthId][] = [
   ["example", "short"],
-  ["lanterntide", "long"],
   ["holmesashenvelope", "long"],
 ];
 
@@ -171,13 +169,6 @@ describe("buildPackArea", () => {
     expect(() => buildPackArea(pack, view, "l_library")).toThrow("no placement for \"c_oswin\"");
     delete pack.locations.find((l) => l.id === "l_library")!.area;
     expect(() => buildPackArea(pack, view, "l_library")).toThrow("no baked area");
-  });
-
-  it("draws the ink shelf as a shelf", () => {
-    const pack = loadPack("lanterntide");
-    const view = getLengthView(pack, "long");
-    const { brief } = buildPackArea(pack, view, "l_oil_press");
-    expect(brief.objects.find((object) => object.packId === "o_ink_shelf")?.icon.shape).toBe("shelf");
   });
 
   for (const [id, length] of CASES) {

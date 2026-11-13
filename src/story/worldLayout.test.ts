@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest";
 import example from "../../public/stories/example.json";
 import holmes from "../../public/stories/holmesashenvelope.json";
-import lanterntide from "../../public/stories/lanterntide.json";
 import { LLMClient } from "../llm/client";
 import { MockBackend } from "../llm/mock";
 import { bakeSimple } from "./fixtures/bakeSimple";
@@ -14,7 +13,7 @@ import { LENGTH_IDS, type StoryPack } from "./types";
 import { validateStoryPack } from "./validate";
 import { layoutStoryWorld } from "./worldLayout";
 
-const PACKS: Record<string, unknown> = { example, lanterntide, holmesashenvelope: holmes };
+const PACKS: Record<string, unknown> = { example, holmesashenvelope: holmes };
 function loadPack(id: string): StoryPack {
   const report = validateStoryPack(bakeSimple(PACKS[id]));
   if (!report.pack) throw new Error(`pack ${id} is invalid`);

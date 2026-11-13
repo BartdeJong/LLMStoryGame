@@ -28,18 +28,6 @@ const STORY_THEMES: Readonly<Record<string, StoryVisualTheme>> = {
     atmosphere: "fireflies",
     particle: "#f5d477",
   },
-  lanterntide: {
-    canvasFilter: "saturate(1.28) hue-rotate(8deg) brightness(1.08)",
-    frame: "#65b9b2",
-    panel: "rgb(14 41 48 / 90%)",
-    accent: "#9ce5d8",
-    text: "#ecffed",
-    muted: "#b7d9d3",
-    control: "rgb(14 41 48 / 76%)",
-    activeControl: "rgb(44 115 119 / 90%)",
-    atmosphere: "tide-glow",
-    particle: "#a7f4df",
-  },
   holmesashenvelope: {
     canvasFilter: "sepia(0.38) saturate(0.72) brightness(0.82) contrast(1.12)",
     frame: "#927450",

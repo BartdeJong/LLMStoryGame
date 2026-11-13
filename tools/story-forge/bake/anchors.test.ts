@@ -63,11 +63,11 @@ describe("anchorClues", () => {
   });
 
   it("does nothing to a clue that is already anchored, and is deterministic", () => {
-    const pack = load("lanterntide");
+    const pack = load("holmesashenvelope");
     expect(anchorClues(pack)).toEqual([]);
-    const first = load("lanterntide");
+    const first = load("holmesashenvelope");
     unanchored(first);
-    const second = load("lanterntide");
+    const second = load("holmesashenvelope");
     unanchored(second);
     expect(anchorClues(first)).toEqual(anchorClues(second));
   });
