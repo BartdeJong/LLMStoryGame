@@ -5,13 +5,13 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:lan": "node tools/dev-lan.mjs",
     "dev:iphone": "vite --config vite.iphone.config.ts",
     "build": "tsc -b && vite build",
     "preview": "vite preview",
     "test": "vitest run",
     "validate-stories": "node tools/story-forge/validate-stories.mjs",
     "story-readthrough": "node tools/story-forge/read-through.mjs",
-    "finetune-data": "node tools/finetune/generate.mjs",
     "bake-areas": "node tools/story-forge/run-visual-tool.mjs bake-areas",
     "anchor-clues": "node tools/story-forge/run-visual-tool.mjs anchor-clues",
     "icon-catalog": "node tools/story-forge/run-visual-tool.mjs icon-catalog",
@@ -24,8 +24,5 @@
     "typescript": "^5.7.2",
     "vite": "^6.0.0",
     "vitest": "^4.1.11"
-  },
-  "dependencies": {
-    "@mlc-ai/web-llm": "0.2.87"
   }
 }

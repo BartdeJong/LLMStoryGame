@@ -1,5 +1,7 @@
-import { mkdir, rename, writeFile } from "node:fs/promises";
-import { resolve } from "node:path";
+import { readFileSync } from "node:fs";
+import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
+import { homedir } from "node:os";
+import { join, resolve } from "node:path";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import { defineConfig } from "vite";
 import type { Plugin } from "vite";
@@ -87,9 +89,49 @@ function dialogueFeedbackPlugin(): Plugin {
   };
 }
 
+const LAN_HTTPS = process.env.LAN_HTTPS === "1";
+// Keep in sync with tools/dev-cert.mjs. Outside the Vite root so keys are never served.
+const CERT_DIR = join(homedir(), ".llmstorygame-dev-certs");
+
+// Dev-only: lets an iPad download the local CA to trust the LAN HTTPS certificate.
+function devCaPlugin(): Plugin {
+  return {
+    name: "local-dev-ca",
+    configureServer(server) {
+      server.middlewares.use(async (request, response, next) => {
+        const pathname = new URL(request.url ?? "/", "http://localhost").pathname;
+        if (pathname !== "/dev-ca.crt") {
+          next();
+          return;
+        }
+        try {
+          const body = await readFile(resolve(CERT_DIR, "dev-ca.crt"));
+          response.statusCode = 200;
+          response.setHeader("Content-Type", "application/x-x509-ca-cert");
+          response.end(body);
+        } catch {
+          respond(response, 404, "Run npm run dev:lan to generate the dev CA.");
+        }
+      });
+    },
+  };
+}
+
 export default defineConfig({
-  // The WebLLM worker is bundled as an ES module worker (it uses dynamic imports).
-  worker: { format: "es" },
   build: { manifest: true },
-  plugins: [dialogueFeedbackPlugin()],
+  plugins: LAN_HTTPS ? [dialogueFeedbackPlugin(), devCaPlugin()] : [dialogueFeedbackPlugin()],
+  ...(LAN_HTTPS
+    ? {
+        server: {
+          host: true,
+          port: 5173,
+          strictPort: true,
+          fs: { deny: [".env", ".env.*", "*.{crt,pem}", "**/.git/**", "**/.certs/**", "*.key"] },
+          https: {
+            key: readFileSync(resolve(CERT_DIR, "dev.key")),
+            cert: readFileSync(resolve(CERT_DIR, "dev.crt")),
+          },
+        },
+      }
+    : {}),
 });

@@ -33,7 +33,8 @@ placement and decor tile is valid and reachable.
 ## Test character dialogue and save feedback
 
 Run `npm run dev` and open `http://localhost:5173/?debug=dialogue`. Load the
-on-device model, choose a story and character, then start a conversation.
+Ollama model (Ollama must be running on this PC), choose a story and
+character, then start a conversation.
 After each character reply, add feedback or explicitly choose **No feedback**
 before continuing. The optional story-context controls let you set known truths
 and inventory items for a test.
@@ -41,29 +42,9 @@ and inventory items for a test.
 The dialogue lab is development-only. It saves each session, including the full
 chat and feedback attached to each character reply, under the git-ignored
 `.dialogue-feedback/` folder. `?debug=dialogue&mock=1` opens the lab with a mock
-model to check its interface without WebGPU or a model download; use the real
-model for response-quality feedback. The local save endpoint is not included in
+model to check its interface without Ollama; use a real model for
+response-quality feedback. The local save endpoint is not included in
 production builds.
-
-### Local dialogue profile
-
-All on-device WebLLM models use compact conversation prompts and the same dialogue
-sampling profile: temperature 0.7, top-p 0.8, a minimum 256-token output budget,
-and neutral repetition/frequency/presence penalties so important names and facts
-can recur. Repair attempts keep these sampling settings rather than increasing
-temperature. Qwen3.5-9B variants additionally use non-thinking mode.
-JSON schema guidance remains enabled; a grammar-initialization failure logs a
-warning and uses prompt-only JSON until the next model load. Other runtime errors
-are reported normally.
-
-On-device conversation prompts prioritize the latest question, selected facts and
-actual handovers over quest reminders. They omit the static character goal in
-favor of current needs and keep at most eight recent transcript entries, trimming
-older entries to fit 2,400 characters. The latest message and current story facts
-are never clipped. This is a history budget, not a guarantee that arbitrary input
-fits WebLLM's 4,096-token context window; unusually long player input or story
-context can still exceed it. The full conversation remains visible in the UI.
-The Bedrock gateway keeps its existing prompts and sampling.
 
 Use the dialogue lab with the real model to assess relevance, character voice,
 repetition and factual accuracy. Unit tests validate requests and game behavior,
@@ -75,7 +56,7 @@ in the load screen to keep a backup, or import that file on another device.
 Pause or use the title screen settings to adjust text size, sound volume, walking
 speed, reduced motion, high contrast, touch-control size, and control hints.
 
-Choose an on-device model on the storyteller setup screen. During a game, open
+Choose a storyteller on the setup screen. During a game, open
 the pause menu and choose **Change AI provider or model** to change providers or
 models without leaving the app. The game saves the current slot before setup and
 reloads it afterward; canceling returns to the game.
@@ -86,7 +67,7 @@ At startup, choose **AWS Bedrock gateway** and enter the HTTPS URL and bearer
 secret for a gateway you trust. The PWA saves these values in that browser's
 local storage for later use. They are not encrypted; anyone with access to the
 browser profile can potentially read the saved secret. Do not enter AWS access
-keys. The on-device model remains available as an alternative.
+keys.
 
 The configured URL must accept a `POST` with an `Authorization: Bearer <secret>`
 header and a JSON body containing `messages`, `maxTokens`, `temperature`, and
@@ -100,9 +81,55 @@ and allow browser requests from the game's origin (CORS).
 Deployment source and instructions are in
 [infra/CozyStoryAgent/README.md](./infra/CozyStoryAgent/README.md).
 
-The on-device story model requires WebGPU. On iPhone and iPad, use Safari on
-iOS/iPadOS 26 or newer. WebGPU requires HTTPS; if opening the dev server from
-another device, its local-network HTTP address is not treated as `localhost`.
+## Use an OpenAI-compatible endpoint
+
+Choose **OpenAI-compatible endpoint (API key)** and enter:
+
+- **Base URL**, for example `https://api.openai.com/v1` (a trailing `/` or
+  `/chat/completions` is removed). It must be HTTPS; plain HTTP is allowed only
+  for `localhost` and `127.0.0.1`.
+- **API key**, sent as `Authorization: Bearer <key>`.
+- **Model**, for example `gpt-4o-mini`.
+
+The game sends a non-streaming `POST <base>/chat/completions` with `model`,
+`messages`, `temperature`, `max_tokens` (`max_completion_tokens` on
+`api.openai.com`) and a `json_schema` `response_format`. If the server answers
+HTTP 400, it retries once with `json_object` and no `temperature`, then once
+more with plain text output. The reply is read from
+`choices[0].message.content`.
+
+The base URL, key and model are saved unencrypted in this browser's local
+storage; anyone with access to the browser profile can potentially read the
+key. Use a restricted, project-scoped key with a spending limit. The endpoint
+must be reachable from the browser and allow requests from the game's origin
+(CORS); many hosted APIs do not, in which case use a proxy that does.
+
+## Use Ollama on this PC
+
+The **Ollama on this PC** option appears only when the game runs on the same PC
+as Ollama: when the page is served from `localhost` (for example `npm run dev`),
+or when it is opened from GitHub Pages (`https://<user>.github.io/...`) in a
+desktop browser. It is hidden on phones, tablets and other devices on your
+network. The browser talks to Ollama at `http://localhost:11434`, so Ollama must
+be running before you pick it. The setup screen lists the installed models and
+preselects your saved one, then `qwen3.8:27b` (the default), then the first
+installed model. Use **Refresh models** after pulling a new model with
+`ollama pull <model>`.
+
+Pages served from `localhost` work with Ollama's default settings. For another
+origin, such as GitHub Pages, allow the site and restart Ollama:
+
+```sh
+OLLAMA_ORIGINS=https://<user>.github.io
+```
+
+On Windows, set it as a user environment variable (or run `setx OLLAMA_ORIGINS
+https://<user>.github.io`) and restart Ollama. Chrome and Edge may ask for
+permission to access devices on your local network the first time; allow it.
+Safari may block requests from an HTTPS page to `http://localhost` entirely, in
+which case use a Chromium-based browser or run the game from `localhost`.
+
+
 
 ## Artwork
 
@@ -121,8 +148,8 @@ requested catalog.
    story once, and wait for the service worker to finish installing.
 3. Use the browser's install option (or Safari's Share menu → Add to Home
    Screen). The app shell and all indexed story packs are cached for offline use.
-4. Close the app, switch the device/browser offline, and reopen it. The model
-   files are not copied into the app cache; WebLLM manages its own model cache.
+4. Close the app, switch the device/browser offline, and reopen it. The game loads, but
+   AI requests always need the network (Bedrock gateway, OpenAI-compatible endpoint or Ollama on this PC).
 
 ## Deploy to GitHub Pages
 
@@ -155,6 +182,6 @@ To test on an iPhone connected to the same Wi-Fi:
 3. Install and fully trust mkcert's root CA on the iPhone. The root CA file is
    at the path printed by `mkcert -CAROOT` (named `rootCA.pem`).
 4. Run `npm run dev:iphone` and open
-   `https://192.168.1.216:5199/?debug=llm` in Safari.
+   `https://192.168.1.216:5199/` in Safari.
 
 The certificate and private key stay in the ignored `.local-certs` directory.

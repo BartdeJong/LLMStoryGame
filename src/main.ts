@@ -64,8 +64,6 @@ if (debugMode === "icons") {
   mountArtDebugScreen();
 } else if (debugMode === "world") {
   mountWorldDebugScreen();
-} else if (debugMode === "llm") {
-  void import("./llm/debug").then((module) => module.mountLLMDebugScreen());
 } else if (debugMode === "dialogue" && import.meta.env.DEV) {
   void import("./dialogue/debug")
     .then((module) => module.mountDialogueDebugScreen())

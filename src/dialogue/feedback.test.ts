@@ -27,6 +27,12 @@ describe("dialogue feedback session validation", () => {
     expect(isDialogueFeedbackSession(session)).toBe(true);
   });
 
+  it("accepts sessions recorded with the ollama, webllm and mock backends only", () => {
+    expect(isDialogueFeedbackSession({ ...session, backend: "ollama" })).toBe(true);
+    expect(isDialogueFeedbackSession({ ...session, backend: "mock" })).toBe(true);
+    expect(isDialogueFeedbackSession({ ...session, backend: "other" })).toBe(false);
+  });
+
   it("rejects unsafe session IDs and oversized message content", () => {
     expect(isDialogueFeedbackSession({ ...session, sessionId: "../other-file" })).toBe(false);
     expect(isDialogueFeedbackSession({

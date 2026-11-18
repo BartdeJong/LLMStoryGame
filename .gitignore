@@ -3,5 +3,4 @@ dist/
 *.tsbuildinfo
 .local-certs/
 .dialogue-feedback/
-finetune-data/
-finetune-data-*/
+.certs/

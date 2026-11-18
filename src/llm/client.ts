@@ -9,7 +9,7 @@ type Listener<K extends keyof LLMEvents> = (event: LLMEvents[K]) => void;
 
 const EMPTY_METRICS = { attempts: 0, totalMs: 0, timeToFirstTokenMs: 0, tokensPerSecond: 0, tokens: 0 };
 
-// Main-thread API for the LLM. Inference happens in the backend (a Web Worker for WebLLM).
+// Main-thread API for the LLM. Inference happens in the backend (Bedrock gateway, OpenAI-compatible endpoint, Ollama, or the mock).
 export class LLMClient {
   private readonly listeners: { [K in keyof LLMEvents]: Set<Listener<K>> } = { "load-progress": new Set(), job: new Set() };
   private readonly queue: RequestQueue<JSONResult<unknown>>;
@@ -47,7 +47,7 @@ export class LLMClient {
     return () => this.listeners[event].delete(listener);
   }
 
-  async load(modelId: string = LLM_CONFIG.modelId): Promise<LoadResult> {
+  async load(modelId: string = ""): Promise<LoadResult> {
     const result = await this.backend.load(modelId, (progress) => this.emit("load-progress", progress));
     this.loaded = true;
     return result;

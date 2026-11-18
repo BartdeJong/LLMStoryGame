@@ -38,7 +38,7 @@ export interface LoadResult {
 
 export type DialoguePromptStyle = "standard" | "compact";
 
-// Both the WebLLM backend and the mock implement this.
+// The Bedrock gateway, OpenAI-compatible, Ollama and mock backends implement this.
 export interface LLMBackend {
   readonly name: string;
   readonly dialoguePromptStyle?: DialoguePromptStyle;

@@ -5,11 +5,8 @@ import type { StoryState } from "../story/state";
 import { subjectLabel } from "./askAbout";
 import { StorySession } from "../story/storySession";
 import { LLMClient } from "../llm/client";
-import { LLM_CONFIG } from "../llm/config";
 import { MockBackend } from "../llm/mock";
-import { checkSupport } from "../llm/support";
-import { WebLLMBackend } from "../llm/webllmBackend";
-import { runModelSetup, mountUnsupportedScreen } from "../ui/modelScreens";
+import { listOllamaModels, OllamaBackend, pickOllamaModel } from "../llm/ollamaBackend";
 import { storyMockRespond } from "../story/mockResponder";
 import { challengeLine, ConversationController } from "./controller";
 import { findStatement, markStatementHeard } from "../story/statements";
@@ -49,25 +46,42 @@ export async function mountDialogueDebugScreen(): Promise<void> {
     "",
     useMock
       ? "Mock storyteller: use this to check the workbench, not real model quality."
-      : "Talk to a character with the on-device model and record feedback after each reply.",
+      : "Talk to a character with the Ollama model on this PC and record feedback after each reply.",
   );
-  const back = el("a", "art-debug-back", "Back to LLM tools");
-  back.href = "?debug=llm";
-  header.append(back, title, subtitle);
+  header.append(title, subtitle);
 
   const setupPanel = el("section", "dialogue-debug-setup");
   setupPanel.append(el("h2", "", "Test setup"));
   const modelSelect = el("select", "dialogue-debug-select");
-  for (const modelId of LLM_CONFIG.candidates) option(modelSelect, modelId, modelId);
-  modelSelect.value = LLM_CONFIG.modelId;
-  if (useMock) modelSelect.disabled = true;
+  if (useMock) {
+    option(modelSelect, "mock", "mock");
+    modelSelect.disabled = true;
+  }
   const loadButton = el("button", "llm-button", useMock ? "Start mock model" : "Load model");
   loadButton.type = "button";
+  // Ollama models arrive asynchronously; the button stays off until there is a model to load.
+  let modelsReady = useMock;
+  if (!useMock) {
+    loadButton.disabled = true;
+    void listOllamaModels().then(
+      (names) => {
+        for (const name of names) option(modelSelect, name, name);
+        const picked = pickOllamaModel(names, "");
+        if (picked) {
+          modelSelect.value = picked;
+          modelsReady = true;
+          loadButton.disabled = false;
+        } else {
+          setStatus("No models are installed in Ollama. Run `ollama pull <model>`.", true);
+        }
+      },
+      (error: unknown) => setStatus(error instanceof Error ? error.message : String(error), true),
+    );
+  }
   const modelControls = el("div", "dialogue-debug-controls");
   const modelLabel = el("label", "", "Model ");
   modelLabel.append(modelSelect);
   modelControls.append(modelLabel, loadButton);
-  const modelSetup = el("div", "dialogue-debug-model-setup");
   const status = el("p", "dialogue-debug-status", "Load a model to begin.");
   status.setAttribute("role", "status");
   status.setAttribute("aria-live", "polite");
@@ -95,7 +109,7 @@ export async function mountDialogueDebugScreen(): Promise<void> {
   endButton.hidden = true;
   const sessionControls = el("div", "dialogue-debug-controls");
   sessionControls.append(startButton, endButton);
-  setupPanel.append(modelControls, modelSetup, selectionControls, stateSetup, sessionControls, status);
+  setupPanel.append(modelControls, selectionControls, stateSetup, sessionControls, status);
 
   const chatPanel = el("section", "dialogue-debug-chat");
   chatPanel.hidden = true;
@@ -296,7 +310,7 @@ export async function mountDialogueDebugScreen(): Promise<void> {
     startButton.disabled = value || !client || !pack || Boolean(session);
     endButton.disabled = value || unsaved || Boolean(pendingFeedbackId);
     retrySaveButton.disabled = value;
-    loadButton.disabled = value || Boolean(session);
+    loadButton.disabled = value || Boolean(session) || !modelsReady;
     modelSelect.disabled = value || Boolean(session) || useMock;
     storySelect.disabled = value || Boolean(session);
     characterSelect.disabled = value || Boolean(session);
@@ -523,7 +537,7 @@ export async function mountDialogueDebugScreen(): Promise<void> {
         sessionId: id(),
         startedAt: started,
         updatedAt: started,
-        backend: useMock ? "mock" : "webllm",
+        backend: useMock ? "mock" : "ollama",
         modelId: modelSelect.value,
         story: { id: selectedPack.identity.id, title: selectedPack.identity.title, version: selectedPack.identity.version, length: view.length },
         character: { id: character.id, name: character.name },
@@ -640,24 +654,14 @@ export async function mountDialogueDebugScreen(): Promise<void> {
     await client?.unload();
     client = null;
     const nextClient = new LLMClient(
-        useMock ? new MockBackend({ delayMs: 120, respond: storyMockRespond }) : new WebLLMBackend(),
+        useMock ? new MockBackend({ delayMs: 120, respond: storyMockRespond }) : new OllamaBackend(),
         { pauseWhenHidden: false },
       );
-      if (useMock) await nextClient.load(modelId);
-      else {
-        const support = await checkSupport();
-        if (!support.supported) {
-          mountUnsupportedScreen(modelSetup, support);
-          setStatus(support.reason ?? "This device cannot run WebGPU models.", true);
-          return;
-        }
-        await runModelSetup(modelSetup, nextClient, modelId);
-      }
+      await nextClient.load(modelId);
       client = nextClient;
-      localStorage.setItem(LLM_CONFIG.loadedModelStorageKey, modelId);
       startButton.disabled = !pack;
       loadButton.textContent = useMock ? "Reload mock model" : "Reload selected model";
-      setStatus(useMock ? "Mock model ready." : `Model ${modelId} is ready on this device.`);
+      setStatus(useMock ? "Mock model ready." : `Model ${modelId} is ready in Ollama.`);
     } catch (error) {
       loadButton.textContent = useMock ? "Start mock model" : "Load model";
       setStatus(`Could not load the model: ${error instanceof Error ? error.message : String(error)}`, true);

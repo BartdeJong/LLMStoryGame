@@ -1,11 +1,9 @@
-import { afterEach, describe, expect, it, vi } from "vitest";
-import { formatReport, summarize, toSample } from "./benchmark";
+import { describe, expect, it } from "vitest";
 import { LLMClient } from "./client";
 import { MockBackend } from "./mock";
 import { dialogueTurnRequest } from "./prompts";
 import { defaultValue, s, toJsonSchema, validate } from "./schema";
 import { dialogueTurnSchema } from "./shapes";
-import { checkSupport } from "./support";
 import { Priority } from "./types";
 import type { JSONRequest } from "./types";
 
@@ -24,33 +22,6 @@ async function makeClient(options: ConstructorParameters<typeof MockBackend>[0])
 }
 
 const request = (over: Partial<JSONRequest<unknown>> = {}): JSONRequest<unknown> => ({ ...dialogueTurnRequest(), ...over });
-
-describe("WebGPU support detection", () => {
-  afterEach(() => vi.unstubAllGlobals());
-
-  it("explains that WebGPU needs HTTPS when the page is not a secure context", async () => {
-    vi.stubGlobal("Worker", class {});
-    vi.stubGlobal("navigator", {});
-    vi.stubGlobal("isSecureContext", false);
-
-    const report = await checkSupport();
-
-    expect(report.supported).toBe(false);
-    expect(report.reason).toContain("requires a secure connection");
-    expect(report.reason).toContain("HTTPS");
-  });
-
-  it("mentions the iOS version requirement when Safari does not expose WebGPU", async () => {
-    vi.stubGlobal("Worker", class {});
-    vi.stubGlobal("navigator", {});
-    vi.stubGlobal("isSecureContext", true);
-
-    const report = await checkSupport();
-
-    expect(report.supported).toBe(false);
-    expect(report.reason).toContain("iOS/iPadOS 26 or newer");
-  });
-});
 
 describe("validation", () => {
   const schema = s.object({
@@ -217,15 +188,5 @@ describe("cancellation", () => {
   it("returns a safe default when the model is not loaded", async () => {
     const client = new LLMClient(new MockBackend(), { pauseWhenHidden: false });
     expect((await client.generateJSON(request())).status).toBe("failed");
-  });
-});
-
-describe("benchmark stats", () => {
-  it("summarizes validity and retry rates", async () => {
-    const { client } = await makeClient({ failureRate: 1, seed: 3 });
-    const results = [await client.generateJSON(request({ tag: "dialogue" }))];
-    const samples = results.map((r) => toSample("dialogue", r));
-    expect(summarize(samples).defaultedCount).toBe(1);
-    expect(formatReport({ modelId: "m", backend: "mock", loadTimeMs: 1000, fromCache: true, samples, userAgent: "test" })).toContain("[dialogue] runs=1");
   });
 });

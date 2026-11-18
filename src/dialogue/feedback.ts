@@ -34,7 +34,8 @@ export interface DialogueFeedbackSession {
   sessionId: string;
   startedAt: string;
   updatedAt: string;
-  backend: "webllm" | "mock";
+  // "webllm" is kept so sessions recorded with the old on-device model still validate.
+  backend: "ollama" | "webllm" | "mock";
   modelId: string;
   story: {
     id: string;
@@ -76,7 +77,7 @@ export function isDialogueFeedbackSession(value: unknown): value is DialogueFeed
   if (!isRecord(value) || !isRecord(value.story) || !isRecord(value.character) || !isRecord(value.setup)) return false;
   if (value.schemaVersion !== 1 || typeof value.sessionId !== "string" || !/^[a-zA-Z0-9_-]{1,80}$/.test(value.sessionId)) return false;
   if (typeof value.startedAt !== "string" || typeof value.updatedAt !== "string") return false;
-  if (value.backend !== "webllm" && value.backend !== "mock") return false;
+  if (value.backend !== "ollama" && value.backend !== "webllm" && value.backend !== "mock") return false;
   if (typeof value.modelId !== "string" || value.modelId.length > 120) return false;
   if (typeof value.story.id !== "string" || typeof value.story.title !== "string" || typeof value.story.version !== "number" || typeof value.story.length !== "string") return false;
   if (typeof value.character.id !== "string" || typeof value.character.name !== "string") return false;

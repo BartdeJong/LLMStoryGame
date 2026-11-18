@@ -1,14 +1,12 @@
 import { Game } from "../game";
 import { LLMClient } from "../llm/client";
 import { BedrockGatewayBackend } from "../llm/bedrockGatewayBackend";
-import { saveSelectedLocalModelId } from "../llm/config";
 import { MockBackend } from "../llm/mock";
-import { saveLLMProviderSettings } from "../llm/providerSettings";
-import { checkSupport } from "../llm/support";
-import { WebLLMBackend } from "../llm/webllmBackend";
+import { OllamaBackend } from "../llm/ollamaBackend";
+import { OpenAICompatibleBackend } from "../llm/openaiCompatibleBackend";
+import { clearObsoleteModelStorage, saveLLMProviderSettings } from "../llm/providerSettings";
 import { storyMockRespond } from "../story/mockResponder";
 import { StorySession } from "../story/storySession";
-import { mountUnsupportedScreen, runModelSetup } from "./modelScreens";
 import { mountStorySelectScreen } from "./storySelect";
 import { mountStoryOpeningScreen } from "./storyOpening";
 import { mountTitleScreen } from "./title";
@@ -50,28 +48,18 @@ function showActionScreen(
   root.replaceChildren(box);
 }
 
-// Start flow: device check, model setup, story and length choice, first area, then the game itself.
-// `?mock=1` swaps in the mock LLM so the whole flow runs without WebGPU or a download.
+// Start flow: AI provider setup, story and length choice, first area, then the game itself.
+// `?mock=1` swaps in the mock LLM so the whole flow runs without a real model.
 export async function startGame(shell: HTMLElement, root: HTMLElement, useMock: boolean): Promise<void> {
   document.documentElement.classList.add(SCREEN_CLASS);
   document.body.classList.add(SCREEN_CLASS);
   shell.remove();
 
+  if (!useMock) {
+    void clearObsoleteModelStorage().catch((error: unknown) => console.error("Could not clear old model data.", error));
+  }
   let selection: ProviderSetupSelection | undefined = useMock ? undefined : await mountProviderSetup(root);
   if (!useMock && !selection) return;
-  if (selection?.settings.provider === "local") {
-    const report = await checkSupport();
-    if (!report.supported) {
-      mountUnsupportedScreen(root, report);
-      const link = document.createElement("a");
-      link.className = "llm-button";
-      link.href = "?mock=1";
-      link.textContent = "Try with the mock storyteller";
-      root.querySelector(".llm-screen")?.append(link);
-      return;
-    }
-  }
-
   let storageNote = "";
   try {
     if (!await requestPersistentStorage()) {
@@ -84,31 +72,39 @@ export async function startGame(shell: HTMLElement, root: HTMLElement, useMock: 
   const createClient = (providerSelection: ProviderSetupSelection | undefined): LLMClient => new LLMClient(
     useMock
       ? new MockBackend({ delayMs: 120, respond: storyMockRespond })
-      : providerSelection?.settings.provider === "bedrock"
-        ? new BedrockGatewayBackend({
-          endpoint: providerSelection.settings.bedrockEndpoint,
-          token: providerSelection.settings.bedrockToken,
-        })
-        : new WebLLMBackend(),
+      : providerSelection?.settings.provider === "ollama"
+        ? new OllamaBackend()
+        : providerSelection?.settings.provider === "openai"
+          ? new OpenAICompatibleBackend({
+            baseUrl: providerSelection.settings.openaiBaseUrl,
+            apiKey: providerSelection.settings.openaiApiKey,
+            model: providerSelection.settings.openaiModel,
+          })
+          : new BedrockGatewayBackend({
+            endpoint: providerSelection?.settings.bedrockEndpoint ?? "",
+            token: providerSelection?.settings.bedrockToken ?? "",
+          }),
   );
   let client = createClient(selection);
-  const loadSelection = async (
-    target: LLMClient,
-    providerSelection: ProviderSetupSelection,
-    allowCancel = false,
-  ): Promise<boolean> => {
-    if (providerSelection.settings.provider === "bedrock") {
-      await target.load("bedrock");
-      return true;
-    }
-    if (allowCancel) {
-      return (await runModelSetup(root, target, providerSelection.modelId, true)) !== undefined;
-    }
-    await runModelSetup(root, target, providerSelection.modelId);
+  const loadSelection = async (target: LLMClient, providerSelection: ProviderSetupSelection): Promise<boolean> => {
+    await target.load(providerSelection.modelId);
     return true;
   };
   if (useMock) await client.load();
-  else if (selection) await loadSelection(client, selection);
+  else {
+    // A failed first load (for example Ollama not running) returns to setup with the reason shown.
+    for (let failure = ""; selection;) {
+      try {
+        await loadSelection(client, selection);
+        break;
+      } catch (error) {
+        failure = `Could not start the storyteller: ${error instanceof Error ? error.message : String(error)}`;
+        await client.unload().catch(() => undefined);
+        selection = await mountProviderSetup(root, false, failure);
+        client = createClient(selection);
+      }
+    }
+  }
 
   const canvas = shell.querySelector<HTMLCanvasElement>("#game");
   const joystick = shell.querySelector<HTMLButtonElement>("#joystick");
@@ -195,7 +191,6 @@ export async function startGame(shell: HTMLElement, root: HTMLElement, useMock: 
   ): Promise<void> => {
     if (reload) await loadSelection(previousClient, previousSelection);
     saveLLMProviderSettings(previousSelection.settings);
-    saveSelectedLocalModelId(previousSelection.modelId);
     selection = previousSelection;
     client = previousClient;
     await beginLoadedGame(save);
@@ -234,24 +229,10 @@ export async function startGame(shell: HTMLElement, root: HTMLElement, useMock: 
         return;
       }
 
-      if (requested.settings.provider === "local") {
-        const report = await checkSupport();
-        if (!report.supported) {
-          showActionScreen(root, report.reason ?? "The on-device model cannot run on this device.", [
-            { label: "Choose another AI provider", run: () => { void changeAISettings(slotId); } },
-            { label: "Return to game", run: () => returnToPrevious(false) },
-          ]);
-          return;
-        }
-      }
-
       previousUnloaded = true;
       await previousClient.unload();
       nextClient = createClient(requested);
-      if (!await loadSelection(nextClient, requested, true)) {
-        await restorePreviousGame(save, previousClient, previousSelection, true);
-        return;
-      }
+      await loadSelection(nextClient, requested);
       selection = requested;
       client = nextClient;
       await beginLoadedGame(save);
