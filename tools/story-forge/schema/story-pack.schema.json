@@ -7,6 +7,7 @@
   "required": ["schema_version", "identity", "style_guide", "cast", "truths", "clues", "items", "locations", "twists", "red_herrings", "endings", "lengths"],
   "properties": {
     "schema_version": { "type": "integer", "const": 2 },
+    "language": { "type": "string", "enum": ["en", "nl"] },
     "identity": {
       "type": "object",
       "additionalProperties": false,

@@ -1,4 +1,5 @@
-import { DIALOGUE_SYSTEM } from "../llm/prompts";
+import { dialogueSystemPrompt, languageReminder } from "../llm/prompts";
+import type { StoryLanguage } from "../story/types";
 import { characterLineSchema } from "../llm/shapes";
 import type { CharacterLineOutput } from "../llm/shapes";
 import { Priority } from "../llm/types";
@@ -37,6 +38,8 @@ export interface DialogueContext {
   afterEnding?: boolean;
   // Locks the player has run into that this character holds the key to (src/story/locks.ts).
   lockNotes?: string[];
+  // The story pack's language; absent means English.
+  language?: StoryLanguage;
 }
 
 export const AFTER_ENDING_LINE = "The story has ended and the mystery is solved: the story so far tells how it ended. Nothing is secret any more. Talk freely and in character about how it all turned out and how you feel now. Do not start a new mystery.";
@@ -102,6 +105,11 @@ function characterBlock(character: CastMember, includeGoal = true): string[] {
   return [CHARACTER_START, JSON.stringify(sheet), CHARACTER_END];
 }
 
+function languageLines(language?: StoryLanguage): string[] {
+  const line = languageReminder(language).trim();
+  return line ? [line] : [];
+}
+
 export function buildDialoguePrompt(input: DialoguePromptInput): string {
   if (input.style === "compact") return buildCompactDialoguePrompt(input);
   const { character, context, turns } = input;
@@ -128,6 +136,7 @@ export function buildDialoguePrompt(input: DialoguePromptInput): string {
     convoLines.join("\n") || "(the conversation is just starting)",
     CONVERSATION_END,
     ...(input.reminder ? [input.reminder] : []),
+    ...languageLines(context.language),
     'Return JSON: {"line": "<what you say, spoken words only>"}',
   ].join("\n");
 }
@@ -176,6 +185,7 @@ function buildCompactDialoguePrompt(input: DialoguePromptInput): string {
     `Answer plan: ${answerPlan}`,
     "Answer the latest Player message first. Do not change the subject to your goal or add an unnecessary question.",
     ...(input.reminder ? [input.reminder] : []),
+    ...languageLines(context.language),
     'Return JSON only: {"line": "<your spoken reply>"}',
   ].join("\n");
 }
@@ -194,6 +204,7 @@ export function buildGreetingPrompt(character: CastMember, context: DialogueCont
     greeting,
     GREETING_END,
     ...(reminder ? [reminder] : []),
+    ...languageLines(context.language),
     'Return JSON: {"line": "<the rephrased greeting>"}',
   ].join("\n");
 }
@@ -202,12 +213,13 @@ export interface LineRequestOptions {
   temperature?: number;
   priority?: Priority;
   signal?: AbortSignal;
+  language?: StoryLanguage;
 }
 
 export function buildLineRequest(prompt: string, options: LineRequestOptions = {}): JSONRequest<CharacterLineOutput> {
   return {
     priority: options.priority ?? Priority.Dialogue,
-    system: DIALOGUE_SYSTEM,
+    system: dialogueSystemPrompt(options.language),
     tag: "dialogue",
     schema: characterLineSchema,
     maxTokens: 160,

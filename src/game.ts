@@ -1468,6 +1468,7 @@ export class Game {
     return {
       locationName: brief?.name ?? area.name,
       locationMood: brief?.mood ?? area.mood,
+      language: this.story.pack.language,
       returnVisit: returnVisitFor(this.story.pack, this.story.state, character),
       storySummary: ending ? `${ending.scene} ${ending.epilogue}` : this.story.state.summary,
       ...(ending ? { afterEnding: true } : {}),

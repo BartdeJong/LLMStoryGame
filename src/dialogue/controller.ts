@@ -407,7 +407,7 @@ export class ConversationController {
       });
       job.jobId = `${idPrefix}-${attempt}`;
       const result = await this.client.generateJSON({
-        ...buildLineRequest(prompt, { temperature: BASE_TEMPERATURE + TEMPERATURE_STEP * attempt, priority: job.priority, signal: job.signal }),
+        ...buildLineRequest(prompt, { temperature: BASE_TEMPERATURE + TEMPERATURE_STEP * attempt, priority: job.priority, signal: job.signal, language: this.context.language }),
         id: job.jobId,
       });
       notice ??= failureNotice(result, "Dialogue generation");

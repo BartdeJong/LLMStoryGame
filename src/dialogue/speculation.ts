@@ -34,7 +34,7 @@ export async function generateGreeting(
 ): Promise<GreetingResult | null> {
   job.jobId = jobId;
   const result = await client.generateJSON({
-    ...buildLineRequest(buildGreetingPrompt(character, context, greeting), { temperature: BASE_TEMPERATURE, priority: job.priority, signal: job.signal }),
+    ...buildLineRequest(buildGreetingPrompt(character, context, greeting), { temperature: BASE_TEMPERATURE, priority: job.priority, signal: job.signal, language: context.language }),
     id: jobId,
   });
   if (result.status === "cancelled") return null;

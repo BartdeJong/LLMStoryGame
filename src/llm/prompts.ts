@@ -1,16 +1,42 @@
 import { PALETTE_COLOR_SLOTS, BODY_SHAPES, CHARACTER_FEATURES, ICON_SHAPES } from "../art";
 import type { JSONRequest } from "./types";
 import { Priority } from "./types";
+import type { StoryLanguage } from "../story/types";
 import { characterSchema, dialogueTurnSchema } from "./shapes";
 import type { CharacterOutput, DialogueTurnOutput } from "./shapes";
 
-export const SYSTEM =
-  "You are the narrator of a cozy mystery exploration game. Write warm, gentle, short text. English only. " +
-  "Never invent plot facts beyond what you are told.";
+const LANGUAGE_RULE: Record<StoryLanguage, string> = {
+  en: "English only.",
+  nl: "Dutch (Nederlands) only; never answer in English.",
+};
 
-export const DIALOGUE_SYSTEM =
-  "You speak as one character in a cozy mystery exploration game. English only. " +
-  "Reply with spoken words only; never narrate, describe the scene or the character from outside, or speak for the player.";
+export function systemPrompt(language: StoryLanguage = "en"): string {
+  return (
+    "You are the narrator of a cozy mystery exploration game. Write warm, gentle, short text. " +
+    `${LANGUAGE_RULE[language]} Never invent plot facts beyond what you are told.`
+  );
+}
+
+export function dialogueSystemPrompt(language: StoryLanguage = "en"): string {
+  return (
+    `You speak as one character in a cozy mystery exploration game. ${LANGUAGE_RULE[language]} ` +
+    "Reply with spoken words only; never narrate, describe the scene or the character from outside, or speak for the player."
+  );
+}
+
+export const SYSTEM = systemPrompt();
+
+export const DIALOGUE_SYSTEM = dialogueSystemPrompt();
+
+/** One short reminder appended to user prompts for non-English packs; empty for English. */
+const LANGUAGE_REMINDER: Record<StoryLanguage, string> = {
+  en: "",
+  nl: " Antwoord uitsluitend in het Nederlands.",
+};
+
+export function languageReminder(language: StoryLanguage = "en"): string {
+  return LANGUAGE_REMINDER[language];
+}
 
 export const recipeHelp =
   `sprite_recipe: {body: ${BODY_SHAPES.join("|")}, bodyColor/accentColor/skinColor: ${PALETTE_COLOR_SLOTS.join("|")}, feature: ${CHARACTER_FEATURES.join("|")}}. ` +

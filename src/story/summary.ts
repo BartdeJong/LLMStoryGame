@@ -1,5 +1,5 @@
 import type { LLMClient } from "../llm/client";
-import { SYSTEM } from "../llm/prompts";
+import { languageReminder, systemPrompt } from "../llm/prompts";
 import { defineSchema, s } from "../llm/schema";
 import { Priority } from "../llm/types";
 import type { JSONRequest } from "../llm/types";
@@ -25,13 +25,14 @@ export function buildSummaryRequest(pack: StoryPack, view: LengthView, state: St
   const facts = { story: pack.identity.title, length: view.length, visited_areas: names, truths_found: truths, previous_summary: state.summary };
   return {
     priority: Priority.Low,
-    system: SYSTEM,
+    system: systemPrompt(pack.language),
     tag: "summary",
     schema: summarySchema,
     maxTokens: 160,
     prompt:
       "Summarize the player's progress in at most 2 short sentences, using only these facts.\n" +
-      `${STATE_START}\n${JSON.stringify(facts)}\n${STATE_END}\nReturn JSON with key: summary.`,
+      `${STATE_START}\n${JSON.stringify(facts)}\n${STATE_END}\nReturn JSON with key: summary.` +
+      languageReminder(pack.language),
   };
 }
 

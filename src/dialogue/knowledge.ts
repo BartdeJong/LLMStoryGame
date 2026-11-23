@@ -15,11 +15,16 @@ export const QUICK_GOODBYE = "Goodbye.";
 const STOP_WORDS = new Set([
   "a", "an", "and", "are", "as", "at", "be", "but", "by", "do", "does", "for", "from", "have", "how", "i", "in", "is", "it",
   "me", "my", "of", "on", "or", "so", "that", "the", "this", "to", "was", "what", "when", "where", "who", "why", "with", "you", "your",
+  // Dutch packs share the same sets; none of these are meaningful words in the English stories.
+  "aan", "de", "dat", "dit", "een", "en", "er", "het", "heb", "heeft", "hoe", "ik", "jij", "je", "kan", "kun", "mij", "met",
+  "naar", "om", "op", "over", "u", "waar", "waarom", "wat", "wie", "wordt", "zijn", "ze",
 ]);
 
 const QUESTION_FILLER = new Set([
   "tell", "say", "know", "happen", "do", "did", "have", "has", "would", "could", "can", "will",
   "think", "see", "remember", "explain", "mean", "feel", "like", "get",
+  // Dutch
+  "vertel", "zeg", "weet", "weten", "kunt", "kon", "zou", "zal", "denk", "denken", "zie", "zien", "herinner", "uit", "bedoel",
 ]);
 
 // Light stemmer: enough for "lanterns", "pressing", "tides" to meet "lantern", "press", "tide".

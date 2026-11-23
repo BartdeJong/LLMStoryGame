@@ -1,0 +1,4142 @@
+{
+  "schema_version": 2,
+  "language": "nl",
+  "identity": {
+    "id": "paddingtonhat_nl",
+    "version": 1,
+    "title": "Paddington en de verdwenen hoed",
+    "logline": "Paddingtons hoed is weg. De marmelade is ook weg. En iedereen doet raar! Help Paddington uitzoeken waarom.",
+    "setting": "Windsor Gardens in Londen, op een warme, zonnige zomerzaterdag. Paddington de beer woont op nummer 32 bij de familie Brown.",
+    "tone": "Vrolijk, helder en grappig. Elk geheimpje is een lief geheimpje.",
+    "themes": [
+      "vriendschap",
+      "vriendelijkheid",
+      "leuke verrassingen"
+    ],
+    "content_notes": [
+      "Geen gevaar, geen misdaad en geen verdrietige momenten.",
+      "Eenvoudig Nederlands met korte zinnen."
+    ],
+    "player": {
+      "name": "Paddington Bear",
+      "species": "beer",
+      "description": "Een kleine beer uit het donkerste Peru, in een blauwe duffelse jas, met zijn oude koffer. Vandaag is zijn oude hoed weg.",
+      "sprite": {
+        "species": "bear",
+        "height": "short",
+        "girth": "stout",
+        "skin": "#7b4a2a",
+        "accent": "#c99a66",
+        "outfit": {
+          "style": "duffle-coat",
+          "color": "#2d57a6",
+          "trim": "#a8743c",
+          "legs": "#7b4a2a"
+        },
+        "accessories": [
+          {
+            "kind": "suitcase",
+            "color": "#8a5a32"
+          }
+        ]
+      }
+    }
+  },
+  "style_guide": {
+    "narrator_voice": "Een vrolijke, vriendelijke verteller. Gebruik heel korte zinnen en simpele, gewone woorden. De speler is Paddington de beer.",
+    "use": [
+      "korte zinnen van 5 tot 12 woorden",
+      "gewone woorden uit het dagelijks leven",
+      "felle kleuren, zonneschijn en lekkere geuren",
+      "zachte grapjes"
+    ],
+    "avoid": [
+      "lange zinnen",
+      "zeldzame of moeilijke woorden",
+      "uitdrukkingen en straattaal",
+      "alles wat eng, verdrietig of gemeen is"
+    ],
+    "naming_conventions": "Eenvoudige Engelse namen. Volwassenen hebben Mr of Mrs voor hun naam.",
+    "examples": [
+      {
+        "cast_id": "c_mrs_bird",
+        "lines": [
+          "Uit mijn keuken, jonge beer. Ik heb het vandaag erg druk."
+        ]
+      },
+      {
+        "cast_id": "c_mr_gruber",
+        "lines": [
+          "Ah, Paddington, mijn vriend! Zullen we een kopje chocolademelk drinken?"
+        ]
+      }
+    ]
+  },
+  "cast": [
+    {
+      "id": "c_mrs_brown",
+      "name": "Mrs Brown",
+      "species": "mens",
+      "personality": "Warm, lief en vrolijk. Ze houdt heel veel van Paddington.",
+      "goal": "Mooie bloemen halen voor de feesttafel.",
+      "secret": "Tante Lucy heeft een verjaardagskaart voor Paddington gestuurd. Mrs Brown bewaart hem voor het feest.",
+      "motivations": [
+        "Paddington blij maken",
+        "een mooi feest"
+      ],
+      "relationships": [
+        {
+          "cast_id": "c_mr_brown",
+          "relation": "haar man"
+        },
+        {
+          "cast_id": "c_judy",
+          "relation": "haar dochter"
+        },
+        {
+          "cast_id": "c_jonathan",
+          "relation": "haar zoon"
+        }
+      ],
+      "reactions": [
+        {
+          "id": "r_mrs_brown_flowers",
+          "about": {
+            "type": "item",
+            "id": "i_flowers"
+          },
+          "text": "Oh, wat een mooie bloemen! Zijn die voor mij, Paddington? Dank je wel!"
+        }
+      ],
+      "sprite": {
+        "species": "human",
+        "height": "average",
+        "girth": "average",
+        "skin": "#f0c8a0",
+        "hair": {
+          "style": "bob",
+          "color": "#6a4328"
+        },
+        "outfit": {
+          "style": "dress",
+          "color": "#5b8fd0",
+          "trim": "#f2f0e6"
+        },
+        "accessories": [
+          {
+            "kind": "shawl",
+            "color": "#f0cf4a"
+          }
+        ]
+      },
+      "home_location": "l_hall",
+      "knows_truths": [
+        "t_marmalade_gone",
+        "t_birthday"
+      ],
+      "goal_states": [
+        {
+          "id": "gs_mrs_brown_flowers",
+          "description": "Paddington geeft Mrs Brown een bos bloemen voor de tafel.",
+          "requires": {
+            "items": [
+              "i_flowers"
+            ]
+          },
+          "reveals": "Mrs Brown laat Paddington de kaart van tante Lucy zien."
+        }
+      ],
+      "voice_notes": "Praat tegen Paddington. Warm en zacht. Gebruikt korte, simpele zinnen en noemt hem schat.",
+      "greetings": [
+        "Goedemorgen, Paddington! Heb je lekker geslapen?",
+        "Oh, dag schat. Wat een heerlijk zonnige dag is het!",
+        "Dag Paddington. Ben je nog steeds op zoek naar je hoed?"
+      ],
+      "knowledge": [
+        {
+          "id": "k_mrs_brown_marmalade",
+          "topic": "De marmelade",
+          "ask": "Is er marmelade voor het ontbijt?",
+          "text": "Mrs Bird zegt dat de marmelade op is. Dat gebeurt nooit in dit huis!",
+          "keywords": [
+            "marmelade",
+            "ontbijt",
+            "pot",
+            "leeg",
+            "keuken"
+          ],
+          "clue_id": "cl_mrs_brown_marmalade",
+          "truth_id": "t_marmalade_gone"
+        },
+        {
+          "id": "k_mrs_brown_hat",
+          "topic": "Mijn hoed",
+          "ask": "Heb je mijn hoed gezien?",
+          "text": "Je hoed? Oh jee, ik heb hem vandaag niet gezien. Vraag het misschien aan de anderen.",
+          "keywords": [
+            "hoed",
+            "haakje",
+            "gezien",
+            "kwijt"
+          ]
+        },
+        {
+          "id": "k_mrs_brown_window",
+          "topic": "Open raam",
+          "ask": "Waarom staat het raam in de hal open?",
+          "text": "Mrs Bird heeft het vroeg vanochtend opengezet. Ze zei dat het huis te warm was.",
+          "keywords": [
+            "raam",
+            "open",
+            "wind",
+            "lucht"
+          ]
+        },
+        {
+          "id": "k_mrs_brown_flowers",
+          "topic": "Bloemen",
+          "ask": "Waarvoor heb je bloemen nodig?",
+          "text": "Oh, gewoon voor de tafel. Iets vrolijks en felgekleurds. Barnaby op de markt heeft prachtige bloemen.",
+          "keywords": [
+            "bloemen",
+            "tafel",
+            "markt",
+            "barnaby"
+          ]
+        },
+        {
+          "id": "k_mrs_brown_postcard",
+          "topic": "Tante Lucy",
+          "ask": "Heeft tante Lucy een kaart gestuurd?",
+          "text": "Ja, hij kwam vandaag. Tante Lucy wil je fijne zomerverjaardag wensen, Paddington! Je bent vandaag jarig!",
+          "keywords": [
+            "kaart",
+            "tante lucy",
+            "verjaardag",
+            "peru",
+            "jarig"
+          ],
+          "clue_id": "cl_lucy_postcard",
+          "truth_id": "t_birthday"
+        },
+        {
+          "id": "k_mrs_brown_family",
+          "topic": "De familie",
+          "ask": "Waar is iedereen vandaag?",
+          "text": "Iedereen heeft het druk. Mr Brown is in de schuur, Jonathan is in de tuin en Judy is boven.",
+          "keywords": [
+            "familie",
+            "iedereen",
+            "vandaag",
+            "druk"
+          ]
+        }
+      ],
+      "goal_hints": {
+        "unmet": [
+          "I would love some bright flowers for the table today.",
+          "Barnaby at the market sells lovely flowers. Could you get me some, Paddington?"
+        ],
+        "in_progress": [
+          "Some flowers would make the table so pretty.",
+          "Did you find any flowers yet, dear?"
+        ],
+        "resolved": [
+          "Thank you for the lovely flowers, Paddington!",
+          "The flowers look so happy on the table. Just like you, dear."
+        ]
+      },
+      "deflections": [
+        "Oh, dat weet ik niet zeker, schat.",
+        "Hmm, daar weet ik niets van.",
+        "Vraag het maar aan de anderen, Paddington.",
+        "Goeie genade, er is vandaag zoveel te doen!",
+        "Dat kan ik echt niet zeggen, schat. Sorry."
+      ]
+    },
+    {
+      "id": "c_mrs_bird",
+      "name": "Mrs Bird",
+      "species": "mens",
+      "personality": "De huishoudster. Streng aan de buitenkant, heel zacht van binnen.",
+      "goal": "Voor drie uur een geheim klusje in de keuken afmaken.",
+      "secret": "Ze heeft alle marmelade gebruikt voor een gigantische marmeladetaart voor Paddingtons verjaardag.",
+      "motivations": [
+        "een perfecte taart",
+        "de verrassing geheim houden"
+      ],
+      "relationships": [
+        {
+          "cast_id": "c_mrs_brown",
+          "relation": "zorgt samen met haar voor het huis"
+        },
+        {
+          "cast_id": "c_jonathan",
+          "relation": "jaagt hem altijd weg bij haar lepels"
+        }
+      ],
+      "reactions": [
+        {
+          "id": "r_mrs_bird_oven",
+          "about": {
+            "type": "clue",
+            "id": "cl_oven_smell"
+          },
+          "text": "Er zit niets in die oven voor jou, jonge beer. In elk geval nog niet."
+        }
+      ],
+      "sprite": {
+        "species": "human",
+        "height": "tall",
+        "girth": "average",
+        "skin": "#efc9a4",
+        "hair": {
+          "style": "bun",
+          "color": "#aeb0b6"
+        },
+        "outfit": {
+          "style": "dress",
+          "color": "#3b4a6b",
+          "trim": "#d9d4c8"
+        },
+        "accessories": [
+          {
+            "kind": "apron",
+            "color": "#f4f1e6"
+          },
+          {
+            "kind": "spoon",
+            "color": "#c99a5a"
+          }
+        ]
+      },
+      "home_location": "l_kitchen",
+      "knows_truths": [
+        "t_marmalade_gone",
+        "t_marmalade_cake",
+        "t_birthday"
+      ],
+      "goal_states": [],
+      "voice_notes": "Praat tegen Paddington. Kort en streng, maar vriendelijk. Noemt hem jonge beer. Gebruikt simpele woorden.",
+      "greetings": [
+        "Goedemorgen, Paddington. Kom vandaag niet te ver in mijn keuken.",
+        "Dag, jonge beer. Veeg je pootjes, alsjeblieft.",
+        "Oh, ben jij het weer. Blijf alsjeblieft bij de deur."
+      ],
+      "knowledge": [
+        {
+          "id": "k_bird_marmalade",
+          "topic": "Verdwenen marmelade",
+          "ask": "Waar is alle marmelade?",
+          "text": "De marmelade? Nou, die is weg. Ik had hem nodig voor iets. Meer zeg ik er niet over.",
+          "keywords": [
+            "marmelade",
+            "pot",
+            "weg",
+            "verdwenen",
+            "plank"
+          ]
+        },
+        {
+          "id": "k_bird_oven",
+          "topic": "De oven",
+          "ask": "Waarom is de oven zo warm?",
+          "text": "Ovens zijn warm als ze aan het werk zijn, jonge beer. Kijk nu alsjeblieft niet meer naar mijn oven.",
+          "keywords": [
+            "oven",
+            "warm",
+            "heet",
+            "bakken"
+          ]
+        },
+        {
+          "id": "k_bird_window",
+          "topic": "Open raam",
+          "ask": "Heb jij het raam in de hal opengezet?",
+          "text": "Ja, dat heb ik gedaan. Het huis rook naar... naar schoonmaken. Ik wilde frisse lucht.",
+          "keywords": [
+            "raam",
+            "opengezet",
+            "hal",
+            "lucht"
+          ]
+        },
+        {
+          "id": "k_bird_hat",
+          "topic": "Mijn hoed",
+          "ask": "Heb je vanochtend mijn hoed gezien?",
+          "text": "Ik heb je hoed niet meegenomen. Ik stond hier vanaf zes uur in de keuken. Heel druk.",
+          "keywords": [
+            "hoed",
+            "haakje",
+            "vanochtend",
+            "meegenomen"
+          ]
+        },
+        {
+          "id": "k_bird_jonathan",
+          "topic": "Jonathan",
+          "ask": "Waarom zijn Jonathans vingers zo plakkerig?",
+          "text": "Die jongen likt elke lepel af die hij kan vinden. Vraag me niet welke lepel.",
+          "keywords": [
+            "jonathan",
+            "plakkerig",
+            "vingers",
+            "lepel"
+          ]
+        },
+        {
+          "id": "k_bird_shopping",
+          "topic": "Boodschappen",
+          "ask": "Heb je gisteren boodschappen gedaan?",
+          "text": "Ik ben naar de markt geweest en heb gekocht wat ik nodig had. Vraag het aan Barnaby als je het per se wilt weten.",
+          "keywords": [
+            "boodschappen",
+            "markt",
+            "barnaby",
+            "sinaasappels",
+            "gekocht"
+          ]
+        }
+      ],
+      "goal_hints": {
+        "unmet": [
+          "I have a big job to finish before three o'clock.",
+          "Please let me work, young bear."
+        ],
+        "in_progress": [
+          "My job is going well. Off you go now.",
+          "Not long now. Please go and play."
+        ],
+        "resolved": [
+          "I have a big job to finish before three o'clock. Off you go, young bear.",
+          "Everything in this kitchen is fine. Go and play outside, Paddington."
+        ]
+      },
+      "deflections": [
+        "Dat zijn mijn zaken niet, jonge beer.",
+        "Dat kan ik niet zeggen. Ik heb het druk.",
+        "Vraag het alsjeblieft aan iemand anders.",
+        "Hmm. Vandaag geen vragen in mijn keuken.",
+        "Daar heb ik nu geen tijd voor."
+      ]
+    },
+    {
+      "id": "c_jonathan",
+      "name": "Jonathan",
+      "species": "mens",
+      "personality": "Vrolijke jongen die dol is op voetbal. Hij kan heel slecht geheimen bewaren.",
+      "goal": "Voor twee uur twintig ballonnen opblazen.",
+      "secret": "Hij is verantwoordelijk voor de ballonnen voor Paddingtons verrassingsfeest.",
+      "motivations": [
+        "plezier",
+        "de verrassing niet verpesten"
+      ],
+      "relationships": [
+        {
+          "cast_id": "c_judy",
+          "relation": "zijn zus"
+        },
+        {
+          "cast_id": "c_mr_curry",
+          "relation": "zijn voetbal belandt vaak in de tuin van Mr Curry"
+        }
+      ],
+      "reactions": [
+        {
+          "id": "r_jonathan_list",
+          "about": {
+            "type": "clue",
+            "id": "cl_jonathan_list"
+          },
+          "text": "Oh nee, je hebt mijn lijstje gevonden! Ik was het kwijt bij de bushalte. Vergeet maar dat je het zag!"
+        }
+      ],
+      "sprite": {
+        "species": "human",
+        "height": "tiny",
+        "girth": "average",
+        "skin": "#f2c9a2",
+        "hair": {
+          "style": "messy",
+          "color": "#6b4326"
+        },
+        "outfit": {
+          "style": "striped",
+          "color": "#d9473b",
+          "trim": "#f4efe2",
+          "legs": "#4a5a86"
+        },
+        "accessories": [
+          {
+            "kind": "freckles"
+          },
+          {
+            "kind": "ball"
+          }
+        ]
+      },
+      "home_location": "l_back_garden",
+      "knows_truths": [
+        "t_hat_missing",
+        "t_party_in_park",
+        "t_birthday"
+      ],
+      "goal_states": [],
+      "voice_notes": "Praat tegen Paddington. Snel en vriendelijk, een beetje zenuwachtig over geheimen. Gebruikt simpele woorden.",
+      "greetings": [
+        "Hoi, Paddington! Mooie dag, hè?",
+        "Oh! Paddington! Ik deed helemaal niets. Echt waar!",
+        "Hallo, weer jij! Wil je straks voetballen?"
+      ],
+      "knowledge": [
+        {
+          "id": "k_jon_peg",
+          "topic": "Mijn hoed",
+          "ask": "Heb je mijn hoed gezien?",
+          "text": "Je hoed hing niet aan het haakje toen ik beneden kwam voor het ontbijt. Dat viel me op, want hij hangt er altijd.",
+          "keywords": [
+            "hoed",
+            "haakje",
+            "ontbijt",
+            "gezien"
+          ],
+          "clue_id": "cl_jonathan_peg",
+          "truth_id": "t_hat_missing"
+        },
+        {
+          "id": "k_jon_sticky",
+          "topic": "Plakkerige vingers",
+          "ask": "Waarom zijn je vingers plakkerig en oranje?",
+          "text": "Plakkerig? Oh. Ik heb aan een lepel gelikt. Een heel lekkere lepel. Vertel het alsjeblieft niet aan Mrs Bird!",
+          "keywords": [
+            "plakkerig",
+            "vingers",
+            "oranje",
+            "lepel",
+            "marmelade"
+          ],
+          "clue_id": "cl_sticky_fingers"
+        },
+        {
+          "id": "k_jon_balloons",
+          "topic": "Ballonnen",
+          "ask": "Waarom heb je zoveel ballonnen?",
+          "text": "Ballonnen? Die zijn voor een schoolproject. Een heel groot schoolproject. Met twintig ballonnen.",
+          "keywords": [
+            "ballonnen",
+            "ballon",
+            "twintig",
+            "pomp"
+          ]
+        },
+        {
+          "id": "k_jon_curry",
+          "topic": "Mr Curry",
+          "ask": "Is Mr Curry vandaag boos?",
+          "text": "Mr Curry is altijd boos! Hij is vanochtend zijn krant kwijtgeraakt. Ik denk dat de wind hem naar de bushalte heeft geblazen.",
+          "keywords": [
+            "curry",
+            "krant",
+            "boos",
+            "buurman",
+            "bushalte"
+          ]
+        },
+        {
+          "id": "k_jon_judy",
+          "topic": "Judy",
+          "ask": "Waar is Judy vanochtend heen gegaan?",
+          "text": "Judy ging heel vroeg weg met een tas. Ze kwam terug zonder tas. Gek, hè!",
+          "keywords": [
+            "judy",
+            "vroeg",
+            "vanochtend",
+            "tas",
+            "weg"
+          ]
+        },
+        {
+          "id": "k_jon_football",
+          "topic": "Voetbal",
+          "ask": "Kunnen we voetballen?",
+          "text": "Straks, goed? Ik heb eerst een grote klus. Een ballonnenklus. Ik bedoel, een voetbalklus!",
+          "keywords": [
+            "voetbal",
+            "voetballen",
+            "bal",
+            "spelen"
+          ]
+        }
+      ],
+      "goal_hints": {
+        "unmet": [
+          "I have twenty balloons to blow up. Phew!",
+          "My cheeks hurt from all this blowing."
+        ],
+        "in_progress": [
+          "Only ten more balloons to go!",
+          "Almost done with my, um, school project."
+        ],
+        "resolved": [
+          "I have so many balloons to blow up today! For school. Yes, for school.",
+          "Phew, balloons are hard work, Paddington!"
+        ]
+      },
+      "deflections": [
+        "Ik weet het niet! Echt waar!",
+        "Vraag het aan Judy. Die weet alles.",
+        "Hmm, geen idee, Paddington.",
+        "Dat is een geheim. Ik bedoel, ik weet het niet!",
+        "Sorry, ik heb het te druk om na te denken."
+      ]
+    },
+    {
+      "id": "c_mr_brown",
+      "name": "Mr Brown",
+      "species": "mens",
+      "personality": "Druk en een beetje kieskeurig. Heel trots op zijn schilderwerk.",
+      "goal": "Voor twee uur het grote spandoek af schilderen.",
+      "secret": "Hij schildert een spandoek met de tekst GEFELICITEERD, PADDINGTON.",
+      "motivations": [
+        "een perfect spandoek",
+        "de verrassing geheim houden"
+      ],
+      "relationships": [
+        {
+          "cast_id": "c_mrs_brown",
+          "relation": "zijn vrouw"
+        },
+        {
+          "cast_id": "c_mrs_penny",
+          "relation": "vroeg haar om de muziektent vrij te houden"
+        }
+      ],
+      "sprite": {
+        "species": "human",
+        "height": "average",
+        "girth": "average",
+        "skin": "#efc29c",
+        "hair": {
+          "style": "short",
+          "color": "#4a3322"
+        },
+        "outfit": {
+          "style": "shirt",
+          "color": "#e8e4d6",
+          "trim": "#c9c2b0",
+          "legs": "#5a5a6a"
+        },
+        "accessories": [
+          {
+            "kind": "moustache",
+            "color": "#4a3322"
+          },
+          {
+            "kind": "belt",
+            "color": "#4a3326"
+          }
+        ]
+      },
+      "home_location": "l_shed",
+      "knows_truths": [
+        "t_party_in_park",
+        "t_birthday"
+      ],
+      "goal_states": [],
+      "voice_notes": "Praat tegen Paddington. Noemt hem beste kerel. Een beetje in de war. Gebruikt korte, simpele zinnen.",
+      "greetings": [
+        "Ah, Paddington! Blijf alsjeblieft bij de deur. Natte verf!",
+        "Dag, beste kerel. Ik heb het hier vandaag erg druk.",
+        "Paddington! Dag, weer jij. Hier valt niets te zien. Helemaal niets."
+      ],
+      "knowledge": [
+        {
+          "id": "k_brown_sheet",
+          "topic": "Het grote laken",
+          "ask": "Wat zit er onder dat grote laken?",
+          "text": "Onder het laken? Oh, niets. Gewoon wat oud hout. Heel saai hout. Kijk alsjeblieft niet.",
+          "keywords": [
+            "laken",
+            "onder",
+            "afgedekt",
+            "groot",
+            "verstopt"
+          ]
+        },
+        {
+          "id": "k_brown_paint",
+          "topic": "Schilderen",
+          "ask": "Wat ben je aan het schilderen?",
+          "text": "Ik schilder de schuur. Ja, de schuur. Rood en geel. Het is een heel moderne schuur.",
+          "keywords": [
+            "verf",
+            "schilderen",
+            "rood",
+            "geel",
+            "kwast"
+          ]
+        },
+        {
+          "id": "k_brown_hat",
+          "topic": "Mijn hoed",
+          "ask": "Weet je waar mijn hoed is?",
+          "text": "Ik weet zeker dat je hem snel vindt, Paddington. Vraag het anders aan Judy?",
+          "keywords": [
+            "hoed",
+            "haakje",
+            "kwijt",
+            "ergens"
+          ]
+        },
+        {
+          "id": "k_brown_park",
+          "topic": "Het park",
+          "ask": "Ga je vandaag naar het park?",
+          "text": "Het park? Wie zegt er iets over het park? Ik niet. Ik blijf lekker hier.",
+          "keywords": [
+            "park",
+            "muziektent",
+            "drie",
+            "vandaag"
+          ]
+        },
+        {
+          "id": "k_brown_curry",
+          "topic": "Mr Curry",
+          "ask": "Wat denk je over Mr Curry?",
+          "text": "Mr Curry is chagrijnig, maar hij is geen slechte man. Ik denk dat hij gewoon een vriend nodig heeft.",
+          "keywords": [
+            "curry",
+            "buurman",
+            "chagrijnig",
+            "vriend"
+          ]
+        },
+        {
+          "id": "k_brown_day",
+          "topic": "Vandaag",
+          "ask": "Welke dag is het vandaag?",
+          "text": "Het is zaterdag, natuurlijk. Een heel bijzondere... ik bedoel, een heel gewone zaterdag.",
+          "keywords": [
+            "dag",
+            "vandaag",
+            "zaterdag",
+            "bijzonder",
+            "datum"
+          ]
+        }
+      ],
+      "goal_hints": {
+        "unmet": [
+          "I must finish this painting before two o'clock.",
+          "So much paint, so little time!"
+        ],
+        "in_progress": [
+          "Nearly done. Just one more letter.",
+          "Almost finished, old chap."
+        ],
+        "resolved": [
+          "I must finish my painting before two o'clock, old chap.",
+          "Run along now, Paddington. I have paint everywhere!"
+        ]
+      },
+      "deflections": [
+        "Geen idee, beste kerel.",
+        "Hmm, je kunt het aan Mrs Brown vragen.",
+        "Ik heb het veel te druk om daaraan te denken.",
+        "Sorry, Paddington. Ik weet het niet.",
+        "Vraag het me straks, beste kerel. Natte verf!"
+      ]
+    },
+    {
+      "id": "c_judy",
+      "name": "Judy",
+      "species": "mens",
+      "personality": "Slim en lief. Ze lacht veel en maakt graag plannen.",
+      "goal": "Het hoedcadeau geheim houden tot het feest.",
+      "secret": "Ze heeft Paddingtons hoed vanochtend vroeg naar Mr Gruber gebracht, zodat hij hem kan repareren als cadeau.",
+      "motivations": [
+        "een perfect cadeau",
+        "de verrassing geheim houden"
+      ],
+      "relationships": [
+        {
+          "cast_id": "c_jonathan",
+          "relation": "haar broer"
+        },
+        {
+          "cast_id": "c_mr_gruber",
+          "relation": "vroeg hem de hoed te repareren"
+        }
+      ],
+      "reactions": [
+        {
+          "id": "r_judy_ticket",
+          "about": {
+            "type": "clue",
+            "id": "cl_judy_ticket"
+          },
+          "text": "Oh! Mijn buskaartje. Ik ben maar even een ritje gaan maken. Dat is alles, Paddington!"
+        }
+      ],
+      "sprite": {
+        "species": "human",
+        "height": "short",
+        "girth": "slim",
+        "skin": "#f0c6a0",
+        "hair": {
+          "style": "long",
+          "color": "#6b4326"
+        },
+        "outfit": {
+          "style": "dress",
+          "color": "#4aa064",
+          "trim": "#e9f0c8"
+        },
+        "accessories": [
+          {
+            "kind": "notebook",
+            "color": "#c33a45"
+          }
+        ]
+      },
+      "home_location": "l_judy_room",
+      "knows_truths": [
+        "t_judy_took_hat",
+        "t_hat_at_gruber",
+        "t_hat_mended",
+        "t_birthday"
+      ],
+      "goal_states": [],
+      "voice_notes": "Praat tegen Paddington. Vriendelijk en snel, giechelt als ze iets verbergt. Gebruikt simpele woorden.",
+      "greetings": [
+        "Hallo, Paddington! Je ziet er vandaag druk uit.",
+        "Oh, hoi, Paddington. Kom binnen. Pas op voor de boeken op de grond.",
+        "Hallo, weer jij, rechercheur Paddington!"
+      ],
+      "knowledge": [
+        {
+          "id": "k_judy_secrets",
+          "topic": "Geheimen",
+          "ask": "Houdt iedereen een geheim voor me?",
+          "text": "Geheimen? Hier geen geheimen! Helemaal niet! Waarom zou iemand vandaag een geheim hebben?",
+          "keywords": [
+            "geheim",
+            "geheimen",
+            "verbergen",
+            "raar",
+            "iedereen"
+          ],
+          "clue_id": "cl_judy_no_secrets",
+          "truth_id": "t_secret"
+        },
+        {
+          "id": "k_judy_morning",
+          "topic": "Vanochtend",
+          "ask": "Waar ben je vanochtend naartoe gegaan?",
+          "text": "Ik ben maar even gaan wandelen. En een klein stukje met de bus. Heel saai.",
+          "keywords": [
+            "vanochtend",
+            "vroeg",
+            "wandelen",
+            "bus",
+            "gegaan"
+          ]
+        },
+        {
+          "id": "k_judy_hat",
+          "topic": "Mijn hoed",
+          "ask": "Heb jij mijn hoed meegenomen?",
+          "text": "Je hoed? Nou, die is misschien ergens veilig. Ergens heel veilig. Meer zeg ik niet.",
+          "keywords": [
+            "hoed",
+            "meegenomen",
+            "genomen",
+            "veilig"
+          ]
+        },
+        {
+          "id": "k_judy_gruber",
+          "topic": "Mr Gruber",
+          "ask": "Kan Mr Gruber dingen repareren?",
+          "text": "Mr Gruber is heel handig met naald en draad. Hij kan bijna alles repareren.",
+          "keywords": [
+            "gruber",
+            "naald",
+            "repareren",
+            "winkel",
+            "naaien"
+          ]
+        },
+        {
+          "id": "k_judy_drawing",
+          "topic": "Je tekening",
+          "ask": "Wat ben je aan het tekenen?",
+          "text": "Gewoon een hoed. Een bruine hoed met een rood lint. Het is niemands hoed. Echt waar!",
+          "keywords": [
+            "tekening",
+            "tekenen",
+            "schrift",
+            "lint"
+          ]
+        },
+        {
+          "id": "k_judy_curry",
+          "topic": "Mr Curry",
+          "ask": "Heeft Mr Curry je vanochtend gezien?",
+          "text": "Mr Curry was heel vroeg in zijn tuin. Hij zocht volgens mij zijn krant.",
+          "keywords": [
+            "curry",
+            "tuin",
+            "buurman",
+            "krant"
+          ]
+        }
+      ],
+      "goal_hints": {
+        "unmet": [
+          "Some things are a secret today, Paddington.",
+          "Just wait and see!"
+        ],
+        "in_progress": [
+          "Not long now, Paddington.",
+          "You will see soon. I promise!"
+        ],
+        "resolved": [
+          "Some things are a secret today, Paddington. Just wait and see!",
+          "You will find out soon. I promise!"
+        ]
+      },
+      "deflections": [
+        "Hmm, ik weet het niet, Paddington.",
+        "Goeie vraag! Vraag het aan iemand anders.",
+        "Ik zeg niets. Ik bedoel, ik weet het niet!",
+        "Geen idee. Sorry, Paddington.",
+        "Je bent een heel goede detective. Maar daar kan ik niet mee helpen."
+      ]
+    },
+    {
+      "id": "c_mr_curry",
+      "name": "Mr Curry",
+      "species": "mens",
+      "personality": "De chagrijnige buurman. Hij roept vaak Beer! maar is eigenlijk niet slecht.",
+      "goal": "Zijn verloren krant terugkrijgen.",
+      "secret": "Hij houdt stiekem van feestjes, maar dat zou hij nooit zeggen.",
+      "motivations": [
+        "rust en stilte",
+        "zijn krant"
+      ],
+      "relationships": [
+        {
+          "cast_id": "c_mr_brown",
+          "relation": "zijn buurman"
+        }
+      ],
+      "reactions": [
+        {
+          "id": "r_curry_paper",
+          "about": {
+            "type": "item",
+            "id": "i_newspaper"
+          },
+          "text": "Mijn krant! Waar heb je hem gevonden, beer? Nou. Hmpf. Dank je."
+        }
+      ],
+      "sprite": {
+        "species": "human",
+        "height": "average",
+        "girth": "average",
+        "skin": "#e6b894",
+        "hair": {
+          "style": "balding",
+          "color": "#a8a8a8"
+        },
+        "outfit": {
+          "style": "cardigan",
+          "color": "#7a5334",
+          "trim": "#d8d2c0",
+          "legs": "#4a4a3a"
+        },
+        "headwear": {
+          "style": "straw-hat",
+          "color": "#a8864f",
+          "trim": "#6a4a2a"
+        },
+        "accessories": [
+          {
+            "kind": "brows",
+            "color": "#b8b8b8"
+          }
+        ]
+      },
+      "home_location": "l_curry_garden",
+      "knows_truths": [
+        "t_judy_took_hat"
+      ],
+      "goal_states": [
+        {
+          "id": "gs_curry_paper",
+          "description": "Paddington geeft Mr Curry zijn verloren krant.",
+          "requires": {
+            "items": [
+              "i_newspaper"
+            ]
+          },
+          "reveals": "Mr Curry is blij en vertelt Paddington wat hij vanochtend heeft gezien."
+        }
+      ],
+      "voice_notes": "Praat tegen Paddington. Chagrijnig en kortaf. Noemt hem beer. Gebruikt simpele woorden. Zachter nadat hij zijn krant terug heeft.",
+      "greetings": [
+        "Beer! Wat moet je? Ik heb het erg druk.",
+        "Oh, ben jij het weer. Blijf van mijn bloemen af, beer.",
+        "Hmpf. Dag, beer. Maak het kort."
+      ],
+      "knowledge": [
+        {
+          "id": "k_curry_saw",
+          "topic": "Vanochtend",
+          "ask": "Heb je vanochtend iemand met mijn hoed gezien?",
+          "text": "Ja. Om acht uur liep Judy langs met je oude hoed in haar tas. Ze nam de bus.",
+          "keywords": [
+            "zag",
+            "gezien",
+            "vanochtend",
+            "judy",
+            "hoed",
+            "acht"
+          ],
+          "clue_id": "cl_curry_saw",
+          "truth_id": "t_judy_took_hat"
+        },
+        {
+          "id": "k_curry_newspaper",
+          "topic": "Zijn krant",
+          "ask": "Wat ben je kwijtgeraakt?",
+          "text": "Mijn krant! De wind heeft hem vanochtend meegenomen. Ik heb er geen woord van gelezen.",
+          "keywords": [
+            "krant",
+            "kranten",
+            "kwijt",
+            "wind",
+            "nieuws"
+          ]
+        },
+        {
+          "id": "k_curry_hat",
+          "topic": "Zijn hoed",
+          "ask": "Is dat mijn hoed op je hek?",
+          "text": "Jouw hoed? Zeker niet! Dat is mijn tuinhoed. Ik heb hem al twintig jaar.",
+          "keywords": [
+            "hoed",
+            "hek",
+            "bruin",
+            "tuinhoed",
+            "mijn"
+          ]
+        },
+        {
+          "id": "k_curry_noise",
+          "topic": "Het lawaai",
+          "ask": "Waarom ben je vandaag boos?",
+          "text": "Ballonnen, gebonk en gefluister! Wat is er vandaag aan de hand hiernaast?",
+          "keywords": [
+            "boos",
+            "lawaai",
+            "ballonnen",
+            "hiernaast",
+            "gebonk"
+          ]
+        },
+        {
+          "id": "k_curry_flowers",
+          "topic": "Zijn bloemen",
+          "ask": "Zijn dit jouw bloemen?",
+          "text": "Ja, en het zijn de mooiste bloemen van de straat. Trap er niet op.",
+          "keywords": [
+            "bloemen",
+            "tuin",
+            "rozen",
+            "mooiste"
+          ]
+        },
+        {
+          "id": "k_curry_bears",
+          "topic": "Beren",
+          "ask": "Vind je beren leuk?",
+          "text": "Beren zijn slordig en plakkerig. Maar jij bent niet de ergste beer, denk ik.",
+          "keywords": [
+            "beer",
+            "beren",
+            "houden",
+            "slordig"
+          ]
+        }
+      ],
+      "goal_hints": {
+        "unmet": [
+          "My newspaper is gone, and I cannot find it anywhere.",
+          "If you find my newspaper, bear, I might be a bit nicer."
+        ],
+        "in_progress": [
+          "Still no newspaper, bear?",
+          "That newspaper must be somewhere."
+        ],
+        "resolved": [
+          "Hmph. Thank you for my newspaper, bear. That was kind.",
+          "Now I can read my newspaper in peace. Thank you, bear."
+        ]
+      },
+      "deflections": [
+        "Hoe moet ik dat nou weten, beer?",
+        "Mijn zaken niet. Ga weg.",
+        "Hmpf. Vraag het aan iemand anders.",
+        "Ik heb geen tijd voor domme vragen.",
+        "Beer! Ik weet het niet, en het kan me niet schelen."
+      ]
+    },
+    {
+      "id": "c_barnaby",
+      "name": "Barnaby",
+      "species": "mens",
+      "personality": "Vrolijke fruitverkoper met een grote lach. Hij kent iedereen in Portobello Road.",
+      "goal": "Een ontbijt halen. Dat is hem vanochtend ontgaan.",
+      "secret": "Hij heeft Mrs Bird heel veel sinaasappels verkocht voor een gigantische taart.",
+      "motivations": [
+        "blije klanten",
+        "een goed ontbijt"
+      ],
+      "relationships": [
+        {
+          "cast_id": "c_mr_gruber",
+          "relation": "zijn vriend aan de overkant van de straat"
+        },
+        {
+          "cast_id": "c_mrs_bird",
+          "relation": "ze koopt zijn sinaasappels"
+        }
+      ],
+      "reactions": [
+        {
+          "id": "r_barnaby_sandwich",
+          "about": {
+            "type": "item",
+            "id": "i_sandwich"
+          },
+          "text": "Een marmeladesandwich? Voor mij? Oh, wat een lieve beer! Ik heb zo'n honger."
+        }
+      ],
+      "sprite": {
+        "species": "human",
+        "height": "average",
+        "girth": "stout",
+        "skin": "#e9b78f",
+        "hair": {
+          "style": "short",
+          "color": "#8a5a2a"
+        },
+        "outfit": {
+          "style": "shirt",
+          "color": "#f0ece0",
+          "trim": "#d8d0bc",
+          "legs": "#5a4a3a"
+        },
+        "headwear": {
+          "style": "flat-cap",
+          "color": "#6e5a3c"
+        },
+        "accessories": [
+          {
+            "kind": "apron",
+            "color": "#3f8a4a"
+          },
+          {
+            "kind": "orange",
+            "color": "#f08a24"
+          }
+        ]
+      },
+      "home_location": "l_market",
+      "knows_truths": [
+        "t_hat_at_gruber",
+        "t_marmalade_cake"
+      ],
+      "goal_states": [
+        {
+          "id": "gs_barnaby_breakfast",
+          "description": "Paddington geeft Barnaby zijn marmeladesandwich als ontbijt.",
+          "requires": {
+            "items": [
+              "i_sandwich"
+            ]
+          },
+          "gives_items": [
+            "i_currant_buns",
+            "i_flowers"
+          ],
+          "reveals": "Barnaby geeft Paddington een zak krentenbollen en een bos bloemen."
+        }
+      ],
+      "voice_notes": "Praat tegen Paddington. Luid, blij en vriendelijk. Gebruikt korte, simpele zinnen.",
+      "greetings": [
+        "Goedemorgen, jonge beer! Vers fruit, verse bloemen!",
+        "Hallo daar, Paddington! Heerlijke dag voor de markt!",
+        "Alweer terug, Paddington? Ik zie je altijd graag!"
+      ],
+      "knowledge": [
+        {
+          "id": "k_barnaby_judy",
+          "topic": "Judy vanochtend",
+          "ask": "Heb je Judy vanochtend gezien?",
+          "text": "Ja! Judy kwam vroeg langs met een bruine hoed in haar tas. Ze ging meteen de winkel van Mr Gruber in.",
+          "keywords": [
+            "judy",
+            "hoed",
+            "vanochtend",
+            "gruber",
+            "winkel"
+          ],
+          "clue_id": "cl_barnaby_saw",
+          "truth_id": "t_hat_at_gruber"
+        },
+        {
+          "id": "k_barnaby_oranges",
+          "topic": "Boodschappen Mrs Bird",
+          "ask": "Heeft Mrs Bird iets bij je gekocht?",
+          "text": "Mrs Bird heeft gisteren mijn grootste zak sinaasappels gekocht en een berg suiker. Voor een gigantische taart, zei ze!",
+          "keywords": [
+            "sinaasappels",
+            "mrs bird",
+            "suiker",
+            "taart",
+            "gekocht"
+          ],
+          "clue_id": "cl_barnaby_oranges",
+          "truth_id": "t_marmalade_cake"
+        },
+        {
+          "id": "k_barnaby_breakfast",
+          "topic": "Ontbijt",
+          "ask": "Heb je honger?",
+          "text": "Reuzehonger! Ik was zo vroeg hier dat ik mijn ontbijt heb gemist. Ik lust wel een sandwich.",
+          "keywords": [
+            "honger",
+            "ontbijt",
+            "sandwich",
+            "eten"
+          ]
+        },
+        {
+          "id": "k_barnaby_flowers",
+          "topic": "Bloemen",
+          "ask": "Verkoop je bloemen?",
+          "text": "Ja, de vrolijkste bloemen van Portobello Road! Geel, rood en blauw.",
+          "keywords": [
+            "bloemen",
+            "verkoop",
+            "bos",
+            "vrolijk"
+          ]
+        },
+        {
+          "id": "k_barnaby_buns",
+          "topic": "Krentenbollen",
+          "ask": "Heb je krentenbollen?",
+          "text": "Ik heb een zak krentenbollen van de bakker. Mr Gruber is er gek op bij zijn chocolademelk.",
+          "keywords": [
+            "krentenbollen",
+            "krentenbol",
+            "bollen",
+            "chocolademelk",
+            "gruber"
+          ]
+        },
+        {
+          "id": "k_barnaby_market",
+          "topic": "De markt",
+          "ask": "Wat kan ik op de markt vinden?",
+          "text": "Alles! Fruit, bloemen, oude klokken, hoeden en boeken. Het is de beste markt van Londen.",
+          "keywords": [
+            "markt",
+            "portobello",
+            "druk",
+            "kraampjes"
+          ]
+        }
+      ],
+      "goal_hints": {
+        "unmet": [
+          "I missed my breakfast. A sandwich would make me so happy!",
+          "My tummy is rumbling, Paddington. Do you have any food?"
+        ],
+        "in_progress": [
+          "Still a bit hungry, young bear.",
+          "Any food for a hungry fruit seller?"
+        ],
+        "resolved": [
+          "That was the best sandwich ever. Thank you, Paddington!",
+          "My tummy is happy now. Enjoy the buns and flowers!"
+        ]
+      },
+      "deflections": [
+        "Ha! Geen idee, jonge beer.",
+        "Daar moet ik het antwoord op schuldig blijven, Paddington.",
+        "Ik weet alleen iets van fruit en bloemen.",
+        "Hmm, vraag het aan Mr Gruber. Die weet van alles.",
+        "Sorry, Paddington. Ik weet het niet."
+      ]
+    },
+    {
+      "id": "c_mr_gruber",
+      "name": "Mr Gruber",
+      "species": "mens",
+      "personality": "Zachtmoedige, wijze oude winkeleigenaar. Paddingtons goede vriend.",
+      "goal": "Om elf uur chocolademelk en krentenbollen met Paddington.",
+      "secret": "Hij repareert Paddingtons hoed en doet er een nieuw rood lint aan. Het is een verjaardagscadeau.",
+      "motivations": [
+        "vriendschap",
+        "oude dingen weer als nieuw maken"
+      ],
+      "relationships": [
+        {
+          "cast_id": "c_judy",
+          "relation": "zij bracht hem de hoed om te repareren"
+        },
+        {
+          "cast_id": "c_barnaby",
+          "relation": "koopt broodjes bij hem"
+        }
+      ],
+      "reactions": [
+        {
+          "id": "r_gruber_buns",
+          "about": {
+            "type": "item",
+            "id": "i_currant_buns"
+          },
+          "text": "Krentenbollen! Wat heerlijk, Paddington. Ik maak meteen de chocolademelk."
+        }
+      ],
+      "sprite": {
+        "species": "human",
+        "height": "short",
+        "girth": "average",
+        "skin": "#e8bd98",
+        "hair": {
+          "style": "balding",
+          "color": "#e8e6e2"
+        },
+        "outfit": {
+          "style": "waistcoat",
+          "color": "#7a5434",
+          "trim": "#efe8d8",
+          "legs": "#4a4a52"
+        },
+        "accessories": [
+          {
+            "kind": "glasses",
+            "color": "#3a2a20"
+          },
+          {
+            "kind": "cane",
+            "color": "#5a3a24"
+          }
+        ]
+      },
+      "home_location": "l_gruber_shop",
+      "knows_truths": [
+        "t_hat_at_gruber",
+        "t_hat_mended"
+      ],
+      "goal_states": [
+        {
+          "id": "gs_gruber_cocoa",
+          "description": "Paddington brengt krentenbollen en hij drinkt samen met Mr Gruber chocolademelk.",
+          "requires": {
+            "items": [
+              "i_currant_buns"
+            ]
+          },
+          "reveals": "Mr Gruber doet de deur naar zijn achterkamer open."
+        }
+      ],
+      "voice_notes": "Praat tegen Paddington. Rustig, langzaam en vriendelijk. Noemt hem mijn vriend. Gebruikt simpele woorden.",
+      "greetings": [
+        "Ah, Paddington, mijn vriend! Goedemorgen!",
+        "Dag, Paddington. Kom binnen, kom binnen.",
+        "Welkom terug, mijn jonge vriend."
+      ],
+      "knowledge": [
+        {
+          "id": "k_gruber_cocoa",
+          "topic": "Chocolademelk om elf",
+          "ask": "Zullen we samen chocolademelk drinken?",
+          "text": "Oh ja, graag! Maar ik heb vandaag geen krentenbollen. Chocolademelk is niet hetzelfde zonder krentenbollen.",
+          "keywords": [
+            "chocolademelk",
+            "elf",
+            "krentenbollen",
+            "hapje",
+            "drinken"
+          ]
+        },
+        {
+          "id": "k_gruber_hat",
+          "topic": "Mijn hoed",
+          "ask": "Is mijn hoed hier?",
+          "text": "Ja, Judy heeft hem vanochtend gebracht. Ik naai het gaatje dicht en doe er een nieuw rood lint aan. Het is een cadeau!",
+          "keywords": [
+            "hoed",
+            "hier",
+            "repareren",
+            "lint",
+            "judy"
+          ],
+          "clue_id": "cl_gruber_explains",
+          "truth_id": "t_hat_mended"
+        },
+        {
+          "id": "k_gruber_backroom",
+          "topic": "De achterkamer",
+          "ask": "Wat is er in je achterkamer?",
+          "text": "Alleen mijn werkbank en mijn naaispullen. Je mag erin als we chocolademelk met krentenbollen hebben gehad.",
+          "keywords": [
+            "achterkamer",
+            "deur",
+            "werkbank",
+            "naaispullen"
+          ]
+        },
+        {
+          "id": "k_gruber_clock",
+          "topic": "De oude klok",
+          "ask": "Is de klok heel oud?",
+          "text": "Ja, hij is ouder dan ik! Hij loopt nog steeds goed. Kijk, het is bijna elf uur.",
+          "keywords": [
+            "klok",
+            "oud",
+            "tijd"
+          ]
+        },
+        {
+          "id": "k_gruber_shop",
+          "topic": "Zijn winkel",
+          "ask": "Wat verkoop je in je winkel?",
+          "text": "Oude en mooie dingen. Klokken, boeken, kaarten en theepotten. Elk oud ding heeft een verhaal.",
+          "keywords": [
+            "winkel",
+            "verkoop",
+            "antiek",
+            "oude dingen"
+          ]
+        },
+        {
+          "id": "k_gruber_lucy",
+          "topic": "Tante Lucy",
+          "ask": "Ken je tante Lucy?",
+          "text": "Alleen van jouw verhalen, Paddington. Ze moet een heel wijze beer zijn.",
+          "keywords": [
+            "tante lucy",
+            "peru",
+            "tante",
+            "lucy"
+          ]
+        }
+      ],
+      "goal_hints": {
+        "unmet": [
+          "It is almost eleven. Time for cocoa, but I have no buns.",
+          "Cocoa is so much nicer with a currant bun, my friend."
+        ],
+        "in_progress": [
+          "The cocoa is nearly ready, my friend.",
+          "Sit down, Paddington. Just a moment."
+        ],
+        "resolved": [
+          "Thank you for the buns, my friend. That was a lovely cocoa.",
+          "You may look in my back room now, Paddington."
+        ]
+      },
+      "deflections": [
+        "Hmm, ik weet het niet, mijn vriend.",
+        "Dat is een goede vraag. Ik weet het niet zeker.",
+        "Vraag het misschien aan iemand op de markt.",
+        "Ik ben een oude man. Ik weet niet alles!",
+        "Sorry, Paddington. Daar kan ik niet mee helpen."
+      ]
+    },
+    {
+      "id": "c_mrs_penny",
+      "name": "Mrs Penny",
+      "species": "mens",
+      "personality": "Vriendelijke parkwachter. Ze is dol op eenden en nette paadjes.",
+      "goal": "Het park schoon en netjes houden voor iedereen.",
+      "secret": "Mr Brown heeft haar gevraagd de muziektent om drie uur vrij te houden voor een feest.",
+      "motivations": [
+        "een net park",
+        "blije bezoekers"
+      ],
+      "relationships": [
+        {
+          "cast_id": "c_mr_brown",
+          "relation": "hij vroeg haar de muziektent vrij te houden"
+        }
+      ],
+      "sprite": {
+        "species": "human",
+        "height": "average",
+        "girth": "average",
+        "skin": "#d9a577",
+        "hair": {
+          "style": "ponytail",
+          "color": "#8a4a2a"
+        },
+        "outfit": {
+          "style": "uniform",
+          "color": "#2f6b45",
+          "trim": "#e3b341",
+          "legs": "#2a3a2e"
+        },
+        "headwear": {
+          "style": "peaked-cap",
+          "color": "#2f6b45",
+          "trim": "#e3b341"
+        },
+        "accessories": [
+          {
+            "kind": "broom",
+            "color": "#b8934a"
+          }
+        ]
+      },
+      "home_location": "l_park_gate",
+      "knows_truths": [
+        "t_party_in_park"
+      ],
+      "goal_states": [],
+      "voice_notes": "Praat tegen Paddington. Vrolijk en spraakzaam, maar ze kan slecht geheimen bewaren. Gebruikt simpele woorden.",
+      "greetings": [
+        "Goedemorgen! Welkom in het park, jonge beer.",
+        "Hallo, Paddington! Hou de paadjes alsjeblieft netjes.",
+        "Alweer terug? De eenden zijn vandaag erg blij."
+      ],
+      "knowledge": [
+        {
+          "id": "k_penny_bandstand",
+          "topic": "De muziektent",
+          "ask": "Wat gebeurt er vandaag bij de muziektent?",
+          "text": "Mr Brown heeft me gevraagd de muziektent om drie uur vrij te houden. Voor een feest, zei hij! Oh. Was dat een geheim?",
+          "keywords": [
+            "muziektent",
+            "drie",
+            "feest",
+            "vandaag",
+            "gebeurt"
+          ],
+          "clue_id": "cl_penny_bandstand",
+          "truth_id": "t_party_in_park"
+        },
+        {
+          "id": "k_penny_ducks",
+          "topic": "De eenden",
+          "ask": "Hoe gaat het met de eenden?",
+          "text": "De eenden maken het goed. Ze zijn dol op brood, maar erwtjes zijn beter voor ze.",
+          "keywords": [
+            "eenden",
+            "eend",
+            "vijver",
+            "brood"
+          ]
+        },
+        {
+          "id": "k_penny_job",
+          "topic": "Haar werk",
+          "ask": "Wat is jouw werk?",
+          "text": "Ik ben de parkwachter. Ik houd de paadjes schoon en de bloemen blij.",
+          "keywords": [
+            "werk",
+            "parkwachter",
+            "park",
+            "netjes"
+          ]
+        },
+        {
+          "id": "k_penny_balloons",
+          "topic": "Ballonnen",
+          "ask": "Heb je ballonnen gezien?",
+          "text": "Nog niet. Maar een jongen vroeg me of ballonnen in het park mogen. Ik zei natuurlijk ja!",
+          "keywords": [
+            "ballonnen",
+            "jongen",
+            "mogen"
+          ]
+        },
+        {
+          "id": "k_penny_weather",
+          "topic": "Het weer",
+          "ask": "Blijft het zonnig?",
+          "text": "De hele dag zonnig! Een perfecte dag voor een picknick. Of een feest.",
+          "keywords": [
+            "weer",
+            "zonnig",
+            "zon",
+            "regen"
+          ]
+        }
+      ],
+      "goal_hints": {
+        "unmet": [
+          "Please put any rubbish in the bin, young bear.",
+          "A tidy park is a happy park!"
+        ],
+        "in_progress": [
+          "Nearly everything is tidy now.",
+          "Just a few more leaves to sweep."
+        ],
+        "resolved": [
+          "A tidy park is a happy park, Paddington!",
+          "Please put any rubbish in the bin. Thank you, young bear."
+        ]
+      },
+      "deflections": [
+        "Oh, daar weet ik niets van.",
+        "Hmm, vraag het aan de eenden! Grapje.",
+        "Sorry, Paddington. Geen idee.",
+        "Ik weet alleen iets van het park, vrees ik.",
+        "Dat is een goede vraag. Ik weet het niet zeker."
+      ]
+    }
+  ],
+  "truths": [
+    {
+      "id": "t_hat_missing",
+      "text": "Paddingtons oude hoed hangt niet aan zijn haakje in de hal.",
+      "depends_on": [],
+      "importance": "core",
+      "revealed_by": [
+        "cl_empty_peg",
+        "cl_jonathan_peg"
+      ]
+    },
+    {
+      "id": "t_marmalade_gone",
+      "text": "Alle marmelade is uit de keuken verdwenen.",
+      "depends_on": [],
+      "importance": "core",
+      "revealed_by": [
+        "cl_empty_shelf",
+        "cl_mrs_brown_marmalade"
+      ]
+    },
+    {
+      "id": "t_secret",
+      "text": "Iedereen thuis verbergt iets voor Paddington.",
+      "depends_on": [],
+      "importance": "core",
+      "revealed_by": [
+        "cl_shed_sheet",
+        "cl_judy_no_secrets"
+      ]
+    },
+    {
+      "id": "t_judy_took_hat",
+      "text": "Judy heeft de hoed vanochtend vroeg meegenomen.",
+      "depends_on": [
+        "t_hat_missing"
+      ],
+      "importance": "core",
+      "revealed_by": [
+        "cl_judy_ticket",
+        "cl_curry_saw"
+      ],
+      "deduction": {
+        "question": "Wie heeft Paddingtons hoed meegenomen?",
+        "answer": "Judy heeft de hoed vanochtend vroeg meegenomen.",
+        "wrong_answers": [
+          "Mr Curry heeft de hoed meegenomen.",
+          "De wind heeft de hoed weggeblazen.",
+          "Jonathan heeft de hoed verstopt."
+        ],
+        "rules_out": [
+          "rh_curry_hat",
+          "rh_open_window"
+        ],
+        "proof": {
+          "clues": [
+            "cl_judy_ticket",
+            "cl_curry_saw"
+          ],
+          "required": 1
+        }
+      }
+    },
+    {
+      "id": "t_hat_at_gruber",
+      "text": "De hoed is in de winkel van Mr Gruber.",
+      "depends_on": [
+        "t_judy_took_hat"
+      ],
+      "importance": "core",
+      "revealed_by": [
+        "cl_barnaby_saw",
+        "cl_gruber_tag"
+      ],
+      "deduction": {
+        "question": "Waar is de hoed nu?",
+        "answer": "De hoed is in de winkel van Mr Gruber.",
+        "wrong_answers": [
+          "De hoed is in de tuin van Mr Curry.",
+          "De hoed is bij de bushalte.",
+          "De hoed zit hoog in een boom in het park."
+        ],
+        "proof": {
+          "clues": [
+            "cl_barnaby_saw",
+            "cl_gruber_tag"
+          ],
+          "required": 1
+        }
+      }
+    },
+    {
+      "id": "t_hat_mended",
+      "text": "Mr Gruber repareert de hoed en doet er een nieuw rood lint aan. Het is een cadeau.",
+      "depends_on": [
+        "t_hat_at_gruber"
+      ],
+      "importance": "core",
+      "revealed_by": [
+        "cl_workbench_hat",
+        "cl_judy_sketch",
+        "cl_gruber_explains"
+      ],
+      "deduction": {
+        "question": "Waarom heeft Judy de hoed naar Mr Gruber gebracht?",
+        "answer": "Zodat Mr Gruber hem kan repareren en er een nieuw rood lint aan kan doen, als cadeau.",
+        "wrong_answers": [
+          "Zodat Mr Gruber hem in zijn winkel kan verkopen.",
+          "Omdat de hoed te klein is voor Paddington.",
+          "Zodat Mr Gruber hem zelf kan dragen."
+        ],
+        "proof": {
+          "clues": [
+            "cl_workbench_hat",
+            "cl_judy_sketch",
+            "cl_gruber_explains"
+          ],
+          "required": 1
+        }
+      }
+    },
+    {
+      "id": "t_marmalade_cake",
+      "text": "Mrs Bird heeft alle marmelade gebruikt voor een gigantische marmeladetaart.",
+      "depends_on": [
+        "t_marmalade_gone"
+      ],
+      "importance": "core",
+      "revealed_by": [
+        "cl_oven_smell",
+        "cl_barnaby_oranges"
+      ],
+      "deduction": {
+        "question": "Waar is alle marmelade gebleven?",
+        "answer": "Mrs Bird heeft haar gebruikt voor een gigantische marmeladetaart.",
+        "wrong_answers": [
+          "Jonathan heeft alles opgegeten bij het ontbijt.",
+          "Mr Curry heeft haar meegenomen.",
+          "Paddington heeft haar in zijn slaap opgegeten."
+        ],
+        "rules_out": [
+          "rh_sticky_jonathan"
+        ],
+        "proof": {
+          "clues": [
+            "cl_oven_smell",
+            "cl_barnaby_oranges"
+          ],
+          "required": 1
+        }
+      }
+    },
+    {
+      "id": "t_party_in_park",
+      "text": "Om drie uur wordt er een feest voorbereid bij de muziektent in het park.",
+      "depends_on": [
+        "t_secret"
+      ],
+      "importance": "core",
+      "revealed_by": [
+        "cl_penny_bandstand",
+        "cl_jonathan_list"
+      ]
+    },
+    {
+      "id": "t_birthday",
+      "text": "Vandaag is Paddingtons zomerverjaardag. Het feest is een verrassing voor hem.",
+      "depends_on": [
+        "t_party_in_park"
+      ],
+      "importance": "core",
+      "revealed_by": [
+        "cl_shed_banner",
+        "cl_lucy_postcard"
+      ],
+      "deduction": {
+        "question": "Waarom houdt iedereen vandaag geheimen?",
+        "answer": "Het is Paddingtons zomerverjaardag en ze bereiden een verrassingsfeest voor.",
+        "wrong_answers": [
+          "Ze zijn boos op Paddington.",
+          "Ze gaan zonder Paddington op vakantie.",
+          "Ze verstoppen zich voor Mr Curry."
+        ],
+        "proof": {
+          "clues": [
+            "cl_shed_banner",
+            "cl_lucy_postcard"
+          ],
+          "required": 1
+        }
+      }
+    }
+  ],
+  "clues": [
+    {
+      "id": "cl_empty_peg",
+      "object_id": "o_hat_peg",
+      "truth_id": "t_hat_missing",
+      "kind": "object",
+      "where": {
+        "type": "location",
+        "id": "l_hall"
+      },
+      "alternatives": [],
+      "requirements": {},
+      "text": "Het hoedenhaakje in de hal is leeg. Paddingtons oude hoed hangt er niet."
+    },
+    {
+      "id": "cl_jonathan_peg",
+      "truth_id": "t_hat_missing",
+      "kind": "spoken",
+      "where": {
+        "type": "character",
+        "id": "c_jonathan"
+      },
+      "alternatives": [],
+      "requirements": {},
+      "text": "Jonathan zegt dat de hoed bij het ontbijt niet aan het haakje hing."
+    },
+    {
+      "id": "cl_empty_shelf",
+      "object_id": "o_marmalade_shelf",
+      "truth_id": "t_marmalade_gone",
+      "kind": "object",
+      "where": {
+        "type": "location",
+        "id": "l_kitchen"
+      },
+      "alternatives": [],
+      "requirements": {},
+      "text": "De marmeladeplank is leeg. Zelfs de grote pot is weg."
+    },
+    {
+      "id": "cl_mrs_brown_marmalade",
+      "truth_id": "t_marmalade_gone",
+      "kind": "spoken",
+      "where": {
+        "type": "character",
+        "id": "c_mrs_brown"
+      },
+      "alternatives": [],
+      "requirements": {},
+      "text": "Mrs Brown zegt dat alle marmelade op is."
+    },
+    {
+      "id": "cl_shed_sheet",
+      "object_id": "cl_shed_sheet",
+      "truth_id": "t_secret",
+      "kind": "object",
+      "where": {
+        "type": "location",
+        "id": "l_shed"
+      },
+      "alternatives": [],
+      "requirements": {},
+      "text": "Iets groots ligt onder een laken. Mr Brown staat ervoor."
+    },
+    {
+      "id": "cl_judy_no_secrets",
+      "truth_id": "t_secret",
+      "kind": "spoken",
+      "where": {
+        "type": "character",
+        "id": "c_judy"
+      },
+      "alternatives": [],
+      "requirements": {},
+      "text": "Judy zegt dat er hier geen geheimen zijn. Ze zegt het veel te snel."
+    },
+    {
+      "id": "cl_judy_ticket",
+      "object_id": "o_bus_ticket",
+      "truth_id": "t_judy_took_hat",
+      "kind": "object",
+      "where": {
+        "type": "location",
+        "id": "l_judy_room"
+      },
+      "alternatives": [],
+      "requirements": {},
+      "text": "Een buskaartje op Judys bureau: Portobello Road, acht uur vanochtend. Ernaast ligt een bruin draadje van een hoed."
+    },
+    {
+      "id": "cl_curry_saw",
+      "truth_id": "t_judy_took_hat",
+      "kind": "spoken",
+      "where": {
+        "type": "character",
+        "id": "c_mr_curry"
+      },
+      "alternatives": [],
+      "requirements": {
+        "goal_states": [
+          "gs_curry_paper"
+        ]
+      },
+      "text": "Mr Curry zag Judy om acht uur de hoed naar de bus dragen.",
+      "reveal_text": "Mr Curry heeft zijn krant terug. Misschien vertelt hij wat hij vanochtend zag."
+    },
+    {
+      "id": "cl_barnaby_saw",
+      "truth_id": "t_hat_at_gruber",
+      "kind": "spoken",
+      "where": {
+        "type": "character",
+        "id": "c_barnaby"
+      },
+      "alternatives": [],
+      "requirements": {},
+      "text": "Barnaby zag Judy een bruine hoed naar binnen brengen in de winkel van Mr Gruber."
+    },
+    {
+      "id": "cl_gruber_tag",
+      "object_id": "o_counter_tag",
+      "truth_id": "t_hat_at_gruber",
+      "kind": "object",
+      "where": {
+        "type": "location",
+        "id": "l_gruber_shop"
+      },
+      "alternatives": [],
+      "requirements": {},
+      "text": "Een papieren label op de toonbank zegt: Paddingtons hoed. Klaar om twee uur."
+    },
+    {
+      "id": "cl_workbench_hat",
+      "object_id": "o_workbench",
+      "truth_id": "t_hat_mended",
+      "kind": "object",
+      "where": {
+        "type": "location",
+        "id": "l_gruber_backroom"
+      },
+      "alternatives": [],
+      "requirements": {},
+      "text": "Paddingtons hoed ligt op de werkbank. Het gat is dichtgenaaid en er zit een fel nieuw rood lint omheen."
+    },
+    {
+      "id": "cl_judy_sketch",
+      "object_id": "o_judy_notebook",
+      "truth_id": "t_hat_mended",
+      "kind": "object",
+      "where": {
+        "type": "location",
+        "id": "l_judy_room"
+      },
+      "alternatives": [],
+      "requirements": {
+        "truths": [
+          "t_hat_at_gruber"
+        ]
+      },
+      "text": "In Judys tekenboek staat een tekening van de hoed met een rood lint. Eronder staat: Cadeau voor P. Mr Gruber repareert het gat.",
+      "locked_glimpse": "Judys tekenboek staat vol met kleine hoedjes. Ze betekenen misschien meer als je weet waar je hoed is gebleven.",
+      "reveal_text": "Nu weet je dat de hoed naar Mr Gruber is gegaan. Judys tekenboek is misschien nog een blik waard."
+    },
+    {
+      "id": "cl_gruber_explains",
+      "truth_id": "t_hat_mended",
+      "kind": "spoken",
+      "where": {
+        "type": "character",
+        "id": "c_mr_gruber"
+      },
+      "alternatives": [],
+      "requirements": {
+        "truths": [
+          "t_hat_at_gruber"
+        ]
+      },
+      "text": "Mr Gruber repareert de hoed en doet er een nieuw rood lint aan, als cadeau.",
+      "reveal_text": "Nu weet je dat je hoed in de winkel is. Mr Gruber vertelt je misschien waarom."
+    },
+    {
+      "id": "cl_oven_smell",
+      "object_id": "o_peel_bin",
+      "truth_id": "t_marmalade_cake",
+      "kind": "place",
+      "where": {
+        "type": "location",
+        "id": "l_kitchen"
+      },
+      "alternatives": [],
+      "requirements": {},
+      "text": "De oven is warm. Het ruikt naar hete sinaasappels en suiker. De prullenbak zit vol sinaasappelschillen."
+    },
+    {
+      "id": "cl_barnaby_oranges",
+      "truth_id": "t_marmalade_cake",
+      "kind": "spoken",
+      "where": {
+        "type": "character",
+        "id": "c_barnaby"
+      },
+      "alternatives": [],
+      "requirements": {},
+      "text": "Barnaby heeft Mrs Bird veel sinaasappels en suiker verkocht voor een gigantische taart."
+    },
+    {
+      "id": "cl_penny_bandstand",
+      "truth_id": "t_party_in_park",
+      "kind": "spoken",
+      "where": {
+        "type": "character",
+        "id": "c_mrs_penny"
+      },
+      "alternatives": [],
+      "requirements": {},
+      "text": "Mrs Penny moet de muziektent om drie uur vrijhouden voor een feest."
+    },
+    {
+      "id": "cl_jonathan_list",
+      "object_id": "o_bus_bench",
+      "truth_id": "t_party_in_park",
+      "kind": "object",
+      "where": {
+        "type": "location",
+        "id": "l_bus_stop"
+      },
+      "alternatives": [],
+      "requirements": {},
+      "text": "Een lijstje op de bank, in Jonathans handschrift: Twintig ballonnen. Om twee uur naar de muziektent in het park brengen. NIET aan P vertellen!"
+    },
+    {
+      "id": "cl_shed_banner",
+      "object_id": "o_covered_banner",
+      "truth_id": "t_birthday",
+      "kind": "object",
+      "where": {
+        "type": "location",
+        "id": "l_shed"
+      },
+      "alternatives": [],
+      "requirements": {
+        "truths": [
+          "t_party_in_park"
+        ]
+      },
+      "text": "Onder het laken ligt een lang spandoek. In grote rode en gele letters staat: GEFELICITEERD, PADDINGTON!",
+      "locked_glimpse": "Mr Brown staat voor het laken. \"Nog niet, Paddington!\" Misschien weet iemand in het park wat er gepland is.",
+      "reveal_text": "Nu weet je van het feest bij de muziektent. Mr Brown laat je misschien onder het laken in de schuur kijken."
+    },
+    {
+      "id": "cl_lucy_postcard",
+      "truth_id": "t_birthday",
+      "kind": "spoken",
+      "where": {
+        "type": "character",
+        "id": "c_mrs_brown"
+      },
+      "alternatives": [],
+      "requirements": {
+        "goal_states": [
+          "gs_mrs_brown_flowers"
+        ]
+      },
+      "text": "Mrs Brown laat een kaart van tante Lucy uit Peru zien: Fijne zomerverjaardag, lieve Paddington!",
+      "reveal_text": "Mrs Brown heeft nu haar bloemen. Het lijkt of ze je iets wil laten zien."
+    },
+    {
+      "id": "cl_open_window",
+      "object_id": "o_hall_window",
+      "kind": "place",
+      "where": {
+        "type": "location",
+        "id": "l_hall"
+      },
+      "alternatives": [],
+      "requirements": {},
+      "text": "Het raam in de hal staat wijd open. Er zijn wat bladeren naar binnen gewaaid. Heeft de wind de hoed meegenomen?"
+    },
+    {
+      "id": "cl_curry_hat_fence",
+      "object_id": "o_curry_hat",
+      "kind": "object",
+      "where": {
+        "type": "location",
+        "id": "l_curry_garden"
+      },
+      "alternatives": [],
+      "requirements": {},
+      "text": "Een bruine hoed hangt aan het hek van Mr Curry. Hij lijkt een beetje op Paddingtons hoed."
+    },
+    {
+      "id": "cl_sticky_fingers",
+      "kind": "spoken",
+      "where": {
+        "type": "character",
+        "id": "c_jonathan"
+      },
+      "alternatives": [],
+      "requirements": {},
+      "text": "Jonathan heeft plakkerige oranje vingers. Heeft hij de marmelade opgegeten?"
+    }
+  ],
+  "items": [
+    {
+      "id": "i_sandwich",
+      "name": "Marmeladesandwich",
+      "description": "Paddingtons noodsandwich met marmelade. Hij heeft er altijd een voor een hongermoment.",
+      "icon_recipe": "two slices of bread with bright orange marmalade inside",
+      "visual": {
+        "icon": "bread",
+        "accent": "#F08C1E"
+      },
+      "key": false,
+      "found_at": {
+        "type": "location",
+        "id": "l_bedroom"
+      },
+      "purpose": "Geef hem aan Barnaby, die zijn ontbijt heeft gemist."
+    },
+    {
+      "id": "i_newspaper",
+      "name": "Krant van Mr Curry",
+      "description": "De krant van vandaag. De wind heeft hem naar de bushalte geblazen.",
+      "icon_recipe": "folded grey newspaper",
+      "visual": {
+        "icon": "newspaper"
+      },
+      "key": false,
+      "found_at": {
+        "type": "location",
+        "id": "l_bus_stop"
+      },
+      "purpose": "Geef hem terug aan Mr Curry."
+    },
+    {
+      "id": "i_currant_buns",
+      "name": "Zak krentenbollen",
+      "description": "Een papieren zak met zachte, zoete krentenbollen.",
+      "icon_recipe": "paper bag with three round buns",
+      "visual": {
+        "icon": "bread"
+      },
+      "key": true,
+      "purpose": "Deel ze om elf uur met Mr Gruber."
+    },
+    {
+      "id": "i_flowers",
+      "name": "Bos bloemen",
+      "description": "Felgele, rode en blauwe bloemen van de markt.",
+      "icon_recipe": "small bunch of colourful flowers",
+      "visual": {
+        "icon": "flower"
+      },
+      "key": false,
+      "purpose": "Geef ze aan Mrs Brown voor de tafel."
+    }
+  ],
+  "visual_requests": [
+    {
+      "name": "Marmeladesandwich",
+      "description": "Twee sneetjes brood met oranje marmelade ertussen, doormidden gesneden.",
+      "suggested_category": "food"
+    },
+    {
+      "name": "Laken",
+      "description": "Een groot wit laken dat over iets groots ligt, als afdekking.",
+      "suggested_category": "clothing"
+    }
+  ],
+  "locations": [
+    {
+      "id": "l_bedroom",
+      "name": "Paddingtons kamer",
+      "biome": "house interior",
+      "mood": "sunny, cosy and a little messy",
+      "palette": "warm yellow and soft blue",
+      "role": "Start. Paddington wordt hier wakker en vindt zijn noodsandwich.",
+      "hub": false,
+      "required_characters": [],
+      "objects": [
+        {
+          "id": "o_bed",
+          "name": "Paddingtons bed",
+          "description": "Een klein bed met een blauwe deken.",
+          "visual": {
+            "icon": "bed"
+          }
+        },
+        {
+          "id": "o_bedside_table",
+          "name": "Nachtkastje",
+          "description": "Een klein tafeltje met een la. Paddington bewaart hier zijn sandwich.",
+          "visual": {
+            "icon": "bedside_table"
+          }
+        },
+        {
+          "id": "o_magnifying_glass",
+          "name": "Vergrootglas",
+          "description": "Paddingtons vergrootglas voor detectives.",
+          "visual": {
+            "icon": "magnifying_glass"
+          }
+        }
+      ],
+      "doors": [
+        {
+          "id": "d_bedroom_hall",
+          "to": "l_hall"
+        }
+      ],
+      "area": {
+        "description": "De zon schijnt door het raam en maakt de blauwe deken warm. Er liggen kruimels op de vloer en de kamer ruikt een beetje naar marmelade.",
+        "doors": [
+          {
+            "to": "l_hall",
+            "label": "Naar beneden",
+            "hint": "De trap gaat naar beneden naar de voordeur."
+          }
+        ],
+        "biome": "building",
+        "palette": "cottage",
+        "floor": "boards",
+        "wall": "plaster",
+        "map": [
+          " ############## ",
+          "################",
+          "#..............#",
+          "#..............#",
+          "#....RRRRRR....#",
+          "#....RRRRRR....#",
+          "#....RRRRRR....1",
+          "#...........@..#",
+          "#..............#",
+          "#..............#",
+          "################"
+        ],
+        "placements": {
+          "obj:o_bed": [
+            12,
+            2
+          ],
+          "obj:o_bedside_table": [
+            5,
+            2
+          ],
+          "obj:o_magnifying_glass": [
+            11,
+            6
+          ],
+          "item:i_sandwich": [
+            6,
+            7
+          ]
+        },
+        "decor": [
+          {
+            "icon": "painting",
+            "x": 7,
+            "y": 2
+          },
+          {
+            "icon": "mirror",
+            "x": 10,
+            "y": 2
+          },
+          {
+            "icon": "flower",
+            "x": 1,
+            "y": 9
+          },
+          {
+            "icon": "chair",
+            "x": 13,
+            "y": 9
+          }
+        ]
+      }
+    },
+    {
+      "id": "l_hall",
+      "name": "De hal",
+      "biome": "house interior",
+      "mood": "bright and busy",
+      "palette": "cream walls and a red carpet",
+      "role": "Thuisbasis. Het lege haakje en het open raam.",
+      "hub": true,
+      "required_characters": [
+        "c_mrs_brown"
+      ],
+      "objects": [
+        {
+          "id": "o_hat_peg",
+          "name": "Leeg hoedenhaakje",
+          "description": "Een houten haakje bij de deur. Paddingtons hoed hangt hier altijd.",
+          "visual": {
+            "icon": "bench"
+          }
+        },
+        {
+          "id": "o_hall_window",
+          "name": "Open raam",
+          "description": "Een hoog raam, wijd open naar de zonnige straat.",
+          "visual": {
+            "icon": "mirror"
+          }
+        },
+        {
+          "id": "o_letter_box",
+          "name": "Brievenbus",
+          "description": "De brievenbus in de voordeur.",
+          "visual": {
+            "icon": "letter_box"
+          }
+        }
+      ],
+      "doors": [
+        {
+          "id": "d_hall_kitchen",
+          "to": "l_kitchen"
+        },
+        {
+          "id": "d_hall_judy",
+          "to": "l_judy_room"
+        },
+        {
+          "id": "d_hall_street",
+          "to": "l_windsor_gardens"
+        }
+      ],
+      "area": {
+        "description": "De hal is licht, met crèmekleurige muren en een lange rode loper. Bij de voordeur hangen jassen, maar één haakje is leeg.",
+        "doors": [
+          {
+            "to": "l_kitchen",
+            "label": "Keukendeur",
+            "hint": "Daarbinnen ruikt het warm en zoet."
+          },
+          {
+            "to": "l_judy_room",
+            "label": "Deur van Judy",
+            "hint": "Een nette deur met een klein naamkaartje."
+          },
+          {
+            "to": "l_windsor_gardens",
+            "label": "Voordeur",
+            "hint": "Naar de zonnige straat."
+          },
+          {
+            "to": "l_bedroom",
+            "label": "Naar mijn kamer",
+            "hint": "De trap gaat omhoog naar Paddingtons kamer."
+          }
+        ],
+        "biome": "building",
+        "palette": "cottage",
+        "floor": "boards",
+        "wall": "plaster",
+        "map": [
+          " ################################ ",
+          "########################2#########",
+          "#................................#",
+          "#................................#",
+          "#................................#",
+          "#.RRRRRRRRRRRRRRRRRRRRRRRRRRRRRR.#",
+          "4.RRRRRRRRRRRRRRRRRRRRRRRRRRRRRR.3",
+          "#................................#",
+          "#................................#",
+          "#................................#",
+          "##########1#######################"
+        ],
+        "placements": {
+          "obj:o_hat_peg": [
+            14,
+            2
+          ],
+          "obj:o_hall_window": [
+            19,
+            2
+          ],
+          "obj:o_letter_box": [
+            22,
+            3
+          ],
+          "char:c_mrs_brown": [
+            10,
+            8
+          ]
+        },
+        "decor": [
+          {
+            "icon": "lamp_stand",
+            "x": 3,
+            "y": 2
+          },
+          {
+            "icon": "painting",
+            "x": 8,
+            "y": 2
+          },
+          {
+            "icon": "lamp_stand",
+            "x": 27,
+            "y": 2
+          },
+          {
+            "icon": "chair",
+            "x": 5,
+            "y": 8
+          },
+          {
+            "icon": "chair",
+            "x": 28,
+            "y": 8
+          },
+          {
+            "icon": "urn",
+            "x": 32,
+            "y": 8
+          },
+          {
+            "icon": "flower",
+            "x": 1,
+            "y": 3
+          }
+        ]
+      }
+    },
+    {
+      "id": "l_kitchen",
+      "name": "De keuken",
+      "biome": "house interior",
+      "mood": "warm and sweet-smelling",
+      "palette": "orange and white tiles",
+      "role": "Mrs Bird werkt hier. De marmelade is weg en de oven is warm.",
+      "hub": false,
+      "required_characters": [
+        "c_mrs_bird"
+      ],
+      "objects": [
+        {
+          "id": "o_marmalade_shelf",
+          "name": "Lege marmeladeplank",
+          "description": "Een plank waar de potten marmelade staan. Vandaag is hij leeg.",
+          "visual": {
+            "icon": "jar"
+          }
+        },
+        {
+          "id": "o_oven",
+          "name": "Warm fornuis",
+          "description": "De oven is warm. Er bakt iets zoets.",
+          "visual": {
+            "icon": "stove"
+          }
+        },
+        {
+          "id": "o_peel_bin",
+          "name": "Schillenbak",
+          "description": "Een emmer vol sinaasappelschillen.",
+          "visual": {
+            "icon": "storage_bin"
+          }
+        }
+      ],
+      "doors": [
+        {
+          "id": "d_kitchen_garden",
+          "to": "l_back_garden"
+        }
+      ],
+      "area": {
+        "description": "De keuken heeft oranje en witte tegels en de oven is warm. Het ruikt naar suiker en sinaasappels, maar de marmeladeplank is leeg.",
+        "doors": [
+          {
+            "to": "l_back_garden",
+            "label": "Tuindeur",
+            "hint": "Buiten zingen vogels achter de glazen deur."
+          },
+          {
+            "to": "l_hall",
+            "label": "Terug naar de hal",
+            "hint": "De deur terug naar de rode loper."
+          }
+        ],
+        "biome": "building",
+        "palette": "kitchen",
+        "floor": "tiles",
+        "wall": "plaster",
+        "map": [
+          " ###################### ",
+          "##################2#####",
+          "#......................#",
+          "#..CCCCCCC..CCCCCCCCC..#",
+          "#C.....................#",
+          "#C.....................#",
+          "#C.....................#",
+          "#C.....................#",
+          "#.........CCCC.........#",
+          "1......................#",
+          "#......................#",
+          "#......................#",
+          "########################"
+        ],
+        "placements": {
+          "obj:o_marmalade_shelf": [
+            13,
+            9
+          ],
+          "obj:o_oven": [
+            21,
+            3
+          ],
+          "obj:o_peel_bin": [
+            4,
+            11
+          ],
+          "char:c_mrs_bird": [
+            18,
+            9
+          ]
+        },
+        "decor": [
+          {
+            "icon": "stool",
+            "x": 9,
+            "y": 9
+          },
+          {
+            "icon": "stool",
+            "x": 14,
+            "y": 9
+          },
+          {
+            "icon": "barrel",
+            "x": 22,
+            "y": 10
+          },
+          {
+            "icon": "basket",
+            "x": 1,
+            "y": 11
+          },
+          {
+            "icon": "painting",
+            "x": 22,
+            "y": 2
+          }
+        ]
+      }
+    },
+    {
+      "id": "l_back_garden",
+      "name": "De achtertuin",
+      "biome": "garden",
+      "mood": "green, sunny and full of birdsong",
+      "palette": "grass green and sky blue",
+      "role": "Jonathan blaast hier ballonnen op.",
+      "hub": false,
+      "required_characters": [
+        "c_jonathan"
+      ],
+      "objects": [
+        {
+          "id": "o_garden_table",
+          "name": "Tuintafel",
+          "description": "Een houten tafel met een ballonpomp erop.",
+          "visual": {
+            "icon": "table"
+          }
+        },
+        {
+          "id": "o_flowerbed",
+          "name": "Bloembed",
+          "description": "Rijen felrode en gele bloemen.",
+          "visual": {
+            "icon": "flower"
+          }
+        }
+      ],
+      "doors": [
+        {
+          "id": "d_garden_shed",
+          "to": "l_shed"
+        }
+      ],
+      "area": {
+        "description": "Het gras is groen en de lucht is heel blauw. Vogels zingen in de heg en een paar ballonnen wiegen bij de tafel.",
+        "doors": [
+          {
+            "to": "l_shed",
+            "label": "Tuinschuur",
+            "hint": "Een klein houten schuurtje. Binnen is iemand druk bezig."
+          },
+          {
+            "to": "l_kitchen",
+            "label": "Keukendeur",
+            "hint": "Terug naar de warme keuken."
+          }
+        ],
+        "biome": "meadow",
+        "palette": "park",
+        "floor": "grass",
+        "wall": "hedge",
+        "map": [
+          " ############################ ",
+          "##############################",
+          "#,,,,,,,,,,,,,,,,,,,,,,,,,,,,#",
+          "#,,,,,,,,,,T,,,,,,,,,,,,,,,,,#",
+          "#,,,***,,,,,,,,,,,,,,,***,,,,#",
+          "#,,T***,,,,,,,,,,,,,,,***,,,,#",
+          "#,,,,,,,,,,,,,,,T,,,,,,,,,,,,#",
+          "1::::::::::::::::::::::::::::2",
+          "#,,,,,,,,,,,:::::::,,,,,,,,,,#",
+          "#,,,,,,,,,,,:::::::,,~,,,,,,,#",
+          "#,,,***,,,,,,,,,,,,~~~~~*,,,,#",
+          "#,,,***,,,,,,,,,,,~~~~~~~,,,,#",
+          "#,,,,,,,,,,,,,,,,,,~~~~~,,,,,#",
+          "#,,,,,,,,,,,,,,,,,,,,~,,,,,,,#",
+          "##############################"
+        ],
+        "placements": {
+          "obj:o_garden_table": [
+            23,
+            2
+          ],
+          "obj:o_flowerbed": [
+            22,
+            5
+          ],
+          "char:c_jonathan": [
+            9,
+            12
+          ]
+        },
+        "decor": [
+          {
+            "icon": "bench",
+            "x": 20,
+            "y": 2
+          },
+          {
+            "icon": "bench",
+            "x": 7,
+            "y": 2
+          }
+        ]
+      }
+    },
+    {
+      "id": "l_shed",
+      "name": "De schuur",
+      "biome": "garden shed",
+      "mood": "dusty, busy and smelling of paint",
+      "palette": "brown wood and bright paint",
+      "role": "Mr Brown verstopt een groot spandoek onder een laken.",
+      "hub": false,
+      "required_characters": [
+        "c_mr_brown"
+      ],
+      "objects": [
+        {
+          "id": "o_covered_banner",
+          "name": "Afgedekt spandoek",
+          "description": "Iets langs en groots, verstopt onder een oud laken.",
+          "visual": {
+            "icon": "painting"
+          }
+        },
+        {
+          "id": "o_paint_bucket",
+          "name": "Verfemmer",
+          "description": "Een emmer met felrode verf.",
+          "visual": {
+            "icon": "bucket",
+            "accent": "#D83A2E"
+          }
+        },
+        {
+          "id": "cl_shed_sheet",
+          "name": "Schuurlaken",
+          "description": "Iets groots ligt onder een laken. Mr Brown staat ervoor.",
+          "visual": {
+            "icon": "generic_prop"
+          }
+        }
+      ],
+      "doors": [],
+      "area": {
+        "description": "De schuur is stoffig en ruikt naar verse verf. Aan de muur hangt gereedschap en iets groots zit verstopt onder een wit laken.",
+        "doors": [
+          {
+            "to": "l_back_garden",
+            "label": "Naar de tuin",
+            "hint": "Terug naar het zonnige gras."
+          }
+        ],
+        "biome": "building",
+        "palette": "workshop",
+        "floor": "boards",
+        "wall": "wood",
+        "map": [
+          " ############# ",
+          "###############",
+          "#.............#",
+          "#.............#",
+          "#.............#",
+          "#.............1",
+          "#.............#",
+          "#.............#",
+          "#.............#",
+          "###############"
+        ],
+        "placements": {
+          "obj:o_covered_banner": [
+            4,
+            2
+          ],
+          "obj:o_paint_bucket": [
+            12,
+            5
+          ],
+          "obj:cl_shed_sheet": [
+            3,
+            6
+          ],
+          "char:c_mr_brown": [
+            7,
+            6
+          ]
+        },
+        "decor": [
+          {
+            "icon": "stool",
+            "x": 1,
+            "y": 4
+          }
+        ]
+      }
+    },
+    {
+      "id": "l_judy_room",
+      "name": "Kamer van Judy",
+      "biome": "house interior",
+      "mood": "neat, bright and full of books",
+      "palette": "pink and pale green",
+      "role": "Judys kamer. Een buskaartje en een tekening verraden haar.",
+      "hub": false,
+      "required_characters": [
+        "c_judy"
+      ],
+      "objects": [
+        {
+          "id": "o_bus_ticket",
+          "name": "Buskaartje",
+          "description": "Een klein buskaartje op Judys bureau.",
+          "visual": {
+            "icon": "ticket"
+          }
+        },
+        {
+          "id": "o_judy_notebook",
+          "name": "Judys tekenboek",
+          "description": "Een boek vol tekeningen.",
+          "visual": {
+            "icon": "book"
+          }
+        },
+        {
+          "id": "o_bookshelf",
+          "name": "Boekenplank",
+          "description": "Een plank vol verhalenboeken.",
+          "visual": {
+            "icon": "bookshelf"
+          }
+        }
+      ],
+      "doors": [],
+      "area": {
+        "description": "Judys kamer is netjes en licht, in roze en lichtgroen. De boeken staan in nette rijen en bij het raam staat een bureau.",
+        "doors": [
+          {
+            "to": "l_hall",
+            "label": "Terug naar de hal",
+            "hint": "De deur naar de rode loper."
+          }
+        ],
+        "biome": "building",
+        "palette": "cottage",
+        "floor": "boards",
+        "wall": "plaster",
+        "map": [
+          " ################ ",
+          "##################",
+          "#................#",
+          "#................#",
+          "#................#",
+          "#.....RRRRRR.....#",
+          "#.....RRRRRR.....#",
+          "#.....RR.RRR.....#",
+          "#................#",
+          "########1#########"
+        ],
+        "placements": {
+          "obj:o_bus_ticket": [
+            5,
+            6
+          ],
+          "obj:o_judy_notebook": [
+            10,
+            7
+          ],
+          "obj:o_bookshelf": [
+            15,
+            2
+          ],
+          "char:c_judy": [
+            11,
+            4
+          ]
+        },
+        "decor": [
+          {
+            "icon": "mirror",
+            "x": 8,
+            "y": 2
+          },
+          {
+            "icon": "chair",
+            "x": 1,
+            "y": 6
+          }
+        ]
+      }
+    },
+    {
+      "id": "l_windsor_gardens",
+      "name": "Windsor Gardens",
+      "biome": "london street",
+      "mood": "sunny and peaceful",
+      "palette": "white houses and green trees",
+      "role": "De straat voor nummer 32. Hij leidt naar de bushalte, het park en de tuin van Mr Curry.",
+      "hub": true,
+      "required_characters": [],
+      "objects": [
+        {
+          "id": "o_lamp_post",
+          "name": "Lantaarnpaal",
+          "description": "Een zwarte straatlantaarn.",
+          "visual": {
+            "icon": "lamp_post"
+          }
+        },
+        {
+          "id": "o_street_sign",
+          "name": "Straatnaambord",
+          "description": "Een bord waarop Windsor Gardens staat.",
+          "visual": {
+            "icon": "sign"
+          }
+        }
+      ],
+      "doors": [
+        {
+          "id": "d_street_curry",
+          "to": "l_curry_garden"
+        },
+        {
+          "id": "d_street_bus",
+          "to": "l_bus_stop"
+        },
+        {
+          "id": "d_street_park",
+          "to": "l_park_gate"
+        }
+      ],
+      "area": {
+        "description": "Witte huizen staan in een rij onder groene bomen. De straat is rustig en zonnig en bij nummer 32 staat een lantaarnpaal.",
+        "doors": [
+          {
+            "to": "l_curry_garden",
+            "label": "Naast ons",
+            "hint": "Een heel nette tuin met een hoge heg."
+          },
+          {
+            "to": "l_bus_stop",
+            "label": "Naar de bussen",
+            "hint": "Rode bussen stoppen aan het eind van de weg."
+          },
+          {
+            "to": "l_park_gate",
+            "label": "Parkpad",
+            "hint": "Groene bomen en het geluid van eenden."
+          },
+          {
+            "to": "l_hall",
+            "label": "Nummer 32",
+            "hint": "De blauwe voordeur van thuis."
+          }
+        ],
+        "biome": "village",
+        "palette": "london",
+        "floor": "cobble",
+        "wall": "brick",
+        "map": [
+          " ################################ ",
+          "T################2###############T",
+          "T..####.....#####...###..........T",
+          "T................................T",
+          "T................................T",
+          "T................................T",
+          "4................................3",
+          "T................................T",
+          "T................................T",
+          "T,,,,.....,,,,.....,,,,.....*,,,.T",
+          "T,,*T,,,,*T,,,,T,*,,T,*,,,*,,,,*,T",
+          "TTTTTTTTTTTTTTTT1TTTTTTTTTTTTTTTTT"
+        ],
+        "placements": {
+          "obj:o_lamp_post": [
+            30,
+            2
+          ],
+          "obj:o_street_sign": [
+            8,
+            2
+          ]
+        },
+        "decor": [
+          {
+            "icon": "barrel",
+            "x": 11,
+            "y": 2
+          },
+          {
+            "icon": "crate",
+            "x": 13,
+            "y": 3
+          },
+          {
+            "icon": "bench",
+            "x": 28,
+            "y": 2
+          },
+          {
+            "icon": "barrel",
+            "x": 21,
+            "y": 3
+          },
+          {
+            "icon": "bench",
+            "x": 2,
+            "y": 2
+          }
+        ]
+      }
+    },
+    {
+      "id": "l_curry_garden",
+      "name": "Tuin van Mr Curry",
+      "biome": "front garden",
+      "mood": "very neat and a bit grumpy",
+      "palette": "dark green hedge and red roses",
+      "role": "Mr Curry zoekt zijn krant. Een bruine hoed hangt aan zijn hek.",
+      "hub": false,
+      "required_characters": [
+        "c_mr_curry"
+      ],
+      "objects": [
+        {
+          "id": "o_curry_hat",
+          "name": "Bruine tuinhoed",
+          "description": "Een oude bruine hoed aan het hek.",
+          "visual": {
+            "icon": "hat",
+            "accent": "#7A5230"
+          }
+        },
+        {
+          "id": "o_curry_roses",
+          "name": "Rozen",
+          "description": "Nette rijen rode rozen.",
+          "visual": {
+            "icon": "flower",
+            "accent": "#D83A2E"
+          }
+        }
+      ],
+      "doors": [],
+      "area": {
+        "description": "De heg is kaarsrecht geknipt en rode rozen groeien in nette rijen. Er ligt geen blaadje op de verkeerde plek.",
+        "doors": [
+          {
+            "to": "l_windsor_gardens",
+            "label": "Naar de straat",
+            "hint": "Terug naar Windsor Gardens."
+          }
+        ],
+        "biome": "meadow",
+        "palette": "park",
+        "floor": "grass",
+        "wall": "hedge",
+        "map": [
+          " ####################### ",
+          "############1############",
+          "#,,,,,,,,,,,::,,,,,,,,,,#",
+          "#,,,,T,,,,,,,:,,,,~,,,,,#",
+          "#,,,***,,,,,,:,,~~~~~,,,#",
+          "#,,,***,,,,,T:,~~~~~~~,,#",
+          "#,,,,,,,,,,,,:,,~~~~~,,,#",
+          "#,,,,,,,,:::::::,,~,,,,,#",
+          "#,,,,,,,,:::::::,,,,,,,,#",
+          "#,,,,,,,,:::::::,,,,,,,,#",
+          "#,,,,,,,,,,,,,,,,,,,,,,,#",
+          "#,,,***,,,,,,,,,,***,,,,#",
+          "#,,,***,,,,,,,,,,***,,,,#",
+          "#,,,,,T,,,,,,,,,,,,,,,,,#",
+          "#,,,,,,,,,,,,,,,,,,,,,,,#",
+          "#########################"
+        ],
+        "placements": {
+          "obj:o_curry_hat": [
+            10,
+            5
+          ],
+          "obj:o_curry_roses": [
+            6,
+            11
+          ],
+          "char:c_mr_curry": [
+            21,
+            10
+          ]
+        },
+        "decor": [
+          {
+            "icon": "bench",
+            "x": 9,
+            "y": 14
+          },
+          {
+            "icon": "bench",
+            "x": 22,
+            "y": 2
+          }
+        ]
+      }
+    },
+    {
+      "id": "l_bus_stop",
+      "name": "De bushalte",
+      "biome": "london street",
+      "mood": "breezy and bright",
+      "palette": "red bus colours and grey stone",
+      "role": "De krant van Mr Curry en het lijstje van Jonathan zijn hier heen gewaaid of gevallen.",
+      "hub": false,
+      "required_characters": [],
+      "objects": [
+        {
+          "id": "o_bus_sign",
+          "name": "Haltebord",
+          "description": "Een rood bord. De bus naar Portobello Road stopt hier.",
+          "visual": {
+            "icon": "sign",
+            "accent": "#D83A2E"
+          }
+        },
+        {
+          "id": "o_bus_bench",
+          "name": "Bankje",
+          "description": "Een houten bankje om op de bus te wachten.",
+          "visual": {
+            "icon": "bench"
+          }
+        }
+      ],
+      "doors": [
+        {
+          "id": "d_bus_market",
+          "to": "l_market"
+        }
+      ],
+      "area": {
+        "description": "Een rood bord en een houten bankje staan langs de weg. Het waait hier en stukjes papier springen over het pad.",
+        "doors": [
+          {
+            "to": "l_market",
+            "label": "Bus naar de markt",
+            "hint": "De bus rijdt naar Portobello Road."
+          },
+          {
+            "to": "l_windsor_gardens",
+            "label": "Eigen straat",
+            "hint": "Terug naar de witte huizen."
+          }
+        ],
+        "biome": "village",
+        "palette": "london",
+        "floor": "cobble",
+        "wall": "brick",
+        "map": [
+          " ################################## ",
+          "T################1#################T",
+          "T..####...#####.....#####..###.....T",
+          "T..................................T",
+          "T..................................T",
+          "T..................................T",
+          "T..................................T",
+          "T..................................T",
+          "T..................................T",
+          "T**,*.....,,,,.....,,,,.....,,,,...T",
+          "T,,,T,,,,,,T,,,*,T*,*,,,T,,,,,,,*,,T",
+          "TTTTTTTTTTTTTTTT2TTTTTTTTTTTTTTTTTTT"
+        ],
+        "placements": {
+          "obj:o_bus_sign": [
+            27,
+            3
+          ],
+          "obj:o_bus_bench": [
+            14,
+            3
+          ],
+          "item:i_newspaper": [
+            28,
+            8
+          ]
+        },
+        "decor": [
+          {
+            "icon": "lamp_post",
+            "x": 5,
+            "y": 3
+          },
+          {
+            "icon": "barrel",
+            "x": 8,
+            "y": 2
+          },
+          {
+            "icon": "crate",
+            "x": 22,
+            "y": 3
+          },
+          {
+            "icon": "lamp_post",
+            "x": 10,
+            "y": 10
+          }
+        ]
+      }
+    },
+    {
+      "id": "l_market",
+      "name": "Portobello Markt",
+      "biome": "street market",
+      "mood": "busy, loud and happy",
+      "palette": "bright fruit colours and striped awnings",
+      "role": "Barnaby verkoopt hier fruit en bloemen.",
+      "hub": false,
+      "required_characters": [
+        "c_barnaby"
+      ],
+      "objects": [
+        {
+          "id": "o_fruit_basket",
+          "name": "Fruitmand",
+          "description": "Een grote mand vol sinaasappels en appels.",
+          "visual": {
+            "icon": "basket"
+          }
+        },
+        {
+          "id": "o_flower_bucket",
+          "name": "Bloemenemmer",
+          "description": "Een emmer vol vrolijke bloemen.",
+          "visual": {
+            "icon": "flower",
+            "accent": "#F2C230"
+          }
+        }
+      ],
+      "doors": [
+        {
+          "id": "d_market_gruber",
+          "to": "l_gruber_shop"
+        }
+      ],
+      "area": {
+        "description": "Kraampjes met gestreepte luifels verkopen fruit, bloemen en oude spulletjes. Mensen roepen de prijzen en iedereen lijkt blij.",
+        "doors": [
+          {
+            "to": "l_gruber_shop",
+            "label": "Antiekwinkel",
+            "hint": "Een winkel met een belletje boven de deur."
+          },
+          {
+            "to": "l_bus_stop",
+            "label": "Bushalte",
+            "hint": "Vanaf hier rijdt de bus terug naar huis."
+          }
+        ],
+        "biome": "village",
+        "palette": "market",
+        "floor": "cobble",
+        "wall": "brick",
+        "map": [
+          " ###################################### ",
+          "T######################################T",
+          "T......................................T",
+          "T......................................T",
+          "T......................................T",
+          "T...CCCC...CCCC...CCCC...CCCC...CCCC...T",
+          "T...CCCC...CCCC...CCCC...CCCC...CCCC...T",
+          "T......................................T",
+          "1......................................T",
+          "T......................................T",
+          "T..........CCCC..........CCCC...CCCC...T",
+          "T..........CCCC..........CCCC...CCCC...T",
+          "T......................................T",
+          "T......................................T",
+          "T......................................T",
+          "TTTTTTTTTTTTTTTTTTT2TTTTTTTTTTTTTTTTTTTT"
+        ],
+        "placements": {
+          "obj:o_fruit_basket": [
+            5,
+            4
+          ],
+          "obj:o_flower_bucket": [
+            23,
+            3
+          ],
+          "char:c_barnaby": [
+            22,
+            10
+          ]
+        },
+        "decor": [
+          {
+            "icon": "barrel",
+            "x": 8,
+            "y": 2
+          },
+          {
+            "icon": "crate",
+            "x": 13,
+            "y": 2
+          },
+          {
+            "icon": "sack",
+            "x": 33,
+            "y": 2
+          },
+          {
+            "icon": "barrel",
+            "x": 2,
+            "y": 2
+          },
+          {
+            "icon": "barrel",
+            "x": 30,
+            "y": 5
+          },
+          {
+            "icon": "crate",
+            "x": 30,
+            "y": 13
+          },
+          {
+            "icon": "barrel",
+            "x": 18,
+            "y": 12
+          }
+        ]
+      }
+    },
+    {
+      "id": "l_gruber_shop",
+      "name": "Winkel van Mr Gruber",
+      "biome": "antique shop",
+      "mood": "quiet, cosy and full of old things",
+      "palette": "dark wood and golden light",
+      "role": "De antiekwinkel van Mr Gruber. Een label op de toonbank laat zien dat de hoed hier is.",
+      "hub": false,
+      "required_characters": [
+        "c_mr_gruber"
+      ],
+      "objects": [
+        {
+          "id": "o_counter_tag",
+          "name": "Papieren label",
+          "description": "Een papieren label op de toonbank met tekst erop.",
+          "visual": {
+            "icon": "note"
+          }
+        },
+        {
+          "id": "o_old_clock",
+          "name": "Staande klok",
+          "description": "Een heel oude, hoge klok. Het is bijna elf uur.",
+          "visual": {
+            "icon": "grandfather_clock"
+          }
+        },
+        {
+          "id": "o_teapot",
+          "name": "Oude theepot",
+          "description": "Een mooie oude theepot die te koop is.",
+          "visual": {
+            "icon": "teapot"
+          }
+        }
+      ],
+      "doors": [
+        {
+          "id": "d_gruber_backroom",
+          "to": "l_gruber_backroom",
+          "lock": {
+            "goal_states": [
+              "gs_gruber_cocoa"
+            ],
+            "reason": "De deur naar de achterkamer is dicht. Mr Gruber wil eerst zijn chocolademelk en krentenbollen voor hij gaat werken.",
+            "lead": "Mr Gruber zegt dat je naar binnen mag na chocolademelk met krentenbollen. Barnaby op de markt heeft een zak krentenbollen.",
+            "unlock_text": "Mr Gruber drinkt zijn chocolademelk op, glimlacht en doet de deur naar de achterkamer voor je open."
+          }
+        }
+      ],
+      "area": {
+        "description": "De winkel is stil en vol oude spullen in gouden licht. Een grote klok tikt langzaam en op de toonbank ligt een label.",
+        "doors": [
+          {
+            "to": "l_gruber_backroom",
+            "label": "Achterkamer",
+            "hint": "Een klein deurtje achter de toonbank."
+          },
+          {
+            "to": "l_market",
+            "label": "Naar de markt",
+            "hint": "Terug naar de drukke kraampjes."
+          }
+        ],
+        "biome": "building",
+        "palette": "shop",
+        "floor": "boards",
+        "wall": "wood",
+        "map": [
+          " #################### ",
+          "######################",
+          "#....................#",
+          "#....................#",
+          "#....................#",
+          "#........CCCCCCCC....#",
+          "#...............C....#",
+          "#...............C....#",
+          "1...RRRRRR...........2",
+          "#...RRRRRR...........#",
+          "#...RRRRRR...........#",
+          "#....................#",
+          "#....................#",
+          "######################"
+        ],
+        "placements": {
+          "obj:o_counter_tag": [
+            5,
+            3
+          ],
+          "obj:o_old_clock": [
+            11,
+            2
+          ],
+          "obj:o_teapot": [
+            13,
+            8
+          ],
+          "char:c_mr_gruber": [
+            5,
+            11
+          ]
+        },
+        "decor": [
+          {
+            "icon": "display_stand",
+            "x": 3,
+            "y": 2
+          },
+          {
+            "icon": "display_stand",
+            "x": 5,
+            "y": 2
+          },
+          {
+            "icon": "display_stand",
+            "x": 7,
+            "y": 2
+          },
+          {
+            "icon": "painting",
+            "x": 14,
+            "y": 2
+          },
+          {
+            "icon": "urn",
+            "x": 19,
+            "y": 4
+          },
+          {
+            "icon": "crate",
+            "x": 1,
+            "y": 12
+          },
+          {
+            "icon": "barrel",
+            "x": 20,
+            "y": 12
+          }
+        ]
+      }
+    },
+    {
+      "id": "l_gruber_backroom",
+      "name": "Achterkamer van Mr Gruber",
+      "biome": "workshop",
+      "mood": "small, warm and tidy",
+      "palette": "brown wood and red thread",
+      "role": "Mr Gruber repareert hier Paddingtons hoed.",
+      "hub": false,
+      "required_characters": [],
+      "objects": [
+        {
+          "id": "o_workbench",
+          "name": "Werkbank",
+          "description": "Een houten werkbank met Paddingtons hoed erop.",
+          "visual": {
+            "icon": "table",
+            "accent": "#7A5230"
+          }
+        },
+        {
+          "id": "o_sewing_basket",
+          "name": "Naaimandje",
+          "description": "Een mandje met naalden, draad en rood lint.",
+          "visual": {
+            "icon": "basket",
+            "accent": "#D83A2E"
+          }
+        }
+      ],
+      "doors": [],
+      "area": {
+        "description": "De achterkamer is klein, warm en netjes. Klosjes rode draad liggen bij een lamp op de werkbank.",
+        "doors": [
+          {
+            "to": "l_gruber_shop",
+            "label": "Naar de winkel",
+            "hint": "Terug naar de tikkende klok."
+          }
+        ],
+        "biome": "building",
+        "palette": "workshop",
+        "floor": "boards",
+        "wall": "wood",
+        "map": [
+          " ################## ",
+          "####################",
+          "#..................#",
+          "#..................#",
+          "#.....CCC..........#",
+          "#..................1",
+          "#..................#",
+          "#..................#",
+          "#..................#",
+          "#..................#",
+          "####################"
+        ],
+        "placements": {
+          "obj:o_workbench": [
+            5,
+            2
+          ],
+          "obj:o_sewing_basket": [
+            7,
+            5
+          ]
+        },
+        "decor": [
+          {
+            "icon": "stool",
+            "x": 1,
+            "y": 3
+          },
+          {
+            "icon": "candle",
+            "x": 17,
+            "y": 2
+          }
+        ]
+      }
+    },
+    {
+      "id": "l_park_gate",
+      "name": "De parkpoort",
+      "biome": "park",
+      "mood": "green, sunny and full of ducks",
+      "palette": "bright green grass and blue pond",
+      "role": "Mrs Penny de parkwachter weet van de muziektent.",
+      "hub": false,
+      "required_characters": [
+        "c_mrs_penny"
+      ],
+      "objects": [
+        {
+          "id": "o_park_sign",
+          "name": "Parkbord",
+          "description": "Een bord bij de poort: Houd het park netjes.",
+          "visual": {
+            "icon": "sign",
+            "accent": "#3A8A3A"
+          }
+        },
+        {
+          "id": "o_duck_pond",
+          "name": "Eendenvijverfontein",
+          "description": "Een kleine vijver met een fontein en blije eenden.",
+          "visual": {
+            "icon": "fountain"
+          }
+        }
+      ],
+      "doors": [
+        {
+          "id": "d_park_bandstand",
+          "to": "l_bandstand"
+        }
+      ],
+      "area": {
+        "description": "Hoge groene poorten openen op helder gras en een blauwe vijver. Eenden peddelen en kwaken bij de fontein.",
+        "doors": [
+          {
+            "to": "l_bandstand",
+            "label": "Pad naar muziektent",
+            "hint": "Je hoort muziek en ziet ballonnen."
+          },
+          {
+            "to": "l_windsor_gardens",
+            "label": "Terug naar de straat",
+            "hint": "Thuis is maar een klein eindje de weg af."
+          }
+        ],
+        "biome": "meadow",
+        "palette": "park",
+        "floor": "grass",
+        "wall": "fence",
+        "map": [
+          " ################################### ",
+          "#####################################",
+          "#,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,#",
+          "#,,,,,,,,,,,,,,,T,,,,,,,,,,,,,,,,,,,#",
+          "#,,,,,,,,,,,*,,,,,,,,*,,,,,,,,,,,,,,#",
+          "#,,,:::::::::::::::::::::::::::::,,,#",
+          "#,,,:,,,,,,,,,,,,,,,,,,,,,,,,,,T:,,,#",
+          "#,,,:,,,,,,,,~,,,,,,,,,,,,,,,,,,:,,,#",
+          "#,,,:,,,,,~~~~~~~,,,,,,,,,,,,,,,:,,,#",
+          "2::::,T,,~~~~~~~~~::,,,,,,,,,,,,:,,,#",
+          "#,,,:,,,~~~~~~~~~~~:,,T,,,,,,,,,:,,,#",
+          "#,,,:,,,,~~~~~~~~~,:,,,,,,,,,,,,:,,,#",
+          "#,,,:,T,,,~~~~~~~,,:,,,,,*,,*,,,:,,,#",
+          "#,,,:,,*,,,,,~,,,,,:,,,,,,,,,,,,:,,,#",
+          "#,T,:::::::::::::::::::::::::::::,,,#",
+          "#,,,,,,,,,,,,,,,,,:,,,,,T,,,,,,,*,,,#",
+          "#,,,,,,,,,,,,,,,,,:T,,,,,,,,,,,,,,,,#",
+          "#,,,,,,,,,,,,,,,,,:,,,,,,,,,,,,,,,,,#",
+          "##################1##################"
+        ],
+        "placements": {
+          "obj:o_park_sign": [
+            35,
+            7
+          ],
+          "obj:o_duck_pond": [
+            11,
+            7
+          ],
+          "char:c_mrs_penny": [
+            6,
+            15
+          ]
+        },
+        "decor": [
+          {
+            "icon": "bench",
+            "x": 34,
+            "y": 17
+          },
+          {
+            "icon": "lamp_post",
+            "x": 35,
+            "y": 10
+          },
+          {
+            "icon": "bench",
+            "x": 29,
+            "y": 17
+          },
+          {
+            "icon": "lamp_post",
+            "x": 23,
+            "y": 2
+          }
+        ]
+      }
+    },
+    {
+      "id": "l_bandstand",
+      "name": "De muziektent",
+      "biome": "park",
+      "mood": "bright, happy and full of balloons",
+      "palette": "white bandstand, red balloons and yellow bunting",
+      "role": "Finale. Het verrassingsverjaardagsfeest.",
+      "hub": false,
+      "required_characters": [],
+      "objects": [
+        {
+          "id": "o_party_table",
+          "name": "Feesttafel",
+          "description": "Een lange tafel met een gigantische marmeladetaart.",
+          "visual": {
+            "icon": "table",
+            "accent": "#F2C230"
+          }
+        },
+        {
+          "id": "o_birthday_banner",
+          "name": "Verjaardagsbanner",
+          "description": "Een groot spandoek: GEFELICITEERD, PADDINGTON!",
+          "visual": {
+            "icon": "painting",
+            "accent": "#D83A2E"
+          }
+        }
+      ],
+      "doors": [],
+      "area": {
+        "description": "Een witte muziektent staat in de zon, met gele vlaggetjes en rode ballonnen. Onder de bomen staat een lange tafel te wachten.",
+        "doors": [
+          {
+            "to": "l_park_gate",
+            "label": "Terug naar de poort",
+            "hint": "Het pad terug langs de eendenvijver."
+          }
+        ],
+        "biome": "meadow",
+        "palette": "park",
+        "floor": "grass",
+        "wall": "fence",
+        "map": [
+          " ################################### ",
+          "##################1##################",
+          "#,,,,,,,,,,,,,,,,,:,,,,,,,,,,,,,,,,,#",
+          "#,,,,,,,T,,,,,,,,,:,,,,,,,,,,T,,,,,,#",
+          "#,,,T,,,,,,,,,,,,,:,,,,,,,,,,,,,,,,,#",
+          "#,,,,,,,,,,,,,,,,,:,,,,,,,,,,,,,,T,,#",
+          "#,,,,,,,,,**,,,,,,:,,,,,,**,,,,,,,,,#",
+          "#,,,,,,,,,,,,,,,RRRRR,,,,,,,,,,,,,,,#",
+          "#,*,,,,,,,,,,,RRRRRRRRR,,,,,,,,,,,,,#",
+          "#,,,,,,,,,,,,RRRRRRRRRRR,,,,,,,,,,*,#",
+          "#,,,,,,,,,,,RRRRRRRRRRRRR,,,,,,,,,,,#",
+          "#,,,,,,,,,,,,RRRRRRRRRRR,,,,,,,,,,,,#",
+          "#,,T,,,,,,,,,,RRRRRRRRR,,,,,,,,,,,,,#",
+          "#,,,,,,,,,,,,,,,RRRRR,,,,,,,,,,,,T,,#",
+          "#,,,,,,,,,,,,,,,,,:,,,,,,,,,,,,,,,,,#",
+          "#,,,,,,,,**,,,,,,,:,,,,,,,,**,,,,,,,#",
+          "#,,,,,,,,,,,T,,,,,:,,,,,,T,,,,,,,,,,#",
+          "#,,,,,T,,,,,,,,,,,:,,,,,,,,,,,T,,,,,#",
+          "#,,,,,,,,,,,,,,,,,:,,,,,,,,,,,,,,,,,#",
+          "#####################################"
+        ],
+        "placements": {
+          "obj:o_party_table": [
+            2,
+            18
+          ],
+          "obj:o_birthday_banner": [
+            16,
+            2
+          ]
+        },
+        "decor": [
+          {
+            "icon": "bench",
+            "x": 12,
+            "y": 8
+          },
+          {
+            "icon": "bench",
+            "x": 24,
+            "y": 8
+          },
+          {
+            "icon": "bench",
+            "x": 12,
+            "y": 12
+          },
+          {
+            "icon": "bench",
+            "x": 24,
+            "y": 12
+          },
+          {
+            "icon": "lamp_post",
+            "x": 15,
+            "y": 5
+          },
+          {
+            "icon": "lamp_post",
+            "x": 21,
+            "y": 5
+          }
+        ]
+      }
+    }
+  ],
+  "twists": [
+    {
+      "id": "tw_hat_present",
+      "description": "Je hoed was nooit kwijt! Judy heeft hem naar Mr Gruber gebracht, zodat hij hem weer als nieuw kan maken. Het is een verjaardagscadeau.",
+      "setup_clues": [
+        "cl_judy_ticket"
+      ],
+      "payoff_trigger": {
+        "truths": [
+          "t_hat_mended"
+        ]
+      }
+    },
+    {
+      "id": "tw_surprise_party",
+      "description": "Alle geheimen zijn voor één fijne verrassing. Het is vandaag je zomerverjaardag en iedereen bereidt een feest voor je voor!",
+      "setup_clues": [
+        "cl_shed_sheet",
+        "cl_judy_no_secrets"
+      ],
+      "payoff_trigger": {
+        "truths": [
+          "t_birthday"
+        ]
+      }
+    }
+  ],
+  "red_herrings": [
+    {
+      "id": "rh_curry_hat",
+      "description": "Mr Curry heeft een bruine hoed, precies zoals die van Paddington.",
+      "setup_clues": [
+        "cl_curry_hat_fence"
+      ],
+      "resolution": "Het is Mr Currys eigen oude tuinhoed. Hij heeft hem al twintig jaar."
+    },
+    {
+      "id": "rh_open_window",
+      "description": "Het raam in de hal staat open. Misschien heeft de wind de hoed weggeblazen.",
+      "setup_clues": [
+        "cl_open_window"
+      ],
+      "resolution": "Mrs Bird heeft het raam opengezet om de taartgeur naar buiten te laten. De wind heeft de hoed niet meegenomen."
+    },
+    {
+      "id": "rh_sticky_jonathan",
+      "description": "Jonathan heeft plakkerige oranje vingers. Misschien heeft hij de marmelade opgegeten.",
+      "setup_clues": [
+        "cl_sticky_fingers"
+      ],
+      "resolution": "Jonathan heeft alleen de lepel van Mrs Birds taartkom afgelikt."
+    }
+  ],
+  "endings": [
+    {
+      "id": "e_happy_surprise",
+      "conditions": {
+        "truths": [
+          "t_judy_took_hat",
+          "t_hat_mended",
+          "t_marmalade_cake",
+          "t_birthday"
+        ],
+        "goal_states": [],
+        "choices": [
+          "choice_act_surprised"
+        ]
+      },
+      "summation": [
+        {
+          "question": "Wie heeft Paddingtons hoed meegenomen?",
+          "truth_id": "t_judy_took_hat"
+        },
+        {
+          "question": "Waarom is de hoed in de winkel van Mr Gruber?",
+          "truth_id": "t_hat_mended"
+        },
+        {
+          "question": "Waar is de marmelade gebleven?",
+          "truth_id": "t_marmalade_cake"
+        },
+        {
+          "question": "Wat is het grote geheim?",
+          "truth_id": "t_birthday",
+          "proof": {
+            "clues": [
+              "cl_shed_banner",
+              "cl_lucy_postcard"
+            ],
+            "required": 1
+          }
+        }
+      ],
+      "scene_outline": "Paddington loopt naar de muziektent. Iedereen springt tevoorschijn en roept Verrassing! Paddington doet heel verrast en is erg blij. Judy geeft hem zijn hoed met het nieuwe rode lint. Mrs Bird brengt de gigantische marmeladetaart.",
+      "tone": "Vrolijk, helder en vol liefde.",
+      "epilogue_notes": "Iedereen eet marmeladetaart in de zon. Mrs Brown leest de kaart van tante Lucy hardop voor. Paddington zegt dat het de beste verjaardag ooit is."
+    },
+    {
+      "id": "e_party_for_everyone",
+      "conditions": {
+        "truths": [
+          "t_judy_took_hat",
+          "t_hat_mended",
+          "t_marmalade_cake",
+          "t_birthday"
+        ],
+        "goal_states": [
+          "gs_curry_paper"
+        ],
+        "choices": [
+          "choice_act_surprised"
+        ]
+      },
+      "summation": [
+        {
+          "question": "Wie heeft Paddingtons hoed meegenomen?",
+          "truth_id": "t_judy_took_hat"
+        },
+        {
+          "question": "Waarom is de hoed in de winkel van Mr Gruber?",
+          "truth_id": "t_hat_mended"
+        },
+        {
+          "question": "Waar is de marmelade gebleven?",
+          "truth_id": "t_marmalade_cake"
+        },
+        {
+          "question": "Wat is het grote geheim?",
+          "truth_id": "t_birthday",
+          "proof": {
+            "clues": [
+              "cl_shed_banner",
+              "cl_lucy_postcard"
+            ],
+            "required": 1
+          }
+        }
+      ],
+      "scene_outline": "Paddington loopt naar de muziektent. Iedereen roept Verrassing! Paddington doet heel verrast en is erg blij. Judy geeft hem zijn hoed met het nieuwe rode lint. Dan komt Mr Curry aanlopen met zijn krant. Omdat Paddington lief voor hem was, kwam hij ook naar het feest.",
+      "tone": "Vrolijk, helder en een beetje grappig.",
+      "epilogue_notes": "Mr Curry eet twee grote stukken marmeladetaart en lacht bijna. Iedereen zingt Lang zal hij leven. Paddington zegt dat het de beste verjaardag ooit is."
+    },
+    {
+      "id": "e_detective_bear",
+      "conditions": {
+        "truths": [
+          "t_judy_took_hat",
+          "t_hat_mended",
+          "t_marmalade_cake",
+          "t_birthday"
+        ],
+        "goal_states": [],
+        "choices": [
+          "choice_tell_them_you_knew"
+        ]
+      },
+      "summation": [
+        {
+          "question": "Wie heeft Paddingtons hoed meegenomen?",
+          "truth_id": "t_judy_took_hat"
+        },
+        {
+          "question": "Waarom is de hoed in de winkel van Mr Gruber?",
+          "truth_id": "t_hat_mended"
+        },
+        {
+          "question": "Waar is de marmelade gebleven?",
+          "truth_id": "t_marmalade_cake"
+        },
+        {
+          "question": "Wat is het grote geheim?",
+          "truth_id": "t_birthday",
+          "proof": {
+            "clues": [
+              "cl_shed_banner",
+              "cl_lucy_postcard"
+            ],
+            "required": 1
+          }
+        }
+      ],
+      "scene_outline": "Iedereen roept Verrassing! Paddington lacht en zegt dat hij het hele mysterie heeft opgelost. Hij vertelt over de hoed, de taart en het spandoek. Iedereen lacht en juicht voor rechercheur Paddington. Judy zet de gerepareerde hoed op zijn hoofd.",
+      "tone": "Trots, blij en grappig.",
+      "epilogue_notes": "Jonathan geeft Paddington een speelgoed-detectivepenning. Iedereen eet marmeladetaart in de zon. Paddington houdt zijn vergrootglas dichtbij, voor de zekerheid."
+    }
+  ],
+  "lengths": {
+    "medium": {
+      "target_minutes": 40,
+      "start_location": "l_bedroom",
+      "epilogue": {
+        "location": "l_bandstand",
+        "description": "Het feest is in volle gang! Ballonnen wiegen in de zon en iedereen is gekomen om je te feliciteren.",
+        "objective": "Geniet van je feest! Praat met iedereen en zeg dank je wel.",
+        "join_label": "Naar het feest",
+        "door_message": "Het feest is hier! Paddington wil zijn eigen verjaardagsfeest niet verlaten.",
+        "player_sprite": {
+          "species": "bear",
+          "height": "short",
+          "girth": "stout",
+          "skin": "#7b4a2a",
+          "accent": "#c99a66",
+          "outfit": {
+            "style": "duffle-coat",
+            "color": "#2d57a6",
+            "trim": "#a8743c",
+            "legs": "#7b4a2a"
+          },
+          "headwear": {
+            "style": "bush-hat",
+            "color": "#5b4127",
+            "trim": "#d0302a"
+          },
+          "accessories": [
+            {
+              "kind": "suitcase",
+              "color": "#8a5a32"
+            }
+          ]
+        },
+        "deflections": [
+          "Wat een heerlijk feest is dit!",
+          "Neem nog een stukje marmeladetaart, Paddington!",
+          "Het is een prachtige dag, vind je niet?"
+        ],
+        "cast": [
+          {
+            "id": "c_judy",
+            "at": [
+              15,
+              6
+            ],
+            "greeting": "Gefeliciteerd, Paddington! Sorry dat ik je hoed heb meegenomen. Vind je het nieuwe rode lint mooi?"
+          },
+          {
+            "id": "c_jonathan",
+            "at": [
+              21,
+              6
+            ],
+            "greeting": "Gefeliciteerd, Paddington! Twintig ballonnen, en ik heb er maar twee laten knappen!"
+          },
+          {
+            "id": "c_mrs_brown",
+            "at": [
+              10,
+              9
+            ],
+            "greeting": "Gefeliciteerd, schat! Je hoed ziet er prachtig uit. Tante Lucy zou zo trots op je zijn."
+          },
+          {
+            "id": "c_mr_brown",
+            "at": [
+              10,
+              11
+            ],
+            "greeting": "Gefeliciteerd, beste kerel! Wat vind je van mijn spandoek? De verf is nu droog."
+          },
+          {
+            "id": "c_mr_gruber",
+            "at": [
+              26,
+              9
+            ],
+            "greeting": "Gefeliciteerd, mijn vriend. Je hoed is weer als nieuw. Het lint staat je goed."
+          },
+          {
+            "id": "c_barnaby",
+            "at": [
+              26,
+              11
+            ],
+            "greeting": "Gefeliciteerd, jonge beer! Mijn sinaasappels maakten een prachtige taart, of niet soms?"
+          },
+          {
+            "id": "c_mrs_bird",
+            "at": [
+              4,
+              17
+            ],
+            "greeting": "Gefeliciteerd, jonge beer. Ja, alle marmelade zit in deze taart. Neem maar een groot stuk."
+          },
+          {
+            "id": "c_mrs_penny",
+            "at": [
+              21,
+              15
+            ],
+            "greeting": "Gefeliciteerd, Paddington! Ik heb de muziektent de hele dag vrijgehouden, speciaal voor jou."
+          },
+          {
+            "id": "c_mr_curry",
+            "at": [
+              13,
+              15
+            ],
+            "greeting": "Hmpf. Gefeliciteerd, beer. Deze taart is niet slecht. Helemaal niet slecht.",
+            "endings": [
+              "e_party_for_everyone"
+            ]
+          }
+        ]
+      },
+      "opening": {
+        "context": "Je bent Paddington de beer. Het is een zonnige zaterdag op Windsor Gardens 32. Je gaat naar beneden naar de hal, maar je oude hoed hangt niet aan zijn haakje! De marmelade is ook weg. En iedereen doet raar. Tijd om detective te zijn!"
+      },
+      "cast": [
+        "c_mrs_brown",
+        "c_mrs_bird",
+        "c_jonathan",
+        "c_mr_brown",
+        "c_judy",
+        "c_mr_curry",
+        "c_barnaby",
+        "c_mr_gruber",
+        "c_mrs_penny"
+      ],
+      "core_truths": [
+        "t_hat_missing",
+        "t_marmalade_gone",
+        "t_secret",
+        "t_judy_took_hat",
+        "t_hat_at_gruber",
+        "t_hat_mended",
+        "t_marmalade_cake",
+        "t_party_in_park",
+        "t_birthday"
+      ],
+      "side_truths": [],
+      "subplots": [
+        {
+          "id": "sp_grumpy_neighbour",
+          "title": "De chagrijnige buurman",
+          "description": "Paddington vindt de verloren krant van Mr Curry. Mr Curry is blij, maar probeert dat niet te laten merken.",
+          "cast": [
+            "c_mr_curry"
+          ],
+          "truths": []
+        }
+      ],
+      "twists": [
+        "tw_hat_present",
+        "tw_surprise_party"
+      ],
+      "red_herrings": [
+        "rh_curry_hat",
+        "rh_open_window",
+        "rh_sticky_jonathan"
+      ],
+      "endings": [
+        "e_happy_surprise",
+        "e_party_for_everyone",
+        "e_detective_bear"
+      ],
+      "beats": [
+        {
+          "id": "b_home",
+          "title": "Thuis",
+          "objective": "Zoek uit wat er weg is en waarom iedereen zo raar doet.",
+          "guidance": "Kijk naar het hoedenhaakje in de hal. Praat dan met iedereen thuis. Vergeet je sandwich niet!",
+          "locations": [
+            "l_bedroom",
+            "l_hall",
+            "l_kitchen",
+            "l_back_garden",
+            "l_shed",
+            "l_judy_room"
+          ],
+          "must_find": {
+            "truths": [
+              "t_hat_missing",
+              "t_secret"
+            ]
+          }
+        },
+        {
+          "id": "b_out",
+          "title": "Op pad",
+          "gate_reason": "Nog niet! Een goede detective begint thuis. Wat ontbreekt er in de hal en waarom doet iedereen zo geheimzinnig?",
+          "unlock_text": "Paddington heeft de mysteries van de ochtend opgelost. De voordeur is open en de straat wacht!",
+          "objective": "Vind je hoed, vind de marmelade en kom achter het grote geheim.",
+          "guidance": "Ga naar Windsor Gardens. Bezoek Mr Curry, de bushalte, de markt, de winkel van Mr Gruber en het park.",
+          "locations": [
+            "l_windsor_gardens",
+            "l_curry_garden",
+            "l_bus_stop",
+            "l_market",
+            "l_gruber_shop",
+            "l_gruber_backroom",
+            "l_park_gate"
+          ],
+          "must_find": {
+            "truths": [
+              "t_judy_took_hat",
+              "t_hat_at_gruber",
+              "t_hat_mended",
+              "t_marmalade_cake",
+              "t_party_in_park",
+              "t_birthday"
+            ]
+          }
+        },
+        {
+          "id": "b_party",
+          "title": "Het feest",
+          "gate_reason": "Mrs Penny heeft het pad naar de muziektent voorlopig afgezet. Vind eerst je hoed, de marmelade en het grote geheim.",
+          "unlock_text": "Mrs Penny haalt het touw weg. Het pad naar de muziektent is open!",
+          "objective": "Ga naar de muziektent en vertel iedereen wat je hebt ontdekt.",
+          "guidance": "Loop door de parkpoort naar de muziektent.",
+          "locations": [
+            "l_bandstand"
+          ],
+          "must_find": {}
+        }
+      ]
+    }
+  }
+}

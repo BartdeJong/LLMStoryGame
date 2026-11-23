@@ -514,6 +514,7 @@ export async function mountDialogueDebugScreen(): Promise<void> {
       const context = {
         locationName: location?.name ?? selectedPack.identity.title,
         locationMood: location?.mood ?? selectedPack.identity.tone,
+        language: selectedPack.language,
         storySummary: "",
         knownFacts: setup.truthsFound.flatMap((truthId) => {
           if (!character.knows_truths.includes(truthId)) return [];

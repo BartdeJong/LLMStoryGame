@@ -363,8 +363,12 @@ export interface LengthDefinition {
   beats: Beat[];
 }
 
+export const STORY_LANGUAGES = ["en", "nl"] as const;
+export type StoryLanguage = (typeof STORY_LANGUAGES)[number];
+
 export interface StoryPack {
   schema_version: number;
+  language?: StoryLanguage;
   identity: Identity;
   style_guide: StyleGuide;
   cast: CastMember[];

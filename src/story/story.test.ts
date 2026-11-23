@@ -10,6 +10,7 @@ import { seededIconRecipe } from "./recipes";
 import storyIndex from "../../public/stories/index.json";
 import holmesPack from "../../public/stories/holmesashenvelope.json";
 import paddingtonPack from "../../public/stories/paddingtonhat.json";
+import paddingtonNlPack from "../../public/stories/paddingtonhat_nl.json";
 
 const fresh = (): StoryPack => structuredClone(fixture) as unknown as StoryPack;
 const codes = (data: unknown): string[] => validateStoryPack(data).errors.map((e) => e.code);
@@ -214,7 +215,7 @@ describe("one length per story", () => {
 
   it("ships exactly one length per story pack", () => {
     const packs: Record<string, { lengths: Record<string, unknown> }> = {
-      example: fixture, holmesashenvelope: holmesPack, paddingtonhat: paddingtonPack,
+      example: fixture, holmesashenvelope: holmesPack, paddingtonhat: paddingtonPack, "paddingtonhat_nl": paddingtonNlPack,
     };
     for (const entry of storyIndex.stories) {
       expect(Object.keys(packs[entry.id]!.lengths), entry.id).toEqual([entry.length]);

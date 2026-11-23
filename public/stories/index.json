@@ -20,6 +20,13 @@
       "logline": "Paddington's hat is gone. The marmalade is gone too. And everyone is acting strange! Help Paddington find out why.",
       "length": "medium",
       "estimated_minutes": 40
+    },
+    {
+      "id": "paddingtonhat_nl",
+      "title": "Paddington (Nederlands)",
+      "logline": "Paddingtons hoed is weg. De marmelade is ook weg. En iedereen doet raar! Help Paddington uitzoeken waarom.",
+      "length": "medium",
+      "estimated_minutes": 40
     }
   ]
 }

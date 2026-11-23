@@ -59,8 +59,11 @@ export const STORY_THEMES: Readonly<Record<string, StoryVisualTheme>> = {
   },
 };
 
+// Translations reuse the theme of the story they translate.
+const THEME_ALIASES: Readonly<Record<string, string>> = { "paddingtonhat_nl": "paddingtonhat" };
+
 export function getStoryVisualTheme(storyId: string): StoryVisualTheme {
-  const knownTheme = STORY_THEMES[storyId];
+  const knownTheme = STORY_THEMES[THEME_ALIASES[storyId] ?? storyId];
   if (knownTheme) return knownTheme;
 
   const hue = hashSeed(storyId) % 360;

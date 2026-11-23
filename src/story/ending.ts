@@ -1,4 +1,4 @@
-import { SYSTEM } from "../llm/prompts";
+import { languageReminder, systemPrompt } from "../llm/prompts";
 import { endingSceneSchema } from "../llm/shapes";
 import { Priority } from "../llm/types";
 import type { LLMClient } from "../llm/client";
@@ -49,7 +49,7 @@ export function buildEndingPrompt(pack: StoryPack, ending: Ending, variant?: Fla
       epilogue_notes: source.epilogue_notes,
     }),
     ENDING_END,
-    "Return JSON with scene (a short, warm ending scene) and epilogue (one or two concise sentences honoring the notes).",
+    "Return JSON with scene (a short, warm ending scene) and epilogue (one or two concise sentences honoring the notes)." + languageReminder(pack.language),
   ].join("\n");
 }
 
@@ -57,7 +57,7 @@ export async function writeEnding(client: LLMClient, pack: StoryPack, ending: En
   const source = variant ?? ending;
   const result = await client.generateJSON({
     priority: Priority.Dialogue,
-    system: SYSTEM,
+    system: systemPrompt(pack.language),
     tag: "ending",
     schema: endingSceneSchema,
     maxTokens: 400,

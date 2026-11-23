@@ -27,7 +27,7 @@ describe("story visual themes", () => {
   });
 
   it("gives every theme moderate ambient lighting", () => {
-    for (const id of ["example", "holmesashenvelope", "paddingtonhat", "generated-story"]) {
+    for (const id of ["example", "holmesashenvelope", "paddingtonhat", "paddingtonhat_nl", "generated-story"]) {
       const { lighting } = getStoryVisualTheme(id);
       for (const key of ["outdoor", "indoor", "underground", "edge"] as const) {
         expect(lighting[key], `${id} ${key}`).toMatch(/^#[0-9a-f]{6}$/i);
